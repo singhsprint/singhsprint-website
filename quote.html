@@ -113,12 +113,22 @@
     .pay-button:disabled{background:#ddd;cursor:not-allowed}
     .pay-message{font-size:.75rem;color:#aaa;text-align:center;line-height:1.4}
 
-    /* Print locations summary */
+    /* Print locations — checkbox grid in form */
     .placement-section{margin-bottom:24px}
-    .placement-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
-    .placement-summary{font-size:.9rem;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+    .placement-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:10px;color:#555}
+    .loc-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+    .loc-check{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;cursor:pointer;transition:all .15s;user-select:none}
+    .loc-check:hover{border-color:#ccc;background:#fafafa}
+    .loc-check.checked{border-color:#1a1a1a;background:#f8f8f6}
+    .loc-check input[type="checkbox"]{display:none}
+    .loc-check .check-box{width:20px;height:20px;border-radius:6px;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .loc-check.checked .check-box{background:#1a1a1a;border-color:#1a1a1a}
+    .loc-check .check-box svg{width:12px;height:12px;opacity:0;transition:opacity .15s}
+    .loc-check.checked .check-box svg{opacity:1}
+    .loc-check .loc-label{font-size:.85rem;font-weight:600;color:#555}
+    .loc-check.checked .loc-label{color:#1a1a1a}
     .placement-count-badge{display:inline-block;background:#e8ff3c;color:#1a1a1a;padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:700;margin-left:6px;vertical-align:middle}
-    .print-count-hint{font-size:.75rem;color:#aaa;margin-top:2px}
+    .placement-summary{font-size:.82rem;color:#888;margin-top:4px}
 
     /* Location bar under mockup — multi-select toggle */
     .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
@@ -218,7 +228,8 @@
       .product-grid{grid-template-columns:1fr 1fr}
       .size-grid{grid-template-columns:repeat(4,1fr)}
       .toolbar-btn{padding:6px 8px;font-size:.72rem}
-      .loc-btn{font-size:.7rem;padding:10px 4px}
+      .loc-tab{font-size:.7rem;padding:10px 4px}
+      .loc-check-grid{grid-template-columns:1fr 1fr}
     }
 
     /* ========== CANVAS EDITOR ========== */
@@ -231,13 +242,14 @@
     /* Editor controls container */
     .editor-controls{background:#fff;border-top:1px solid #eee}
 
-    /* Location bar — segmented control style */
+    /* Location bar — view-switching tabs (only shows selected locations) */
     .location-bar{display:flex;gap:0;padding:0;background:#f5f5f5;border-bottom:1px solid #eee}
-    .loc-btn{flex:1;padding:11px 8px;font-size:.76rem;font-weight:600;border:none;border-right:1px solid #eee;background:transparent;color:#999;cursor:pointer;transition:all .2s;white-space:nowrap;text-align:center;letter-spacing:.02em}
-    .loc-btn:last-child{border-right:none}
-    .loc-btn:hover{color:#555;background:#f0f0f0}
-    .loc-btn.selected{color:#1a1a1a;background:#fff;box-shadow:inset 0 -2px 0 #ddd}
-    .loc-btn.viewing{color:#fff;background:#1a1a1a;box-shadow:none}
+    .loc-tab{flex:1;padding:11px 8px;font-size:.76rem;font-weight:600;border:none;border-right:1px solid #eee;background:transparent;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap;text-align:center;letter-spacing:.02em;display:none}
+    .loc-tab:last-child{border-right:none}
+    .loc-tab.visible{display:block}
+    .loc-tab:hover{color:#555;background:#efefef}
+    .loc-tab.active{color:#fff;background:#1a1a1a}
+    .location-bar-empty{padding:10px;text-align:center;font-size:.75rem;color:#bbb;background:#f5f5f5;border-bottom:1px solid #eee}
 
     /* Toolbar — clean icon-text groups */
     .canvas-toolbar{display:flex;align-items:center;padding:10px 14px;gap:6px;border-bottom:1px solid #f0f0f0}
@@ -392,11 +404,32 @@
               </select>
             </div>
 
-            <!-- Print locations (selected via mockup buttons) -->
+            <!-- Print locations — checkboxes -->
             <div class="placement-section">
-              <label data-i18n="quote.printloc">Print locations</label>
-              <p class="placement-summary" id="placementSummary">Front <span class="placement-count-badge">1 location</span></p>
-              <p class="print-count-hint">Toggle locations below the preview to add/remove print areas</p>
+              <label data-i18n="quote.printloc">Print locations <span class="placement-count-badge" id="locCountBadge">1 location</span></label>
+              <div class="loc-check-grid">
+                <label class="loc-check checked" data-loc="front" onclick="toggleLocCheck(this)">
+                  <input type="checkbox" checked>
+                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="loc-label">Front</span>
+                </label>
+                <label class="loc-check" data-loc="back" onclick="toggleLocCheck(this)">
+                  <input type="checkbox">
+                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="loc-label">Back</span>
+                </label>
+                <label class="loc-check" data-loc="left-sleeve" onclick="toggleLocCheck(this)">
+                  <input type="checkbox">
+                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="loc-label">Left Sleeve</span>
+                </label>
+                <label class="loc-check" data-loc="right-sleeve" onclick="toggleLocCheck(this)">
+                  <input type="checkbox">
+                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="loc-label">Right Sleeve</span>
+                </label>
+              </div>
+              <p class="placement-summary" id="placementSummary">Select where you want your design printed</p>
               <input type="hidden" name="placement" id="placementInput" value="front">
               <input type="hidden" name="print_count" id="printCountInput" value="1">
             </div>
@@ -752,12 +785,12 @@
 
         <!-- Editor controls -->
         <div class="editor-controls">
-          <!-- Location selector — segmented control -->
+          <!-- View-switching tabs (only selected locations appear) -->
           <div class="location-bar" id="locationBar">
-            <button type="button" class="loc-btn selected viewing" data-loc="front" onclick="toggleLocation(this)">Front</button>
-            <button type="button" class="loc-btn" data-loc="back" onclick="toggleLocation(this)">Back</button>
-            <button type="button" class="loc-btn" data-loc="left-sleeve" onclick="toggleLocation(this)">L. Sleeve</button>
-            <button type="button" class="loc-btn" data-loc="right-sleeve" onclick="toggleLocation(this)">R. Sleeve</button>
+            <button type="button" class="loc-tab visible active" data-loc="front" onclick="switchLocationView(this)">Front</button>
+            <button type="button" class="loc-tab" data-loc="back" onclick="switchLocationView(this)">Back</button>
+            <button type="button" class="loc-tab" data-loc="left-sleeve" onclick="switchLocationView(this)">L. Sleeve</button>
+            <button type="button" class="loc-tab" data-loc="right-sleeve" onclick="switchLocationView(this)">R. Sleeve</button>
           </div>
 
           <!-- Toolbar -->
@@ -1179,42 +1212,84 @@
 
     var nameMap = {'front':'Front','back':'Back','left-sleeve':'Left Sleeve','right-sleeve':'Right Sleeve'};
 
-    function toggleLocation(btn) {
-      var loc = btn.getAttribute('data-loc');
-      var wasSelected = btn.classList.contains('selected');
-      var allSelected = document.querySelectorAll('.loc-btn.selected');
+    // ===== LOCATION CHECKBOXES (in form) — drive selection =====
+    function toggleLocCheck(el) {
+      // Prevent default label click from double-firing
+      event.preventDefault();
 
-      // Don't allow deselecting the last one
-      if (wasSelected && allSelected.length <= 1) {
-        // Just make sure this is the viewed one
-        viewLocation(btn);
-        return;
-      }
+      var loc = el.getAttribute('data-loc');
+      var isChecked = el.classList.contains('checked');
+      var allChecked = document.querySelectorAll('.loc-check.checked');
 
-      if (wasSelected) {
-        // Deselect
-        btn.classList.remove('selected', 'viewing');
-        // If this was the viewed one, switch view to another selected
-        if (currentLocation === loc) {
-          var nextViewed = document.querySelector('.loc-btn.selected');
-          if (nextViewed) viewLocation(nextViewed);
-        }
+      // Don't allow unchecking the last one
+      if (isChecked && allChecked.length <= 1) return;
+
+      if (isChecked) {
+        el.classList.remove('checked');
+        el.querySelector('input').checked = false;
       } else {
-        // Select and view this location
-        btn.classList.add('selected');
-        viewLocation(btn);
+        el.classList.add('checked');
+        el.querySelector('input').checked = true;
       }
 
-      updateLocationState();
+      updateLocationSelection();
     }
 
-    function viewLocation(btn) {
-      var loc = btn.getAttribute('data-loc');
+    function updateLocationSelection() {
+      var checked = document.querySelectorAll('.loc-check.checked');
+      printCount = checked.length;
+
+      // Build names + locs arrays
+      var names = [];
+      var locs = [];
+      checked.forEach(function(el) {
+        var loc = el.getAttribute('data-loc');
+        locs.push(loc);
+        names.push(nameMap[loc] || loc);
+      });
+
+      // Update hidden inputs
+      document.getElementById('placementInput').value = locs.join(', ');
+      document.getElementById('printCountInput').value = printCount;
+
+      // Update badge
+      var badge = document.getElementById('locCountBadge');
+      if (badge) badge.textContent = printCount + ' location' + (printCount > 1 ? 's' : '');
+
+      // Update summary text
+      var summaryEl = document.getElementById('placementSummary');
+      if (summaryEl) summaryEl.textContent = names.join(', ');
+
+      // Update mockup summary
+      document.getElementById('sumPlacement').textContent = names.join(', ');
+
+      // Update view tabs — show only selected locations
+      document.querySelectorAll('.loc-tab').forEach(function(tab) {
+        var tabLoc = tab.getAttribute('data-loc');
+        if (locs.indexOf(tabLoc) >= 0) {
+          tab.classList.add('visible');
+        } else {
+          tab.classList.remove('visible', 'active');
+        }
+      });
+
+      // If current view is no longer selected, switch to first selected
+      if (locs.indexOf(currentLocation) < 0) {
+        var firstTab = document.querySelector('.loc-tab.visible');
+        if (firstTab) switchLocationView(firstTab);
+      }
+
+      calculatePrice();
+    }
+
+    // ===== VIEW TABS (on mockup) — switch which location is being edited =====
+    function switchLocationView(tab) {
+      var loc = tab.getAttribute('data-loc');
       currentLocation = loc;
 
-      // Move 'viewing' highlight
-      document.querySelectorAll('.loc-btn').forEach(function(b) { b.classList.remove('viewing'); });
-      btn.classList.add('viewing');
+      // Highlight active tab
+      document.querySelectorAll('.loc-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
 
       // Redraw print area at this location
       drawPrintAreaBoundary();
@@ -1222,34 +1297,6 @@
         fitDesignToPrintArea(designObject);
         canvas.renderAll();
       }
-    }
-
-    function updateLocationState() {
-      var selected = document.querySelectorAll('.loc-btn.selected');
-      printCount = selected.length;
-
-      // Build names list
-      var names = [];
-      selected.forEach(function(b) {
-        names.push(nameMap[b.getAttribute('data-loc')] || b.getAttribute('data-loc'));
-      });
-
-      // Update hidden inputs
-      var locs = [];
-      selected.forEach(function(b) { locs.push(b.getAttribute('data-loc')); });
-      document.getElementById('placementInput').value = locs.join(', ');
-      document.getElementById('printCountInput').value = printCount;
-
-      // Update form summary
-      var summaryEl = document.getElementById('placementSummary');
-      if (summaryEl) {
-        summaryEl.innerHTML = names.join(', ') + ' <span class="placement-count-badge">' + printCount + ' location' + (printCount > 1 ? 's' : '') + '</span>';
-      }
-
-      // Update mockup summary
-      document.getElementById('sumPlacement').textContent = names.join(', ');
-
-      calculatePrice();
     }
 
     function initFabricCanvas() {
