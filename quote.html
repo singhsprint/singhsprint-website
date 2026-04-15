@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Get a Quote | Singhs Print — Custom Apparel Printing Montreal</title>
+  <title>Get a Quote | Singhs Print - Custom Apparel Printing Montreal</title>
   <meta name="description" content="Get a free quote for custom DTG, DTF, or embroidery printing. Design your mockup live. No minimums, fast turnaround, 15% off your first order.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,7 +53,8 @@
     .product-option{border:2px solid #eee;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
     .product-option:hover{border-color:#ccc}
     .product-option.selected{border-color:#1a1a1a;background:#fafafa}
-    .product-option .emoji{font-size:2rem;display:block;margin-bottom:6px}
+    .product-option .icon{display:block;margin-bottom:6px;height:48px}
+    .product-option .icon svg{width:48px;height:48px}
     .product-option .name{font-weight:600;font-size:.9rem;display:block}
     .product-option .from{font-size:.75rem;color:#999;margin-top:2px;display:block}
     .product-option .check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:none;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
@@ -91,7 +92,7 @@
     /* Size breakdown */
     .size-section{margin-bottom:24px}
     .size-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
-    .size-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    .size-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:8px}
     .size-item{text-align:center}
     .size-item label{display:block;font-size:.78rem;font-weight:600;color:#777;margin-bottom:4px}
     .size-item input{width:100%;padding:10px 4px;border:1.5px solid #e0e0e0;border-radius:10px;text-align:center;font-size:.95rem;font-family:inherit}
@@ -148,7 +149,7 @@
     /* Placement zones on mockup */
     .design-overlay.front{top:28%;left:50%;transform:translateX(-50%);width:35%;height:30%}
     .design-overlay.back{top:28%;left:50%;transform:translateX(-50%);width:35%;height:30%}
-    .design-overlay.left-chest{top:28%;left:38%;transform:translateX(-50%);width:16%;height:14%}
+    .design-overlay.right-chest{top:28%;left:62%;transform:translateX(-50%);width:16%;height:14%}
     .design-overlay.sleeve{top:28%;left:22%;transform:translateX(-50%);width:12%;height:16%}
 
     .mockup-footer{padding:16px 20px;border-top:1px solid #f0f0f0;text-align:center}
@@ -175,24 +176,24 @@
       .product-grid{grid-template-columns:repeat(2,1fr)}
       .service-row{flex-direction:column}
       .placement-grid{grid-template-columns:repeat(2,1fr)}
-      .size-grid{grid-template-columns:repeat(3,1fr)}
+      .size-grid{grid-template-columns:repeat(4,1fr)}
       .form-row{grid-template-columns:1fr}
       .form-card{padding:24px 18px}
       .nav-links{display:none}
     }
     @media(max-width:480px){
       .product-grid{grid-template-columns:1fr 1fr}
-      .size-grid{grid-template-columns:repeat(3,1fr)}
+      .size-grid{grid-template-columns:repeat(4,1fr)}
     }
   </style>
 </head>
 <body>
 
-  <div class="promo-bar">15% OFF your first order &mdash; applied automatically</div>
+  <div class="promo-bar">15% OFF your first order - applied automatically</div>
 
   <nav class="navbar">
     <div class="navbar-inner">
-      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:40px;width:auto"></a>
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:52px;width:auto"></a>
       <div class="nav-links">
         <a href="index.html#services">Services</a>
         <a href="index.html#how-it-works">How It Works</a>
@@ -207,7 +208,7 @@
 
   <div class="page-header">
     <h1>Design &amp; get a free quote</h1>
-    <p>Customize your product, preview your mockup live, and submit &mdash; we'll send pricing within hours.</p>
+    <p>Customize your product, preview your mockup live, and submit. We'll send pricing within hours.</p>
   </div>
 
   <div class="customizer-layout">
@@ -220,7 +221,10 @@
           <div class="step-pill" data-step="3"></div>
         </div>
 
-        <form id="quoteForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" enctype="multipart/form-data">
+        <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
+            <input type="hidden" name="subject" value="New Quote Request - Singhs Print">
+            <input type="hidden" name="from_name" value="Singhs Print Website">
 
           <!-- ===== STEP 1: Product + Customizer ===== -->
           <div class="form-section active" data-step="1">
@@ -232,39 +236,57 @@
               <div class="product-grid">
                 <div class="product-option" data-value="T-Shirt" data-garment="tshirt" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
-                  <span class="emoji">&#128085;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8 L10 10 L4 18 L10 22 L14 15 L14 40 L34 40 L34 15 L38 22 L44 18 L38 10 L33 8"/><path d="M15 8 C17 12 21 14 24 14 C27 14 31 12 33 8" /><line x1="14" y1="15" x2="34" y2="15" stroke-dasharray="2 2" opacity="0.3"/></svg></span>
                   <span class="name">T-Shirt</span>
                   <span class="from">From $9.95</span>
                 </div>
                 <div class="product-option" data-value="Hoodie" data-garment="hoodie" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
-                  <span class="emoji">&#129509;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10 L10 12 L4 20 L10 24 L13 17 L13 40 L35 40 L35 17 L38 24 L44 20 L38 12 L33 10"/><path d="M15 10 C16 5 20 3 24 3 C28 3 32 5 33 10"/><path d="M13 17 L13 28" opacity="0.3"/><path d="M35 17 L35 28" opacity="0.3"/><path d="M20 10 L20 15 Q20 18 24 18 Q28 18 28 15 L28 10" stroke-width="1.4"/></svg></span>
                   <span class="name">Hoodie</span>
                   <span class="from">From $29.95</span>
                 </div>
                 <div class="product-option" data-value="Crewneck" data-garment="crewneck" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
-                  <span class="emoji">&#128090;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8 L10 10 L4 18 L10 22 L14 15 L14 40 L34 40 L34 15 L38 22 L44 18 L38 10 L33 8"/><path d="M15 8 C17 12 21 14 24 14 C27 14 31 12 33 8"/><path d="M14 15 L14 40" opacity="0.3"/><path d="M34 15 L34 40" opacity="0.3"/><ellipse cx="24" cy="9" rx="5" ry="2.5" stroke-width="1.4"/></svg></span>
                   <span class="name">Crewneck</span>
                   <span class="from">From $24.95</span>
                 </div>
                 <div class="product-option" data-value="Polo" data-garment="polo" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
-                  <span class="emoji">&#128084;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10 L10 12 L4 20 L10 24 L14 17 L14 40 L34 40 L34 17 L38 24 L44 20 L38 12 L33 10"/><path d="M15 10 L19 6 L24 10 L29 6 L33 10"/><line x1="24" y1="10" x2="24" y2="20" stroke-width="1.4"/><circle cx="24" cy="14" r="0.8" fill="#1a1a1a" stroke="none"/><circle cx="24" cy="18" r="0.8" fill="#1a1a1a" stroke="none"/></svg></span>
                   <span class="name">Polo Shirt</span>
                   <span class="from">From $19.95</span>
                 </div>
                 <div class="product-option" data-value="Hat/Cap" data-garment="hat" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
-                  <span class="emoji">&#129506;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30 C8 18 15 10 24 10 C33 10 40 18 40 30"/><ellipse cx="24" cy="30" rx="20" ry="5"/><path d="M40 30 Q44 31 46 34 Q44 36 40 35" stroke-width="1.6"/><circle cx="24" cy="10" r="1.5" fill="#1a1a1a" stroke="none"/></svg></span>
                   <span class="name">Hat / Cap</span>
                   <span class="from">From $19.95</span>
                 </div>
+                <div class="product-option" data-value="Joggers/Sweatpants" data-garment="joggers" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6 L34 6 L34 10 L14 10 Z"/><path d="M14 10 L16 42 L23 42 L24 10"/><path d="M24 10 L25 42 L32 42 L34 10"/><line x1="18" y1="6" x2="18" y2="10" stroke-width="1.2" opacity="0.3"/><path d="M16 42 Q16 44 19.5 44 Q23 44 23 42" stroke-width="1.4"/><path d="M25 42 Q25 44 28.5 44 Q32 44 32 42" stroke-width="1.4"/></svg></span>
+                  <span class="name">Joggers</span>
+                  <span class="from">From $24.95</span>
+                </div>
+                <div class="product-option" data-value="Tote Bag" data-garment="tote" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="16" width="28" height="26" rx="2"/><path d="M17 16 C17 9 20 5 24 5 C28 5 31 9 31 16" fill="none" stroke-width="1.8"/><line x1="10" y1="22" x2="38" y2="22" stroke-dasharray="2 2" opacity="0.25"/></svg></span>
+                  <span class="name">Tote Bag</span>
+                  <span class="from">From $12.95</span>
+                </div>
+                <div class="product-option" data-value="Long Sleeve" data-garment="longsleeve" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8 L8 12 L3 38 Q2 40 5 40 L10 40 Q12 40 12 38 L14 17 L14 42 L34 42 L34 17 L36 38 Q36 40 38 40 L43 40 Q46 40 45 38 L40 12 L33 8"/><path d="M15 8 C17 12 21 14 24 14 C27 14 31 12 33 8"/></svg></span>
+                  <span class="name">Long Sleeve</span>
+                  <span class="from">From $14.95</span>
+                </div>
                 <div class="product-option" data-value="Other" data-garment="tshirt" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
-                  <span class="emoji">&#10024;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="10" stroke-dasharray="3 3"/><line x1="24" y1="10" x2="24" y2="6"/><line x1="24" y1="42" x2="24" y2="38"/><line x1="10" y1="24" x2="6" y2="24"/><line x1="42" y1="24" x2="38" y2="24"/><circle cx="24" cy="24" r="3" fill="#1a1a1a" stroke="none"/></svg></span>
                   <span class="name">Other</span>
-                  <span class="from">Bags, totes, etc.</span>
+                  <span class="from">Aprons, joggers, etc.</span>
                 </div>
               </div>
               <input type="hidden" name="product" id="productInput" required>
@@ -289,23 +311,54 @@
               <input type="hidden" name="garment_color" id="colorInput" value="Black">
             </div>
 
+            <!-- Garment source -->
+            <div class="form-group">
+              <label>Garment source</label>
+              <div class="service-row">
+                <div class="svc-btn selected" data-value="We Supply" onclick="selectGarmentSource(this)">
+                  <strong>We Supply</strong><span>We source the blank</span>
+                </div>
+                <div class="svc-btn" data-value="BYOG" onclick="selectGarmentSource(this)">
+                  <strong>Bring Your Own</strong><span>You provide garments</span>
+                </div>
+              </div>
+              <input type="hidden" name="garment_source" id="garmentSourceInput" value="We Supply">
+            </div>
+
+            <!-- Blank brand selector (shown when We Supply) -->
+            <div class="form-group" id="blankBrandSection">
+              <label>Blank garment brand (optional)</label>
+              <select name="blank_brand" id="blankBrand">
+                <option value="">Any / Let us recommend</option>
+                <option value="Gildan Heavy Cotton">Gildan Heavy Cotton - Budget-friendly, durable</option>
+                <option value="Gildan Softstyle">Gildan Softstyle - Soft, lightweight, great value</option>
+                <option value="Bella+Canvas 3001">Bella+Canvas 3001 - Premium retail feel, fitted</option>
+                <option value="Comfort Colors">Comfort Colors - Garment-dyed, vintage look</option>
+                <option value="Next Level 3600">Next Level 3600 - Soft, modern fit</option>
+                <option value="Champion">Champion - Heavyweight, streetwear quality</option>
+                <option value="Independent Trading Co">Independent Trading Co - Premium hoodies &amp; crews</option>
+                <option value="American Apparel">American Apparel - Fashion-forward, slim fit</option>
+                <option value="Hanes Beefy-T">Hanes Beefy-T - Classic heavyweight</option>
+              </select>
+            </div>
+
             <!-- Print placement -->
             <div class="placement-section">
-              <label>Print placement</label>
+              <label>Print placement (select all that apply)</label>
               <div class="placement-grid">
-                <div class="placement-opt selected" data-placement="front" onclick="selectPlacement(this)">
+                <div class="placement-opt selected" data-placement="front" onclick="togglePlacement(this)">
                   <span class="pl-icon">&#9634;</span>
                   <span class="pl-name">Front</span>
                 </div>
-                <div class="placement-opt" data-placement="back" onclick="selectPlacement(this)">
+                <div class="placement-opt" data-placement="back" onclick="togglePlacement(this)">
                   <span class="pl-icon">&#9635;</span>
                   <span class="pl-name">Back</span>
                 </div>
-                <div class="placement-opt" data-placement="left-chest" onclick="selectPlacement(this)">
+                <div class="placement-opt" data-placement="right-chest" onclick="togglePlacement(this)">
                   <span class="pl-icon">&#9670;</span>
-                  <span class="pl-name">Left Chest</span>
+                  <span class="pl-name">Right Chest</span>
                 </div>
-                <div class="placement-opt" data-placement="sleeve" onclick="selectPlacement(this)">
+                <div class="placement-opt" data-placement="sleeve" onclick="togglePlacement(this)">
                   <span class="pl-icon">&#9654;</span>
                   <span class="pl-name">Sleeve</span>
                 </div>
@@ -348,11 +401,11 @@
               <label class="file-upload" for="designFile" id="dropZone">
                 <div class="up-icon">&#128193;</div>
                 <p>Click to upload or drag and drop</p>
-                <span>PNG, JPG, PDF, AI, PSD, SVG &mdash; Max 10MB</span>
+                <span>PNG, JPG, PDF, AI, PSD, SVG - Max 10MB</span>
                 <input type="file" id="designFile" name="design" accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg">
               </label>
               <p class="hint" id="fileName"></p>
-              <p class="hint">Don't have artwork? No worries — we offer free design help.</p>
+              <p class="hint">Don't have artwork? No worries, we offer free design help.</p>
             </div>
 
             <!-- Size breakdown -->
@@ -365,6 +418,9 @@
                 <div class="size-item"><label>L</label><input type="number" name="size_l" min="0" value="0" onchange="updateSizeTotal()"></div>
                 <div class="size-item"><label>XL</label><input type="number" name="size_xl" min="0" value="0" onchange="updateSizeTotal()"></div>
                 <div class="size-item"><label>2XL</label><input type="number" name="size_2xl" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>3XL</label><input type="number" name="size_3xl" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>4XL</label><input type="number" name="size_4xl" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>5XL</label><input type="number" name="size_5xl" min="0" value="0" onchange="updateSizeTotal()"></div>
               </div>
               <div class="size-total">Total units: <span id="sizeTotal">0</span></div>
               <input type="hidden" name="total_quantity" id="totalQtyInput">
@@ -398,7 +454,7 @@
           <!-- ===== STEP 3: Contact Info ===== -->
           <div class="form-section" data-step="3">
             <h2>How do we reach you?</h2>
-            <p class="step-desc">We'll send your quote by email &mdash; usually within a few hours.</p>
+            <p class="step-desc">We'll send your quote by email, usually within a few hours.</p>
 
             <div class="form-row">
               <div class="form-group"><label for="name">Full name *</label><input type="text" id="name" name="name" placeholder="Your name" required></div>
@@ -459,28 +515,171 @@
 
         <div class="mockup-body" id="mockupBody">
           <!-- SVG Garment -->
-          <svg id="garmentSvg" class="garment-svg" viewBox="0 0 300 380" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- T-shirt shape -->
-            <g id="garment-tshirt">
-              <path d="M75 50 L40 80 L15 140 L55 155 L75 105 L75 340 L225 340 L225 105 L245 155 L285 140 L260 80 L225 50 L195 65 C185 80 165 90 150 90 C135 90 115 80 105 65 Z" fill="#111111" id="garmentFill" stroke="#00000015" stroke-width="1"/>
+          <svg id="garmentSvg" class="garment-svg" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="softShadow" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/></filter>
+              <linearGradient id="fabricSheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"/><stop offset="100%" stop-color="#000000" stop-opacity="0.04"/></linearGradient>
+              <linearGradient id="foldShadow" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0.08"/></linearGradient>
+            </defs>
+
+            <!-- T-shirt -->
+            <g id="garment-tshirt" filter="url(#softShadow)">
+              <!-- Shadow layer -->
+              <path d="M105 60 L68 76 L30 138 L60 155 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L240 155 L270 138 L232 76 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" fill="#00000008"/>
+              <!-- Main body -->
+              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" id="garmentFill" fill="#111111"/>
+              <!-- Fabric sheen -->
+              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="url(#fabricSheen)"/>
               <!-- Collar -->
-              <path d="M105 65 C115 80 135 90 150 90 C165 90 185 80 195 65" fill="none" stroke="#00000020" stroke-width="2"/>
+              <path d="M105 55 C112 73 130 85 150 85 C170 85 188 73 195 55" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="2"/>
+              <!-- Sleeve seams -->
+              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+              <!-- Hem -->
+              <path d="M92 360 L208 360" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
             </g>
-            <!-- Hoodie shape -->
-            <g id="garment-hoodie" style="display:none">
-              <path d="M75 60 L40 90 L15 150 L55 165 L75 115 L75 350 L225 350 L225 115 L245 165 L285 150 L260 90 L225 60 L200 55 C190 75 170 88 150 88 C130 88 110 75 100 55 Z" fill="#111111" id="garmentFillHoodie" stroke="#00000015" stroke-width="1"/>
+
+            <!-- Hoodie -->
+            <g id="garment-hoodie" style="display:none" filter="url(#softShadow)">
+              <path d="M105 65 L62 85 L22 155 L58 172 L78 118 L78 360 Q78 370 90 370 L210 370 Q222 370 222 360 L222 118 L242 172 L278 155 L238 85 L195 65 C188 83 170 95 150 95 C130 95 112 83 105 65 Z" fill="#00000008"/>
+              <path d="M105 60 L62 80 L22 148 L58 165 L78 112 L78 355 Q78 365 90 365 L210 365 Q222 365 222 355 L222 112 L242 165 L278 148 L238 80 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" id="garmentFillHoodie" fill="#111111"/>
+              <path d="M105 60 L62 80 L22 148 L58 165 L78 112 L78 355 Q78 365 90 365 L210 365 Q222 365 222 355 L222 112 L242 165 L278 148 L238 80 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" fill="url(#fabricSheen)"/>
               <!-- Hood -->
-              <path d="M100 55 C95 30 110 10 150 10 C190 10 205 30 200 55" fill="#111111" id="hoodFill" stroke="#00000020" stroke-width="1.5"/>
-              <!-- Hood inner -->
-              <ellipse cx="150" cy="48" rx="30" ry="18" fill="#00000015"/>
-              <!-- Pocket -->
-              <rect x="105" y="230" width="90" height="45" rx="8" fill="none" stroke="#00000015" stroke-width="1"/>
+              <path d="M105 60 C100 32 115 10 150 10 C185 10 200 32 195 60" id="hoodFill" fill="#111111"/>
+              <path d="M105 60 C100 32 115 10 150 10 C185 10 200 32 195 60" fill="url(#fabricSheen)"/>
+              <path d="M105 60 C100 32 115 10 150 10 C185 10 200 32 195 60" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
+              <!-- Hood opening -->
+              <ellipse cx="150" cy="52" rx="26" ry="14" fill="#00000015"/>
+              <!-- Kangaroo pocket -->
+              <path d="M110 240 Q110 235 115 235 L185 235 Q190 235 190 240 L190 275 Q190 280 185 280 L115 280 Q110 280 110 275 Z" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.2"/>
+              <!-- Drawstrings -->
+              <path d="M140 60 L138 90" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M160 60 L162 90" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
+              <!-- Center seam -->
+              <line x1="150" y1="90" x2="150" y2="365" stroke="#ffffff" stroke-opacity="0.03" stroke-width="0.8"/>
             </g>
-            <!-- Hat shape -->
-            <g id="garment-hat" style="display:none">
-              <ellipse cx="150" cy="220" rx="120" ry="16" fill="#0a0a0a" id="brimFill"/>
-              <path d="M45 220 C45 130 90 70 150 70 C210 70 255 130 255 220" fill="#111111" id="garmentFillHat" stroke="#00000015" stroke-width="1"/>
-              <rect x="80" y="185" width="140" height="35" rx="4" fill="#00000010"/>
+
+            <!-- Crewneck -->
+            <g id="garment-crewneck" style="display:none" filter="url(#softShadow)">
+              <path d="M105 58 L62 78 L22 148 L58 165 L78 112 L78 355 Q78 365 90 365 L210 365 Q222 365 222 355 L222 112 L242 165 L278 148 L238 78 L195 58 C188 76 170 88 150 88 C130 88 112 76 105 58 Z" fill="#00000008"/>
+              <path d="M105 52 L62 72 L22 142 L58 158 L78 105 L78 350 Q78 360 90 360 L210 360 Q222 360 222 350 L222 105 L242 158 L278 142 L238 72 L195 52 C188 70 170 82 150 82 C130 82 112 70 105 52 Z" id="garmentFillCrewneck" fill="#111111"/>
+              <path d="M105 52 L62 72 L22 142 L58 158 L78 105 L78 350 Q78 360 90 360 L210 360 Q222 360 222 350 L222 105 L242 158 L278 142 L238 72 L195 52 C188 70 170 82 150 82 C130 82 112 70 105 52 Z" fill="url(#fabricSheen)"/>
+              <!-- Ribbed crew neck -->
+              <ellipse cx="150" cy="60" rx="24" ry="10" fill="#00000012"/>
+              <path d="M126 60 C126 52 136 46 150 46 C164 46 174 52 174 60" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2.5"/>
+              <!-- Sleeve seams -->
+              <line x1="78" y1="105" x2="78" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+              <line x1="222" y1="105" x2="222" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+              <!-- Ribbed hem -->
+              <rect x="90" y="348" width="120" height="12" rx="2" fill="#ffffff" fill-opacity="0.03"/>
+            </g>
+
+            <!-- Hat -->
+            <g id="garment-hat" style="display:none" filter="url(#softShadow)">
+              <!-- Brim shadow -->
+              <ellipse cx="150" cy="242" rx="128" ry="22" fill="#00000012"/>
+              <!-- Brim -->
+              <ellipse cx="150" cy="235" rx="125" ry="18" id="brimFill" fill="#0a0a0a"/>
+              <ellipse cx="150" cy="235" rx="125" ry="18" fill="url(#fabricSheen)"/>
+              <!-- Crown -->
+              <path d="M38 235 C38 135 82 60 150 60 C218 60 262 135 262 235" id="garmentFillHat" fill="#111111"/>
+              <path d="M38 235 C38 135 82 60 150 60 C218 60 262 135 262 235" fill="url(#fabricSheen)"/>
+              <!-- Panel lines -->
+              <path d="M150 60 L150 235" stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.8"/>
+              <path d="M95 72 L80 235" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <path d="M205 72 L220 235" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <!-- Button top -->
+              <circle cx="150" cy="60" r="4" fill="#ffffff" fill-opacity="0.08"/>
+              <!-- Front panel area -->
+              <rect x="85" y="140" width="130" height="70" rx="8" fill="#ffffff" fill-opacity="0.02"/>
+              <!-- Brim edge highlight -->
+              <path d="M28 235 C28 228 82 218 150 218 C218 218 272 228 272 235" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+            </g>
+
+            <!-- Tote bag -->
+            <g id="garment-tote" style="display:none" filter="url(#softShadow)">
+              <!-- Handles -->
+              <path d="M108 95 C108 48 118 25 138 25" fill="none" id="toteHandleL" stroke="#111111" stroke-width="8" stroke-linecap="round"/>
+              <path d="M192 95 C192 48 182 25 162 25" fill="none" id="toteHandleR" stroke="#111111" stroke-width="8" stroke-linecap="round"/>
+              <!-- Bag shadow -->
+              <rect x="62" y="98" width="176" height="258" rx="4" fill="#00000008"/>
+              <!-- Bag body -->
+              <rect x="60" y="92" width="180" height="258" rx="4" id="garmentFillTote" fill="#111111"/>
+              <rect x="60" y="92" width="180" height="258" rx="4" fill="url(#fabricSheen)"/>
+              <!-- Top fold -->
+              <path d="M60 92 L240 92" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2"/>
+              <rect x="60" y="92" width="180" height="12" rx="2" fill="#ffffff" fill-opacity="0.03"/>
+              <!-- Bottom seam -->
+              <path d="M60 346 Q150 356 240 346" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+              <!-- Side seams -->
+              <line x1="60" y1="92" x2="60" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <line x1="240" y1="92" x2="240" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+            </g>
+
+            <!-- Joggers -->
+            <g id="garment-joggers" style="display:none" filter="url(#softShadow)">
+              <!-- Waistband -->
+              <rect x="70" y="28" width="160" height="30" rx="5" id="garmentFillJoggersWaist" fill="#111111"/>
+              <rect x="70" y="28" width="160" height="30" rx="5" fill="url(#fabricSheen)"/>
+              <!-- Elastic texture -->
+              <rect x="70" y="28" width="160" height="8" rx="3" fill="#ffffff" fill-opacity="0.04"/>
+              <!-- Drawstring -->
+              <path d="M140 42 L136 62" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M160 42 L164 62" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
+              <!-- Left leg -->
+              <path d="M70 58 L78 318 Q80 332 92 332 L140 332 Q148 332 148 320 L150 58 Z" id="garmentFillJoggersL" fill="#111111"/>
+              <path d="M70 58 L78 318 Q80 332 92 332 L140 332 Q148 332 148 320 L150 58 Z" fill="url(#fabricSheen)"/>
+              <!-- Right leg -->
+              <path d="M150 58 L152 320 Q152 332 160 332 L208 332 Q220 332 222 318 L230 58 Z" id="garmentFillJoggersR" fill="#111111"/>
+              <path d="M150 58 L152 320 Q152 332 160 332 L208 332 Q220 332 222 318 L230 58 Z" fill="url(#fabricSheen)"/>
+              <!-- Cuffs -->
+              <rect x="82" y="322" width="62" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
+              <rect x="162" y="322" width="56" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
+              <!-- Center seam -->
+              <line x1="150" y1="58" x2="150" y2="100" stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.8"/>
+              <!-- Knee creases -->
+              <path d="M90 200 Q115 195 140 200" stroke="#ffffff" stroke-opacity="0.03" stroke-width="0.8"/>
+              <path d="M160 200 Q185 195 215 200" stroke="#ffffff" stroke-opacity="0.03" stroke-width="0.8"/>
+            </g>
+
+            <!-- Long sleeve -->
+            <g id="garment-longsleeve" style="display:none" filter="url(#softShadow)">
+              <path d="M105 55 L52 78 L15 318 Q13 328 24 330 L52 332 Q60 332 62 324 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L238 324 Q240 332 248 332 L276 330 Q287 328 285 318 L248 78 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="#00000008"/>
+              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" id="garmentFillLong" fill="#111111"/>
+              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" fill="url(#fabricSheen)"/>
+              <!-- Collar -->
+              <path d="M105 50 C112 68 130 80 150 80 C170 80 188 68 195 50" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2"/>
+              <!-- Cuffs -->
+              <rect x="20" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
+              <rect x="242" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
+              <!-- Hem -->
+              <rect x="92" y="350" width="116" height="10" rx="2" fill="#ffffff" fill-opacity="0.03"/>
+              <!-- Sleeve seams -->
+              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+            </g>
+
+            <!-- Polo -->
+            <g id="garment-polo" style="display:none" filter="url(#softShadow)">
+              <path d="M105 60 L68 76 L28 138 L60 155 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L240 155 L272 138 L232 76 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" fill="#00000008"/>
+              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" id="garmentFillPolo" fill="#111111"/>
+              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="url(#fabricSheen)"/>
+              <!-- Collar -->
+              <path d="M108 55 L122 42 L150 58 L178 42 L192 55" id="garmentFillPoloCollar" fill="#111111" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
+              <path d="M108 55 C98 50 96 38 106 30 L128 42 Z" id="garmentFillPoloCollarL" fill="#111111"/>
+              <path d="M108 55 C98 50 96 38 106 30 L128 42 Z" fill="url(#fabricSheen)" stroke="#ffffff" stroke-opacity="0.06" stroke-width="0.8"/>
+              <path d="M192 55 C202 50 204 38 194 30 L172 42 Z" id="garmentFillPoloCollarR" fill="#111111"/>
+              <path d="M192 55 C202 50 204 38 194 30 L172 42 Z" fill="url(#fabricSheen)" stroke="#ffffff" stroke-opacity="0.06" stroke-width="0.8"/>
+              <!-- Button placket -->
+              <line x1="150" y1="58" x2="150" y2="110" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+              <circle cx="150" cy="72" r="2.5" fill="#ffffff" fill-opacity="0.12"/>
+              <circle cx="150" cy="86" r="2.5" fill="#ffffff" fill-opacity="0.12"/>
+              <circle cx="150" cy="100" r="2.5" fill="#ffffff" fill-opacity="0.12"/>
+              <!-- Side seams -->
+              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <!-- Hem -->
+              <path d="M92 360 L208 360" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
             </g>
           </svg>
 
@@ -495,10 +694,10 @@
 
         <!-- Summary -->
         <div class="mockup-summary" id="mockupSummary">
-          <div class="summary-row"><span>Product</span><span id="sumProduct">—</span></div>
+          <div class="summary-row"><span>Product</span><span id="sumProduct">-</span></div>
           <div class="summary-row"><span>Color</span><span id="sumColor">Black</span></div>
           <div class="summary-row"><span>Placement</span><span id="sumPlacement">Front</span></div>
-          <div class="summary-row"><span>Method</span><span id="sumMethod">—</span></div>
+          <div class="summary-row"><span>Method</span><span id="sumMethod">-</span></div>
           <div class="summary-row"><span>Total units</span><span id="sumQty">0</span></div>
         </div>
 
@@ -509,7 +708,7 @@
 
       <div class="sidebar-card">
         <h4>What happens next?</h4>
-        <div class="info-row"><span class="info-icon">&#9993;</span><p>We review your request and send a detailed quote — usually same day.</p></div>
+        <div class="info-row"><span class="info-icon">&#9993;</span><p>We review your request and send a detailed quote, usually same day.</p></div>
         <div class="info-row"><span class="info-icon">&#128230;</span><p>Once approved, we print a real sample before your full order.</p></div>
       </div>
       <div class="sidebar-card">
@@ -574,14 +773,36 @@
       updateGarmentColor();
     }
 
-    // ===== PLACEMENT =====
-    function selectPlacement(el) {
-      document.querySelectorAll('.placement-opt').forEach(function(o) { o.classList.remove('selected'); });
-      el.classList.add('selected');
-      state.placement = el.dataset.placement;
-      document.getElementById('placementInput').value = state.placement;
-      document.getElementById('sumPlacement').textContent = el.querySelector('.pl-name').textContent;
+    // ===== PLACEMENT (multi-select) =====
+    function togglePlacement(el) {
+      // Must have at least one selected
+      el.classList.toggle('selected');
+      var selected = document.querySelectorAll('.placement-opt.selected');
+      if (selected.length === 0) { el.classList.add('selected'); }
+      // Build comma-separated list
+      var placements = [];
+      selected = document.querySelectorAll('.placement-opt.selected');
+      selected.forEach(function(o) { placements.push(o.dataset.placement); });
+      state.placement = placements[0]; // primary for mockup
+      state.placements = placements;
+      document.getElementById('placementInput').value = placements.join(', ');
+      var names = [];
+      selected.forEach(function(o) { names.push(o.querySelector('.pl-name').textContent); });
+      document.getElementById('sumPlacement').textContent = names.join(', ');
       updateDesignPosition();
+    }
+
+    // ===== GARMENT SOURCE =====
+    function selectGarmentSource(el) {
+      el.parentElement.querySelectorAll('.svc-btn').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      document.getElementById('garmentSourceInput').value = el.dataset.value;
+      var brandSection = document.getElementById('blankBrandSection');
+      if (el.dataset.value === 'BYOG') {
+        brandSection.style.display = 'none';
+      } else {
+        brandSection.style.display = 'block';
+      }
     }
 
     // ===== SERVICE =====
@@ -603,32 +824,68 @@
 
     // ===== GARMENT SVG =====
     function updateGarmentShape() {
-      var tshirt = document.getElementById('garment-tshirt');
-      var hoodie = document.getElementById('garment-hoodie');
-      var hat = document.getElementById('garment-hat');
-      tshirt.style.display = 'none';
-      hoodie.style.display = 'none';
-      hat.style.display = 'none';
+      var allGarments = ['tshirt','hoodie','crewneck','hat','tote','joggers','longsleeve','polo'];
+      allGarments.forEach(function(g) {
+        var el = document.getElementById('garment-' + g);
+        if (el) el.style.display = 'none';
+      });
 
-      if (state.garment === 'hoodie' || state.garment === 'crewneck') {
-        hoodie.style.display = 'block';
-      } else if (state.garment === 'hat') {
-        hat.style.display = 'block';
-      } else {
-        tshirt.style.display = 'block';
-      }
+      var garment = state.garment;
+      // Map "other" to tshirt as default
+      if (garment === 'other') garment = 'tshirt';
+      var target = document.getElementById('garment-' + garment);
+      if (target) target.style.display = 'block';
+
       updateGarmentColor();
+      updatePlacementRestrictions();
+    }
+
+    function updatePlacementRestrictions() {
+      var placementOpts = document.querySelectorAll('.placement-opt');
+      var restricted = (state.garment === 'tote' || state.garment === 'hat' || state.garment === 'joggers');
+      placementOpts.forEach(function(opt) {
+        var p = opt.getAttribute('data-placement');
+        if (restricted && (p === 'right-chest' || p === 'sleeve')) {
+          opt.style.opacity = '0.3';
+          opt.style.pointerEvents = 'none';
+          // If currently selected, reset to front
+          if (state.placement === p) {
+            opt.classList.remove('selected');
+            state.placement = 'front';
+            document.querySelector('.placement-opt[data-placement="front"]').classList.add('selected');
+            document.getElementById('summaryPlacement').textContent = 'Front';
+            updateDesignPosition();
+          }
+        } else {
+          opt.style.opacity = '1';
+          opt.style.pointerEvents = 'auto';
+        }
+      });
     }
 
     function updateGarmentColor() {
       var c = state.color;
-      document.getElementById('garmentFill').setAttribute('fill', c);
-      document.getElementById('garmentFillHoodie').setAttribute('fill', c);
-      document.getElementById('hoodFill').setAttribute('fill', c);
-      document.getElementById('garmentFillHat').setAttribute('fill', c);
+      // All fill IDs that need color updates
+      var fillIds = [
+        'garmentFill', 'garmentFillHoodie', 'hoodFill',
+        'garmentFillCrewneck', 'garmentFillHat',
+        'garmentFillTote', 'garmentFillJoggersWaist',
+        'garmentFillJoggersL', 'garmentFillJoggersR',
+        'garmentFillLong', 'garmentFillPolo',
+        'garmentFillPoloCollar', 'garmentFillPoloCollarL', 'garmentFillPoloCollarR'
+      ];
+      fillIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.setAttribute('fill', c);
+      });
       // Brim slightly darker
       var brim = document.getElementById('brimFill');
-      brim.setAttribute('fill', darkenColor(c, 30));
+      if (brim) brim.setAttribute('fill', darkenColor(c, 30));
+      // Tote handles slightly darker
+      var handleL = document.getElementById('toteHandleL');
+      var handleR = document.getElementById('toteHandleR');
+      if (handleL) handleL.setAttribute('stroke', darkenColor(c, 20));
+      if (handleR) handleR.setAttribute('stroke', darkenColor(c, 20));
     }
 
     function darkenColor(hex, amount) {
@@ -732,37 +989,46 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // ===== SUPABASE CRM INTEGRATION =====
+    var SUPABASE_URL = 'https://ptrqsjexrbyupexhcjdr.supabase.co';
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cnFzamV4cmJ5dXBleGhjamRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODg5NzgsImV4cCI6MjA5MTc2NDk3OH0.aqYJAXmmCEjtHU97UDTLZZlWwoS9ERldFzxTvunZEgA';
+
+    function pushLeadToCRM(data) {
+      fetch(SUPABASE_URL + '/rest/v1/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(data)
+      }).catch(function() { /* silent fail — email still sent */ });
+    }
+
     // ===== FORM SUBMIT =====
     document.getElementById('quoteForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var form = this;
 
-      // Try Formspree
+      // Push to CRM as a new lead
+      var totalQty = parseInt(document.getElementById('totalQtyInput').value) || 0;
+      var product = document.getElementById('productInput').value || '';
+      var service = document.getElementById('serviceInput').value || '';
+      pushLeadToCRM({
+        contact_name: document.getElementById('name').value,
+        company_name: document.getElementById('company').value || '',
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value || '',
+        source: 'website',
+        status: 'new',
+        estimated_value: totalQty * 25,
+        notes: 'Quote request: ' + product + ' / ' + service + ' / Qty: ' + totalQty + ' / ' + (document.getElementById('details').value || '')
+      });
+
+      // Send via Web3Forms
       var formData = new FormData(form);
       var action = form.getAttribute('action');
-
-      if (action.includes('YOUR_FORM_ID')) {
-        // Fallback: mailto
-        var subject = encodeURIComponent('Quote Request from ' + (formData.get('name') || 'Website'));
-        var body = encodeURIComponent(
-          'Product: ' + state.product + '\n' +
-          'Color: ' + state.colorName + '\n' +
-          'Placement: ' + state.placement + '\n' +
-          'Method: ' + state.service + '\n' +
-          'Total qty: ' + (document.getElementById('sizeTotal').textContent) + '\n' +
-          'Purpose: ' + (formData.get('purpose') || 'N/A') + '\n' +
-          'Details: ' + (formData.get('details') || 'N/A') + '\n\n' +
-          'Name: ' + formData.get('name') + '\n' +
-          'Company: ' + (formData.get('company') || 'N/A') + '\n' +
-          'Email: ' + formData.get('email') + '\n' +
-          'Phone: ' + (formData.get('phone') || 'N/A') + '\n' +
-          'Delivery: ' + (formData.get('delivery') || 'N/A') + '\n' +
-          'Heard about us: ' + (formData.get('hear_about') || 'N/A')
-        );
-        window.location.href = 'mailto:sales@singhsprint.com?subject=' + subject + '&body=' + body;
-        showSuccess();
-        return;
-      }
 
       fetch(action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
         .then(function(r) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singhs Print | Custom Apparel Printing in Montreal — DTG, DTF & Embroidery</title>
+  <title>Singhs Print | Custom Apparel Printing in Montreal - DTG, DTF & Embroidery</title>
   <meta name="description" content="Montreal's trusted custom apparel printer. DTG, DTF & Embroidery for brands, businesses & creators. No minimums. 2-4 day turnaround. 15% off your first order.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,6 +89,7 @@
 
     /* ===== PRODUCT BROWSE ===== */
     .products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px}
+    @media(max-width:1000px){.products-grid{grid-template-columns:repeat(3,1fr)}}
     .product-card{background:#fff;border:1px solid #eee;border-radius:16px;overflow:hidden;transition:all .3s;cursor:pointer}
     .product-card:hover{border-color:#ddd;transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.08)}
     .product-img{aspect-ratio:1;background:#f5f5f5;position:relative;overflow:hidden}
@@ -222,21 +223,23 @@
 
   <!-- PROMO BAR -->
   <div class="promo-bar">
-    15% OFF your first order &mdash; No code needed &mdash; <a href="quote.html">Get your quote</a>
+    15% OFF your first order. No code needed. <a href="quote.html">Get your quote</a>
   </div>
 
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="navbar-inner">
-      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:40px;width:auto"></a>
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:52px;width:auto"></a>
       <div class="nav-links" id="navLinks">
         <a href="#products">Products</a>
         <a href="#services">Services</a>
         <a href="#how-it-works">How It Works</a>
         <a href="portfolio.html">Portfolio</a>
+        <a href="inkwear.html">Inkwear</a>
         <a href="about.html">About</a>
       </div>
       <div class="nav-cta">
+        <a href="mailto:sales@singhsprint.com" class="nav-phone" style="font-size:.85rem;color:#888">sales@singhsprint.com</a>
         <a href="tel:5149151539" class="nav-phone">514-915-1539</a>
         <a href="quote.html" class="btn btn-primary btn-sm">Get a Quote</a>
       </div>
@@ -251,16 +254,16 @@
     <div class="container">
       <div class="hero-grid">
         <div class="hero-content">
-          <div class="hero-badge"><span class="dot"></span> Open 7 days &mdash; Montreal &amp; West Island</div>
-          <h1>Custom apparel<br>for your brand,<br>team, or <span class="accent">next big idea.</span></h1>
-          <p class="subhead">DTG, DTF &amp; Embroidery done in-house. No minimums, 2&ndash;4 day turnaround, and a real sample before every run. 15% off your first order.</p>
+          <div class="hero-badge"><span class="dot"></span> Open 7 days | West Island, Montreal</div>
+          <h1>West Island's<br>custom apparel<br>printing <span class="accent">studio.</span></h1>
+          <p class="subhead">DTG, DTF &amp; Embroidery done in-house in Montreal's West Island. No minimums, 2&ndash;4 day turnaround, and a real sample before every run. 15% off your first order.</p>
           <div class="hero-buttons">
             <a href="quote.html" class="btn btn-accent">Get a Free Quote &rarr;</a>
             <a href="tel:5149151539" class="btn btn-outline">Call Us Now</a>
           </div>
           <div class="hero-stats">
             <div class="stat"><strong>100+</strong><span>Orders done</span></div>
-            <div class="stat"><strong>4.9 &#9733;</strong><span>Google rating</span></div>
+            <div class="stat"><strong>5.0 &#9733;</strong><span>Google rating</span></div>
             <div class="stat"><strong>2-4 Days</strong><span>Turnaround</span></div>
             <div class="stat"><strong>$0 Min</strong><span>Order any qty</span></div>
           </div>
@@ -284,7 +287,7 @@
       <div class="proof-stats">
         <div class="proof-stat"><strong>100+</strong><span>Orders Completed</span></div>
         <div class="proof-stat"><strong>50+</strong><span>Happy Clients</span></div>
-        <div class="proof-stat"><strong>4.9/5</strong><span>Google Reviews</span></div>
+        <div class="proof-stat"><strong>5.0/5 (21 reviews)</strong><span>Google Reviews</span></div>
         <div class="proof-stat"><strong>100%</strong><span>In-House Production</span></div>
       </div>
     </div>
@@ -293,15 +296,14 @@
   <!-- ===== TRUST LOGOS ===== -->
   <section class="trust-bar">
     <div class="container">
-      <p>Trusted by brands &amp; businesses across Montreal</p>
+      <p>Trusted by brands &amp; businesses across the West Island &amp; Montreal</p>
       <div class="trust-logos">
-        <!-- REPLACE with actual client logos as <img> tags -->
-        <span class="trust-logo-text">JSEC 2024</span>
+        <span class="trust-logo-text">McGill Sororities</span>
+        <span class="trust-logo-text">CUSEC 2024</span>
         <span class="trust-logo-text">Old Soul</span>
-        <span class="trust-logo-text">Ville de Sainte-Anne</span>
+        <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
         <span class="trust-logo-text">Montreal Pinball</span>
         <span class="trust-logo-text">McGill Pizza</span>
-        <span class="trust-logo-text">S:M</span>
       </div>
     </div>
   </section>
@@ -330,7 +332,7 @@
           </div>
         </a>
         <a href="quote.html" class="product-card fade-up">
-          <div class="product-img"><span class="product-badge">Best Seller</span><img src="images/product-tshirt-concordia.jpg" alt="Custom printed hoodie" loading="lazy"></div>
+          <div class="product-img"><span class="product-badge">Best Seller</span><img src="images/product-hoodie-concordia.jpg" alt="Custom printed hoodie - Concordia Sikh Students" loading="lazy"></div>
           <div class="product-info">
             <h4>Custom Hoodies</h4>
             <p class="price">Starting at <strong>$29.95/unit</strong></p>
@@ -343,7 +345,7 @@
           </div>
         </a>
         <a href="quote.html" class="product-card fade-up">
-          <div class="product-img"><img src="images/product-tshirt-heart.jpg" alt="Custom printed crewneck" loading="lazy"></div>
+          <div class="product-img"><img src="images/product-crewneck-mcgill.jpg" alt="Custom printed crewneck - McGill Sororities" loading="lazy"></div>
           <div class="product-info">
             <h4>Custom Crewnecks</h4>
             <p class="price">Starting at <strong>$24.95/unit</strong></p>
@@ -366,9 +368,57 @@
             </div>
           </div>
         </a>
+        <a href="quote.html" class="product-card fade-up">
+          <div class="product-img"><img src="images/product-tote-mcgill-sororities.jpg" alt="Custom printed tote bag" loading="lazy"></div>
+          <div class="product-info">
+            <h4>Tote Bags</h4>
+            <p class="price">Starting at <strong>$12.95/unit</strong></p>
+            <div class="product-colors">
+              <span class="color-dot" style="background:#f5e6ca"></span>
+              <span class="color-dot" style="background:#111"></span>
+              <span class="color-dot" style="background:#fff"></span>
+            </div>
+          </div>
+        </a>
+        <a href="quote.html" class="product-card fade-up">
+          <div class="product-img"><img src="images/product-longsleeve.jpg" alt="Custom long sleeve shirt" loading="lazy"></div>
+          <div class="product-info">
+            <h4>Long Sleeves</h4>
+            <p class="price">Starting at <strong>$14.95/unit</strong></p>
+            <div class="product-colors">
+              <span class="color-dot" style="background:#111"></span>
+              <span class="color-dot" style="background:#fff"></span>
+              <span class="color-dot" style="background:#1e3a5f"></span>
+            </div>
+          </div>
+        </a>
+        <a href="quote.html" class="product-card fade-up">
+          <div class="product-img"><img src="images/product-polo.jpg" alt="Custom polo shirt - McGill Pizza" loading="lazy"></div>
+          <div class="product-info">
+            <h4>Polos</h4>
+            <p class="price">Starting at <strong>$19.95/unit</strong></p>
+            <div class="product-colors">
+              <span class="color-dot" style="background:#111"></span>
+              <span class="color-dot" style="background:#fff"></span>
+              <span class="color-dot" style="background:#1e3a5f"></span>
+            </div>
+          </div>
+        </a>
+        <a href="quote.html" class="product-card fade-up">
+          <div class="product-img"><img src="images/product-sweatpants.jpg" alt="Custom printed sweatpants - McGill Boxing Club" loading="lazy"></div>
+          <div class="product-info">
+            <h4>Joggers &amp; Sweatpants</h4>
+            <p class="price">Starting at <strong>$24.95/unit</strong></p>
+            <div class="product-colors">
+              <span class="color-dot" style="background:#111"></span>
+              <span class="color-dot" style="background:#4a4a4a"></span>
+              <span class="color-dot" style="background:#1e3a5f"></span>
+            </div>
+          </div>
+        </a>
       </div>
       <div class="text-center" style="margin-top:32px">
-        <p style="font-size:.9rem;color:#999">Bulk pricing available &mdash; the more you order, the less you pay per unit</p>
+        <p style="font-size:.9rem;color:#999">Bulk pricing available. The more you order, the less you pay per unit.</p>
       </div>
     </div>
   </section>
@@ -410,7 +460,7 @@
         <div class="service-card fade-up">
           <div class="service-icon">&#128293;</div>
           <h3>DTF Transfers</h3>
-          <p>Vibrant prints on any fabric &mdash; polyester, nylon, cotton, and more. Durable, stretchy, and works on dark or light garments.</p>
+          <p>Vibrant prints on any fabric: polyester, nylon, cotton, and more. Durable, stretchy, and works on dark or light garments.</p>
           <span class="tag">All fabrics</span><span class="tag">Sportswear</span><span class="tag">Bags</span><span class="tag">Bulk orders</span>
         </div>
         <div class="service-card fade-up">
@@ -448,7 +498,7 @@
         <div>
           <span class="label" style="color:#e8ff3c">What Our Clients Say</span>
           <h2>Real reviews from real customers</h2>
-          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733; <span style="font-size:.9rem;color:#aaa;letter-spacing:0">4.9/5 average</span></div>
+          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733; <span style="font-size:.9rem;color:#aaa;letter-spacing:0">5.0/5 (21 reviews) average</span></div>
         </div>
         <a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" class="btn btn-white btn-sm" style="color:#1a1a1a">Read all reviews &rarr;</a>
       </div>
@@ -512,10 +562,10 @@
     <div class="container">
       <div class="text-center"><span class="label">FAQ</span><h2>Common questions</h2></div>
       <div class="faq-list">
-        <div class="faq-item"><button class="faq-q">What printing services do you offer?</button><div class="faq-a"><p>We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film), and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more — all printed in-house in Montreal.</p></div></div>
+        <div class="faq-item"><button class="faq-q">What printing services do you offer?</button><div class="faq-a"><p>We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film), and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more, all printed in-house in Montreal.</p></div></div>
         <div class="faq-item"><button class="faq-q">Is there a minimum order?</button><div class="faq-a"><p>No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size.</p></div></div>
         <div class="faq-item"><button class="faq-q">How fast can you complete an order?</button><div class="faq-a"><p>Most orders are ready in 2-4 business days. Rush printing available for Montreal and West Island pickups. We'll give you an exact timeline upfront.</p></div></div>
-        <div class="faq-item"><button class="faq-q">Can you supply the blank apparel?</button><div class="faq-a"><p>Yes — we source from S&amp;S Activewear, SanMar, and Rue Saint-Patrick, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments — we'll print on anything.</p></div></div>
+        <div class="faq-item"><button class="faq-q">Can you supply the blank apparel?</button><div class="faq-a"><p>Yes! We source from S&amp;S Activewear, SanMar, and Rue Saint-Patrick, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.</p></div></div>
         <div class="faq-item"><button class="faq-q">What file types do you accept?</button><div class="faq-a"><p>PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Don't have print-ready art? We offer free design help.</p></div></div>
         <div class="faq-item"><button class="faq-q">Can I see a sample first?</button><div class="faq-a"><p>Absolutely. We produce a real physical sample so you can verify colors, placement, and quality before the full run. This is standard with every order.</p></div></div>
         <div class="faq-item"><button class="faq-q">Do you offer a satisfaction guarantee?</button><div class="faq-a"><p>Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.</p></div></div>
@@ -541,15 +591,15 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <div class="logo"><span>SINGHS</span><span>PRINT</span></div>
-          <p style="margin-top:12px">Custom apparel printing in Montreal. DTG, DTF &amp; Embroidery for brands, creators, and businesses. Open 7 days, 9AM&ndash;9PM.</p>
+          <p style="margin-top:12px">Custom apparel printing in Montreal's West Island. DTG, DTF &amp; Embroidery for brands, creators, and businesses. Open 7 days, 9AM&ndash;9PM.</p>
         </div>
         <div class="footer-col"><h4>Pages</h4><a href="index.html">Home</a><a href="quote.html">Get a Quote</a><a href="portfolio.html">Portfolio</a><a href="about.html">About</a></div>
         <div class="footer-col"><h4>Services</h4><a href="#services">DTG Printing</a><a href="#services">DTF Transfers</a><a href="#services">Embroidery</a><a href="quote.html">Design Studio</a></div>
-        <div class="footer-col"><h4>Contact</h4><a href="tel:5149151539">514-915-1539</a><a href="mailto:sales@singhsprint.com">sales@singhsprint.com</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank">Montreal, West Island</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank">Visit our studio &rarr;</a></div>
+        <div class="footer-col"><h4>Contact</h4><a href="tel:5149151539">514-915-1539</a><a href="mailto:sales@singhsprint.com">sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank">@singhsprint on Instagram</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank">West Island, Montreal</a></div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2026 Singhs Print. All rights reserved.</span>
-        <span>Custom Apparel Printing &mdash; Montreal, QC</span>
+        <span>Custom Apparel Printing | Montreal, QC</span>
       </div>
     </div>
   </footer>
@@ -561,8 +611,11 @@
       <h3>Get 15% off your first order</h3>
       <p>Drop your email and we'll send you a quote with your discount applied. No spam, just your quote.</p>
       <form onsubmit="submitPopup(event)">
-        <input type="text" placeholder="Your name" required>
-        <input type="email" placeholder="Your email" required>
+        <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
+        <input type="hidden" name="subject" value="New 15% Off Lead - Singhs Print">
+        <input type="hidden" name="from_name" value="Singhs Print Website">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="email" name="email" placeholder="Your email" required>
         <button type="submit" class="btn btn-accent">Send me my discount &rarr;</button>
       </form>
       <button class="skip" onclick="closePopup()">No thanks, I'll pay full price</button>
@@ -602,11 +655,44 @@
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
     }
+    // Supabase CRM integration
+    var SUPABASE_URL = 'https://ptrqsjexrbyupexhcjdr.supabase.co';
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cnFzamV4cmJ5dXBleGhjamRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODg5NzgsImV4cCI6MjA5MTc2NDk3OH0.aqYJAXmmCEjtHU97UDTLZZlWwoS9ERldFzxTvunZEgA';
+
     function submitPopup(e){
       e.preventDefault();
-      // Send to your email list / Formspree / Mailchimp
-      alert('Thanks! Check your email for your discount.');
-      closePopup();
+      var form = e.target;
+      var nameVal = form.querySelector('input[name="name"]').value;
+      var emailVal = form.querySelector('input[name="email"]').value;
+
+      // Push to CRM as a lead with 15% discount tag
+      fetch(SUPABASE_URL + '/rest/v1/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          contact_name: nameVal,
+          email: emailVal,
+          source: 'website',
+          status: 'new',
+          notes: '15% discount signup'
+        })
+      }).catch(function(){});
+
+      // Send via Web3Forms
+      var formData = new FormData(form);
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST', body: formData, headers: { 'Accept': 'application/json' }
+      }).then(function(r){
+        if(r.ok){
+          form.innerHTML = '<p style="color:#1a1a1a;font-weight:600;font-size:1.1rem">You\'re in! Check your email for your discount code.</p>';
+          setTimeout(closePopup, 3000);
+        } else { alert('Something went wrong. Email us at sales@singhsprint.com for your discount!'); }
+      }).catch(function(){ alert('Connection error. Email us at sales@singhsprint.com for your discount!'); });
     }
     if(!sessionStorage.getItem('popupClosed')){
       setTimeout(function(){
