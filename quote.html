@@ -741,9 +741,8 @@
         <div class="location-bar" id="locationBar">
           <button type="button" class="loc-btn selected viewing" data-loc="front" onclick="toggleLocation(this)">Front</button>
           <button type="button" class="loc-btn" data-loc="back" onclick="toggleLocation(this)">Back</button>
-          <button type="button" class="loc-btn" data-loc="right-chest" onclick="toggleLocation(this)">Right Chest</button>
-          <button type="button" class="loc-btn" data-loc="left-chest" onclick="toggleLocation(this)">Left Chest</button>
-          <button type="button" class="loc-btn" data-loc="both-arms" onclick="toggleLocation(this)">Both Arms</button>
+          <button type="button" class="loc-btn" data-loc="left-sleeve" onclick="toggleLocation(this)">Left Sleeve</button>
+          <button type="button" class="loc-btn" data-loc="right-sleeve" onclick="toggleLocation(this)">Right Sleeve</button>
         </div>
 
         <!-- Tools -->
@@ -753,6 +752,7 @@
           <button type="button" class="toolbar-btn" id="flipBtn">Flip</button>
           <button type="button" class="toolbar-btn" id="deleteBtn" style="color:#c44;border-color:#e8c8c8">Remove</button>
           <span class="toolbar-label">Size:</span>
+          <button type="button" class="print-area-btn" data-size="right-chest" onclick="setPrintAreaSize('right-chest')">Chest</button>
           <button type="button" class="print-area-btn" data-size="small" onclick="setPrintAreaSize('small')">S</button>
           <button type="button" class="print-area-btn" data-size="medium" onclick="setPrintAreaSize('medium')">M</button>
           <button type="button" class="print-area-btn active" data-size="large" onclick="setPrintAreaSize('large')">L</button>
@@ -1120,20 +1120,21 @@
     var printCount = 1;
 
     var printAreaSizes = {
-      small: {w: 0.22, h: 0.18},
-      medium: {w: 0.30, h: 0.22},
-      large: {w: 0.35, h: 0.38},
-      xl: {w: 0.45, h: 0.48}
+      'right-chest': {w: 0.18, h: 0.16},
+      'left-chest':  {w: 0.18, h: 0.16},
+      small:         {w: 0.22, h: 0.20},
+      medium:        {w: 0.30, h: 0.28},
+      large:         {w: 0.35, h: 0.38},
+      xl:            {w: 0.45, h: 0.48}
     };
     var currentPrintArea = 'large';
 
     // Location-specific print area positions (cx, cy as fraction of canvas)
     var locationPositions = {
-      'front':       {cx: 0.50, cy: 0.42},
-      'back':        {cx: 0.50, cy: 0.42},
-      'right-chest': {cx: 0.38, cy: 0.32, maxSize: 'medium'},
-      'left-chest':  {cx: 0.62, cy: 0.32, maxSize: 'medium'},
-      'both-arms':   {cx: 0.50, cy: 0.30, maxSize: 'small'}
+      'front':        {cx: 0.50, cy: 0.42},
+      'back':         {cx: 0.50, cy: 0.42},
+      'left-sleeve':  {cx: 0.22, cy: 0.32},
+      'right-sleeve': {cx: 0.78, cy: 0.32}
     };
 
     function getPrintAreaRect() {
@@ -1155,7 +1156,7 @@
       return {cx: cw * loc.cx, cy: ch * loc.cy, w: w, h: h, left: cw * loc.cx - w/2, top: ch * loc.cy - h/2};
     }
 
-    var nameMap = {'front':'Front','back':'Back','right-chest':'Right Chest','left-chest':'Left Chest','both-arms':'Both Arms'};
+    var nameMap = {'front':'Front','back':'Back','left-sleeve':'Left Sleeve','right-sleeve':'Right Sleeve'};
 
     function toggleLocation(btn) {
       var loc = btn.getAttribute('data-loc');
