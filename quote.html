@@ -311,20 +311,11 @@
               <input type="hidden" name="garment_source" id="garmentSourceInput" value="We Supply">
             </div>
 
-            <!-- Blank brand selector (shown when We Supply) -->
+            <!-- Blank brand selector (shown when We Supply, options change by garment) -->
             <div class="form-group" id="blankBrandSection">
               <label>Blank garment brand (optional)</label>
               <select name="blank_brand" id="blankBrand">
-                <option value="">Any / Let us recommend</option>
-                <option value="Gildan Heavy Cotton">Gildan Heavy Cotton - Budget-friendly, durable</option>
-                <option value="Gildan Softstyle">Gildan Softstyle - Soft, lightweight, great value</option>
-                <option value="Bella+Canvas 3001">Bella+Canvas 3001 - Premium retail feel, fitted</option>
-                <option value="Comfort Colors">Comfort Colors - Garment-dyed, vintage look</option>
-                <option value="Next Level 3600">Next Level 3600 - Soft, modern fit</option>
-                <option value="Champion">Champion - Heavyweight, streetwear quality</option>
-                <option value="Independent Trading Co">Independent Trading Co - Premium hoodies &amp; crews</option>
-                <option value="American Apparel">American Apparel - Fashion-forward, slim fit</option>
-                <option value="Hanes Beefy-T">Hanes Beefy-T - Classic heavyweight</option>
+                <option value="">Select a product first</option>
               </select>
             </div>
 
@@ -737,6 +728,78 @@
     };
 
     // ===== PRODUCT =====
+    // Blank brand options by garment type (4 picks + Rue Saint-Patrick)
+    var stpat = {v:'Rue Saint-Patrick', t:'Rue Saint-Patrick - Canadian-made, premium quality'};
+    var blankOptions = {
+      tshirt: [
+        {v:'Gildan Softstyle', t:'Gildan Softstyle - Soft, lightweight, great value'},
+        {v:'Bella+Canvas 3001', t:'Bella+Canvas 3001 - Premium retail feel, fitted'},
+        {v:'American Apparel 1301', t:'American Apparel 1301 - Heavyweight cotton, made in USA'},
+        {v:'Comfort Colors 1717', t:'Comfort Colors 1717 - Garment-dyed, vintage look'},
+        stpat
+      ],
+      hoodie: [
+        {v:'Gildan 18500', t:'Gildan 18500 - Budget-friendly heavyweight'},
+        {v:'Champion S700', t:'Champion S700 - Streetwear quality, thick fleece'},
+        {v:'Independent Trading SS4500', t:'Independent Trading SS4500 - Premium midweight'},
+        {v:'American Apparel RF498', t:'American Apparel RF498 - Flex fleece hoodie'},
+        {v:'Bella+Canvas 3719', t:'Bella+Canvas 3719 - Soft, retail feel'}
+      ],
+      crewneck: [
+        {v:'Gildan 18000', t:'Gildan 18000 - Budget-friendly, classic fit'},
+        {v:'Champion S600', t:'Champion S600 - Heavyweight fleece'},
+        {v:'Comfort Colors 1566', t:'Comfort Colors 1566 - Garment-dyed, relaxed'},
+        {v:'American Apparel RF496', t:'American Apparel RF496 - Flex fleece crewneck'},
+        {v:'Independent Trading SS3000', t:'Independent Trading SS3000 - Midweight crew'}
+      ],
+      polo: [
+        {v:'Gildan 8800', t:'Gildan 8800 - DryBlend jersey polo'},
+        {v:'Port Authority K500', t:'Port Authority K500 - Silk Touch, professional'},
+        {v:'Nike NKDC1963', t:'Nike Dri-FIT - Performance, moisture-wicking'},
+        {v:'Adidas A230', t:'Adidas Performance - Sport, breathable'},
+        stpat
+      ],
+      hat: [
+        {v:'Yupoong 6089', t:'Yupoong 6089 - Classic snapback'},
+        {v:'Richardson 112', t:'Richardson 112 - Trucker, mesh back'},
+        {v:'Flexfit 6277', t:'Flexfit 6277 - Fitted, structured'},
+        {v:'Otto Cap 83-1101', t:'Otto Cap - 5-panel, dad hat style'}
+      ],
+      joggers: [
+        {v:'Gildan 18200', t:'Gildan 18200 - Heavy blend sweatpants'},
+        {v:'Champion RW10', t:'Champion RW10 - Reverse weave joggers'},
+        {v:'Independent Trading IND20PNT', t:'Independent Trading - Midweight fleece'},
+        {v:'American Apparel 5398', t:'American Apparel 5398 - California fleece jogger'},
+        {v:'Bella+Canvas 3727', t:'Bella+Canvas 3727 - Sponge fleece jogger'}
+      ],
+      tote: [
+        {v:'Q-Tees Q800', t:'Q-Tees Q800 - Canvas tote, 12oz'},
+        {v:'Liberty Bags 8502', t:'Liberty Bags 8502 - Branson cotton canvas'},
+        {v:'BAGedge BE003', t:'BAGedge BE003 - 8oz canvas tote'},
+        {v:'Gemline 1507', t:'Gemline 1507 - Economy cotton tote'}
+      ],
+      longsleeve: [
+        {v:'Gildan 2400', t:'Gildan 2400 - Ultra Cotton long sleeve'},
+        {v:'Bella+Canvas 3501', t:'Bella+Canvas 3501 - Jersey long sleeve'},
+        {v:'American Apparel 2007', t:'American Apparel 2007 - Fine jersey long sleeve'},
+        {v:'Comfort Colors 6014', t:'Comfort Colors 6014 - Garment-dyed, heavyweight'},
+        {v:'Next Level 3601', t:'Next Level 3601 - Soft, fitted'}
+      ]
+    };
+
+    function updateBlankOptions() {
+      var select = document.getElementById('blankBrand');
+      var garment = state.garment || '';
+      var options = blankOptions[garment] || blankOptions['tshirt'] || [];
+      select.innerHTML = '<option value="">Any / Let us recommend</option>';
+      options.forEach(function(opt) {
+        var o = document.createElement('option');
+        o.value = opt.v;
+        o.textContent = opt.t;
+        select.appendChild(o);
+      });
+    }
+
     function selectProduct(el) {
       document.querySelectorAll('.product-option').forEach(function(o) { o.classList.remove('selected'); });
       el.classList.add('selected');
@@ -745,6 +808,7 @@
       document.getElementById('productInput').value = state.product;
       document.getElementById('sumProduct').textContent = state.product;
       updateGarmentShape();
+      updateBlankOptions();
     }
 
     // ===== COLOR =====
@@ -872,6 +936,22 @@
       var handleR = document.getElementById('toteHandleR');
       if (handleL) handleL.setAttribute('stroke', darkenColor(c, 20));
       if (handleR) handleR.setAttribute('stroke', darkenColor(c, 20));
+      // Update placeholder text contrast
+      var placeholder = document.getElementById('designPlaceholder');
+      if (placeholder) {
+        var isLight = isLightColor(c);
+        placeholder.style.color = isLight ? 'rgba(0,0,0,.3)' : 'rgba(255,255,255,.4)';
+        placeholder.style.borderColor = isLight ? 'rgba(0,0,0,.2)' : 'rgba(255,255,255,.3)';
+      }
+    }
+
+    function isLightColor(hex) {
+      hex = hex.replace('#', '');
+      var r = parseInt(hex.substr(0,2),16);
+      var g = parseInt(hex.substr(2,2),16);
+      var b = parseInt(hex.substr(4,2),16);
+      // Perceived luminance
+      return (r * 299 + g * 587 + b * 114) / 1000 > 140;
     }
 
     function darkenColor(hex, amount) {
