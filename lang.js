@@ -409,7 +409,37 @@ var SP_LANG = (function() {
     'quote.summary.placement': { en: 'Placement', fr: 'Emplacement' },
     'quote.summary.method': { en: 'Method', fr: 'Methode' },
     'quote.summary.qty': { en: 'Qty', fr: 'Qte' },
-    'quote.designhere': { en: 'Your design appears here', fr: 'Votre design apparait ici' }
+    'quote.designhere': { en: 'Your design appears here', fr: 'Votre design apparait ici' },
+
+    // Method info cards
+    'quote.method.dtg.title': { en: 'DTG', fr: 'DTG' },
+    'quote.method.dtg.desc': { en: 'Direct-to-garment printing for vibrant, detailed full-color designs', fr: 'Impression directe sur vetement pour des designs colores et detailles' },
+    'quote.method.dtg.best': { en: 'Best for:', fr: 'Ideal pour :' },
+    'quote.method.dtg.use': { en: 'Photo prints, gradients, complex artwork', fr: 'Photos, degrades, illustrations complexes' },
+    'quote.method.dtf.title': { en: 'DTF', fr: 'DTF' },
+    'quote.method.dtf.desc': { en: 'Heat transfer film for durability on any fabric type', fr: 'Transfert thermique pour durabilite sur tout type de tissu' },
+    'quote.method.dtf.best': { en: 'Best for:', fr: 'Ideal pour :' },
+    'quote.method.dtf.use': { en: 'Dark fabrics, athletic wear, blended materials', fr: 'Tissus fonces, vetements sport, materiaux melanges' },
+    'quote.method.emb.title': { en: 'Embroidery', fr: 'Broderie' },
+    'quote.method.emb.desc': { en: 'Stitched logos and text for a premium, professional look', fr: 'Logos et textes brodes pour un look professionnel haut de gamme' },
+    'quote.method.emb.best': { en: 'Best for:', fr: 'Ideal pour :' },
+    'quote.method.emb.use': { en: 'Logos, corporate branding, structured garments', fr: 'Logos, image de marque, vetements structures' },
+
+    // Pricing section
+    'quote.pricing': { en: 'Pricing', fr: 'Tarification' },
+    'quote.pricing.small': { en: 'Small Order', fr: 'Petite commande' },
+    'quote.pricing.bulk': { en: 'Bulk', fr: 'En gros' },
+    'quote.pricing.total': { en: 'Total estimate:', fr: 'Estimation totale :' },
+    'quote.pricing.discount': { en: 'Volume discount!', fr: 'Rabais de volume !' },
+    'quote.pricing.note': { en: 'Estimated price \u2022 Final quote may vary', fr: 'Prix estime \u2022 La soumission finale peut varier' },
+    'quote.pricing.b2bnote': { en: 'Bulk pricing starts at 5+ units', fr: 'Les prix en gros commencent a 5+ unites' },
+
+    // Payment section
+    'quote.payment.button': { en: 'Pay & Order Now', fr: 'Payer et commander' },
+    'quote.payment.note': { en: 'Payment processing coming soon \u2014 we\'ll send you an invoice by email.', fr: 'Paiement en ligne bientot disponible \u2014 nous vous enverrons une facture par courriel.' },
+
+    // Mockup download
+    'quote.mockup.download': { en: '\ud83d\udcf7 Download Mockup', fr: '\ud83d\udcf7 Telecharger la maquette' }
   };
 
   function t(key) {

@@ -81,6 +81,38 @@
     .color-swatch[data-color="#FFFFFF"].selected::after{color:#1a1a1a;text-shadow:none}
     .color-name{font-size:.8rem;color:#999;margin-top:6px}
 
+    /* Method info cards */
+    .method-info-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+    .method-info-card{border:1px solid #f0f0f0;border-radius:12px;padding:14px;background:#fafafa;transition:all .2s}
+    .method-info-card h4{font-size:.85rem;font-weight:700;margin-bottom:6px;color:#1a1a1a}
+    .method-info-card .card-desc{font-size:.8rem;color:#666;margin-bottom:6px;line-height:1.4}
+    .method-info-card .card-label{font-size:.7rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
+    .method-info-card .card-value{font-size:.8rem;color:#1a1a1a;margin-top:4px}
+    @media(max-width:768px){.method-info-cards{grid-template-columns:1fr}}
+
+    /* Price section */
+    .price-section{border-top:1px solid #f0f0f0;padding-top:12px;margin-top:12px}
+    .price-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .price-toggle{display:flex;gap:4px}
+    .price-tab{padding:6px 12px;border-radius:50px;font-size:.78rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s}
+    .price-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+    .price-breakdown{display:grid;gap:6px}
+    .price-row{display:flex;justify-content:space-between;font-size:.85rem}
+    .price-row span:first-child{color:#888}
+    .price-row span:last-child{font-weight:600}
+    .price-highlight{background:#e8ff3c;border-radius:8px;padding:8px 10px;margin-top:8px}
+    .price-total{display:flex;justify-content:space-between;font-size:.95rem;font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid #e8e8e8}
+    .discount-badge{display:inline-block;background:#1a1a1a;color:#e8ff3c;padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;margin-left:4px}
+    .price-note{font-size:.75rem;color:#aaa;margin-top:6px}
+    .price-b2b-note{font-size:.75rem;color:#aaa;margin-top:4px}
+
+    /* Payment section in mockup */
+    .mockup-payment{padding:12px 20px;border-top:1px solid #f0f0f0;background:#f8f7f4}
+    .pay-button{width:100%;padding:12px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;margin-bottom:8px}
+    .pay-button:hover{background:#333}
+    .pay-button:disabled{background:#ddd;cursor:not-allowed}
+    .pay-message{font-size:.75rem;color:#aaa;text-align:center;line-height:1.4}
+
     /* Placement selector */
     .placement-section{margin-bottom:24px}
     .placement-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
@@ -347,6 +379,28 @@
                 </div>
               </div>
               <input type="hidden" name="placement" id="placementInput" value="front">
+            </div>
+
+            <!-- Printing method info cards -->
+            <div class="method-info-cards">
+              <div class="method-info-card">
+                <h4 data-i18n="quote.method.dtg.title">DTG</h4>
+                <p class="card-desc" data-i18n="quote.method.dtg.desc">Direct-to-garment printing for vibrant, detailed full-color designs</p>
+                <div class="card-label" data-i18n="quote.method.dtg.best">Best for:</div>
+                <div class="card-value" data-i18n="quote.method.dtg.use">Photo prints, gradients, complex artwork</div>
+              </div>
+              <div class="method-info-card">
+                <h4 data-i18n="quote.method.dtf.title">DTF</h4>
+                <p class="card-desc" data-i18n="quote.method.dtf.desc">Heat transfer film for durability on any fabric type</p>
+                <div class="card-label" data-i18n="quote.method.dtf.best">Best for:</div>
+                <div class="card-value" data-i18n="quote.method.dtf.use">Dark fabrics, athletic wear, blended materials</div>
+              </div>
+              <div class="method-info-card">
+                <h4 data-i18n="quote.method.emb.title">Embroidery</h4>
+                <p class="card-desc" data-i18n="quote.method.emb.desc">Stitched logos and text for a premium, professional look</p>
+                <div class="card-label" data-i18n="quote.method.emb.best">Best for:</div>
+                <div class="card-value" data-i18n="quote.method.emb.use">Logos, corporate branding, structured garments</div>
+              </div>
             </div>
 
             <!-- Printing method -->
@@ -682,9 +736,35 @@
           <div class="summary-row"><span>Placement</span><span id="sumPlacement">Front</span></div>
           <div class="summary-row"><span>Method</span><span id="sumMethod">-</span></div>
           <div class="summary-row"><span>Total units</span><span id="sumQty">0</span></div>
+
+          <!-- Price calculator section (hidden until product+method+qty selected) -->
+          <div class="price-section" id="priceSection" style="display:none">
+            <div class="price-header">
+              <span style="font-weight:600;color:#1a1a1a;font-size:.9rem" data-i18n="quote.pricing">Pricing</span>
+              <div class="price-toggle">
+                <button type="button" class="price-tab active" data-pricing="b2c" onclick="togglePricing(this)" data-i18n="quote.pricing.small">Small Order</button>
+                <button type="button" class="price-tab" data-pricing="b2b" onclick="togglePricing(this)" data-i18n="quote.pricing.bulk">Bulk</button>
+              </div>
+            </div>
+            <div class="price-breakdown" id="priceBreakdown"></div>
+            <div class="price-total">
+              <span data-i18n="quote.pricing.total">Total estimate:</span>
+              <span id="priceTotal">$0.00</span>
+            </div>
+            <p class="price-note" id="priceDiscountNote" style="display:none"><strong data-i18n="quote.pricing.discount">Volume discount!</strong></p>
+            <p class="price-note" id="pricingNote" data-i18n="quote.pricing.note">Estimated price • Final quote may vary</p>
+            <p class="price-b2b-note" id="pricingB2bNote" data-i18n="quote.pricing.b2bnote" style="display:none">Bulk pricing starts at 5+ units</p>
+          </div>
+        </div>
+
+        <!-- Payment section -->
+        <div class="mockup-payment" id="paymentSection" style="display:none">
+          <button type="button" class="pay-button" id="payButton" onclick="handlePayment()" data-i18n="quote.payment.button">Pay & Order Now</button>
+          <p class="pay-message" data-i18n="quote.payment.note">Payment processing coming soon — we'll send you an invoice by email.</p>
         </div>
 
         <div class="mockup-footer">
+          <button type="button" id="downloadMockup" onclick="downloadMockup()" style="display:none;width:100%;padding:12px;border-radius:10px;border:1.5px solid #1a1a1a;background:#fff;font-weight:600;font-size:.85rem;cursor:pointer;margin-bottom:10px;transition:all .2s" data-i18n="quote.mockup.download">&#128247; Download Mockup</button>
           <p>This is an approximate preview. Final placement &amp; sizing confirmed during production.</p>
         </div>
       </div>
@@ -1018,12 +1098,91 @@
           img.style.display = 'block';
           document.getElementById('designPlaceholder').style.display = 'none';
           state.designSrc = e.target.result;
+          document.getElementById('downloadMockup').style.display = 'block';
         };
         reader.readAsDataURL(file);
       } else {
         // Non-image file — show a placeholder icon
         document.getElementById('designPlaceholder').innerHTML = '&#128196;<br>' + file.name;
       }
+    }
+
+    // ===== DOWNLOAD MOCKUP =====
+    function downloadMockup() {
+      var mockupBody = document.getElementById('mockupBody');
+      var svgEl = document.getElementById('garmentSvg');
+      var overlay = document.getElementById('designOverlay');
+      var designImg = document.getElementById('designPreview');
+
+      // Canvas size
+      var W = 600, H = 800;
+      var canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      var ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(0, 0, W, H);
+
+      // Draw SVG garment
+      var svgData = new XMLSerializer().serializeToString(svgEl);
+      var svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+      var svgUrl = URL.createObjectURL(svgBlob);
+      var garmentImg = new Image();
+      garmentImg.onload = function() {
+        // Center the garment (80% width like CSS)
+        var gW = W * 0.8, gH = gW * (400/300);
+        var gX = (W - gW) / 2, gY = (H - gH) / 2;
+        ctx.drawImage(garmentImg, gX, gY, gW, gH);
+        URL.revokeObjectURL(svgUrl);
+
+        // Draw design overlay if present
+        if (designImg && designImg.src && state.designSrc) {
+          var dImg = new Image();
+          dImg.crossOrigin = 'anonymous';
+          dImg.onload = function() {
+            // Get overlay position from CSS class
+            var p = state.placement || 'front';
+            var positions = {
+              front: {top: 0.28, left: 0.325, w: 0.35, h: 0.30},
+              back: {top: 0.28, left: 0.325, w: 0.35, h: 0.30},
+              'right-chest': {top: 0.28, left: 0.54, w: 0.16, h: 0.14},
+              sleeve: {top: 0.28, left: 0.16, w: 0.12, h: 0.16}
+            };
+            var pos = positions[p] || positions.front;
+            var dX = gX + gW * pos.left;
+            var dY = gY + gH * pos.top;
+            var dW = gW * pos.w;
+            var dH = gH * pos.h;
+            // Maintain aspect ratio within bounds
+            var ratio = Math.min(dW / dImg.width, dH / dImg.height);
+            var drawW = dImg.width * ratio;
+            var drawH = dImg.height * ratio;
+            var drawX = dX + (dW - drawW) / 2;
+            var drawY = dY + (dH - drawH) / 2;
+            ctx.drawImage(dImg, drawX, drawY, drawW, drawH);
+            finishDownload(canvas);
+          };
+          dImg.src = state.designSrc;
+        } else {
+          finishDownload(canvas);
+        }
+      };
+      garmentImg.src = svgUrl;
+    }
+
+    function finishDownload(canvas) {
+      // Add watermark
+      var ctx = canvas.getContext('2d');
+      ctx.font = '14px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.textAlign = 'center';
+      ctx.fillText('singhsprint.com • Preview only', canvas.width/2, canvas.height - 20);
+
+      var link = document.createElement('a');
+      link.download = 'singhsprint-mockup.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
 
     // ===== SIZE TOTAL =====
@@ -1034,6 +1193,7 @@
       document.getElementById('sizeTotal').textContent = total;
       document.getElementById('sumQty').textContent = total;
       document.getElementById('totalQtyInput').value = total;
+      calculatePrice(); // Recalculate price when quantities change
     }
 
     // ===== STEP NAVIGATION =====
@@ -1117,6 +1277,336 @@
       document.querySelector('.steps-bar').style.display = 'none';
       document.getElementById('formSuccess').style.display = 'block';
     }
+
+    // ===== PRICING CALCULATOR =====
+    var pricingMode = 'b2c'; // b2c or b2b
+
+    // B2B pricing — from the actual pricing sheet (Gildan-quality blanks, includes printing)
+    // Columns: single (1-color front), multi (multi-color front), fullprint (front+back), wrap (full wrap)
+    var b2bPricing = {
+      tshirt: {
+        dtg: {name: 'T-Shirt', tiers: [
+          {min: 5, max: 9, single: 18.95, multi: 20.95, fullprint: 22.95, wrap: 24.95},
+          {min: 10, max: 24, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 25, max: 49, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
+          {min: 50, max: 99, single: 13.95, multi: 15.95, fullprint: 17.95, wrap: 19.95},
+          {min: 100, max: 199, single: 11.95, multi: 13.95, fullprint: 15.95, wrap: 17.95},
+          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        ]},
+        dtf: {name: 'T-Shirt', tiers: [
+          {min: 5, max: 9, single: 18.95, multi: 20.95, fullprint: 22.95, wrap: 24.95},
+          {min: 10, max: 24, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 25, max: 49, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
+          {min: 50, max: 99, single: 13.95, multi: 15.95, fullprint: 17.95, wrap: 19.95},
+          {min: 100, max: 199, single: 11.95, multi: 13.95, fullprint: 15.95, wrap: 17.95},
+          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        ]}
+      },
+      hoodie: {
+        dtg: {name: 'Hoodie', tiers: [
+          {min: 5, max: 9, single: 37.95, multi: 39.95, fullprint: 41.95, wrap: 43.95},
+          {min: 10, max: 24, single: 33.95, multi: 35.95, fullprint: 37.95, wrap: 39.95},
+          {min: 25, max: 49, single: 29.95, multi: 31.95, fullprint: 33.95, wrap: 35.95},
+          {min: 50, max: 99, single: 27.95, multi: 29.95, fullprint: 31.95, wrap: 33.95},
+          {min: 100, max: 199, single: 26.95, multi: 28.95, fullprint: 30.95, wrap: 32.95},
+          {min: 200, max: Infinity, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95}
+        ]},
+        dtf: {name: 'Hoodie', tiers: [
+          {min: 5, max: 9, single: 37.95, multi: 39.95, fullprint: 41.95, wrap: 43.95},
+          {min: 10, max: 24, single: 33.95, multi: 35.95, fullprint: 37.95, wrap: 39.95},
+          {min: 25, max: 49, single: 29.95, multi: 31.95, fullprint: 33.95, wrap: 35.95},
+          {min: 50, max: 99, single: 27.95, multi: 29.95, fullprint: 31.95, wrap: 33.95},
+          {min: 100, max: 199, single: 26.95, multi: 28.95, fullprint: 30.95, wrap: 32.95},
+          {min: 200, max: Infinity, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95}
+        ]}
+      },
+      hat: {
+        embroidery: {name: 'Cap/Hat', tiers: [
+          {min: 5, max: 9, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95},
+          {min: 10, max: 24, single: 20.95, multi: 22.95, fullprint: 24.95, wrap: 26.95},
+          {min: 25, max: 49, single: 17.95, multi: 19.95, fullprint: 21.95, wrap: 23.95},
+          {min: 50, max: 99, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 100, max: 199, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
+          {min: 200, max: Infinity, single: 12.95, multi: 14.95, fullprint: 16.95, wrap: 18.95}
+        ]},
+        dtg: {name: 'Cap/Hat', tiers: [
+          {min: 5, max: 9, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95},
+          {min: 10, max: 24, single: 20.95, multi: 22.95, fullprint: 24.95, wrap: 26.95},
+          {min: 25, max: 49, single: 17.95, multi: 19.95, fullprint: 21.95, wrap: 23.95},
+          {min: 50, max: 99, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 100, max: 199, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
+          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        ]}
+      },
+      longsleeve: {
+        dtg: {name: 'Long Sleeve', tiers: [
+          {min: 5, max: 9, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 10, max: 24, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95},
+          {min: 25, max: 49, single: 19.95, multi: 21.95, fullprint: 23.95, wrap: 25.95},
+          {min: 50, max: 99, single: 18.95, multi: 20.95, fullprint: 22.95, wrap: 24.95},
+          {min: 100, max: 199, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 200, max: Infinity, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95}
+        ]},
+        dtf: {name: 'Long Sleeve', tiers: [
+          {min: 5, max: 9, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 10, max: 24, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95},
+          {min: 25, max: 49, single: 19.95, multi: 21.95, fullprint: 23.95, wrap: 25.95},
+          {min: 50, max: 99, single: 18.95, multi: 20.95, fullprint: 22.95, wrap: 24.95},
+          {min: 100, max: 199, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 200, max: Infinity, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95}
+        ]}
+      },
+      crewneck: {
+        dtg: {name: 'Crewneck', tiers: [
+          {min: 5, max: 9, single: 33.95, multi: 35.95, fullprint: 37.95, wrap: 39.95},
+          {min: 10, max: 24, single: 29.95, multi: 31.95, fullprint: 33.95, wrap: 35.95},
+          {min: 25, max: 49, single: 27.95, multi: 29.95, fullprint: 31.95, wrap: 33.95},
+          {min: 50, max: 99, single: 25.95, multi: 27.95, fullprint: 29.95, wrap: 31.95},
+          {min: 100, max: 199, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 200, max: Infinity, single: 21.95, multi: 23.95, fullprint: 25.95, wrap: 27.95}
+        ]},
+        dtf: {name: 'Crewneck', tiers: [
+          {min: 5, max: 9, single: 33.95, multi: 35.95, fullprint: 37.95, wrap: 39.95},
+          {min: 10, max: 24, single: 29.95, multi: 31.95, fullprint: 33.95, wrap: 35.95},
+          {min: 25, max: 49, single: 27.95, multi: 29.95, fullprint: 31.95, wrap: 33.95},
+          {min: 50, max: 99, single: 25.95, multi: 27.95, fullprint: 29.95, wrap: 31.95},
+          {min: 100, max: 199, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 200, max: Infinity, single: 21.95, multi: 23.95, fullprint: 25.95, wrap: 27.95}
+        ]}
+      },
+      polo: {
+        dtg: {name: 'Polo', tiers: [
+          {min: 5, max: 9, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 10, max: 24, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95},
+          {min: 25, max: 49, single: 19.95, multi: 21.95, fullprint: 23.95, wrap: 25.95},
+          {min: 50, max: 99, single: 18.95, multi: 20.95, fullprint: 22.95, wrap: 24.95},
+          {min: 100, max: 199, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 200, max: Infinity, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95}
+        ]},
+        dtf: {name: 'Polo', tiers: [
+          {min: 5, max: 9, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 10, max: 24, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95},
+          {min: 25, max: 49, single: 19.95, multi: 21.95, fullprint: 23.95, wrap: 25.95},
+          {min: 50, max: 99, single: 18.95, multi: 20.95, fullprint: 22.95, wrap: 24.95},
+          {min: 100, max: 199, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 200, max: Infinity, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95}
+        ]}
+      },
+      joggers: {
+        dtg: {name: 'Joggers', tiers: [
+          {min: 5, max: 9, single: 33.95, multi: 35.95, fullprint: 37.95, wrap: 39.95},
+          {min: 10, max: 24, single: 29.95, multi: 31.95, fullprint: 33.95, wrap: 35.95},
+          {min: 25, max: 49, single: 27.95, multi: 29.95, fullprint: 31.95, wrap: 33.95},
+          {min: 50, max: 99, single: 25.95, multi: 27.95, fullprint: 29.95, wrap: 31.95},
+          {min: 100, max: 199, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 200, max: Infinity, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95}
+        ]},
+        dtf: {name: 'Joggers', tiers: [
+          {min: 5, max: 9, single: 33.95, multi: 35.95, fullprint: 37.95, wrap: 39.95},
+          {min: 10, max: 24, single: 29.95, multi: 31.95, fullprint: 33.95, wrap: 35.95},
+          {min: 25, max: 49, single: 27.95, multi: 29.95, fullprint: 31.95, wrap: 33.95},
+          {min: 50, max: 99, single: 25.95, multi: 27.95, fullprint: 29.95, wrap: 31.95},
+          {min: 100, max: 199, single: 24.95, multi: 26.95, fullprint: 28.95, wrap: 30.95},
+          {min: 200, max: Infinity, single: 22.95, multi: 24.95, fullprint: 26.95, wrap: 28.95}
+        ]}
+      },
+      tote: {
+        dtg: {name: 'Tote Bag', tiers: [
+          {min: 5, max: 9, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 10, max: 24, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
+          {min: 25, max: 49, single: 12.95, multi: 14.95, fullprint: 16.95, wrap: 18.95},
+          {min: 50, max: 99, single: 11.95, multi: 13.95, fullprint: 15.95, wrap: 17.95},
+          {min: 100, max: 199, single: 10.95, multi: 12.95, fullprint: 14.95, wrap: 16.95},
+          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        ]},
+        dtf: {name: 'Tote Bag', tiers: [
+          {min: 5, max: 9, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
+          {min: 10, max: 24, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
+          {min: 25, max: 49, single: 12.95, multi: 14.95, fullprint: 16.95, wrap: 18.95},
+          {min: 50, max: 99, single: 11.95, multi: 13.95, fullprint: 15.95, wrap: 17.95},
+          {min: 100, max: 199, single: 10.95, multi: 12.95, fullprint: 14.95, wrap: 16.95},
+          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        ]}
+      }
+    };
+
+    // B2C retail pricing — flat rate for small orders under 10 (no volume tiers)
+    // Market research: Canadian local shops charge $18.99-$24.95/tee for single orders
+    // Priced competitively above B2B 5-9 tier, below big-box retail
+    var b2cPricing = {
+      tshirt: { dtg: {single: 22.95, multi: 24.95, fullprint: 27.95, wrap: 29.95}, dtf: {single: 22.95, multi: 24.95, fullprint: 27.95, wrap: 29.95} },
+      hoodie: { dtg: {single: 44.95, multi: 47.95, fullprint: 49.95, wrap: 52.95}, dtf: {single: 44.95, multi: 47.95, fullprint: 49.95, wrap: 52.95} },
+      hat: { embroidery: {single: 27.95, multi: 29.95, fullprint: 32.95, wrap: 34.95}, dtg: {single: 27.95, multi: 29.95, fullprint: 32.95, wrap: 34.95} },
+      crewneck: { dtg: {single: 39.95, multi: 42.95, fullprint: 44.95, wrap: 47.95}, dtf: {single: 39.95, multi: 42.95, fullprint: 44.95, wrap: 47.95} },
+      polo: { dtg: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95}, dtf: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95} },
+      longsleeve: { dtg: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95}, dtf: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95} },
+      joggers: { dtg: {single: 39.95, multi: 42.95, fullprint: 44.95, wrap: 47.95}, dtf: {single: 39.95, multi: 42.95, fullprint: 44.95, wrap: 47.95} },
+      tote: { dtg: {single: 19.95, multi: 22.95, fullprint: 24.95, wrap: 27.95}, dtf: {single: 19.95, multi: 22.95, fullprint: 24.95, wrap: 27.95} }
+    };
+
+    function getPlacementType() {
+      var placements = document.querySelectorAll('.placement-opt.selected');
+      var count = placements.length;
+      if (count >= 3) return 'wrap';
+      if (count >= 2) return 'fullprint';
+      // Check if it's a "multi-color" placement (e.g. right-chest = multi)
+      var hasSpecial = false;
+      placements.forEach(function(p) {
+        var loc = p.getAttribute('data-placement');
+        if (loc === 'right-chest' || loc === 'sleeve') hasSpecial = true;
+      });
+      if (hasSpecial) return 'multi';
+      return 'single';
+    }
+
+    function getPricePerUnit() {
+      var product = state.garment;
+      var service = state.service;
+      var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
+
+      if (!product || !service || qty === 0) return null;
+
+      var placementType = getPlacementType();
+
+      if (pricingMode === 'b2c') {
+        // B2C: flat retail price, no volume tiers
+        var b2c = b2cPricing[product];
+        if (!b2c) return null;
+        var svcData = b2c[service.toLowerCase()];
+        if (!svcData) svcData = b2c['dtg'] || b2c['embroidery']; // fallback
+        if (!svcData) return null;
+        return svcData[placementType] || svcData['single'];
+      } else {
+        // B2B: volume-tiered pricing from pricing sheet
+        var b2b = b2bPricing[product];
+        if (!b2b) return null;
+        var pricingInfo = b2b[service.toLowerCase()];
+        if (!pricingInfo) pricingInfo = b2b['dtg'] || b2b['embroidery']; // fallback
+        if (!pricingInfo) return null;
+        var tiers = pricingInfo.tiers;
+        var tier = tiers.find(function(t) { return qty >= t.min && qty <= t.max; });
+        if (!tier) tier = tiers[0]; // fallback to smallest tier
+        return tier[placementType] || tier['single'];
+      }
+    }
+
+    function calculatePrice() {
+      var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
+      if (qty === 0) {
+        document.getElementById('priceSection').style.display = 'none';
+        document.getElementById('paymentSection').style.display = 'none';
+        return;
+      }
+
+      var perUnit = getPricePerUnit();
+      if (!perUnit) {
+        document.getElementById('priceSection').style.display = 'none';
+        document.getElementById('paymentSection').style.display = 'none';
+        return;
+      }
+
+      // Auto-switch toggle based on quantity
+      if (qty > 0 && qty < 5 && pricingMode === 'b2b') {
+        pricingMode = 'b2c';
+        updatePricingTabs();
+      } else if (qty > 10 && pricingMode === 'b2c') {
+        pricingMode = 'b2b';
+        updatePricingTabs();
+      }
+
+      // Recalculate with correct mode
+      perUnit = getPricePerUnit();
+      if (!perUnit) {
+        document.getElementById('priceSection').style.display = 'none';
+        document.getElementById('paymentSection').style.display = 'none';
+        return;
+      }
+      var total = perUnit * qty;
+
+      // Update price display
+      document.getElementById('priceSection').style.display = 'block';
+      document.getElementById('paymentSection').style.display = 'block';
+
+      var breakdown = document.getElementById('priceBreakdown');
+      breakdown.innerHTML = '<div class="price-row"><span>Per unit:</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
+        '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>';
+      document.getElementById('priceTotal').textContent = '$' + total.toFixed(2);
+
+      // Show volume discount note for bulk
+      var discountNote = document.getElementById('priceDiscountNote');
+      if (pricingMode === 'b2b' && qty >= 50) {
+        discountNote.style.display = 'inline-block';
+      } else {
+        discountNote.style.display = 'none';
+      }
+
+      // Show bulk minimum note
+      var b2bNote = document.getElementById('pricingB2bNote');
+      if (pricingMode === 'b2b' && qty < 5) {
+        b2bNote.style.display = 'block';
+      } else {
+        b2bNote.style.display = 'none';
+      }
+
+      // Pricing note
+      var pricingNoteEl = document.getElementById('pricingNote');
+      pricingNoteEl.textContent = 'Estimated price \u2022 Final quote may vary';
+    }
+
+    function updatePricingTabs() {
+      document.querySelectorAll('.price-tab').forEach(function(b) {
+        b.classList.remove('active');
+        if (b.getAttribute('data-pricing') === pricingMode) b.classList.add('active');
+      });
+    }
+
+    function togglePricing(button) {
+      document.querySelectorAll('.price-tab').forEach(function(b) { b.classList.remove('active'); });
+      button.classList.add('active');
+      pricingMode = button.getAttribute('data-pricing');
+      calculatePrice();
+    }
+
+    // Check URL param to start in bulk mode (from businesses page)
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'bulk') {
+        pricingMode = 'b2b';
+      }
+    })();
+
+    function handlePayment() {
+      alert('Submitting quote with payment option enabled. You will receive an invoice by email.');
+      // For now, just trigger form submission. Later, integrate with Stripe Checkout.
+      // Commented Stripe code below for future implementation:
+      /*
+      var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
+      var amount = parseFloat(document.getElementById('priceTotal').textContent.replace('$', '')) || 0;
+
+      fetch('/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product: state.garment,
+          service: state.service,
+          quantity: qty,
+          amount: amount
+        })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.url) window.location.href = data.url;
+      })
+      .catch(function(err) { console.error('Payment error:', err); });
+      */
+    }
+
+    // Hook price calculation to size changes
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.closest('.size-grid input')) {
+        calculatePrice();
+      }
+    });
 
     // Init
     updateDesignPosition();
