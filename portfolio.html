@@ -109,15 +109,15 @@
   <div id="nav-placeholder"></div>
 
   <div class="page-header">
-    <h1>Our work</h1>
-    <p>Recent prints, merch drops, uniforms, and creative projects, all done in-house at our Montreal studio.</p>
+    <h1 data-i18n="portfolio.h1">Our work</h1>
+    <p data-i18n="portfolio.sub">Recent prints, merch drops, uniforms, and creative projects, all done in-house at our Montreal studio.</p>
   </div>
 
   <div class="filter-bar">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="dtg">DTG</button>
-    <button class="filter-btn" data-filter="dtf">DTF</button>
-    <button class="filter-btn" data-filter="embroidery">Embroidery</button>
+    <button class="filter-btn active" data-filter="all" data-i18n="portfolio.filter.all">All</button>
+    <button class="filter-btn" data-filter="dtg" data-i18n="portfolio.filter.dtg">DTG</button>
+    <button class="filter-btn" data-filter="dtf" data-i18n="portfolio.filter.dtf">DTF</button>
+    <button class="filter-btn" data-filter="embroidery" data-i18n="portfolio.filter.embroidery">Embroidery</button>
   </div>
 
   <div class="gallery">
@@ -196,14 +196,15 @@
   </div>
 
   <section class="cta-section">
-    <h2>Like what you see?</h2>
-    <p>Let's make something great for your brand, team, or next event.</p>
-    <a href="quote.html" class="btn btn-accent">Get a Free Quote &rarr;</a>
+    <h2 data-i18n="portfolio.cta.h2">Like what you see?</h2>
+    <p data-i18n="portfolio.cta.p">Let's make something great for your brand, team, or next event.</p>
+    <a href="quote.html" class="btn btn-accent" data-i18n="portfolio.cta.btn">Get a Free Quote &rarr;</a>
   </section>
 
   <div id="footer-placeholder"></div>
 
   <script src="components.js"></script>
+  <script src="lang.js"></script>
   <script>
     // Portfolio filter
     document.querySelectorAll('.filter-btn').forEach(function(btn) {

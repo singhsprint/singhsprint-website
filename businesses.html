@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>For Businesses | Singhs Print - Bulk Custom Apparel Montreal</title>
+  <meta name="description" content="Bulk custom apparel printing for businesses in Montreal. Volume pricing, dedicated account management, staff uniforms, corporate swag & event merch. DTG, DTF & Embroidery.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;font-size:16px}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+    img{max-width:100%;height:auto;display:block}
+    a{text-decoration:none;color:inherit}
+    button{cursor:pointer;border:none;background:none;font-family:inherit}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .section{padding:80px 0}
+    .text-center{text-align:center}
+    h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:800;line-height:1.15}
+    h1{font-size:clamp(2.5rem,5vw,4rem)}
+    h2{font-size:clamp(2rem,3.5vw,3rem);margin-bottom:16px}
+    h3{font-size:1.35rem;margin-bottom:8px}
+    .subhead{font-size:1.15rem;color:#555;line-height:1.7;max-width:640px}
+    .label{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:12px}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:16px 32px;border-radius:50px;font-size:1rem;font-weight:600;transition:all .25s}
+    .btn-primary{background:#1a1a1a;color:#fff}
+    .btn-primary:hover{background:#333;transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .btn-accent{background:#e8ff3c;color:#1a1a1a}
+    .btn-accent:hover{background:#ddf535;transform:translateY(-2px);box-shadow:0 8px 25px rgba(232,255,60,.3)}
+    .btn-outline{border:2px solid #1a1a1a;color:#1a1a1a;background:transparent}
+    .btn-outline:hover{background:#1a1a1a;color:#fff}
+    .btn-sm{padding:12px 24px;font-size:.9rem}
+
+    .navbar{position:sticky;top:0;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);z-index:1000;border-bottom:1px solid rgba(0,0,0,.06);padding:0 24px}
+    .navbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+    .nav-links{display:flex;align-items:center;gap:32px}
+    .nav-links a{font-size:.95rem;font-weight:500;color:#555;transition:color .2s}
+    .nav-links a:hover{color:#1a1a1a}
+    .nav-cta{display:flex;align-items:center;gap:16px}
+    .nav-phone{font-weight:600;font-size:.95rem}
+    .mobile-toggle{display:none;flex-direction:column;gap:5px;padding:8px}
+    .mobile-toggle span{display:block;width:24px;height:2px;background:#1a1a1a}
+    .promo-bar{background:#e8ff3c;text-align:center;padding:10px 24px;font-weight:600;font-size:.9rem}
+    .promo-bar a{text-decoration:underline;font-weight:700}
+
+    /* Hero */
+    .biz-hero{padding:100px 0 80px;background:#0a0a0a;color:#fff;text-align:center;position:relative;overflow:hidden}
+    .biz-hero .label{color:#e8ff3c}
+    .biz-hero h1{color:#fff;margin-bottom:20px}
+    .biz-hero .subhead{color:#999;margin:0 auto 36px}
+    .hero-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+    /* Who we serve */
+    .segments-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+    .segment-card{background:#fafafa;border:1px solid #eee;border-radius:20px;padding:40px 32px;transition:all .3s}
+    .segment-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.06)}
+    .segment-icon{font-size:2.5rem;margin-bottom:16px}
+    .segment-card h3{font-size:1.3rem;margin-bottom:12px}
+    .segment-card p{color:#555;font-size:.95rem;line-height:1.7}
+    .segment-list{list-style:none;margin-top:16px}
+    .segment-list li{padding:6px 0;color:#555;font-size:.9rem}
+    .segment-list li::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#1a1a1a;margin-right:10px;vertical-align:middle}
+
+    /* Why businesses choose us */
+    .benefits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+    .benefit-card{padding:32px;border-radius:16px;background:#f8f7f4;text-align:center}
+    .benefit-icon{font-size:2rem;margin-bottom:12px}
+    .benefit-card h3{font-size:1.1rem;margin-bottom:8px;font-family:'Inter',sans-serif;font-weight:700}
+    .benefit-card p{color:#666;font-size:.92rem}
+
+    /* Pricing */
+    .pricing-section{padding:80px 0;background:#f8f7f4}
+    .pricing-note{text-align:center;color:#888;font-size:.95rem;margin-bottom:48px;max-width:700px;margin-left:auto;margin-right:auto}
+    .canadian-note{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #ddd;border-radius:50px;padding:8px 20px;font-size:.9rem;font-weight:600;margin-bottom:32px}
+    .pricing-tabs{display:flex;justify-content:center;gap:8px;margin-bottom:32px;flex-wrap:wrap}
+    .pricing-tab{padding:10px 20px;border-radius:50px;font-size:.9rem;font-weight:500;border:1.5px solid #e0e0e0;background:#fff;color:#666;cursor:pointer;transition:all .2s}
+    .pricing-tab:hover{border-color:#aaa;color:#1a1a1a}
+    .pricing-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+    .pricing-table-wrap{max-width:900px;margin:0 auto;display:none}
+    .pricing-table-wrap.active{display:block}
+    .pricing-table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .pricing-table thead{background:#1a1a1a;color:#fff}
+    .pricing-table th{padding:14px 16px;font-size:.85rem;font-weight:600;text-align:center;letter-spacing:.5px}
+    .pricing-table th:first-child{text-align:left;padding-left:24px}
+    .pricing-table td{padding:14px 16px;text-align:center;font-size:.95rem;border-bottom:1px solid #f0f0f0}
+    .pricing-table td:first-child{text-align:left;font-weight:600;padding-left:24px;color:#1a1a1a}
+    .pricing-table tbody tr:last-child td{border-bottom:none}
+    .pricing-table tbody tr:hover{background:#f8f7f4}
+    .pricing-table .best-value{background:#f0ffe0}
+    .pricing-table .best-value td:first-child::after{content:'Best Value';display:inline-block;margin-left:8px;font-size:.7rem;background:#e8ff3c;padding:2px 8px;border-radius:50px;font-weight:700;color:#1a1a1a;vertical-align:middle}
+    .table-footnote{text-align:center;color:#999;font-size:.82rem;margin-top:12px;font-style:italic}
+    .embroidery-note{display:inline-block;background:#fff3cd;padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:#856404;margin-bottom:12px}
+
+    /* Statement */
+    .statement{padding:60px 0;background:#0a0a0a;color:#fff;text-align:center}
+    .statement h2{color:#fff;max-width:800px;margin:0 auto 12px}
+    .statement p{color:#888;font-size:1.05rem}
+
+    /* Process */
+    .process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px}
+    .process-step{text-align:center;padding:24px}
+    .step-num{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;font-weight:800;font-size:1.2rem;margin-bottom:16px}
+    .process-step h3{font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:700}
+    .process-step p{color:#666;font-size:.92rem}
+
+    /* CTA */
+    .biz-cta{background:#1a1a1a;color:#fff;padding:80px 0;text-align:center}
+    .biz-cta h2{color:#fff}
+    .biz-cta .subhead{color:#aaa;margin:0 auto 32px}
+    .cta-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+    /* Footer */
+    .footer{background:#0a0a0a;color:#fff;padding:60px 0 30px}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+    .footer-brand .logo{font-family:'Playfair Display',serif;font-weight:900;font-size:1.5rem}
+    .footer-brand .logo span{display:block}
+    .footer-col h4{font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;color:#888}
+    .footer-col a{display:block;font-size:.9rem;color:#aaa;margin-bottom:10px;transition:color .2s}
+    .footer-col a:hover{color:#fff}
+    .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid #222;display:flex;justify-content:space-between;font-size:.8rem;color:#555}
+
+    @media(max-width:900px){
+      .segments-grid,.benefits-grid{grid-template-columns:1fr}
+      .process-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:768px){
+      .nav-links{display:none}
+      .process-grid{grid-template-columns:1fr}
+      .pricing-table{font-size:.85rem}
+      .pricing-table th,.pricing-table td{padding:10px 8px}
+      .footer-grid{grid-template-columns:1fr}
+      .footer-bottom{flex-direction:column;gap:8px}
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-placeholder"></div>
+
+  <!-- HERO -->
+  <section class="biz-hero">
+    <div class="container">
+      <span class="label" data-i18n="biz.label">For Businesses</span>
+      <h1 data-i18n="biz.hero.h1">Custom apparel at<br>volume pricing</h1>
+      <p class="subhead" data-i18n="biz.hero.sub">Staff uniforms, corporate swag, event merch, team gear. Transparent bulk pricing, dedicated account support, and everything printed in-house at our West Island studio.</p>
+      <div class="hero-buttons">
+        <a href="#pricing" class="btn btn-accent" data-i18n="biz.hero.cta1">See Volume Pricing &darr;</a>
+        <a href="quote.html" class="btn btn-outline" style="border-color:#fff;color:#fff" data-i18n="biz.hero.cta2">Get a Custom Quote &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO WE SERVE -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center">
+        <span class="label" data-i18n="biz.who.label">Who We Serve</span>
+        <h2 data-i18n="biz.who.h2">Built for businesses of every size</h2>
+        <p class="subhead" style="margin:0 auto" data-i18n="biz.who.sub">From a 10-person cafe team to a 500-unit corporate order, we treat every account with the same care and quality.</p>
+      </div>
+      <div class="segments-grid">
+        <div class="segment-card">
+          <div class="segment-icon">&#127947;</div>
+          <h3 data-i18n="biz.seg1.h">Gyms, Cafes &amp; Restaurants</h3>
+          <p data-i18n="biz.seg1.p">Branded staff uniforms and merchandise that represent your brand every day.</p>
+          <ul class="segment-list">
+            <li>Staff polos, tees, and aprons</li>
+            <li>Branded merchandise for retail</li>
+            <li>Easy reorder process</li>
+            <li>Logo embroidery for a premium look</li>
+          </ul>
+        </div>
+        <div class="segment-card">
+          <div class="segment-icon">&#127891;</div>
+          <h3 data-i18n="biz.seg2.h">Schools, Universities &amp; Clubs</h3>
+          <p data-i18n="biz.seg2.p">Team gear, event merch, and student org apparel with fast turnaround.</p>
+          <ul class="segment-list">
+            <li>Orientation and frosh week merch</li>
+            <li>Varsity and intramural team gear</li>
+            <li>Club and association apparel</li>
+            <li>Fundraiser and event merchandise</li>
+          </ul>
+        </div>
+        <div class="segment-card">
+          <div class="segment-icon">&#128188;</div>
+          <h3 data-i18n="biz.seg3.h">Corporate &amp; Startups</h3>
+          <p data-i18n="biz.seg3.p">Company swag, onboarding kits, conference giveaways, and branded everything.</p>
+          <ul class="segment-list">
+            <li>Employee onboarding kits</li>
+            <li>Trade show and conference swag</li>
+            <li>Client gifts and branded merch</li>
+            <li>Company store and recurring orders</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY BUSINESSES CHOOSE US -->
+  <section class="section" style="background:#f8f7f4">
+    <div class="container">
+      <div class="text-center">
+        <span class="label" data-i18n="biz.why.label">Why Businesses Choose Us</span>
+        <h2 data-i18n="biz.why.h2">More than just a print shop</h2>
+      </div>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128200;</div>
+          <h3 data-i18n="biz.why.pricing.h">Transparent Volume Pricing</h3>
+          <p data-i18n="biz.why.pricing.p">No surprises. See your exact per-unit cost upfront based on quantity and print sides.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128269;</div>
+          <h3 data-i18n="biz.why.sample.h">Sample Before Production</h3>
+          <p data-i18n="biz.why.sample.p">Every order gets a physical sample for approval before we print the full run.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#9889;</div>
+          <h3 data-i18n="biz.why.turnaround.h">2-4 Day Turnaround</h3>
+          <p data-i18n="biz.why.turnaround.p">Most orders ready in 2-4 business days. Rush options available when deadlines are tight.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#127912;</div>
+          <h3 data-i18n="biz.why.design.h">Free Design Help</h3>
+          <p data-i18n="biz.why.design.p">Our in-house design studio preps your artwork for production at no extra charge.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128666;</div>
+          <h3 data-i18n="biz.why.delivery.h">Free Delivery (25+ Units)</h3>
+          <p data-i18n="biz.why.delivery.p">Free delivery across Montreal on orders of 25+ units. Canada-wide shipping available.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">&#128257;</div>
+          <h3 data-i18n="biz.why.reorder.h">Easy Reorders</h3>
+          <p data-i18n="biz.why.reorder.p">We keep your artwork and specs on file. Reordering is as simple as sending a message.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATEMENT -->
+  <section class="statement">
+    <div class="container">
+      <h2 data-i18n="biz.statement.h2">The bigger the order, the better the price. No hidden fees, ever.</h2>
+      <p data-i18n="biz.statement.p">All prices include printing. What you see is what you pay.</p>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-section" id="pricing">
+    <div class="container">
+      <div class="text-center">
+        <span class="label" data-i18n="biz.pricing.label">Volume Pricing</span>
+        <h2 data-i18n="biz.pricing.h2">Print prices per unit</h2>
+        <p class="pricing-note" data-i18n="biz.pricing.note">Prices include printing on your chosen blank. Select a product to see the full breakdown by quantity and number of print sides.</p>
+        <div class="canadian-note" data-i18n="biz.pricing.canadian">&#127464;&#127462; +$2 each for all-Canadian shirts (Rue Saint-Patrick)</div>
+      </div>
+
+      <div class="pricing-tabs">
+        <button class="pricing-tab active" data-table="tshirts">T-Shirts</button>
+        <button class="pricing-tab" data-table="hoodies">Hoodies</button>
+        <button class="pricing-tab" data-table="caps">Caps / Toques</button>
+        <button class="pricing-tab" data-table="longsleeves">Long Sleeves</button>
+        <button class="pricing-tab" data-table="crewnecks">Crewnecks</button>
+        <button class="pricing-tab" data-table="polos">Polos</button>
+        <button class="pricing-tab" data-table="joggers">Joggers</button>
+        <button class="pricing-tab" data-table="totes">Tote Bags</button>
+      </div>
+
+      <!-- T-Shirts -->
+      <div class="pricing-table-wrap active" id="table-tshirts">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$9.95</td><td>$11.95</td><td>$13.95</td><td>$15.95</td></tr>
+            <tr><td>100-199</td><td>$11.95</td><td>$13.95</td><td>$15.95</td><td>$17.95</td></tr>
+            <tr><td>50-99</td><td>$13.95</td><td>$15.95</td><td>$17.95</td><td>$19.95</td></tr>
+            <tr><td>25-49</td><td>$14.95</td><td>$16.95</td><td>$18.95</td><td>$20.95</td></tr>
+            <tr><td>10-24</td><td>$16.95</td><td>$18.95</td><td>$20.95</td><td>$22.95</td></tr>
+            <tr><td>5-9</td><td>$18.95</td><td>$20.95</td><td>$22.95</td><td>$24.95</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Hoodies -->
+      <div class="pricing-table-wrap" id="table-hoodies">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$24.95</td><td>$26.95</td><td>$28.95</td><td>$30.95</td></tr>
+            <tr><td>100-199</td><td>$26.95</td><td>$28.95</td><td>$30.95</td><td>$32.95</td></tr>
+            <tr><td>50-99</td><td>$27.95</td><td>$29.95</td><td>$31.95</td><td>$33.95</td></tr>
+            <tr><td>25-49</td><td>$29.95</td><td>$31.95</td><td>$33.95</td><td>$35.95</td></tr>
+            <tr><td>10-24</td><td>$33.95</td><td>$35.95</td><td>$37.95</td><td>$39.95</td></tr>
+            <tr><td>5-9</td><td>$37.95</td><td>$39.95</td><td>$41.95</td><td>$43.95</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Caps / Toques -->
+      <div class="pricing-table-wrap" id="table-caps">
+        <span class="embroidery-note">+ $12 each for Embroidery</span>
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$9.95</td><td>$11.95</td><td>$13.95</td><td>$15.95</td></tr>
+            <tr><td>100-199</td><td>$11.95</td><td>$13.95</td><td>$15.95</td><td>$17.95</td></tr>
+            <tr><td>50-99</td><td>$13.95</td><td>$15.95</td><td>$17.95</td><td>$19.95</td></tr>
+            <tr><td>25-49</td><td>$14.95</td><td>$16.95</td><td>$18.95</td><td>$20.95</td></tr>
+            <tr><td>10-24</td><td>$16.95</td><td>$18.95</td><td>$20.95</td><td>$22.95</td></tr>
+            <tr><td>5-9</td><td>$18.95</td><td>$20.95</td><td>$22.95</td><td>$24.95</td></tr>
+          </tbody>
+        </table>
+        <p class="table-footnote">Embroidery adds $12/unit. Printed caps use standard print pricing above.</p>
+      </div>
+
+      <!-- Long Sleeves -->
+      <div class="pricing-table-wrap" id="table-longsleeves">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$12.95</td><td>$14.95</td><td>$16.95</td><td>$18.95</td></tr>
+            <tr><td>100-199</td><td>$14.95</td><td>$16.95</td><td>$18.95</td><td>$20.95</td></tr>
+            <tr><td>50-99</td><td>$16.95</td><td>$18.95</td><td>$20.95</td><td>$22.95</td></tr>
+            <tr><td>25-49</td><td>$17.95</td><td>$19.95</td><td>$21.95</td><td>$23.95</td></tr>
+            <tr><td>10-24</td><td>$20.95</td><td>$22.95</td><td>$24.95</td><td>$26.95</td></tr>
+            <tr><td>5-9</td><td>$22.95</td><td>$24.95</td><td>$26.95</td><td>$28.95</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Crewnecks (similar pricing structure to hoodies, slightly less) -->
+      <div class="pricing-table-wrap" id="table-crewnecks">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$21.95</td><td>$23.95</td><td>$25.95</td><td>$27.95</td></tr>
+            <tr><td>100-199</td><td>$23.95</td><td>$25.95</td><td>$27.95</td><td>$29.95</td></tr>
+            <tr><td>50-99</td><td>$24.95</td><td>$26.95</td><td>$28.95</td><td>$30.95</td></tr>
+            <tr><td>25-49</td><td>$26.95</td><td>$28.95</td><td>$30.95</td><td>$32.95</td></tr>
+            <tr><td>10-24</td><td>$29.95</td><td>$31.95</td><td>$33.95</td><td>$35.95</td></tr>
+            <tr><td>5-9</td><td>$33.95</td><td>$35.95</td><td>$37.95</td><td>$39.95</td></tr>
+          </tbody>
+        </table>
+        <p class="table-footnote">Crewneck pricing follows a similar structure to hoodies. Contact us for exact quotes on specialty blanks.</p>
+      </div>
+
+      <!-- Polos -->
+      <div class="pricing-table-wrap" id="table-polos">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$14.95</td><td>$16.95</td><td>$18.95</td><td>$20.95</td></tr>
+            <tr><td>100-199</td><td>$16.95</td><td>$18.95</td><td>$20.95</td><td>$22.95</td></tr>
+            <tr><td>50-99</td><td>$18.95</td><td>$20.95</td><td>$22.95</td><td>$24.95</td></tr>
+            <tr><td>25-49</td><td>$19.95</td><td>$21.95</td><td>$23.95</td><td>$25.95</td></tr>
+            <tr><td>10-24</td><td>$22.95</td><td>$24.95</td><td>$26.95</td><td>$28.95</td></tr>
+            <tr><td>5-9</td><td>$24.95</td><td>$26.95</td><td>$28.95</td><td>$30.95</td></tr>
+          </tbody>
+        </table>
+        <p class="table-footnote">Embroidery available for polos. Contact us for embroidery pricing on bulk orders.</p>
+      </div>
+
+      <!-- Joggers -->
+      <div class="pricing-table-wrap" id="table-joggers">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$22.95</td><td>$24.95</td><td>$26.95</td><td>$28.95</td></tr>
+            <tr><td>100-199</td><td>$24.95</td><td>$26.95</td><td>$28.95</td><td>$30.95</td></tr>
+            <tr><td>50-99</td><td>$25.95</td><td>$27.95</td><td>$29.95</td><td>$31.95</td></tr>
+            <tr><td>25-49</td><td>$27.95</td><td>$29.95</td><td>$31.95</td><td>$33.95</td></tr>
+            <tr><td>10-24</td><td>$30.95</td><td>$32.95</td><td>$34.95</td><td>$36.95</td></tr>
+            <tr><td>5-9</td><td>$34.95</td><td>$36.95</td><td>$38.95</td><td>$40.95</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tote Bags -->
+      <div class="pricing-table-wrap" id="table-totes">
+        <table class="pricing-table">
+          <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
+          <tbody>
+            <tr class="best-value"><td>200+</td><td>$7.95</td><td>$9.95</td><td>$11.95</td><td>$13.95</td></tr>
+            <tr><td>100-199</td><td>$9.95</td><td>$11.95</td><td>$13.95</td><td>$15.95</td></tr>
+            <tr><td>50-99</td><td>$11.95</td><td>$13.95</td><td>$15.95</td><td>$17.95</td></tr>
+            <tr><td>25-49</td><td>$12.95</td><td>$14.95</td><td>$16.95</td><td>$18.95</td></tr>
+            <tr><td>10-24</td><td>$14.95</td><td>$16.95</td><td>$18.95</td><td>$20.95</td></tr>
+            <tr><td>5-9</td><td>$16.95</td><td>$18.95</td><td>$20.95</td><td>$22.95</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center">
+        <span class="label" data-i18n="biz.hiw.label">How It Works</span>
+        <h2 data-i18n="biz.hiw.h2">From first contact to delivery</h2>
+      </div>
+      <div class="process-grid">
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <h3 data-i18n="biz.hiw.step1.h">Tell us what you need</h3>
+          <p data-i18n="biz.hiw.step1.p">Fill out a quick quote form or email us. Include your garment type, quantity, and any artwork you have.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <h3 data-i18n="biz.hiw.step2.h">Get your quote</h3>
+          <p data-i18n="biz.hiw.step2.p">We respond within hours with a clear price breakdown. No back-and-forth, no hidden fees.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <h3 data-i18n="biz.hiw.step3.h">Approve a sample</h3>
+          <p data-i18n="biz.hiw.step3.p">We print a physical sample for your approval. You check colors, placement, and quality before full production.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">4</div>
+          <h3 data-i18n="biz.hiw.step4.h">We deliver</h3>
+          <p data-i18n="biz.hiw.step4.p">Full order ready in 2-4 business days. Free delivery across Montreal for 25+ units.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="biz-cta">
+    <div class="container">
+      <h2 data-i18n="biz.cta.h2">Ready to outfit your team?</h2>
+      <p class="subhead" data-i18n="biz.cta.sub">Get a volume quote in hours, not days. No minimums, no commitments.</p>
+      <div class="cta-buttons">
+        <a href="quote.html" class="btn btn-accent" data-i18n="biz.cta.btn">Get a Business Quote &rarr;</a>
+        <a href="mailto:sales@singhsprint.com" class="btn btn-outline" style="border-color:#fff;color:#fff">Email sales@singhsprint.com</a>
+        <a href="tel:5149151539" class="btn btn-outline" style="border-color:#fff;color:#fff">Call 514-915-1539</a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="components.js"></script>
+  <script src="lang.js"></script>
+  <script>
+    // Pricing tab switcher
+    document.querySelectorAll('.pricing-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.pricing-tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.pricing-table-wrap').forEach(function(w) { w.classList.remove('active'); });
+        this.classList.add('active');
+        var target = document.getElementById('table-' + this.dataset.table);
+        if (target) target.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
