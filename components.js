@@ -21,7 +21,6 @@ function loadNav() {
     + '      <a href="tel:5149151539" class="nav-phone">514-915-1539</a>'
     + '      <button id="langToggle" onclick="SP_LANG.toggleLang()" style="padding:8px 14px;border-radius:50px;border:1.5px solid #ddd;background:#fff;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:1px">FR</button>'
     + '      <a href="quote.html" class="btn btn-primary btn-sm" data-i18n="nav.quote">Get a Quote</a>'
-    + '      <a href="https://singhsprint-crm.vercel.app/login" style="font-size:.8rem;color:#999;font-weight:500;margin-left:4px" data-i18n="nav.login">Login</a>'
     + '    </div>'
     + '    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">'
     + '      <span></span><span></span><span></span>'
@@ -56,6 +55,7 @@ function loadFooter() {
     + '    <div class="footer-bottom">'
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Singhs Print. All rights reserved.</span></span>'
     + '      <span data-i18n="footer.tagline">Custom Apparel Printing | Montreal, QC</span>'
+    + '      <a href="https://singhsprint-crm.vercel.app/login" style="font-size:.75rem;color:#777;font-weight:500;opacity:.7;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7" data-i18n="nav.login">Login</a>'
     + '    </div>'
     + '  </div>'
     + '</footer>';

@@ -222,6 +222,21 @@
       .product-grid{grid-template-columns:1fr 1fr}
       .size-grid{grid-template-columns:repeat(4,1fr)}
     }
+
+    /* ========== FABRIC.JS CANVAS EDITOR ========== */
+    #fabricCanvas{width:100%;display:block;background:#f5f5f5;border-radius:8px;cursor:crosshair}
+    .canvas-container{position:relative;margin-bottom:12px}
+    .canvas-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+    .toolbar-btn{padding:10px 14px;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;color:#333}
+    .toolbar-btn:hover{border-color:#1a1a1a;color:#1a1a1a}
+    .toolbar-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+    .toolbar-label{font-size:.8rem;font-weight:600;color:#666;margin-left:4px;white-space:nowrap}
+    .print-area-buttons{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+    .print-area-btn{padding:8px 12px;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;color:#666;white-space:nowrap}
+    .print-area-btn:hover{border-color:#ccc}
+    .print-area-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+    .canvas-wrapper{position:relative;border:1px solid #eee;border-radius:8px;overflow:hidden;aspect-ratio:3/4;background:#f5f5f5;display:flex;align-items:center;justify-content:center}
+    .canvas-info{font-size:.75rem;color:#999;text-align:center;padding:8px;margin-top:8px}
   </style>
 </head>
 <body>
@@ -229,6 +244,7 @@
   <div id="nav-placeholder"></div>
   <script src="components.js"></script>
   <script src="lang.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
   <div class="page-header">
     <h1 data-i18n="quote.h1">Design &amp; get a free quote</h1>
@@ -550,8 +566,31 @@
           </div>
         </div>
 
-        <div class="mockup-body" id="mockupBody">
-          <!-- SVG Garment -->
+        <!-- Print area size selector -->
+        <div class="print-area-buttons" id="printAreaButtons">
+          <span class="toolbar-label" data-i18n="quote.printarea">Print area:</span>
+          <button type="button" class="print-area-btn" data-size="small" onclick="setPrintAreaSize('small')" data-i18n="quote.printarea.small">Small (10×10cm)</button>
+          <button type="button" class="print-area-btn" data-size="medium" onclick="setPrintAreaSize('medium')" data-i18n="quote.printarea.medium">Medium (20×15cm)</button>
+          <button type="button" class="print-area-btn active" data-size="large" onclick="setPrintAreaSize('large')" data-i18n="quote.printarea.large">Large (20×30cm)</button>
+          <button type="button" class="print-area-btn" data-size="xl" onclick="setPrintAreaSize('xl')" data-i18n="quote.printarea.xl">XL (30×40cm)</button>
+        </div>
+
+        <!-- Canvas toolbar -->
+        <div class="canvas-toolbar">
+          <button type="button" class="toolbar-btn" id="uploadBtn" data-i18n="quote.toolbar.upload">Upload Design</button>
+          <button type="button" class="toolbar-btn" id="centerBtn" data-i18n="quote.toolbar.center">Center</button>
+          <button type="button" class="toolbar-btn" id="deleteBtn" data-i18n="quote.toolbar.delete">Delete Design</button>
+          <button type="button" class="toolbar-btn" id="flipBtn" data-i18n="quote.toolbar.flip">Flip Horizontal</button>
+        </div>
+
+        <!-- Canvas wrapper -->
+        <div class="canvas-wrapper">
+          <canvas id="fabricCanvas" data-i18n="quote.canvas"></canvas>
+        </div>
+        <div class="canvas-info" data-i18n="quote.canvas.info">Click to select • Drag to move • Corner handles to resize & rotate</div>
+
+        <!-- Hidden SVG Garment definitions (kept for reference and export) -->
+        <div style="display:none">
           <svg id="garmentSvg" class="garment-svg" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <filter id="softShadow" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/></filter>
@@ -719,14 +758,6 @@
               <path d="M92 360 L208 360" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
             </g>
           </svg>
-
-          <!-- Design overlay -->
-          <div class="design-overlay front" id="designOverlay">
-            <img id="designPreview" src="" alt="" style="display:none">
-            <div id="designPlaceholder" style="width:100%;height:100%;border:2px dashed rgba(255,255,255,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:.75rem;text-align:center;padding:8px">
-              Your design<br>appears here
-            </div>
-          </div>
         </div>
 
         <!-- Summary -->
@@ -955,7 +986,38 @@
       document.querySelectorAll('.view-btn').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       state.view = view;
+
+      // Store design position for this view
+      if (canvas && designObject) {
+        var viewKey = 'designState_' + view;
+        if (state.designViewStates === undefined) state.designViewStates = {};
+
+        // Save current position
+        if (state.designViewStates[state.view === 'front' ? 'back' : 'front']) {
+          // Restore previous view position
+          var saved = state.designViewStates[view];
+          if (saved) {
+            designObject.left = saved.left;
+            designObject.top = saved.top;
+            designObject.scaleX = saved.scaleX;
+            designObject.scaleY = saved.scaleY;
+            designObject.angle = saved.angle;
+          }
+        } else {
+          // Save position for current view
+          var current = state.view === 'front' ? 'front' : 'back';
+          state.designViewStates[current] = {
+            left: designObject.left,
+            top: designObject.top,
+            scaleX: designObject.scaleX,
+            scaleY: designObject.scaleY,
+            angle: designObject.angle
+          };
+        }
+      }
+
       updateDesignPosition();
+      canvas.renderAll();
     }
 
     // ===== GARMENT SVG =====
@@ -974,6 +1036,11 @@
 
       updateGarmentColor();
       updatePlacementRestrictions();
+
+      // Re-render garment on Fabric canvas
+      if (canvas) {
+        renderGarmentOnCanvas();
+      }
     }
 
     function updatePlacementRestrictions() {
@@ -1022,12 +1089,10 @@
       var handleR = document.getElementById('toteHandleR');
       if (handleL) handleL.setAttribute('stroke', darkenColor(c, 20));
       if (handleR) handleR.setAttribute('stroke', darkenColor(c, 20));
-      // Update placeholder text contrast
-      var placeholder = document.getElementById('designPlaceholder');
-      if (placeholder) {
-        var isLight = isLightColor(c);
-        placeholder.style.color = isLight ? 'rgba(0,0,0,.3)' : 'rgba(255,255,255,.4)';
-        placeholder.style.borderColor = isLight ? 'rgba(0,0,0,.2)' : 'rgba(255,255,255,.3)';
+
+      // Re-render garment on Fabric canvas
+      if (canvas) {
+        renderGarmentOnCanvas();
       }
     }
 
@@ -1048,24 +1113,182 @@
       return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
     }
 
-    // ===== DESIGN POSITION =====
-    function updateDesignPosition() {
-      var overlay = document.getElementById('designOverlay');
-      overlay.className = 'design-overlay';
+    // ===== FABRIC.JS CANVAS MANAGEMENT =====
+    var canvas = null; // Fabric canvas instance
+    var garmentImage = null; // Current garment background image
+    var designObject = null; // Current design on canvas
+    var printAreaBox = null; // Print area visual boundary
 
-      // If viewing back but placement is front (or vice versa), hide design
-      if (state.view === 'back' && state.placement !== 'back') {
-        overlay.style.opacity = '0.15';
-      } else if (state.view === 'front' && state.placement === 'back') {
-        overlay.style.opacity = '0.15';
-      } else {
-        overlay.style.opacity = '1';
+    var printAreaSizes = {
+      small: {w: 10, h: 10, label: '10×10cm'},
+      medium: {w: 20, h: 15, label: '20×15cm'},
+      large: {w: 20, h: 30, label: '20×30cm'},
+      xl: {w: 30, h: 40, label: '30×40cm'}
+    };
+    var currentPrintArea = 'large'; // default
+
+    function initFabricCanvas() {
+      // Critical fix #1: Guard against Fabric.js not being loaded yet
+      if (typeof fabric === 'undefined') {
+        console.warn('Fabric.js not loaded yet, retrying in 200ms...');
+        setTimeout(initFabricCanvas, 200);
+        return;
       }
 
-      var p = state.placement;
-      if (state.view === 'back' && state.placement === 'back') p = 'front'; // same visual position
+      var canvasEl = document.getElementById('fabricCanvas');
+      if (!canvasEl) return;
 
-      overlay.classList.add(p);
+      // Determine canvas size based on container
+      var wrapper = canvasEl.parentElement;
+      var width = wrapper.offsetWidth || 400;
+      var height = Math.round(width * 1.33); // 3:4 aspect ratio
+
+      // Critical fix #2: Set DOM element dimensions AND pass to constructor
+      canvasEl.width = width;
+      canvasEl.height = height;
+
+      canvas = new fabric.Canvas('fabricCanvas', {
+        width: width,
+        height: height,
+        backgroundColor: '#f5f5f5',
+        selection: true,
+        preserveObjectStacking: true
+      });
+
+      // Render garment background
+      renderGarmentOnCanvas();
+
+      // Handle object selection
+      canvas.on('object:added', function() { renderPrintAreaBoundary(); });
+      canvas.on('object:modified', function() { renderPrintAreaBoundary(); });
+    }
+
+    function renderGarmentOnCanvas() {
+      if (!canvas) return;
+
+      // Serialize the visible SVG garment
+      var svgEl = document.getElementById('garmentSvg');
+      if (!svgEl) return;
+
+      var svgData = new XMLSerializer().serializeToString(svgEl);
+      var svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+      var svgUrl = URL.createObjectURL(svgBlob);
+
+      fabric.Image.fromURL(svgUrl, function(img) {
+        URL.revokeObjectURL(svgUrl);
+
+        // Critical fix #3: Check if image loaded successfully
+        if (!img || !img.width || img.width === 0) {
+          console.warn('Garment SVG failed to load on canvas');
+          return;
+        }
+
+        // Remove old garment image
+        if (garmentImage) canvas.remove(garmentImage);
+
+        // Scale to fit canvas (80% width like original CSS)
+        var scale = (canvas.width * 0.8) / img.width;
+        img.scale(scale);
+        img.selectable = false;
+        img.evented = false;
+        img.name = 'garment';
+
+        // Center horizontally, position in upper-middle
+        img.left = canvas.width / 2;
+        img.top = canvas.height / 3;
+        img.originX = 'center';
+        img.originY = 'top';
+
+        canvas.add(img);
+        garmentImage = img;
+        canvas.sendToBack(img);
+        canvas.renderAll();
+
+        // Draw print area after garment is placed
+        drawPrintAreaBoundary();
+      }, {
+        crossOrigin: 'anonymous'
+      });
+    }
+
+    function drawPrintAreaBoundary() {
+      if (!canvas || !garmentImage) return;
+
+      // Remove old boundary
+      if (printAreaBox) canvas.remove(printAreaBox);
+
+      // Calculate print area size in canvas pixels
+      var size = printAreaSizes[currentPrintArea];
+      var garmentWidth = garmentImage.width * garmentImage.scaleX;
+      var garmentHeight = garmentImage.height * garmentImage.scaleY;
+
+      // Assume print area is 35% of garment width for "large", scale accordingly
+      var baseScale = garmentWidth * 0.35 / size.w;
+      var printW = size.w * baseScale;
+      var printH = size.h * baseScale;
+
+      // Center on garment
+      var centerX = garmentImage.left;
+      var centerY = garmentImage.top + garmentHeight * 0.28;
+
+      var rect = new fabric.Rect({
+        left: centerX,
+        top: centerY,
+        width: printW,
+        height: printH,
+        originX: 'center',
+        originY: 'center',
+        fill: 'transparent',
+        stroke: '#999',
+        strokeDashArray: [5, 5],
+        strokeWidth: 1,
+        selectable: false,
+        evented: false,
+        name: 'printArea'
+      });
+
+      canvas.add(rect);
+      printAreaBox = rect;
+
+      // Position print area just above garment (index 1), below user designs
+      var garmentIdx = canvas.getObjects().indexOf(garmentImage);
+      if (garmentIdx >= 0) {
+        canvas.moveTo(rect, garmentIdx + 1);
+      }
+      canvas.renderAll();
+    }
+
+    function renderPrintAreaBoundary() {
+      drawPrintAreaBoundary();
+    }
+
+    function setPrintAreaSize(size) {
+      if (!printAreaSizes[size]) return;
+      currentPrintArea = size;
+
+      // Update UI
+      document.querySelectorAll('.print-area-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      document.querySelector('.print-area-btn[data-size="' + size + '"]').classList.add('active');
+
+      // Redraw boundary
+      drawPrintAreaBoundary();
+    }
+
+    function updateDesignPosition() {
+      // Called when placement or view changes
+      // For now, just update opacity if needed based on view
+      if (designObject) {
+        if (state.view === 'back' && state.placement !== 'back') {
+          designObject.opacity = 0.15;
+        } else if (state.view === 'front' && state.placement === 'back') {
+          designObject.opacity = 0.15;
+        } else {
+          designObject.opacity = 1;
+        }
+        canvas.renderAll();
+      }
     }
 
     // ===== FILE UPLOAD =====
@@ -1093,96 +1316,138 @@
       if (file.type.startsWith('image/')) {
         var reader = new FileReader();
         reader.onload = function(e) {
-          var img = document.getElementById('designPreview');
-          img.src = e.target.result;
-          img.style.display = 'block';
-          document.getElementById('designPlaceholder').style.display = 'none';
+          addDesignToCanvas(e.target.result);
           state.designSrc = e.target.result;
           document.getElementById('downloadMockup').style.display = 'block';
         };
         reader.readAsDataURL(file);
       } else {
-        // Non-image file — show a placeholder icon
-        document.getElementById('designPlaceholder').innerHTML = '&#128196;<br>' + file.name;
+        // Non-image file — show placeholder
+        alert('Please upload an image file (PNG, JPG, etc.)');
       }
     }
 
-    // ===== DOWNLOAD MOCKUP =====
-    function downloadMockup() {
-      var mockupBody = document.getElementById('mockupBody');
-      var svgEl = document.getElementById('garmentSvg');
-      var overlay = document.getElementById('designOverlay');
-      var designImg = document.getElementById('designPreview');
+    function addDesignToCanvas(imgSrc) {
+      // Major fix: If canvas isn't ready yet, queue the design and retry
+      if (!canvas) {
+        console.warn('Canvas not ready, retrying design add in 300ms...');
+        setTimeout(function() { addDesignToCanvas(imgSrc); }, 300);
+        return;
+      }
 
-      // Canvas size
-      var W = 600, H = 800;
-      var canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = H;
-      var ctx = canvas.getContext('2d');
-
-      // Background
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(0, 0, W, H);
-
-      // Draw SVG garment
-      var svgData = new XMLSerializer().serializeToString(svgEl);
-      var svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
-      var svgUrl = URL.createObjectURL(svgBlob);
-      var garmentImg = new Image();
-      garmentImg.onload = function() {
-        // Center the garment (80% width like CSS)
-        var gW = W * 0.8, gH = gW * (400/300);
-        var gX = (W - gW) / 2, gY = (H - gH) / 2;
-        ctx.drawImage(garmentImg, gX, gY, gW, gH);
-        URL.revokeObjectURL(svgUrl);
-
-        // Draw design overlay if present
-        if (designImg && designImg.src && state.designSrc) {
-          var dImg = new Image();
-          dImg.crossOrigin = 'anonymous';
-          dImg.onload = function() {
-            // Get overlay position from CSS class
-            var p = state.placement || 'front';
-            var positions = {
-              front: {top: 0.28, left: 0.325, w: 0.35, h: 0.30},
-              back: {top: 0.28, left: 0.325, w: 0.35, h: 0.30},
-              'right-chest': {top: 0.28, left: 0.54, w: 0.16, h: 0.14},
-              sleeve: {top: 0.28, left: 0.16, w: 0.12, h: 0.16}
-            };
-            var pos = positions[p] || positions.front;
-            var dX = gX + gW * pos.left;
-            var dY = gY + gH * pos.top;
-            var dW = gW * pos.w;
-            var dH = gH * pos.h;
-            // Maintain aspect ratio within bounds
-            var ratio = Math.min(dW / dImg.width, dH / dImg.height);
-            var drawW = dImg.width * ratio;
-            var drawH = dImg.height * ratio;
-            var drawX = dX + (dW - drawW) / 2;
-            var drawY = dY + (dH - drawH) / 2;
-            ctx.drawImage(dImg, drawX, drawY, drawW, drawH);
-            finishDownload(canvas);
-          };
-          dImg.src = state.designSrc;
-        } else {
-          finishDownload(canvas);
+      fabric.Image.fromURL(imgSrc, function(img) {
+        // Error handling: check image loaded
+        if (!img || !img.width || img.width === 0) {
+          console.warn('Design image failed to load');
+          alert('Could not load your image. Please try a different file.');
+          return;
         }
-      };
-      garmentImg.src = svgUrl;
+
+        // Remove old design
+        if (designObject) canvas.remove(designObject);
+
+        // Scale to fit within print area (use print area size for smart scaling)
+        var targetWidth = canvas.width * 0.25;
+        if (printAreaBox) {
+          targetWidth = printAreaBox.width * 0.8;
+        }
+        var scale = targetWidth / img.width;
+        // Cap scale to reasonable bounds
+        scale = Math.min(Math.max(0.05, scale), 3);
+        img.scale(scale);
+
+        // Position in center of print area
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 3.5;
+        if (printAreaBox) {
+          centerX = printAreaBox.left;
+          centerY = printAreaBox.top;
+        }
+        img.left = centerX;
+        img.top = centerY;
+        img.originX = 'center';
+        img.originY = 'center';
+
+        // Add to canvas and select
+        canvas.add(img);
+        designObject = img;
+        canvas.setActiveObject(img);
+        canvas.renderAll();
+
+        // Show download button
+        document.getElementById('downloadMockup').style.display = 'block';
+      }, {
+        crossOrigin: 'anonymous'
+      });
     }
 
-    function finishDownload(canvas) {
-      // Add watermark
-      var ctx = canvas.getContext('2d');
-      ctx.font = '14px Inter, sans-serif';
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.textAlign = 'center';
-      ctx.fillText('singhsprint.com • Preview only', canvas.width/2, canvas.height - 20);
+    // Toolbar button handlers
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+      document.getElementById('designFile').click();
+    });
 
-      var link = document.createElement('a');
-      link.download = 'singhsprint-mockup.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+    document.getElementById('centerBtn').addEventListener('click', function() {
+      if (!designObject || !canvas) return;
+
+      // Center within print area if available, otherwise canvas center
+      if (printAreaBox) {
+        designObject.left = printAreaBox.left;
+        designObject.top = printAreaBox.top;
+      } else {
+        designObject.left = canvas.width / 2;
+        designObject.top = canvas.height / 3.5;
+      }
+      designObject.setCoords();
+      canvas.renderAll();
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', function() {
+      if (!designObject || !canvas) return;
+      canvas.remove(designObject);
+      designObject = null;
+      document.getElementById('downloadMockup').style.display = 'none';
+      canvas.renderAll();
+    });
+
+    document.getElementById('flipBtn').addEventListener('click', function() {
+      if (!designObject || !canvas) return;
+      designObject.flipX = !designObject.flipX;
+      canvas.renderAll();
+    });
+
+    // ===== DOWNLOAD MOCKUP =====
+    function downloadMockup() {
+      if (!canvas) return;
+
+      // Export the Fabric canvas as PNG
+      var dataUrl = canvas.toDataURL({
+        format: 'png',
+        quality: 0.95,
+        multiplier: 2 // 2x for better quality
+      });
+
+      // Add watermark
+      var exportCanvas = document.createElement('canvas');
+      var exportCtx = exportCanvas.getContext('2d');
+      var img = new Image();
+      img.onload = function() {
+        exportCanvas.width = img.width;
+        exportCanvas.height = img.height;
+        exportCtx.drawImage(img, 0, 0);
+
+        // Add watermark text
+        exportCtx.font = '14px Inter, sans-serif';
+        exportCtx.fillStyle = 'rgba(0,0,0,0.3)';
+        exportCtx.textAlign = 'center';
+        exportCtx.fillText('singhsprint.com • Preview only', exportCanvas.width/2, exportCanvas.height - 20);
+
+        // Download
+        var link = document.createElement('a');
+        link.download = 'singhsprint-mockup.png';
+        link.href = exportCanvas.toDataURL('image/png');
+        link.click();
+      };
+      img.src = dataUrl;
     }
 
     // ===== SIZE TOTAL =====
@@ -1608,8 +1873,47 @@
       }
     });
 
-    // Init
-    updateDesignPosition();
+    // Init — use 'load' event to ensure Fabric.js CDN is fully loaded
+    window.addEventListener('load', function() {
+      // Set initial pricing mode from URL before anything renders
+      updatePricingTabs();
+      // Initialize the Fabric.js canvas
+      initFabricCanvas();
+      updateDesignPosition();
+      // Initial price calculation in case values are pre-filled
+      calculatePrice();
+    });
+
+    // Handle window resize — debounced for performance
+    var resizeTimer = null;
+    window.addEventListener('resize', function() {
+      if (!canvas) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        var canvasEl = document.getElementById('fabricCanvas');
+        if (!canvasEl) return;
+        var wrapper = canvasEl.parentElement;
+        var width = wrapper.offsetWidth || 400;
+        var height = Math.round(width * 1.33);
+
+        // Sync both the DOM canvas element and the Fabric.js internal dimensions
+        canvasEl.width = width;
+        canvasEl.height = height;
+        canvas.setWidth(width);
+        canvas.setHeight(height);
+
+        // Re-render garment and print area at new size
+        renderGarmentOnCanvas();
+
+        // Reposition design if it exists
+        if (designObject) {
+          designObject.left = width / 2;
+          designObject.top = height / 3.5;
+          designObject.setCoords();
+        }
+        canvas.renderAll();
+      }, 150);
+    });
   </script>
 </body>
 </html>

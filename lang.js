@@ -439,7 +439,24 @@ var SP_LANG = (function() {
     'quote.payment.note': { en: 'Payment processing coming soon \u2014 we\'ll send you an invoice by email.', fr: 'Paiement en ligne bientot disponible \u2014 nous vous enverrons une facture par courriel.' },
 
     // Mockup download
-    'quote.mockup.download': { en: '\ud83d\udcf7 Download Mockup', fr: '\ud83d\udcf7 Telecharger la maquette' }
+    'quote.mockup.download': { en: '\ud83d\udcf7 Download Mockup', fr: '\ud83d\udcf7 Telecharger la maquette' },
+
+    // Canvas editor - Print area
+    'quote.printarea': { en: 'Print area:', fr: 'Zone d\'impression :' },
+    'quote.printarea.small': { en: 'Small (10×10cm)', fr: 'Petite (10×10cm)' },
+    'quote.printarea.medium': { en: 'Medium (20×15cm)', fr: 'Moyenne (20×15cm)' },
+    'quote.printarea.large': { en: 'Large (20×30cm)', fr: 'Grande (20×30cm)' },
+    'quote.printarea.xl': { en: 'XL (30×40cm)', fr: 'XL (30×40cm)' },
+
+    // Canvas editor - Toolbar
+    'quote.toolbar.upload': { en: 'Upload Design', fr: 'Telecharger le design' },
+    'quote.toolbar.center': { en: 'Center', fr: 'Centrer' },
+    'quote.toolbar.delete': { en: 'Delete Design', fr: 'Supprimer le design' },
+    'quote.toolbar.flip': { en: 'Flip Horizontal', fr: 'Retourner horizontalement' },
+
+    // Canvas editor - Info
+    'quote.canvas': { en: 'Design canvas', fr: 'Canevas de design' },
+    'quote.canvas.info': { en: 'Click to select • Drag to move • Corner handles to resize & rotate', fr: 'Cliquez pour selectionner • Glissez pour deplacer • Coins pour redimensionner et tourner' }
   };
 
   function t(key) {
