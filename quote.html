@@ -189,22 +189,14 @@
 </head>
 <body>
 
-  <div class="promo-bar">15% OFF your first order - applied automatically</div>
-
-  <nav class="navbar">
-    <div class="navbar-inner">
-      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:52px;width:auto"></a>
-      <div class="nav-links">
-        <a href="index.html#services">Services</a>
-        <a href="index.html#how-it-works">How It Works</a>
-        <a href="portfolio.html">Portfolio</a>
-        <a href="about.html">About Us</a>
-      </div>
-      <div class="nav-cta">
-        <a href="tel:5149151539" class="nav-phone">514-915-1539</a>
-      </div>
-    </div>
-  </nav>
+  <div id="nav-placeholder"></div>
+  <script>
+    fetch('nav.html').then(function(r){ return r.text(); }).then(function(html){
+      document.getElementById('nav-placeholder').innerHTML = html;
+      var toggle = document.getElementById('mobileToggle');
+      if (toggle) toggle.addEventListener('click', function(){ document.getElementById('navLinks').classList.toggle('active'); });
+    });
+  </script>
 
   <div class="page-header">
     <h1>Design &amp; get a free quote</h1>

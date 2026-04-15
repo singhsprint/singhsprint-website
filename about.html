@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us | Singhs Print — Montreal Custom Apparel</title>
-  <meta name="description" content="Learn about Singhs Print — Montreal's in-house custom apparel printer. DTG, DTF & Embroidery for brands, businesses & creators.">
+  <title>About Us | Singhs Print - Montreal Custom Apparel</title>
+  <meta name="description" content="Learn about Singhs Print, Montreal's in-house custom apparel printer. DTG, DTF & Embroidery for brands, businesses & creators.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
@@ -99,23 +99,7 @@
 </head>
 <body>
 
-  <div class="promo-bar">15% OFF your first order &mdash; <a href="quote.html">Get your free quote today</a></div>
-
-  <nav class="navbar">
-    <div class="navbar-inner">
-      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:40px;width:auto"></a>
-      <div class="nav-links">
-        <a href="index.html#services">Services</a>
-        <a href="index.html#how-it-works">How It Works</a>
-        <a href="portfolio.html">Portfolio</a>
-        <a href="about.html">About Us</a>
-      </div>
-      <div class="nav-cta">
-        <a href="tel:5149151539" class="nav-phone">514-915-1539</a>
-        <a href="quote.html" class="btn btn-primary">Get a Quote</a>
-      </div>
-    </div>
-  </nav>
+  <div id="nav-placeholder"></div>
 
   <section class="about-hero">
     <h1>Your local print shop,<br>built for real deadlines.</h1>
@@ -129,7 +113,7 @@
         <div class="about-text">
           <span class="highlight">Who we are</span>
           <h2>A studio that actually cares about your order</h2>
-          <p>We started Singhs Print because we were tired of seeing custom apparel done poorly — slow turnarounds, inconsistent quality, and shops that treat small orders like an inconvenience.</p>
+          <p>We started Singhs Print because we were tired of seeing custom apparel done poorly: slow turnarounds, inconsistent quality, and shops that treat small orders like an inconvenience.</p>
           <p>Every order that comes through our door gets the same attention, whether it's 5 tees for a birthday or 500 hoodies for a brand launch. We print everything in-house in Montreal, which means we control the quality from start to finish.</p>
         </div>
       </div>
@@ -144,7 +128,7 @@
           <span class="highlight">What we do</span>
           <h2>DTG, DTF &amp; Embroidery under one roof</h2>
           <p>Having all three printing methods in-house means we can recommend the right approach for your project instead of forcing everything through one method. Cotton tees? DTG. Polyester jerseys? DTF. Corporate polos with your logo? Embroidery.</p>
-          <p>We also have a design studio on-site for cleanups, mockups, and brand assets — so even if your artwork isn't print-ready, we'll get it there.</p>
+          <p>We also have a design studio on-site for cleanups, mockups, and brand assets, so even if your artwork isn't print-ready, we'll get it there.</p>
         </div>
       </div>
     </div>
@@ -205,7 +189,7 @@
   <section class="map-section">
     <div class="container">
       <h2>Visit our studio</h2>
-      <p>Montreal's West Island &mdash; open 7 days a week, 9AM to 9PM. Call first to schedule a visit.</p>
+      <p>Montreal's West Island. Open 7 days a week, 9AM to 9PM. Call first to schedule a visit.</p>
       <div class="map-embed" style="height:400px">
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2800!2d-73.9535957!3d45.4034586!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cc9397fbbe3dc3d%3A0x2a725775ff55b35e!2sImprimerie%20Singhs%20Print!5e0!3m2!1sen!2sca!4v1713100000000" width="100%" height="100%" style="border:0;border-radius:16px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
@@ -217,6 +201,22 @@
     <p>Tell us what you need and get a quote in hours, not days. First order is 15% off.</p>
     <a href="quote.html" class="btn btn-accent">Get a Free Quote &rarr;</a>
   </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script>
+    function loadComponent(id, file, callback) {
+      fetch(file).then(function(r){ return r.text(); }).then(function(html){
+        document.getElementById(id).innerHTML = html;
+        if (callback) callback();
+      });
+    }
+    loadComponent('nav-placeholder', 'nav.html', function(){
+      var toggle = document.getElementById('mobileToggle');
+      if (toggle) toggle.addEventListener('click', function(){ document.getElementById('navLinks').classList.toggle('active'); });
+    });
+    loadComponent('footer-placeholder', 'footer.html');
+  </script>
 
 </body>
 </html>
