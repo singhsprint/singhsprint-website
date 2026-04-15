@@ -223,10 +223,12 @@
       .size-grid{grid-template-columns:repeat(4,1fr)}
     }
 
-    /* ========== FABRIC.JS CANVAS EDITOR ========== */
-    #fabricCanvas{width:100%;display:block;background:#f0efec;cursor:default}
-    .canvas-container{position:relative!important;width:100%!important}
-    .canvas-wrapper{position:relative;overflow:hidden;background:#f0efec;min-height:200px}
+    /* ========== CANVAS EDITOR ========== */
+    .canvas-wrapper{position:relative;overflow:hidden;background:#f0efec;aspect-ratio:3/4}
+    .canvas-wrapper .garment-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
+    .canvas-wrapper .garment-display svg{width:75%;max-height:90%;transition:all .3s}
+    .canvas-wrapper .canvas-container{position:absolute!important;inset:0;z-index:2}
+    #fabricCanvas{width:100%!important;height:100%!important;display:block;cursor:default}
     .canvas-toolbar{display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap;align-items:center;justify-content:center;border-top:1px solid #f0f0f0;background:#fafafa}
     .toolbar-btn{padding:7px 14px;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;color:#555}
     .toolbar-btn:hover{border-color:#1a1a1a;color:#1a1a1a;background:#f8f8f8}
@@ -565,34 +567,16 @@
           </div>
         </div>
 
-        <!-- Canvas -->
-        <div class="canvas-wrapper">
-          <canvas id="fabricCanvas"></canvas>
-        </div>
-
-        <!-- Compact toolbar under canvas -->
-        <div class="canvas-toolbar">
-          <button type="button" class="toolbar-btn" id="uploadBtn" data-i18n="quote.toolbar.upload">Upload</button>
-          <button type="button" class="toolbar-btn" id="centerBtn" data-i18n="quote.toolbar.center">Center</button>
-          <button type="button" class="toolbar-btn" id="flipBtn" data-i18n="quote.toolbar.flip">Flip</button>
-          <button type="button" class="toolbar-btn" id="deleteBtn" style="color:#c44;border-color:#e8c8c8" data-i18n="quote.toolbar.delete">Remove</button>
-        </div>
-        <div class="print-area-buttons" id="printAreaButtons">
-          <span class="toolbar-label" data-i18n="quote.printarea">Print size:</span>
-          <button type="button" class="print-area-btn" data-size="small" onclick="setPrintAreaSize('small')">S</button>
-          <button type="button" class="print-area-btn" data-size="medium" onclick="setPrintAreaSize('medium')">M</button>
-          <button type="button" class="print-area-btn active" data-size="large" onclick="setPrintAreaSize('large')">L</button>
-          <button type="button" class="print-area-btn" data-size="xl" onclick="setPrintAreaSize('xl')">XL</button>
-        </div>
-
-        <!-- SVG Garment definitions (off-screen but rendered for serialization) -->
-        <div style="position:absolute;left:-9999px;top:-9999px;width:300px;height:400px;overflow:hidden">
-          <svg id="garmentSvg" class="garment-svg" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <filter id="softShadow" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/></filter>
-              <linearGradient id="fabricSheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"/><stop offset="100%" stop-color="#000000" stop-opacity="0.04"/></linearGradient>
-              <linearGradient id="foldShadow" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0.08"/></linearGradient>
-            </defs>
+        <!-- Canvas with garment background -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <!-- Layer 1: Garment SVG (visible, non-interactive) -->
+          <div class="garment-display">
+            <svg id="garmentSvg" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="softShadow" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/></filter>
+                <linearGradient id="fabricSheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"/><stop offset="100%" stop-color="#000000" stop-opacity="0.04"/></linearGradient>
+                <linearGradient id="foldShadow" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0"/><stop offset="100%" stop-color="#000000" stop-opacity="0.08"/></linearGradient>
+              </defs>
 
             <!-- T-shirt -->
             <g id="garment-tshirt" filter="url(#softShadow)">
@@ -754,6 +738,22 @@
               <path d="M92 360 L208 360" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
             </g>
           </svg>
+          </div>
+          <!-- Layer 2: Fabric.js canvas (transparent, handles design overlay) -->
+          <canvas id="fabricCanvas"></canvas>
+        </div>
+
+        <!-- Toolbar under canvas -->
+        <div class="canvas-toolbar">
+          <button type="button" class="toolbar-btn" id="uploadBtn">Upload</button>
+          <button type="button" class="toolbar-btn" id="centerBtn">Center</button>
+          <button type="button" class="toolbar-btn" id="flipBtn">Flip</button>
+          <button type="button" class="toolbar-btn" id="deleteBtn" style="color:#c44;border-color:#e8c8c8">Remove</button>
+          <span class="toolbar-label">Print size:</span>
+          <button type="button" class="print-area-btn" data-size="small" onclick="setPrintAreaSize('small')">S</button>
+          <button type="button" class="print-area-btn" data-size="medium" onclick="setPrintAreaSize('medium')">M</button>
+          <button type="button" class="print-area-btn active" data-size="large" onclick="setPrintAreaSize('large')">L</button>
+          <button type="button" class="print-area-btn" data-size="xl" onclick="setPrintAreaSize('xl')">XL</button>
         </div>
 
         <!-- Summary -->
@@ -1033,10 +1033,8 @@
       updateGarmentColor();
       updatePlacementRestrictions();
 
-      // Re-render garment on Fabric canvas
-      if (canvas) {
-        renderGarmentOnCanvas();
-      }
+      // Redraw print area (garment SVG updates itself via DOM)
+      if (canvas) drawPrintAreaBoundary();
     }
 
     function updatePlacementRestrictions() {
@@ -1109,32 +1107,32 @@
       return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
     }
 
-    // ===== FABRIC.JS CANVAS MANAGEMENT =====
+    // ===== CANVAS EDITOR =====
+    // Approach: Garment SVG renders natively in HTML (always visible).
+    // Fabric.js canvas is transparent overlay for design placement only.
     var canvas = null;
-    var garmentImage = null;
     var designObject = null;
     var printAreaBox = null;
-    var printAreaClip = null; // ClipPath rect for constraining design
 
     var printAreaSizes = {
-      small: {w: 10, h: 10, label: '10x10cm'},
-      medium: {w: 20, h: 15, label: '20x15cm'},
-      large: {w: 20, h: 30, label: '20x30cm'},
-      xl: {w: 30, h: 40, label: '30x40cm'}
+      small: {w: 0.22, h: 0.18},   // as fraction of canvas dims
+      medium: {w: 0.30, h: 0.22},
+      large: {w: 0.35, h: 0.38},
+      xl: {w: 0.45, h: 0.48}
     };
     var currentPrintArea = 'large';
 
-    // Helpers to get print area geometry
+    // Print area geometry relative to the canvas (matches where chest is on the garment SVG)
     function getPrintAreaRect() {
-      if (!garmentImage) return null;
+      if (!canvas) return null;
+      var cw = canvas.width;
+      var ch = canvas.height;
       var size = printAreaSizes[currentPrintArea];
-      var gW = garmentImage.width * garmentImage.scaleX;
-      var gH = garmentImage.height * garmentImage.scaleY;
-      var baseScale = gW * 0.35 / size.w;
-      var w = size.w * baseScale;
-      var h = size.h * baseScale;
-      var cx = garmentImage.left;
-      var cy = garmentImage.top + gH * 0.28;
+      var w = cw * size.w;
+      var h = ch * size.h;
+      // Center of print area = center of garment chest
+      var cx = cw * 0.5;
+      var cy = ch * 0.42;
       return {cx: cx, cy: cy, w: w, h: h, left: cx - w/2, top: cy - h/2};
     }
 
@@ -1144,182 +1142,87 @@
         return;
       }
 
+      var wrapper = document.getElementById('canvasWrapper');
+      if (!wrapper) return;
       var canvasEl = document.getElementById('fabricCanvas');
       if (!canvasEl) return;
 
-      var wrapper = canvasEl.parentElement;
       var width = wrapper.offsetWidth || 400;
-      var height = Math.round(width * 1.33);
-
-      canvasEl.width = width;
-      canvasEl.height = height;
+      var height = wrapper.offsetHeight || Math.round(width * 1.33);
 
       canvas = new fabric.Canvas('fabricCanvas', {
         width: width,
         height: height,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: 'transparent',
         selection: false,
         preserveObjectStacking: true
       });
 
-      // Render garment, then print area
-      renderGarmentOnCanvas();
+      drawPrintAreaBoundary();
 
-      // Constrain design movement within print area
-      canvas.on('object:moving', function(e) {
-        constrainToPrintArea(e.target);
-      });
-      canvas.on('object:scaling', function(e) {
-        constrainScaleToPrintArea(e.target);
-      });
-      canvas.on('object:modified', function(e) {
-        constrainToPrintArea(e.target);
-      });
+      // Constrain design movement
+      canvas.on('object:moving', function(e) { constrainToPrintArea(e.target); });
+      canvas.on('object:scaling', function(e) { constrainScaleToPrintArea(e.target); });
+      canvas.on('object:modified', function(e) { constrainToPrintArea(e.target); });
     }
 
-    // Constrain object position so it stays inside print area
     function constrainToPrintArea(obj) {
-      if (!obj || obj === garmentImage || obj === printAreaBox) return;
+      if (!obj || obj === printAreaBox) return;
       var pa = getPrintAreaRect();
       if (!pa) return;
-
-      var bound = obj.getBoundingRect();
-      var objW = bound.width;
-      var objH = bound.height;
-
-      // Keep at least 50% of the design inside the print area
-      var minOverlap = 0.5;
-      var minLeft = pa.left - objW * (1 - minOverlap);
-      var maxLeft = pa.left + pa.w - objW * minOverlap;
-      var minTop = pa.top - objH * (1 - minOverlap);
-      var maxTop = pa.top + pa.h - objH * minOverlap;
-
-      if (obj.left - bound.width/2 + obj.width * obj.scaleX / 2 < minLeft + objW/2) {
-        // Simplified: just keep center within extended bounds
-      }
-
-      // Simpler approach: constrain center point
-      var cx = obj.left;
-      var cy = obj.top;
-      var halfW = pa.w * 0.6;
-      var halfH = pa.h * 0.6;
-      if (cx < pa.cx - halfW) obj.left = pa.cx - halfW;
-      if (cx > pa.cx + halfW) obj.left = pa.cx + halfW;
-      if (cy < pa.cy - halfH) obj.top = pa.cy - halfH;
-      if (cy > pa.cy + halfH) obj.top = pa.cy + halfH;
+      // Keep center within the print area bounds
+      var halfW = pa.w * 0.5;
+      var halfH = pa.h * 0.5;
+      if (obj.left < pa.cx - halfW) obj.left = pa.cx - halfW;
+      if (obj.left > pa.cx + halfW) obj.left = pa.cx + halfW;
+      if (obj.top < pa.cy - halfH) obj.top = pa.cy - halfH;
+      if (obj.top > pa.cy + halfH) obj.top = pa.cy + halfH;
       obj.setCoords();
     }
 
-    // Prevent design from scaling larger than the print area
     function constrainScaleToPrintArea(obj) {
-      if (!obj || obj === garmentImage || obj === printAreaBox) return;
+      if (!obj || obj === printAreaBox) return;
       var pa = getPrintAreaRect();
       if (!pa) return;
-
-      var maxW = pa.w * 1.1; // Allow slight overflow for creative freedom
-      var maxH = pa.h * 1.1;
-      var objW = obj.width * obj.scaleX;
-      var objH = obj.height * obj.scaleY;
-
-      if (objW > maxW) {
-        obj.scaleX = maxW / obj.width;
-      }
-      if (objH > maxH) {
-        obj.scaleY = maxH / obj.height;
-      }
+      if (obj.width * obj.scaleX > pa.w) obj.scaleX = pa.w / obj.width;
+      if (obj.height * obj.scaleY > pa.h) obj.scaleY = pa.h / obj.height;
       obj.setCoords();
-    }
-
-    function renderGarmentOnCanvas() {
-      if (!canvas) return;
-
-      var svgEl = document.getElementById('garmentSvg');
-      if (!svgEl) return;
-
-      // Clone the SVG so we can manipulate visibility without affecting the DOM
-      var clone = svgEl.cloneNode(true);
-      // Set explicit width/height on clone for reliable rendering
-      clone.setAttribute('width', '300');
-      clone.setAttribute('height', '400');
-
-      var svgData = new XMLSerializer().serializeToString(clone);
-      var svgBase64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-
-      fabric.Image.fromURL(svgBase64, function(img) {
-        if (!img || img.width < 10) {
-          console.warn('Garment SVG render failed, img width:', img ? img.width : 'null');
-          return;
-        }
-
-        if (garmentImage) canvas.remove(garmentImage);
-
-        // Scale garment to 75% of canvas width
-        var targetWidth = canvas.width * 0.75;
-        var scale = targetWidth / img.width;
-        img.scale(scale);
-        img.selectable = false;
-        img.evented = false;
-        img.name = 'garment';
-
-        // Center horizontally, position near top
-        img.left = canvas.width / 2;
-        img.top = canvas.height * 0.05;
-        img.originX = 'center';
-        img.originY = 'top';
-
-        canvas.add(img);
-        garmentImage = img;
-        canvas.sendToBack(img);
-        canvas.renderAll();
-
-        drawPrintAreaBoundary();
-      }, { crossOrigin: 'anonymous' });
     }
 
     function drawPrintAreaBoundary() {
-      if (!canvas || !garmentImage) return;
+      if (!canvas) return;
       if (printAreaBox) canvas.remove(printAreaBox);
 
       var pa = getPrintAreaRect();
       if (!pa) return;
 
-      var rect = new fabric.Rect({
+      printAreaBox = new fabric.Rect({
         left: pa.cx,
         top: pa.cy,
         width: pa.w,
         height: pa.h,
         originX: 'center',
         originY: 'center',
-        fill: 'rgba(255,255,255,0.08)',
-        stroke: 'rgba(0,0,0,0.2)',
+        fill: 'rgba(255,255,255,0.05)',
+        stroke: 'rgba(0,0,0,0.15)',
         strokeDashArray: [6, 4],
         strokeWidth: 1.5,
         selectable: false,
         evented: false,
-        name: 'printArea',
-        rx: 4,
-        ry: 4
+        rx: 4, ry: 4
       });
 
-      canvas.add(rect);
-      printAreaBox = rect;
+      canvas.add(printAreaBox);
+      canvas.sendToBack(printAreaBox);
 
-      // Put print area above garment but below designs
-      var garmentIdx = canvas.getObjects().indexOf(garmentImage);
-      if (garmentIdx >= 0) canvas.moveTo(rect, garmentIdx + 1);
-
-      // Also reapply clipPath on existing design
-      if (designObject) {
-        applyClipToDesign(designObject);
-      }
-
+      // Reapply clip on existing design
+      if (designObject) applyClipToDesign(designObject);
       canvas.renderAll();
     }
 
     function applyClipToDesign(obj) {
       var pa = getPrintAreaRect();
       if (!pa || !obj) return;
-      // Create clipPath rect that matches print area position
       obj.clipPath = new fabric.Rect({
         left: pa.left,
         top: pa.top,
@@ -1329,24 +1232,14 @@
       });
     }
 
-    function renderPrintAreaBoundary() {
-      drawPrintAreaBoundary();
-    }
-
     function setPrintAreaSize(size) {
       if (!printAreaSizes[size]) return;
       currentPrintArea = size;
-
-      document.querySelectorAll('.print-area-btn').forEach(function(btn) {
-        btn.classList.remove('active');
-      });
-      var activeBtn = document.querySelector('.print-area-btn[data-size="' + size + '"]');
-      if (activeBtn) activeBtn.classList.add('active');
-
+      document.querySelectorAll('.print-area-btn').forEach(function(b) { b.classList.remove('active'); });
+      var btn = document.querySelector('.print-area-btn[data-size="' + size + '"]');
+      if (btn) btn.classList.add('active');
       drawPrintAreaBoundary();
-
-      // Re-scale design to fit new print area
-      if (designObject && printAreaBox) {
+      if (designObject) {
         fitDesignToPrintArea(designObject);
         canvas.renderAll();
       }
@@ -1355,38 +1248,28 @@
     function fitDesignToPrintArea(obj) {
       var pa = getPrintAreaRect();
       if (!pa || !obj) return;
-
-      // Scale to fit within print area with padding
-      var padding = 0.85;
-      var scaleW = (pa.w * padding) / obj.width;
-      var scaleH = (pa.h * padding) / obj.height;
-      var fitScale = Math.min(scaleW, scaleH);
-
-      // Don't scale up small images beyond 1:1 canvas resolution
-      var maxScale = Math.min(fitScale, 2);
-      obj.scale(Math.max(0.05, maxScale));
-
-      // Center in print area
+      var scaleW = (pa.w * 0.85) / obj.width;
+      var scaleH = (pa.h * 0.85) / obj.height;
+      var fitScale = Math.min(scaleW, scaleH, 2);
+      obj.scale(Math.max(0.02, fitScale));
       obj.left = pa.cx;
       obj.top = pa.cy;
       obj.originX = 'center';
       obj.originY = 'center';
       obj.setCoords();
-
       applyClipToDesign(obj);
     }
 
     function updateDesignPosition() {
-      if (designObject) {
-        if (state.view === 'back' && state.placement !== 'back') {
-          designObject.opacity = 0.15;
-        } else if (state.view === 'front' && state.placement === 'back') {
-          designObject.opacity = 0.15;
-        } else {
-          designObject.opacity = 1;
-        }
-        if (canvas) canvas.renderAll();
+      if (!designObject || !canvas) return;
+      if (state.view === 'back' && state.placement !== 'back') {
+        designObject.opacity = 0.15;
+      } else if (state.view === 'front' && state.placement === 'back') {
+        designObject.opacity = 0.15;
+      } else {
+        designObject.opacity = 1;
       }
+      canvas.renderAll();
     }
 
     // ===== FILE UPLOAD =====
@@ -1409,7 +1292,6 @@
     function handleFile(file) {
       if (!file) return;
       document.getElementById('fileName').textContent = file.name;
-
       if (file.type.startsWith('image/')) {
         var reader = new FileReader();
         reader.onload = function(e) {
@@ -1419,7 +1301,7 @@
         };
         reader.readAsDataURL(file);
       } else {
-        alert('Please upload an image file (PNG, JPG, SVG, etc.)');
+        alert('Please upload an image file (PNG, JPG, SVG)');
       }
     }
 
@@ -1430,27 +1312,25 @@
       }
 
       fabric.Image.fromURL(imgSrc, function(img) {
-        if (!img || !img.width || img.width === 0) {
-          alert('Could not load your image. Please try a different file.');
+        if (!img || !img.width) {
+          alert('Could not load your image. Try a different file.');
           return;
         }
 
-        // Remove old design
         if (designObject) canvas.remove(designObject);
 
-        // Fit within the print area
+        // Scale to fit within print area
         fitDesignToPrintArea(img);
 
-        // Style the selection controls
         img.set({
           cornerColor: '#e8ff3c',
           cornerStrokeColor: '#1a1a1a',
-          cornerSize: 12,
+          cornerSize: 10,
           cornerStyle: 'circle',
           transparentCorners: false,
           borderColor: '#1a1a1a',
           borderDashArray: [4, 4],
-          padding: 6
+          padding: 4
         });
 
         canvas.add(img);
@@ -1462,7 +1342,7 @@
       }, { crossOrigin: 'anonymous' });
     }
 
-    // Toolbar button handlers
+    // Toolbar handlers
     document.getElementById('uploadBtn').addEventListener('click', function() {
       document.getElementById('designFile').click();
     });
@@ -1470,13 +1350,8 @@
     document.getElementById('centerBtn').addEventListener('click', function() {
       if (!designObject || !canvas) return;
       var pa = getPrintAreaRect();
-      if (pa) {
-        designObject.left = pa.cx;
-        designObject.top = pa.cy;
-      } else {
-        designObject.left = canvas.width / 2;
-        designObject.top = canvas.height / 3;
-      }
+      designObject.left = pa ? pa.cx : canvas.width / 2;
+      designObject.top = pa ? pa.cy : canvas.height / 2;
       designObject.setCoords();
       canvas.renderAll();
     });
@@ -1499,48 +1374,64 @@
     function downloadMockup() {
       if (!canvas) return;
 
-      // Temporarily remove clipPath for full export, hide print area
-      var savedClip = null;
-      if (designObject && designObject.clipPath) {
-        savedClip = designObject.clipPath;
-        designObject.clipPath = null;
-      }
-      var paWasVisible = printAreaBox && printAreaBox.visible !== false;
-      if (printAreaBox) printAreaBox.visible = false;
-      canvas.discardActiveObject();
-      canvas.renderAll();
+      var wrapper = document.getElementById('canvasWrapper');
+      var wW = wrapper.offsetWidth;
+      var wH = wrapper.offsetHeight;
 
-      var dataUrl = canvas.toDataURL({
-        format: 'png',
-        quality: 0.95,
-        multiplier: 2
-      });
-
-      // Restore clipPath and print area
-      if (savedClip && designObject) designObject.clipPath = savedClip;
-      if (printAreaBox && paWasVisible) printAreaBox.visible = true;
-      canvas.renderAll();
-
-      // Add watermark
+      // Create export canvas that composites garment SVG + design
       var exportCanvas = document.createElement('canvas');
-      var exportCtx = exportCanvas.getContext('2d');
-      var img = new Image();
-      img.onload = function() {
-        exportCanvas.width = img.width;
-        exportCanvas.height = img.height;
-        exportCtx.drawImage(img, 0, 0);
+      var scale = 2; // 2x resolution
+      exportCanvas.width = wW * scale;
+      exportCanvas.height = wH * scale;
+      var ctx = exportCanvas.getContext('2d');
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#f0efec';
+      ctx.fillRect(0, 0, wW, wH);
 
-        exportCtx.font = '16px Inter, sans-serif';
-        exportCtx.fillStyle = 'rgba(0,0,0,0.25)';
-        exportCtx.textAlign = 'center';
-        exportCtx.fillText('singhsprint.com', exportCanvas.width/2, exportCanvas.height - 24);
+      // Render garment SVG to canvas
+      var svgEl = document.getElementById('garmentSvg');
+      var svgData = new XMLSerializer().serializeToString(svgEl);
+      var svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+      var svgUrl = URL.createObjectURL(svgBlob);
+
+      var garmentImg = new Image();
+      garmentImg.onload = function() {
+        // Draw garment centered like CSS does (75% width, centered)
+        var gW = wW * 0.75;
+        var gH = gW * (400/300);
+        var gX = (wW - gW) / 2;
+        var gY = (wH - gH) / 2;
+        ctx.drawImage(garmentImg, gX, gY, gW, gH);
+        URL.revokeObjectURL(svgUrl);
+
+        // Draw the Fabric canvas (design) on top — without print area and selection handles
+        if (printAreaBox) printAreaBox.visible = false;
+        canvas.discardActiveObject();
+        if (designObject && designObject.clipPath) {
+          var savedClip = designObject.clipPath;
+          designObject.clipPath = null;
+          canvas.renderAll();
+          ctx.drawImage(canvas.toCanvasElement(), 0, 0, wW, wH);
+          designObject.clipPath = savedClip;
+        } else {
+          canvas.renderAll();
+          ctx.drawImage(canvas.toCanvasElement(), 0, 0, wW, wH);
+        }
+        if (printAreaBox) printAreaBox.visible = true;
+        canvas.renderAll();
+
+        // Watermark
+        ctx.font = '13px Inter, sans-serif';
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.textAlign = 'center';
+        ctx.fillText('singhsprint.com', wW/2, wH - 16);
 
         var link = document.createElement('a');
         link.download = 'singhsprint-mockup.png';
         link.href = exportCanvas.toDataURL('image/png');
         link.click();
       };
-      img.src = dataUrl;
+      garmentImg.src = svgUrl;
     }
 
     // ===== SIZE TOTAL =====
@@ -1966,40 +1857,27 @@
       }
     });
 
-    // Init — use 'load' event to ensure Fabric.js CDN is fully loaded
+    // Init
     window.addEventListener('load', function() {
-      // Set initial pricing mode from URL before anything renders
       updatePricingTabs();
-      // Initialize the Fabric.js canvas
       initFabricCanvas();
-      updateDesignPosition();
-      // Initial price calculation in case values are pre-filled
       calculatePrice();
     });
 
-    // Handle window resize — debounced
+    // Handle window resize
     var resizeTimer = null;
     window.addEventListener('resize', function() {
       if (!canvas) return;
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(function() {
-        var canvasEl = document.getElementById('fabricCanvas');
-        if (!canvasEl) return;
-        var wrapper = canvasEl.parentElement;
+        var wrapper = document.getElementById('canvasWrapper');
+        if (!wrapper) return;
         var width = wrapper.offsetWidth || 400;
-        var height = Math.round(width * 1.33);
-
-        canvasEl.width = width;
-        canvasEl.height = height;
+        var height = wrapper.offsetHeight || Math.round(width * 1.33);
         canvas.setWidth(width);
         canvas.setHeight(height);
-
-        renderGarmentOnCanvas();
-
-        // Re-fit design to new print area dimensions
-        if (designObject) {
-          fitDesignToPrintArea(designObject);
-        }
+        drawPrintAreaBoundary();
+        if (designObject) fitDesignToPrintArea(designObject);
         canvas.renderAll();
       }, 150);
     });
