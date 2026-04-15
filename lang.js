@@ -325,8 +325,8 @@ var SP_LANG = (function() {
     'biz.pricing.label': { en: 'Volume Pricing', fr: 'Prix de volume' },
     'biz.pricing.h2': { en: 'Print prices per unit', fr: 'Prix d\'impression par unite' },
     'biz.pricing.note': {
-      en: 'Prices include printing on your chosen blank. Select a product to see the full breakdown by quantity and number of print sides.',
-      fr: 'Les prix incluent l\'impression sur le vetement choisi. Selectionnez un produit pour voir la ventilation par quantite et nombre de cotes d\'impression.'
+      en: 'Prices shown are based on Gildan-quality blanks and include printing. Premium blanks (Bella+Canvas, Comfort Colors, American Apparel, etc.) may vary. Select a product to see the full breakdown by quantity and print sides.',
+      fr: 'Les prix affiches sont bases sur des vetements de qualite Gildan et incluent l\'impression. Les marques premium (Bella+Canvas, Comfort Colors, American Apparel, etc.) peuvent varier. Selectionnez un produit pour voir la ventilation par quantite et cotes d\'impression.'
     },
     'biz.pricing.canadian': { en: '+$2 each for all-Canadian shirts (Rue Saint-Patrick)', fr: '+2$ chacun pour les chandails canadiens (Rue Saint-Patrick)' },
     'biz.pricing.qty': { en: 'Quantity', fr: 'Quantite' },
