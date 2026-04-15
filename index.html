@@ -585,22 +585,8 @@
     <a href="quote.html" class="btn btn-accent">Get Quote &rarr;</a>
   </div>
 
+  <script src="components.js"></script>
   <script>
-    // Load shared nav and footer
-    function loadComponent(id, file, callback) {
-      fetch(file).then(function(r){ return r.text(); }).then(function(html){
-        document.getElementById(id).innerHTML = html;
-        if (callback) callback();
-      });
-    }
-    loadComponent('nav-placeholder', 'nav.html', function(){
-      // Mobile menu (runs after nav loads)
-      var toggle = document.getElementById('mobileToggle');
-      if (toggle) toggle.addEventListener('click', function(){
-        document.getElementById('navLinks').classList.toggle('active');
-      });
-    });
-    loadComponent('footer-placeholder', 'footer.html');
 
     // FAQ
     document.querySelectorAll('.faq-q').forEach(function(b){

@@ -88,12 +88,29 @@
     .map-section p { color: #666; margin-bottom: 24px; }
     .map-embed { border-radius: 16px; overflow: hidden; height: 400px; background: #e8e8e8; display: flex; align-items: center; justify-content: center; color: #999; }
 
+    /* Shared component styles */
+    .btn-outline{border:2px solid #1a1a1a;color:#1a1a1a;background:transparent}
+    .btn-outline:hover{background:#1a1a1a;color:#fff}
+    .btn-sm{padding:12px 24px;font-size:.9rem}
+    .mobile-toggle{display:none;flex-direction:column;gap:5px;padding:8px}
+    .mobile-toggle span{display:block;width:24px;height:2px;background:#1a1a1a}
+    .footer{background:#0a0a0a;color:#fff;padding:60px 0 30px}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+    .footer-brand .logo{font-family:'Playfair Display',serif;font-weight:900;font-size:1.5rem}
+    .footer-brand .logo span{display:block}
+    .footer-col h4{font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;color:#888}
+    .footer-col a{display:block;font-size:.9rem;color:#aaa;margin-bottom:10px;transition:color .2s}
+    .footer-col a:hover{color:#fff}
+    .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid #222;display:flex;justify-content:space-between;font-size:.8rem;color:#555}
+
     @media (max-width: 768px) {
       .about-grid { grid-template-columns: 1fr; gap: 32px; }
       .about-grid.reverse { direction: ltr; }
       .values-grid { grid-template-columns: 1fr; }
       .equipment-grid { grid-template-columns: repeat(2, 1fr); }
       .nav-links { display: none; }
+      .footer-grid{grid-template-columns:1fr}
+      .footer-bottom{flex-direction:column;gap:8px}
     }
   </style>
 </head>
@@ -204,19 +221,7 @@
 
   <div id="footer-placeholder"></div>
 
-  <script>
-    function loadComponent(id, file, callback) {
-      fetch(file).then(function(r){ return r.text(); }).then(function(html){
-        document.getElementById(id).innerHTML = html;
-        if (callback) callback();
-      });
-    }
-    loadComponent('nav-placeholder', 'nav.html', function(){
-      var toggle = document.getElementById('mobileToggle');
-      if (toggle) toggle.addEventListener('click', function(){ document.getElementById('navLinks').classList.toggle('active'); });
-    });
-    loadComponent('footer-placeholder', 'footer.html');
-  </script>
+  <script src="components.js"></script>
 
 </body>
 </html>
