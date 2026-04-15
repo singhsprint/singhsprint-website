@@ -1095,26 +1095,27 @@
     }
 
     function updatePlacementRestrictions() {
-      var placementOpts = document.querySelectorAll('.placement-opt');
       var restricted = (state.garment === 'tote' || state.garment === 'hat' || state.garment === 'joggers');
-      placementOpts.forEach(function(opt) {
-        var p = opt.getAttribute('data-placement');
-        if (restricted && (p === 'right-chest' || p === 'sleeve')) {
-          opt.style.opacity = '0.3';
-          opt.style.pointerEvents = 'none';
-          // If currently selected, reset to front
-          if (state.placement === p) {
-            opt.classList.remove('selected');
-            state.placement = 'front';
-            document.querySelector('.placement-opt[data-placement="front"]').classList.add('selected');
-            document.getElementById('summaryPlacement').textContent = 'Front';
-            updateDesignPosition();
+      var needsUpdate = false;
+
+      document.querySelectorAll('.loc-check').forEach(function(el) {
+        var loc = el.getAttribute('data-loc');
+        if (restricted && (loc === 'left-sleeve' || loc === 'right-sleeve')) {
+          el.style.opacity = '0.3';
+          el.style.pointerEvents = 'none';
+          // Uncheck if it was checked
+          if (el.classList.contains('checked')) {
+            el.classList.remove('checked');
+            el.querySelector('input').checked = false;
+            needsUpdate = true;
           }
         } else {
-          opt.style.opacity = '1';
-          opt.style.pointerEvents = 'auto';
+          el.style.opacity = '1';
+          el.style.pointerEvents = 'auto';
         }
       });
+
+      if (needsUpdate) updateLocationSelection();
     }
 
     function updateGarmentColor() {
@@ -1823,21 +1824,21 @@
         ]}
       },
       tote: {
-        dtg: {name: 'Tote Bag', tiers: [
-          {min: 5, max: 9, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
-          {min: 10, max: 24, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
-          {min: 25, max: 49, single: 12.95, multi: 14.95, fullprint: 16.95, wrap: 18.95},
-          {min: 50, max: 99, single: 11.95, multi: 13.95, fullprint: 15.95, wrap: 17.95},
-          {min: 100, max: 199, single: 10.95, multi: 12.95, fullprint: 14.95, wrap: 16.95},
-          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        dtg: {name: 'Tote Bag', maxLocations: 2, tiers: [
+          {min: 5, max: 9, single: 16.95, multi: 18.95},
+          {min: 10, max: 24, single: 14.95, multi: 16.95},
+          {min: 25, max: 49, single: 12.95, multi: 14.95},
+          {min: 50, max: 99, single: 11.95, multi: 13.95},
+          {min: 100, max: 199, single: 9.95, multi: 11.95},
+          {min: 200, max: Infinity, single: 7.95, multi: 9.95}
         ]},
-        dtf: {name: 'Tote Bag', tiers: [
-          {min: 5, max: 9, single: 16.95, multi: 18.95, fullprint: 20.95, wrap: 22.95},
-          {min: 10, max: 24, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95},
-          {min: 25, max: 49, single: 12.95, multi: 14.95, fullprint: 16.95, wrap: 18.95},
-          {min: 50, max: 99, single: 11.95, multi: 13.95, fullprint: 15.95, wrap: 17.95},
-          {min: 100, max: 199, single: 10.95, multi: 12.95, fullprint: 14.95, wrap: 16.95},
-          {min: 200, max: Infinity, single: 9.95, multi: 11.95, fullprint: 13.95, wrap: 15.95}
+        dtf: {name: 'Tote Bag', maxLocations: 2, tiers: [
+          {min: 5, max: 9, single: 16.95, multi: 18.95},
+          {min: 10, max: 24, single: 14.95, multi: 16.95},
+          {min: 25, max: 49, single: 12.95, multi: 14.95},
+          {min: 50, max: 99, single: 11.95, multi: 13.95},
+          {min: 100, max: 199, single: 9.95, multi: 11.95},
+          {min: 200, max: Infinity, single: 7.95, multi: 9.95}
         ]}
       }
     };
@@ -1853,14 +1854,17 @@
       polo: { dtg: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95}, dtf: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95} },
       longsleeve: { dtg: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95}, dtf: {single: 29.95, multi: 32.95, fullprint: 34.95, wrap: 37.95} },
       joggers: { dtg: {single: 39.95, multi: 42.95, fullprint: 44.95, wrap: 47.95}, dtf: {single: 39.95, multi: 42.95, fullprint: 44.95, wrap: 47.95} },
-      tote: { dtg: {single: 19.95, multi: 22.95, fullprint: 24.95, wrap: 27.95}, dtf: {single: 19.95, multi: 22.95, fullprint: 24.95, wrap: 27.95} }
+      tote: { dtg: {single: 19.95, multi: 22.95}, dtf: {single: 19.95, multi: 22.95} }
     };
 
     function getPlacementType() {
       // Based on number of print locations selected
-      if (printCount >= 4) return 'wrap';
-      if (printCount >= 3) return 'fullprint';
-      if (printCount >= 2) return 'multi';
+      // Totes/hats max at 2 sides (multi)
+      var maxLocs = (state.garment === 'tote' || state.garment === 'hat') ? 2 : 4;
+      var count = Math.min(printCount, maxLocs);
+      if (count >= 4) return 'wrap';
+      if (count >= 3) return 'fullprint';
+      if (count >= 2) return 'multi';
       return 'single';
     }
 
