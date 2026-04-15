@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio | Singhs Print — Our Work</title>
+  <meta name="description" content="See our recent custom printing work — DTG, DTF & Embroidery projects for brands, businesses & creators in Montreal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a1a; background: #fff; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 800; line-height: 1.2; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    .promo-bar { background: #e8ff3c; text-align: center; padding: 10px 24px; font-weight: 600; font-size: 0.9rem; }
+    .promo-bar a { text-decoration: underline; font-weight: 700; }
+
+    .navbar { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); z-index: 1000; border-bottom: 1px solid rgba(0,0,0,0.06); padding: 0 24px; }
+    .navbar-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 72px; }
+    .logo { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.5rem; line-height: 1; }
+    .logo span { display: block; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: 0.95rem; font-weight: 500; color: #555; }
+    .nav-links a:hover { color: #1a1a1a; }
+    .nav-cta { display: flex; align-items: center; gap: 16px; }
+    .nav-phone { font-weight: 600; font-size: 0.95rem; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; transition: all 0.25s; }
+    .btn-primary { background: #1a1a1a; color: #fff; }
+    .btn-primary:hover { background: #333; }
+    .btn-accent { background: #e8ff3c; color: #1a1a1a; padding: 16px 32px; font-size: 1rem; }
+    .btn-accent:hover { background: #ddf535; }
+
+    .page-header { padding: 80px 24px 24px; text-align: center; }
+    .page-header h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 12px; }
+    .page-header p { font-size: 1.1rem; color: #666; max-width: 560px; margin: 0 auto; }
+
+    /* Filter tabs */
+    .filter-bar { display: flex; justify-content: center; gap: 8px; padding: 24px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 500;
+      border: 1.5px solid #e0e0e0; background: #fff; color: #666; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: #aaa; color: #1a1a1a; }
+    .filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+    /* Gallery grid */
+    .gallery { max-width: 1200px; margin: 0 auto 80px; padding: 0 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .gallery-item {
+      border-radius: 16px; overflow: hidden; background: #f0f0f0;
+      aspect-ratio: 1; position: relative; cursor: pointer; transition: transform 0.3s;
+    }
+    .gallery-item:hover { transform: scale(1.02); }
+    .gallery-item img {
+      width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s;
+    }
+    .gallery-item:hover img { transform: scale(1.05); }
+    .gallery-item .placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #e8e8e8, #d8d8d8); color: #999;
+      font-size: 0.85rem; text-align: center; padding: 16px; gap: 8px;
+    }
+    .gallery-item .placeholder .tag {
+      display: inline-block; padding: 4px 12px; background: rgba(0,0,0,0.06);
+      border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+    }
+    .gallery-item .item-overlay {
+      position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,0,0,0.7));
+      display: flex; align-items: flex-end; padding: 20px; opacity: 0; transition: opacity 0.3s;
+    }
+    .gallery-item:hover .item-overlay { opacity: 1; }
+    .item-overlay h4 { color: #fff; font-family: 'Playfair Display', serif; font-size: 1rem; }
+    .item-overlay span { color: rgba(255,255,255,0.7); font-size: 0.8rem; }
+
+    /* CTA */
+    .cta-section { background: #1a1a1a; padding: 80px 24px; text-align: center; color: #fff; }
+    .cta-section h2 { color: #fff; margin-bottom: 12px; }
+    .cta-section p { color: #888; max-width: 480px; margin: 0 auto 28px; font-size: 1.05rem; }
+
+    @media (max-width: 768px) {
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 480px) { .gallery { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <div class="promo-bar">15% OFF your first order &mdash; <a href="quote.html">Get your free quote today</a></div>
+
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:40px;width:auto"></a>
+      <div class="nav-links">
+        <a href="index.html#services">Services</a>
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About Us</a>
+      </div>
+      <div class="nav-cta">
+        <a href="tel:5149151539" class="nav-phone">514-915-1539</a>
+        <a href="quote.html" class="btn btn-primary">Get a Quote</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Our work</h1>
+    <p>Recent prints, merch drops, uniforms, and creative projects &mdash; all done in-house at our Montreal studio.</p>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="dtg">DTG</button>
+    <button class="filter-btn" data-filter="dtf">DTF</button>
+    <button class="filter-btn" data-filter="embroidery">Embroidery</button>
+  </div>
+
+  <div class="gallery">
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-white.jpg" alt="Something Sweet CherryKim DTG print" loading="lazy">
+      <div class="item-overlay"><div><h4>CherryKim "Something Sweet"</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="embroidery">
+      <img src="images/product-hat-artwood.jpg" alt="Artwood Construction embroidered cap" loading="lazy">
+      <div class="item-overlay"><div><h4>Artwood Construction</h4><span>Embroidery &bull; Caps</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtf">
+      <img src="images/product-tote-oldsoul.jpg" alt="Old Soul butterfly tote bag DTF print" loading="lazy">
+      <div class="item-overlay"><div><h4>Old Soul Tote Bags</h4><span>DTF &bull; Tote Bags</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-concordia.jpg" alt="Concordia Sikh Students Association tee" loading="lazy">
+      <div class="item-overlay"><div><h4>Concordia Sikh Students</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-mcgill-pizza.jpg" alt="McGill Pizza logo tee" loading="lazy">
+      <div class="item-overlay"><div><h4>McGill Pizza</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtf">
+      <img src="images/product-tote-singh.jpg" alt="Singh vs Space Invaders tote bag" loading="lazy">
+      <div class="item-overlay"><div><h4>Singh vs Space Invaders</h4><span>DTF &bull; Tote Bags</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-mcgill-boxing.jpg" alt="McGill Boxing Club tee" loading="lazy">
+      <div class="item-overlay"><div><h4>McGill Boxing Club</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-modavie.jpg" alt="Modavie Nutrition branded tee" loading="lazy">
+      <div class="item-overlay"><div><h4>Modavie Nutrition</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-black.jpg" alt="Red owl graphic on black tee" loading="lazy">
+      <div class="item-overlay"><div><h4>Custom Graphic Tee</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-heart.jpg" alt="Heart on Trial white tee" loading="lazy">
+      <div class="item-overlay"><div><h4>Heart on Trial</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtg">
+      <img src="images/product-tshirt-morgan.jpg" alt="Morgan Arboretum black tee" loading="lazy">
+      <div class="item-overlay"><div><h4>Morgan Arboretum</h4><span>DTG &bull; T-Shirts</span></div></div>
+    </div>
+    <div class="gallery-item" data-category="dtf">
+      <img src="images/product-tote-animals.jpg" alt="Red animal illustrations tote bag" loading="lazy">
+      <div class="item-overlay"><div><h4>Custom Illustrated Tote</h4><span>DTF &bull; Tote Bags</span></div></div>
+    </div>
+  </div>
+
+  <section class="cta-section">
+    <h2>Like what you see?</h2>
+    <p>Let's make something great for your brand, team, or next event.</p>
+    <a href="quote.html" class="btn btn-accent">Get a Free Quote &rarr;</a>
+  </section>
+
+  <script>
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        var filter = this.dataset.filter;
+        document.querySelectorAll('.gallery-item').forEach(function(item) {
+          if (filter === 'all' || item.dataset.category === filter) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

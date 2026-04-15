@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get a Quote | Singhs Print — Custom Apparel Printing Montreal</title>
+  <meta name="description" content="Get a free quote for custom DTG, DTF, or embroidery printing. Design your mockup live. No minimums, fast turnaround, 15% off your first order.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#f8f7f4;line-height:1.6;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+    button{cursor:pointer;border:none;background:none;font-family:inherit}
+    h1,h2,h3{font-family:'Playfair Display',serif;font-weight:800;line-height:1.2}
+
+    .promo-bar{background:#e8ff3c;text-align:center;padding:10px 24px;font-weight:600;font-size:.9rem}
+    .promo-bar a{text-decoration:underline;font-weight:700}
+    .navbar{position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);z-index:1000;border-bottom:1px solid rgba(0,0,0,.06);padding:0 24px}
+    .navbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+    .nav-links{display:flex;align-items:center;gap:32px}
+    .nav-links a{font-size:.95rem;font-weight:500;color:#555;transition:color .2s}
+    .nav-links a:hover{color:#1a1a1a}
+    .nav-cta{display:flex;align-items:center;gap:16px}
+    .nav-phone{font-weight:600;font-size:.95rem}
+
+    .page-header{padding:60px 24px 32px;text-align:center}
+    .page-header h1{font-size:clamp(2rem,4vw,3rem);margin-bottom:12px}
+    .page-header p{font-size:1.1rem;color:#666;max-width:560px;margin:0 auto}
+
+    /* Layout */
+    .customizer-layout{display:grid;grid-template-columns:1fr 400px;gap:32px;max-width:1200px;margin:0 auto 80px;padding:0 24px;align-items:start}
+
+    /* Form Card */
+    .form-card{background:#fff;border-radius:20px;padding:40px;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+    .form-card h2{font-size:1.4rem;margin-bottom:6px}
+    .step-desc{color:#888;font-size:.92rem;margin-bottom:28px}
+
+    /* Steps bar */
+    .steps-bar{display:flex;gap:4px;margin-bottom:32px}
+    .step-pill{flex:1;height:4px;border-radius:2px;background:#e8e8e8;transition:background .3s}
+    .step-pill.active{background:#1a1a1a}
+    .step-pill.done{background:#e8ff3c}
+
+    .form-section{display:none}
+    .form-section.active{display:block}
+
+    /* Product grid */
+    .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+    .product-option{border:2px solid #eee;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+    .product-option:hover{border-color:#ccc}
+    .product-option.selected{border-color:#1a1a1a;background:#fafafa}
+    .product-option .emoji{font-size:2rem;display:block;margin-bottom:6px}
+    .product-option .name{font-weight:600;font-size:.9rem;display:block}
+    .product-option .from{font-size:.75rem;color:#999;margin-top:2px;display:block}
+    .product-option .check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:none;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+    .product-option.selected .check{display:flex}
+
+    /* Service selector */
+    .service-row{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+    .svc-btn{flex:1;min-width:120px;border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+    .svc-btn:hover{border-color:#ccc}
+    .svc-btn.selected{border-color:#1a1a1a;background:#fafafa}
+    .svc-btn strong{display:block;font-size:.9rem}
+    .svc-btn span{font-size:.78rem;color:#888}
+
+    /* Color picker */
+    .color-section{margin-bottom:24px}
+    .color-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
+    .color-grid{display:flex;gap:8px;flex-wrap:wrap}
+    .color-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;position:relative}
+    .color-swatch:hover{transform:scale(1.15)}
+    .color-swatch.selected{border-color:#1a1a1a;transform:scale(1.15)}
+    .color-swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.5)}
+    .color-swatch[data-color="#FFFFFF"].selected::after{color:#1a1a1a;text-shadow:none}
+    .color-name{font-size:.8rem;color:#999;margin-top:6px}
+
+    /* Placement selector */
+    .placement-section{margin-bottom:24px}
+    .placement-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
+    .placement-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .placement-opt{border:2px solid #eee;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s}
+    .placement-opt:hover{border-color:#ccc}
+    .placement-opt.selected{border-color:#1a1a1a;background:#f8f7f4}
+    .placement-opt .pl-icon{font-size:1.4rem;display:block;margin-bottom:4px}
+    .placement-opt .pl-name{font-size:.78rem;font-weight:600;display:block}
+
+    /* Size breakdown */
+    .size-section{margin-bottom:24px}
+    .size-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
+    .size-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    .size-item{text-align:center}
+    .size-item label{display:block;font-size:.78rem;font-weight:600;color:#777;margin-bottom:4px}
+    .size-item input{width:100%;padding:10px 4px;border:1.5px solid #e0e0e0;border-radius:10px;text-align:center;font-size:.95rem;font-family:inherit}
+    .size-item input:focus{outline:none;border-color:#1a1a1a}
+    .size-total{margin-top:8px;font-size:.85rem;color:#666;font-weight:600}
+
+    /* Form fields */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px;color:#555}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:13px 14px;border:1.5px solid #e0e0e0;border-radius:12px;font-size:.95rem;font-family:inherit;transition:border-color .2s;background:#fff}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1a1a1a}
+    .form-group textarea{resize:vertical;min-height:90px}
+    .form-group .hint{font-size:.78rem;color:#aaa;margin-top:3px}
+
+    /* File upload */
+    .file-upload{border:2px dashed #ddd;border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+    .file-upload:hover{border-color:#aaa;background:#fafafa}
+    .file-upload .up-icon{font-size:1.8rem;margin-bottom:6px}
+    .file-upload p{font-size:.92rem;color:#666}
+    .file-upload span{font-size:.78rem;color:#aaa}
+    .file-upload input[type="file"]{display:none}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.95rem;font-weight:600;transition:all .25s;cursor:pointer;border:none}
+    .btn-primary{background:#1a1a1a;color:#fff}
+    .btn-primary:hover{background:#333;transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .btn-accent{background:#e8ff3c;color:#1a1a1a}
+    .btn-accent:hover{background:#ddf535;transform:translateY(-2px)}
+    .btn-outline{border:2px solid #ddd;color:#666;background:transparent;padding:12px 24px}
+    .btn-outline:hover{border-color:#1a1a1a;color:#1a1a1a}
+    .form-buttons{display:flex;justify-content:space-between;margin-top:28px}
+
+    /* Success */
+    .form-success{text-align:center;padding:40px 0;display:none}
+    .form-success .success-icon{font-size:3.5rem;margin-bottom:14px}
+    .form-success h2{margin-bottom:10px}
+    .form-success p{color:#666;font-size:1rem;max-width:400px;margin:0 auto}
+
+    /* ========== MOCKUP PREVIEW ========== */
+    .mockup-panel{position:sticky;top:100px}
+    .mockup-card{background:#fff;border:1px solid #eee;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+    .mockup-header{padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center}
+    .mockup-header h3{font-size:.95rem;font-family:'Inter',sans-serif;font-weight:700}
+    .mockup-view-toggle{display:flex;gap:4px}
+    .view-btn{padding:6px 14px;border-radius:50px;font-size:.78rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s}
+    .view-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+    .mockup-body{position:relative;aspect-ratio:3/4;background:#f5f5f5;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .garment-svg{width:80%;max-width:280px;transition:all .3s}
+    .design-overlay{position:absolute;pointer-events:none;transition:all .3s}
+    .design-overlay img{max-width:100%;max-height:100%;object-fit:contain}
+
+    /* Placement zones on mockup */
+    .design-overlay.front{top:28%;left:50%;transform:translateX(-50%);width:35%;height:30%}
+    .design-overlay.back{top:28%;left:50%;transform:translateX(-50%);width:35%;height:30%}
+    .design-overlay.left-chest{top:28%;left:38%;transform:translateX(-50%);width:16%;height:14%}
+    .design-overlay.sleeve{top:28%;left:22%;transform:translateX(-50%);width:12%;height:16%}
+
+    .mockup-footer{padding:16px 20px;border-top:1px solid #f0f0f0;text-align:center}
+    .mockup-footer p{font-size:.8rem;color:#aaa}
+    .mockup-summary{padding:16px 20px;border-top:1px solid #f0f0f0}
+    .summary-row{display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0}
+    .summary-row span:first-child{color:#888}
+    .summary-row span:last-child{font-weight:600}
+
+    /* Sidebar extras */
+    .sidebar-card{background:#fff;border:1px solid #eee;border-radius:16px;padding:24px;margin-top:16px}
+    .sidebar-card h4{font-family:'Inter',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:10px}
+    .sidebar-card p{font-size:.85rem;color:#777;line-height:1.6}
+    .sidebar-card .info-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+    .sidebar-card .info-row:last-child{margin-bottom:0}
+    .sidebar-card .info-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+    @media(max-width:900px){
+      .customizer-layout{grid-template-columns:1fr}
+      .mockup-panel{position:static;order:-1}
+      .mockup-body{aspect-ratio:1}
+    }
+    @media(max-width:768px){
+      .product-grid{grid-template-columns:repeat(2,1fr)}
+      .service-row{flex-direction:column}
+      .placement-grid{grid-template-columns:repeat(2,1fr)}
+      .size-grid{grid-template-columns:repeat(3,1fr)}
+      .form-row{grid-template-columns:1fr}
+      .form-card{padding:24px 18px}
+      .nav-links{display:none}
+    }
+    @media(max-width:480px){
+      .product-grid{grid-template-columns:1fr 1fr}
+      .size-grid{grid-template-columns:repeat(3,1fr)}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="promo-bar">15% OFF your first order &mdash; applied automatically</div>
+
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:40px;width:auto"></a>
+      <div class="nav-links">
+        <a href="index.html#services">Services</a>
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About Us</a>
+      </div>
+      <div class="nav-cta">
+        <a href="tel:5149151539" class="nav-phone">514-915-1539</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Design &amp; get a free quote</h1>
+    <p>Customize your product, preview your mockup live, and submit &mdash; we'll send pricing within hours.</p>
+  </div>
+
+  <div class="customizer-layout">
+    <!-- LEFT: Form -->
+    <div>
+      <div class="form-card">
+        <div class="steps-bar">
+          <div class="step-pill active" data-step="1"></div>
+          <div class="step-pill" data-step="2"></div>
+          <div class="step-pill" data-step="3"></div>
+        </div>
+
+        <form id="quoteForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" enctype="multipart/form-data">
+
+          <!-- ===== STEP 1: Product + Customizer ===== -->
+          <div class="form-section active" data-step="1">
+            <h2>Choose your product</h2>
+            <p class="step-desc">Select a product, pick your color, and choose where to place your design.</p>
+
+            <div class="form-group">
+              <label>Product type</label>
+              <div class="product-grid">
+                <div class="product-option" data-value="T-Shirt" data-garment="tshirt" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="emoji">&#128085;</span>
+                  <span class="name">T-Shirt</span>
+                  <span class="from">From $9.95</span>
+                </div>
+                <div class="product-option" data-value="Hoodie" data-garment="hoodie" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="emoji">&#129509;</span>
+                  <span class="name">Hoodie</span>
+                  <span class="from">From $29.95</span>
+                </div>
+                <div class="product-option" data-value="Crewneck" data-garment="crewneck" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="emoji">&#128090;</span>
+                  <span class="name">Crewneck</span>
+                  <span class="from">From $24.95</span>
+                </div>
+                <div class="product-option" data-value="Polo" data-garment="polo" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="emoji">&#128084;</span>
+                  <span class="name">Polo Shirt</span>
+                  <span class="from">From $19.95</span>
+                </div>
+                <div class="product-option" data-value="Hat/Cap" data-garment="hat" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="emoji">&#129506;</span>
+                  <span class="name">Hat / Cap</span>
+                  <span class="from">From $19.95</span>
+                </div>
+                <div class="product-option" data-value="Other" data-garment="tshirt" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="emoji">&#10024;</span>
+                  <span class="name">Other</span>
+                  <span class="from">Bags, totes, etc.</span>
+                </div>
+              </div>
+              <input type="hidden" name="product" id="productInput" required>
+            </div>
+
+            <!-- Color picker -->
+            <div class="color-section">
+              <label>Garment color</label>
+              <div class="color-grid">
+                <div class="color-swatch selected" data-color="#111111" style="background:#111111" onclick="selectColor(this)" title="Black"></div>
+                <div class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF;border:1.5px solid #ddd" onclick="selectColor(this)" title="White"></div>
+                <div class="color-swatch" data-color="#1C3A5F" style="background:#1C3A5F" onclick="selectColor(this)" title="Navy"></div>
+                <div class="color-swatch" data-color="#8B2500" style="background:#8B2500" onclick="selectColor(this)" title="Maroon"></div>
+                <div class="color-swatch" data-color="#4A4A4A" style="background:#4A4A4A" onclick="selectColor(this)" title="Charcoal"></div>
+                <div class="color-swatch" data-color="#556B2F" style="background:#556B2F" onclick="selectColor(this)" title="Forest Green"></div>
+                <div class="color-swatch" data-color="#C2B280" style="background:#C2B280" onclick="selectColor(this)" title="Sand"></div>
+                <div class="color-swatch" data-color="#D4A5A5" style="background:#D4A5A5" onclick="selectColor(this)" title="Dusty Rose"></div>
+                <div class="color-swatch" data-color="#6B8E9B" style="background:#6B8E9B" onclick="selectColor(this)" title="Slate Blue"></div>
+                <div class="color-swatch" data-color="#F5E6CA" style="background:#F5E6CA;border:1.5px solid #ddd" onclick="selectColor(this)" title="Cream"></div>
+              </div>
+              <div class="color-name" id="colorName">Black</div>
+              <input type="hidden" name="garment_color" id="colorInput" value="Black">
+            </div>
+
+            <!-- Print placement -->
+            <div class="placement-section">
+              <label>Print placement</label>
+              <div class="placement-grid">
+                <div class="placement-opt selected" data-placement="front" onclick="selectPlacement(this)">
+                  <span class="pl-icon">&#9634;</span>
+                  <span class="pl-name">Front</span>
+                </div>
+                <div class="placement-opt" data-placement="back" onclick="selectPlacement(this)">
+                  <span class="pl-icon">&#9635;</span>
+                  <span class="pl-name">Back</span>
+                </div>
+                <div class="placement-opt" data-placement="left-chest" onclick="selectPlacement(this)">
+                  <span class="pl-icon">&#9670;</span>
+                  <span class="pl-name">Left Chest</span>
+                </div>
+                <div class="placement-opt" data-placement="sleeve" onclick="selectPlacement(this)">
+                  <span class="pl-icon">&#9654;</span>
+                  <span class="pl-name">Sleeve</span>
+                </div>
+              </div>
+              <input type="hidden" name="placement" id="placementInput" value="front">
+            </div>
+
+            <!-- Printing method -->
+            <div class="form-group">
+              <label>Printing method</label>
+              <div class="service-row">
+                <div class="svc-btn" data-value="DTG" onclick="selectService(this)">
+                  <strong>DTG</strong><span>Full-color prints</span>
+                </div>
+                <div class="svc-btn" data-value="DTF" onclick="selectService(this)">
+                  <strong>DTF</strong><span>Any fabric</span>
+                </div>
+                <div class="svc-btn" data-value="Embroidery" onclick="selectService(this)">
+                  <strong>Embroidery</strong><span>Stitched logos</span>
+                </div>
+                <div class="svc-btn" data-value="Not Sure" onclick="selectService(this)">
+                  <strong>Not Sure</strong><span>Help me choose</span>
+                </div>
+              </div>
+              <input type="hidden" name="service" id="serviceInput" required>
+            </div>
+
+            <div class="form-buttons" style="justify-content:flex-end">
+              <button type="button" class="btn btn-primary" onclick="goToStep(2)">Continue &rarr;</button>
+            </div>
+          </div>
+
+          <!-- ===== STEP 2: Design Upload + Sizes ===== -->
+          <div class="form-section" data-step="2">
+            <h2>Your design &amp; sizes</h2>
+            <p class="step-desc">Upload your artwork to see it on the mockup. Then enter your size breakdown.</p>
+
+            <div class="form-group">
+              <label>Upload your design</label>
+              <label class="file-upload" for="designFile" id="dropZone">
+                <div class="up-icon">&#128193;</div>
+                <p>Click to upload or drag and drop</p>
+                <span>PNG, JPG, PDF, AI, PSD, SVG &mdash; Max 10MB</span>
+                <input type="file" id="designFile" name="design" accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg">
+              </label>
+              <p class="hint" id="fileName"></p>
+              <p class="hint">Don't have artwork? No worries — we offer free design help.</p>
+            </div>
+
+            <!-- Size breakdown -->
+            <div class="size-section">
+              <label>Size breakdown (enter qty per size)</label>
+              <div class="size-grid">
+                <div class="size-item"><label>XS</label><input type="number" name="size_xs" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>S</label><input type="number" name="size_s" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>M</label><input type="number" name="size_m" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>L</label><input type="number" name="size_l" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>XL</label><input type="number" name="size_xl" min="0" value="0" onchange="updateSizeTotal()"></div>
+                <div class="size-item"><label>2XL</label><input type="number" name="size_2xl" min="0" value="0" onchange="updateSizeTotal()"></div>
+              </div>
+              <div class="size-total">Total units: <span id="sizeTotal">0</span></div>
+              <input type="hidden" name="total_quantity" id="totalQtyInput">
+            </div>
+
+            <div class="form-group">
+              <label for="details">Additional details (optional)</label>
+              <textarea id="details" name="details" placeholder="Colors, placement notes, deadline, or anything that helps us quote accurately."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="purpose">What's this for?</label>
+              <select id="purpose" name="purpose">
+                <option value="">Select...</option>
+                <option>Business / brand merch</option>
+                <option>Team uniforms</option>
+                <option>Event or conference</option>
+                <option>Content creator / influencer</option>
+                <option>Personal / gift</option>
+                <option>Resale / store</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="form-buttons">
+              <button type="button" class="btn btn-outline" onclick="goToStep(1)">&larr; Back</button>
+              <button type="button" class="btn btn-primary" onclick="goToStep(3)">Continue &rarr;</button>
+            </div>
+          </div>
+
+          <!-- ===== STEP 3: Contact Info ===== -->
+          <div class="form-section" data-step="3">
+            <h2>How do we reach you?</h2>
+            <p class="step-desc">We'll send your quote by email &mdash; usually within a few hours.</p>
+
+            <div class="form-row">
+              <div class="form-group"><label for="name">Full name *</label><input type="text" id="name" name="name" placeholder="Your name" required></div>
+              <div class="form-group"><label for="company">Company / brand</label><input type="text" id="company" name="company" placeholder="Optional"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="email">Email *</label><input type="email" id="email" name="email" placeholder="you@example.com" required></div>
+              <div class="form-group"><label for="phone">Phone</label><input type="tel" id="phone" name="phone" placeholder="514-xxx-xxxx"></div>
+            </div>
+            <div class="form-group">
+              <label for="delivery">Delivery preference</label>
+              <select id="delivery" name="delivery">
+                <option value="">Select...</option>
+                <option>Local pickup (West Island)</option>
+                <option>Montreal delivery</option>
+                <option>Shipping (Canada-wide)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="hearAbout">How did you hear about us?</label>
+              <select id="hearAbout" name="hear_about">
+                <option value="">Select...</option>
+                <option>Google search</option>
+                <option>Instagram</option>
+                <option>Facebook</option>
+                <option>Friend / referral</option>
+                <option>Repeat customer</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="form-buttons">
+              <button type="button" class="btn btn-outline" onclick="goToStep(2)">&larr; Back</button>
+              <button type="submit" class="btn btn-accent" style="padding:16px 36px;font-size:1rem">Submit Quote Request &rarr;</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="form-success" id="formSuccess">
+          <div class="success-icon">&#127881;</div>
+          <h2>Quote request sent!</h2>
+          <p>We'll get back to you with pricing within a few hours. Check your email.</p>
+          <br><a href="index.html" class="btn btn-primary">Back to Home</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Mockup Preview -->
+    <div class="mockup-panel">
+      <div class="mockup-card">
+        <div class="mockup-header">
+          <h3>Live Preview</h3>
+          <div class="mockup-view-toggle">
+            <button class="view-btn active" data-view="front" onclick="switchView('front',this)">Front</button>
+            <button class="view-btn" data-view="back" onclick="switchView('back',this)">Back</button>
+          </div>
+        </div>
+
+        <div class="mockup-body" id="mockupBody">
+          <!-- SVG Garment -->
+          <svg id="garmentSvg" class="garment-svg" viewBox="0 0 300 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- T-shirt shape -->
+            <g id="garment-tshirt">
+              <path d="M75 50 L40 80 L15 140 L55 155 L75 105 L75 340 L225 340 L225 105 L245 155 L285 140 L260 80 L225 50 L195 65 C185 80 165 90 150 90 C135 90 115 80 105 65 Z" fill="#111111" id="garmentFill" stroke="#00000015" stroke-width="1"/>
+              <!-- Collar -->
+              <path d="M105 65 C115 80 135 90 150 90 C165 90 185 80 195 65" fill="none" stroke="#00000020" stroke-width="2"/>
+            </g>
+            <!-- Hoodie shape -->
+            <g id="garment-hoodie" style="display:none">
+              <path d="M75 60 L40 90 L15 150 L55 165 L75 115 L75 350 L225 350 L225 115 L245 165 L285 150 L260 90 L225 60 L200 55 C190 75 170 88 150 88 C130 88 110 75 100 55 Z" fill="#111111" id="garmentFillHoodie" stroke="#00000015" stroke-width="1"/>
+              <!-- Hood -->
+              <path d="M100 55 C95 30 110 10 150 10 C190 10 205 30 200 55" fill="#111111" id="hoodFill" stroke="#00000020" stroke-width="1.5"/>
+              <!-- Hood inner -->
+              <ellipse cx="150" cy="48" rx="30" ry="18" fill="#00000015"/>
+              <!-- Pocket -->
+              <rect x="105" y="230" width="90" height="45" rx="8" fill="none" stroke="#00000015" stroke-width="1"/>
+            </g>
+            <!-- Hat shape -->
+            <g id="garment-hat" style="display:none">
+              <ellipse cx="150" cy="220" rx="120" ry="16" fill="#0a0a0a" id="brimFill"/>
+              <path d="M45 220 C45 130 90 70 150 70 C210 70 255 130 255 220" fill="#111111" id="garmentFillHat" stroke="#00000015" stroke-width="1"/>
+              <rect x="80" y="185" width="140" height="35" rx="4" fill="#00000010"/>
+            </g>
+          </svg>
+
+          <!-- Design overlay -->
+          <div class="design-overlay front" id="designOverlay">
+            <img id="designPreview" src="" alt="" style="display:none">
+            <div id="designPlaceholder" style="width:100%;height:100%;border:2px dashed rgba(255,255,255,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:.75rem;text-align:center;padding:8px">
+              Your design<br>appears here
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mockup-summary" id="mockupSummary">
+          <div class="summary-row"><span>Product</span><span id="sumProduct">—</span></div>
+          <div class="summary-row"><span>Color</span><span id="sumColor">Black</span></div>
+          <div class="summary-row"><span>Placement</span><span id="sumPlacement">Front</span></div>
+          <div class="summary-row"><span>Method</span><span id="sumMethod">—</span></div>
+          <div class="summary-row"><span>Total units</span><span id="sumQty">0</span></div>
+        </div>
+
+        <div class="mockup-footer">
+          <p>This is an approximate preview. Final placement &amp; sizing confirmed during production.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4>What happens next?</h4>
+        <div class="info-row"><span class="info-icon">&#9993;</span><p>We review your request and send a detailed quote — usually same day.</p></div>
+        <div class="info-row"><span class="info-icon">&#128230;</span><p>Once approved, we print a real sample before your full order.</p></div>
+      </div>
+      <div class="sidebar-card">
+        <h4>Prefer to talk?</h4>
+        <p><strong><a href="tel:5149151539" style="color:#1a1a1a">514-915-1539</a></strong></p>
+        <p style="margin-top:6px"><a href="mailto:sales@singhsprint.com" style="color:#1a1a1a">sales@singhsprint.com</a></p>
+        <p style="margin-top:6px;font-size:.8rem;color:#aaa">Open 7 days, 9AM – 9PM</p>
+      </div>
+      <div class="sidebar-card" style="background:#1a1a1a;color:#fff;border-color:#333">
+        <h4 style="color:#e8ff3c">15% off your first order</h4>
+        <p style="color:#aaa">Automatically applied to all new customers. No code needed.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== STATE =====
+    var state = {
+      product: '',
+      garment: 'tshirt',
+      color: '#111111',
+      colorName: 'Black',
+      placement: 'front',
+      service: '',
+      view: 'front',
+      designSrc: null
+    };
+
+    var colorNames = {
+      '#111111': 'Black',
+      '#FFFFFF': 'White',
+      '#1C3A5F': 'Navy',
+      '#8B2500': 'Maroon',
+      '#4A4A4A': 'Charcoal',
+      '#556B2F': 'Forest Green',
+      '#C2B280': 'Sand',
+      '#D4A5A5': 'Dusty Rose',
+      '#6B8E9B': 'Slate Blue',
+      '#F5E6CA': 'Cream'
+    };
+
+    // ===== PRODUCT =====
+    function selectProduct(el) {
+      document.querySelectorAll('.product-option').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      state.product = el.dataset.value;
+      state.garment = el.dataset.garment;
+      document.getElementById('productInput').value = state.product;
+      document.getElementById('sumProduct').textContent = state.product;
+      updateGarmentShape();
+    }
+
+    // ===== COLOR =====
+    function selectColor(el) {
+      document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('selected'); });
+      el.classList.add('selected');
+      state.color = el.dataset.color;
+      state.colorName = colorNames[state.color] || state.color;
+      document.getElementById('colorInput').value = state.colorName;
+      document.getElementById('colorName').textContent = state.colorName;
+      document.getElementById('sumColor').textContent = state.colorName;
+      updateGarmentColor();
+    }
+
+    // ===== PLACEMENT =====
+    function selectPlacement(el) {
+      document.querySelectorAll('.placement-opt').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      state.placement = el.dataset.placement;
+      document.getElementById('placementInput').value = state.placement;
+      document.getElementById('sumPlacement').textContent = el.querySelector('.pl-name').textContent;
+      updateDesignPosition();
+    }
+
+    // ===== SERVICE =====
+    function selectService(el) {
+      document.querySelectorAll('.svc-btn').forEach(function(o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      state.service = el.dataset.value;
+      document.getElementById('serviceInput').value = state.service;
+      document.getElementById('sumMethod').textContent = state.service;
+    }
+
+    // ===== VIEW TOGGLE =====
+    function switchView(view, btn) {
+      document.querySelectorAll('.view-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.view = view;
+      updateDesignPosition();
+    }
+
+    // ===== GARMENT SVG =====
+    function updateGarmentShape() {
+      var tshirt = document.getElementById('garment-tshirt');
+      var hoodie = document.getElementById('garment-hoodie');
+      var hat = document.getElementById('garment-hat');
+      tshirt.style.display = 'none';
+      hoodie.style.display = 'none';
+      hat.style.display = 'none';
+
+      if (state.garment === 'hoodie' || state.garment === 'crewneck') {
+        hoodie.style.display = 'block';
+      } else if (state.garment === 'hat') {
+        hat.style.display = 'block';
+      } else {
+        tshirt.style.display = 'block';
+      }
+      updateGarmentColor();
+    }
+
+    function updateGarmentColor() {
+      var c = state.color;
+      document.getElementById('garmentFill').setAttribute('fill', c);
+      document.getElementById('garmentFillHoodie').setAttribute('fill', c);
+      document.getElementById('hoodFill').setAttribute('fill', c);
+      document.getElementById('garmentFillHat').setAttribute('fill', c);
+      // Brim slightly darker
+      var brim = document.getElementById('brimFill');
+      brim.setAttribute('fill', darkenColor(c, 30));
+    }
+
+    function darkenColor(hex, amount) {
+      hex = hex.replace('#', '');
+      var r = Math.max(0, parseInt(hex.substr(0,2),16) - amount);
+      var g = Math.max(0, parseInt(hex.substr(2,2),16) - amount);
+      var b = Math.max(0, parseInt(hex.substr(4,2),16) - amount);
+      return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
+    }
+
+    // ===== DESIGN POSITION =====
+    function updateDesignPosition() {
+      var overlay = document.getElementById('designOverlay');
+      overlay.className = 'design-overlay';
+
+      // If viewing back but placement is front (or vice versa), hide design
+      if (state.view === 'back' && state.placement !== 'back') {
+        overlay.style.opacity = '0.15';
+      } else if (state.view === 'front' && state.placement === 'back') {
+        overlay.style.opacity = '0.15';
+      } else {
+        overlay.style.opacity = '1';
+      }
+
+      var p = state.placement;
+      if (state.view === 'back' && state.placement === 'back') p = 'front'; // same visual position
+
+      overlay.classList.add(p);
+    }
+
+    // ===== FILE UPLOAD =====
+    document.getElementById('designFile').addEventListener('change', function(e) {
+      handleFile(e.target.files[0]);
+    });
+
+    // Drag and drop
+    var dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#1a1a1a'; });
+    dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#ddd'; });
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      dropZone.style.borderColor = '#ddd';
+      if (e.dataTransfer.files.length) {
+        document.getElementById('designFile').files = e.dataTransfer.files;
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      document.getElementById('fileName').textContent = '✓ ' + file.name;
+
+      if (file.type.startsWith('image/')) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var img = document.getElementById('designPreview');
+          img.src = e.target.result;
+          img.style.display = 'block';
+          document.getElementById('designPlaceholder').style.display = 'none';
+          state.designSrc = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Non-image file — show a placeholder icon
+        document.getElementById('designPlaceholder').innerHTML = '&#128196;<br>' + file.name;
+      }
+    }
+
+    // ===== SIZE TOTAL =====
+    function updateSizeTotal() {
+      var inputs = document.querySelectorAll('.size-grid input');
+      var total = 0;
+      inputs.forEach(function(inp) { total += parseInt(inp.value) || 0; });
+      document.getElementById('sizeTotal').textContent = total;
+      document.getElementById('sumQty').textContent = total;
+      document.getElementById('totalQtyInput').value = total;
+    }
+
+    // ===== STEP NAVIGATION =====
+    function goToStep(step) {
+      var current = document.querySelector('.form-section.active');
+      var currentNum = parseInt(current.dataset.step);
+
+      if (step > currentNum) {
+        if (currentNum === 1) {
+          if (!state.product) { alert('Please select a product.'); return; }
+          if (!state.service) { alert('Please select a printing method.'); return; }
+        }
+      }
+
+      document.querySelectorAll('.form-section').forEach(function(s) { s.classList.remove('active'); });
+      document.querySelector('.form-section[data-step="'+step+'"]').classList.add('active');
+
+      document.querySelectorAll('.step-pill').forEach(function(p) {
+        var s = parseInt(p.dataset.step);
+        p.classList.remove('active','done');
+        if (s === step) p.classList.add('active');
+        else if (s < step) p.classList.add('done');
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== FORM SUBMIT =====
+    document.getElementById('quoteForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var form = this;
+
+      // Try Formspree
+      var formData = new FormData(form);
+      var action = form.getAttribute('action');
+
+      if (action.includes('YOUR_FORM_ID')) {
+        // Fallback: mailto
+        var subject = encodeURIComponent('Quote Request from ' + (formData.get('name') || 'Website'));
+        var body = encodeURIComponent(
+          'Product: ' + state.product + '\n' +
+          'Color: ' + state.colorName + '\n' +
+          'Placement: ' + state.placement + '\n' +
+          'Method: ' + state.service + '\n' +
+          'Total qty: ' + (document.getElementById('sizeTotal').textContent) + '\n' +
+          'Purpose: ' + (formData.get('purpose') || 'N/A') + '\n' +
+          'Details: ' + (formData.get('details') || 'N/A') + '\n\n' +
+          'Name: ' + formData.get('name') + '\n' +
+          'Company: ' + (formData.get('company') || 'N/A') + '\n' +
+          'Email: ' + formData.get('email') + '\n' +
+          'Phone: ' + (formData.get('phone') || 'N/A') + '\n' +
+          'Delivery: ' + (formData.get('delivery') || 'N/A') + '\n' +
+          'Heard about us: ' + (formData.get('hear_about') || 'N/A')
+        );
+        window.location.href = 'mailto:sales@singhsprint.com?subject=' + subject + '&body=' + body;
+        showSuccess();
+        return;
+      }
+
+      fetch(action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
+        .then(function(r) {
+          if (r.ok) { showSuccess(); }
+          else { alert('Something went wrong. Please call us at 514-915-1539 or email sales@singhsprint.com.'); }
+        })
+        .catch(function() {
+          alert('Connection error. Please call us at 514-915-1539 or email sales@singhsprint.com.');
+        });
+    });
+
+    function showSuccess() {
+      document.getElementById('quoteForm').style.display = 'none';
+      document.querySelector('.steps-bar').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+    }
+
+    // Init
+    updateDesignPosition();
+  </script>
+</body>
+</html>

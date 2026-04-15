@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | Singhs Print — Montreal Custom Apparel</title>
+  <meta name="description" content="Learn about Singhs Print — Montreal's in-house custom apparel printer. DTG, DTF & Embroidery for brands, businesses & creators.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a1a; background: #fff; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 800; line-height: 1.2; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    .promo-bar { background: #e8ff3c; text-align: center; padding: 10px 24px; font-weight: 600; font-size: 0.9rem; }
+    .promo-bar a { text-decoration: underline; font-weight: 700; }
+
+    .navbar { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); z-index: 1000; border-bottom: 1px solid rgba(0,0,0,0.06); padding: 0 24px; }
+    .navbar-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 72px; }
+    .logo { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.5rem; line-height: 1; }
+    .logo span { display: block; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: 0.95rem; font-weight: 500; color: #555; }
+    .nav-links a:hover { color: #1a1a1a; }
+    .nav-cta { display: flex; align-items: center; gap: 16px; }
+    .nav-phone { font-weight: 600; font-size: 0.95rem; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; transition: all 0.25s; }
+    .btn-primary { background: #1a1a1a; color: #fff; }
+    .btn-primary:hover { background: #333; }
+    .btn-accent { background: #e8ff3c; color: #1a1a1a; padding: 16px 32px; font-size: 1rem; }
+    .btn-accent:hover { background: #ddf535; }
+
+    /* Hero */
+    .about-hero { padding: 80px 24px 60px; text-align: center; background: #f8f7f4; }
+    .about-hero h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 16px; }
+    .about-hero p { font-size: 1.15rem; color: #666; max-width: 640px; margin: 0 auto; line-height: 1.8; }
+
+    /* Content sections */
+    .about-section { padding: 80px 0; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .about-grid.reverse { direction: rtl; }
+    .about-grid.reverse > * { direction: ltr; }
+    .about-image {
+      border-radius: 20px; overflow: hidden; background: #e8e8e8; aspect-ratio: 4/3;
+      position: relative;
+    }
+    .about-image img { width: 100%; height: 100%; object-fit: cover; }
+    .about-text h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); margin-bottom: 16px; }
+    .about-text p { color: #555; font-size: 1.05rem; line-height: 1.8; margin-bottom: 16px; }
+    .about-text .highlight {
+      display: inline-block; padding: 4px 14px; background: #e8ff3c; border-radius: 4px;
+      font-weight: 600; font-size: 0.9rem; margin-bottom: 16px;
+    }
+
+    /* Values */
+    .values-section { background: #0a0a0a; color: #fff; padding: 80px 0; }
+    .values-section h2 { text-align: center; margin-bottom: 48px; }
+    .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .value-card {
+      padding: 32px; border-radius: 16px; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .value-icon { font-size: 2rem; margin-bottom: 16px; }
+    .value-card h3 { color: #fff; font-size: 1.15rem; margin-bottom: 8px; }
+    .value-card p { color: #888; font-size: 0.95rem; line-height: 1.6; }
+
+    /* Equipment */
+    .equipment-section { padding: 80px 0; background: #f8f7f4; }
+    .equipment-section h2 { text-align: center; margin-bottom: 12px; }
+    .equipment-section > .container > p { text-align: center; color: #777; margin-bottom: 48px; font-size: 1.05rem; }
+    .equipment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .equipment-item {
+      border-radius: 16px; overflow: hidden; background: #e0e0e0; aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.85rem; text-align: center; padding: 16px;
+    }
+
+    /* CTA */
+    .cta-section { background: #1a1a1a; padding: 80px 24px; text-align: center; color: #fff; }
+    .cta-section h2 { color: #fff; margin-bottom: 12px; }
+    .cta-section p { color: #888; max-width: 480px; margin: 0 auto 28px; font-size: 1.05rem; }
+
+    /* Map area */
+    .map-section { padding: 60px 0; text-align: center; }
+    .map-section h2 { margin-bottom: 12px; }
+    .map-section p { color: #666; margin-bottom: 24px; }
+    .map-embed { border-radius: 16px; overflow: hidden; height: 400px; background: #e8e8e8; display: flex; align-items: center; justify-content: center; color: #999; }
+
+    @media (max-width: 768px) {
+      .about-grid { grid-template-columns: 1fr; gap: 32px; }
+      .about-grid.reverse { direction: ltr; }
+      .values-grid { grid-template-columns: 1fr; }
+      .equipment-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="promo-bar">15% OFF your first order &mdash; <a href="quote.html">Get your free quote today</a></div>
+
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:40px;width:auto"></a>
+      <div class="nav-links">
+        <a href="index.html#services">Services</a>
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About Us</a>
+      </div>
+      <div class="nav-cta">
+        <a href="tel:5149151539" class="nav-phone">514-915-1539</a>
+        <a href="quote.html" class="btn btn-primary">Get a Quote</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="about-hero">
+    <h1>Your local print shop,<br>built for real deadlines.</h1>
+    <p>Singhs Print is a Montreal-based custom apparel studio specializing in DTG, DTF, and embroidery. We help brands, businesses, creators, and teams bring their ideas to life with honest pricing, fast turnaround, and quality you can see and feel.</p>
+  </section>
+
+  <section class="about-section">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image"><img src="images/lifestyle-intrusive.jpg" alt="Singhs Print studio workspace" loading="lazy"></div>
+        <div class="about-text">
+          <span class="highlight">Who we are</span>
+          <h2>A studio that actually cares about your order</h2>
+          <p>We started Singhs Print because we were tired of seeing custom apparel done poorly — slow turnarounds, inconsistent quality, and shops that treat small orders like an inconvenience.</p>
+          <p>Every order that comes through our door gets the same attention, whether it's 5 tees for a birthday or 500 hoodies for a brand launch. We print everything in-house in Montreal, which means we control the quality from start to finish.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section" style="background: #f8f7f4;">
+    <div class="container">
+      <div class="about-grid reverse">
+        <div class="about-image"><img src="images/hero-duo.jpg" alt="Custom DTG DTF and Embroidery printing at Singhs Print" loading="lazy"></div>
+        <div class="about-text">
+          <span class="highlight">What we do</span>
+          <h2>DTG, DTF &amp; Embroidery under one roof</h2>
+          <p>Having all three printing methods in-house means we can recommend the right approach for your project instead of forcing everything through one method. Cotton tees? DTG. Polyester jerseys? DTF. Corporate polos with your logo? Embroidery.</p>
+          <p>We also have a design studio on-site for cleanups, mockups, and brand assets — so even if your artwork isn't print-ready, we'll get it there.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image"><img src="images/lifestyle-jacket.jpg" alt="Custom printed jacket showcase" loading="lazy"></div>
+        <div class="about-text">
+          <span class="highlight">Who we work with</span>
+          <h2>From startups to schools to Saturday markets</h2>
+          <p>Our clients include local businesses needing staff uniforms, content creators launching merch, gyms and cafes with branded gear, schools and event organizers, and artists selling at pop-ups.</p>
+          <p>Whether you need 1 item or 1,000+, there's no minimum and no judgment. We've built our process to be friendly for first-timers and efficient for repeat clients.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="values-section">
+    <div class="container">
+      <h2>How we work</h2>
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="value-icon">&#128200;</div>
+          <h3>Transparent pricing</h3>
+          <p>You get a clear quote upfront with no hidden fees. Bulk discounts and business packages available for recurring orders.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">&#128269;</div>
+          <h3>Sample-first approach</h3>
+          <p>Every order gets a physical sample before full production. You verify colors, placement, and quality before we print a single extra piece.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">&#9889;</div>
+          <h3>Real turnaround times</h3>
+          <p>Most orders ready in 2-4 business days. We don't quote timelines we can't hit, and rush options are available when you need them.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">&#127919;</div>
+          <h3>Quality control</h3>
+          <p>100% in-house production means we catch issues before they reach you. No outsourcing, no middlemen, no surprises.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">&#127912;</div>
+          <h3>Free design help</h3>
+          <p>Don't have print-ready artwork? Our design studio helps with cleanups, mockups, and getting your files production-ready at no extra charge.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">&#128666;</div>
+          <h3>Flexible delivery</h3>
+          <p>Local pickup in the West Island, delivery across Montreal, or Canada-wide shipping. Free delivery on orders of 25+ units.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="map-section">
+    <div class="container">
+      <h2>Visit our studio</h2>
+      <p>Montreal's West Island &mdash; open 7 days a week, 9AM to 9PM. Call first to schedule a visit.</p>
+      <div class="map-embed" style="height:400px">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2800!2d-73.9535957!3d45.4034586!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cc9397fbbe3dc3d%3A0x2a725775ff55b35e!2sImprimerie%20Singhs%20Print!5e0!3m2!1sen!2sca!4v1713100000000" width="100%" height="100%" style="border:0;border-radius:16px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2>Ready to get started?</h2>
+    <p>Tell us what you need and get a quote in hours, not days. First order is 15% off.</p>
+    <a href="quote.html" class="btn btn-accent">Get a Free Quote &rarr;</a>
+  </section>
+
+</body>
+</html>
