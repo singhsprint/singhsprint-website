@@ -113,15 +113,20 @@
     .pay-button:disabled{background:#ddd;cursor:not-allowed}
     .pay-message{font-size:.75rem;color:#aaa;text-align:center;line-height:1.4}
 
-    /* Placement selector */
+    /* Print count selector */
     .placement-section{margin-bottom:24px}
     .placement-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
-    .placement-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    .placement-opt{border:2px solid #eee;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s}
-    .placement-opt:hover{border-color:#ccc}
-    .placement-opt.selected{border-color:#1a1a1a;background:#f8f7f4}
-    .placement-opt .pl-icon{font-size:1.4rem;display:block;margin-bottom:4px}
-    .placement-opt .pl-name{font-size:.78rem;font-weight:600;display:block}
+    .print-count-row{display:flex;gap:8px;margin-bottom:6px}
+    .print-count-btn{width:44px;height:44px;border:2px solid #eee;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;background:#fff;color:#555}
+    .print-count-btn:hover{border-color:#ccc}
+    .print-count-btn.active{border-color:#1a1a1a;background:#1a1a1a;color:#fff}
+    .print-count-hint{font-size:.75rem;color:#aaa;margin-top:4px}
+
+    /* Location bar under mockup */
+    .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
+    .loc-btn{padding:7px 14px;border-radius:50px;font-size:.72rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .loc-btn:hover{border-color:#ccc;color:#555}
+    .loc-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 
     /* Size breakdown */
     .size-section{margin-bottom:24px}
@@ -209,7 +214,7 @@
     @media(max-width:768px){
       .product-grid{grid-template-columns:repeat(2,1fr)}
       .service-row{flex-direction:column}
-      .placement-grid{grid-template-columns:repeat(2,1fr)}
+      .location-bar{padding:8px}
       .size-grid{grid-template-columns:repeat(4,1fr)}
       .form-row{grid-template-columns:1fr}
       .form-card{padding:24px 18px}
@@ -374,28 +379,19 @@
               </select>
             </div>
 
-            <!-- Print placement -->
+            <!-- Number of print locations -->
             <div class="placement-section">
-              <label data-i18n="quote.placement">Print placement (select all that apply)</label>
-              <div class="placement-grid">
-                <div class="placement-opt selected" data-placement="front" onclick="togglePlacement(this)">
-                  <span class="pl-icon">&#9634;</span>
-                  <span class="pl-name" data-i18n="quote.placement.front">Front</span>
-                </div>
-                <div class="placement-opt" data-placement="back" onclick="togglePlacement(this)">
-                  <span class="pl-icon">&#9635;</span>
-                  <span class="pl-name" data-i18n="quote.placement.back">Back</span>
-                </div>
-                <div class="placement-opt" data-placement="right-chest" onclick="togglePlacement(this)">
-                  <span class="pl-icon">&#9670;</span>
-                  <span class="pl-name" data-i18n="quote.placement.rightchest">Right Chest</span>
-                </div>
-                <div class="placement-opt" data-placement="sleeve" onclick="togglePlacement(this)">
-                  <span class="pl-icon">&#9654;</span>
-                  <span class="pl-name" data-i18n="quote.placement.sleeve">Sleeve</span>
-                </div>
+              <label data-i18n="quote.printcount">How many print locations?</label>
+              <div class="print-count-row">
+                <button type="button" class="print-count-btn active" data-count="1" onclick="setPrintCount(1, this)">1</button>
+                <button type="button" class="print-count-btn" data-count="2" onclick="setPrintCount(2, this)">2</button>
+                <button type="button" class="print-count-btn" data-count="3" onclick="setPrintCount(3, this)">3</button>
+                <button type="button" class="print-count-btn" data-count="4" onclick="setPrintCount(4, this)">4</button>
+                <button type="button" class="print-count-btn" data-count="5" onclick="setPrintCount(5, this)">5</button>
               </div>
+              <p class="print-count-hint">Select the locations below the preview</p>
               <input type="hidden" name="placement" id="placementInput" value="front">
+              <input type="hidden" name="print_count" id="printCountInput" value="1">
             </div>
 
             <!-- Printing method info cards -->
@@ -617,17 +613,22 @@
 
             <!-- Crewneck -->
             <g id="garment-crewneck" style="display:none" filter="url(#softShadow)">
-              <path d="M105 58 L62 78 L22 148 L58 165 L78 112 L78 355 Q78 365 90 365 L210 365 Q222 365 222 355 L222 112 L242 165 L278 148 L238 78 L195 58 C188 76 170 88 150 88 C130 88 112 76 105 58 Z" fill="#00000008"/>
-              <path d="M105 52 L62 72 L22 142 L58 158 L78 105 L78 350 Q78 360 90 360 L210 360 Q222 360 222 350 L222 105 L242 158 L278 142 L238 72 L195 52 C188 70 170 82 150 82 C130 82 112 70 105 52 Z" id="garmentFillCrewneck" fill="#111111"/>
-              <path d="M105 52 L62 72 L22 142 L58 158 L78 105 L78 350 Q78 360 90 360 L210 360 Q222 360 222 350 L222 105 L242 158 L278 142 L238 72 L195 52 C188 70 170 82 150 82 C130 82 112 70 105 52 Z" fill="url(#fabricSheen)"/>
+              <!-- Shadow -->
+              <path d="M105 55 L52 78 L15 318 Q13 328 24 330 L52 332 Q60 332 62 324 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L238 324 Q240 332 248 332 L276 330 Q287 328 285 318 L248 78 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="#00000008"/>
+              <!-- Body with long sleeves -->
+              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" id="garmentFillCrewneck" fill="#111111"/>
+              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" fill="url(#fabricSheen)"/>
               <!-- Ribbed crew neck -->
-              <ellipse cx="150" cy="60" rx="24" ry="10" fill="#00000012"/>
-              <path d="M126 60 C126 52 136 46 150 46 C164 46 174 52 174 60" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2.5"/>
-              <!-- Sleeve seams -->
-              <line x1="78" y1="105" x2="78" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
-              <line x1="222" y1="105" x2="222" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+              <ellipse cx="150" cy="58" rx="24" ry="10" fill="#00000012"/>
+              <path d="M126 58 C126 50 136 44 150 44 C164 44 174 50 174 58" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2.5"/>
+              <!-- Cuffs -->
+              <rect x="20" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
+              <rect x="242" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
               <!-- Ribbed hem -->
-              <rect x="90" y="348" width="120" height="12" rx="2" fill="#ffffff" fill-opacity="0.03"/>
+              <rect x="92" y="350" width="116" height="10" rx="2" fill="#ffffff" fill-opacity="0.03"/>
+              <!-- Seams -->
+              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
             </g>
 
             <!-- Hat -->
@@ -743,13 +744,22 @@
           <canvas id="fabricCanvas"></canvas>
         </div>
 
-        <!-- Toolbar under canvas -->
+        <!-- Location selector under canvas -->
+        <div class="location-bar" id="locationBar">
+          <button type="button" class="loc-btn active" data-loc="front" onclick="setDesignLocation('front', this)">Front</button>
+          <button type="button" class="loc-btn" data-loc="back" onclick="setDesignLocation('back', this)">Back</button>
+          <button type="button" class="loc-btn" data-loc="right-chest" onclick="setDesignLocation('right-chest', this)">Right Chest</button>
+          <button type="button" class="loc-btn" data-loc="left-chest" onclick="setDesignLocation('left-chest', this)">Left Chest</button>
+          <button type="button" class="loc-btn" data-loc="both-arms" onclick="setDesignLocation('both-arms', this)">Both Arms</button>
+        </div>
+
+        <!-- Tools -->
         <div class="canvas-toolbar">
           <button type="button" class="toolbar-btn" id="uploadBtn">Upload</button>
           <button type="button" class="toolbar-btn" id="centerBtn">Center</button>
           <button type="button" class="toolbar-btn" id="flipBtn">Flip</button>
           <button type="button" class="toolbar-btn" id="deleteBtn" style="color:#c44;border-color:#e8c8c8">Remove</button>
-          <span class="toolbar-label">Print size:</span>
+          <span class="toolbar-label">Size:</span>
           <button type="button" class="print-area-btn" data-size="small" onclick="setPrintAreaSize('small')">S</button>
           <button type="button" class="print-area-btn" data-size="medium" onclick="setPrintAreaSize('medium')">M</button>
           <button type="button" class="print-area-btn active" data-size="large" onclick="setPrintAreaSize('large')">L</button>
@@ -1113,27 +1123,69 @@
     var canvas = null;
     var designObject = null;
     var printAreaBox = null;
+    var currentLocation = 'front';
+    var printCount = 1;
 
     var printAreaSizes = {
-      small: {w: 0.22, h: 0.18},   // as fraction of canvas dims
+      small: {w: 0.22, h: 0.18},
       medium: {w: 0.30, h: 0.22},
       large: {w: 0.35, h: 0.38},
       xl: {w: 0.45, h: 0.48}
     };
     var currentPrintArea = 'large';
 
-    // Print area geometry relative to the canvas (matches where chest is on the garment SVG)
+    // Location-specific print area positions (cx, cy as fraction of canvas)
+    var locationPositions = {
+      'front':       {cx: 0.50, cy: 0.42},
+      'back':        {cx: 0.50, cy: 0.42},
+      'right-chest': {cx: 0.38, cy: 0.32, maxSize: 'medium'},
+      'left-chest':  {cx: 0.62, cy: 0.32, maxSize: 'medium'},
+      'both-arms':   {cx: 0.50, cy: 0.30, maxSize: 'small'}
+    };
+
     function getPrintAreaRect() {
       if (!canvas) return null;
       var cw = canvas.width;
       var ch = canvas.height;
-      var size = printAreaSizes[currentPrintArea];
+      var loc = locationPositions[currentLocation] || locationPositions['front'];
+      var sizeKey = currentPrintArea;
+      // Chest/arm locations cap the max size
+      if (loc.maxSize) {
+        var sizeOrder = ['small','medium','large','xl'];
+        var maxIdx = sizeOrder.indexOf(loc.maxSize);
+        var curIdx = sizeOrder.indexOf(sizeKey);
+        if (curIdx > maxIdx) sizeKey = loc.maxSize;
+      }
+      var size = printAreaSizes[sizeKey];
       var w = cw * size.w;
       var h = ch * size.h;
-      // Center of print area = center of garment chest
-      var cx = cw * 0.5;
-      var cy = ch * 0.42;
-      return {cx: cx, cy: cy, w: w, h: h, left: cx - w/2, top: cy - h/2};
+      return {cx: cw * loc.cx, cy: ch * loc.cy, w: w, h: h, left: cw * loc.cx - w/2, top: ch * loc.cy - h/2};
+    }
+
+    function setDesignLocation(loc, btn) {
+      currentLocation = loc;
+      document.querySelectorAll('.loc-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+
+      // Update hidden input and summary
+      document.getElementById('placementInput').value = loc;
+      var nameMap = {'front':'Front','back':'Back','right-chest':'Right Chest','left-chest':'Left Chest','both-arms':'Both Arms'};
+      document.getElementById('sumPlacement').textContent = nameMap[loc] || loc;
+
+      // Redraw print area at new position
+      drawPrintAreaBoundary();
+      if (designObject) {
+        fitDesignToPrintArea(designObject);
+        canvas.renderAll();
+      }
+    }
+
+    function setPrintCount(count, btn) {
+      printCount = count;
+      document.querySelectorAll('.print-count-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+      document.getElementById('printCountInput').value = count;
+      calculatePrice();
     }
 
     function initFabricCanvas() {
@@ -1694,17 +1746,10 @@
     };
 
     function getPlacementType() {
-      var placements = document.querySelectorAll('.placement-opt.selected');
-      var count = placements.length;
-      if (count >= 3) return 'wrap';
-      if (count >= 2) return 'fullprint';
-      // Check if it's a "multi-color" placement (e.g. right-chest = multi)
-      var hasSpecial = false;
-      placements.forEach(function(p) {
-        var loc = p.getAttribute('data-placement');
-        if (loc === 'right-chest' || loc === 'sleeve') hasSpecial = true;
-      });
-      if (hasSpecial) return 'multi';
+      // Based on number of print locations selected
+      if (printCount >= 4) return 'wrap';
+      if (printCount >= 3) return 'fullprint';
+      if (printCount >= 2) return 'multi';
       return 'single';
     }
 
