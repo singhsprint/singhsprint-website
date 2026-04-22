@@ -1,0 +1,14 @@
+# Secrets - never commit
+.env
+.env.local
+.env.*.local
+
+# Node / Vercel
+node_modules/
+.vercel/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
