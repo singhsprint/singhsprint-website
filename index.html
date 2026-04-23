@@ -658,6 +658,20 @@
         method: 'POST', body: formData, headers: { 'Accept': 'application/json' }
       }).then(function(r){
         if(r.ok){
+          // ===== Meta Lead event (client Pixel + server CAPI, deduped via event_id) =====
+          // RAW email sent only to /api/meta-capi — server hashes with SHA-256 before forwarding to Meta.
+          if (window.SP_PIXEL) {
+            var nameParts = (nameVal || '').trim().split(/\s+/);
+            SP_PIXEL.track('Lead',
+              { content_name: '15% Off Popup', currency: 'CAD' },
+              {
+                em:      emailVal,
+                fn:      nameParts[0] || undefined,
+                ln:      nameParts.slice(1).join(' ') || undefined,
+                country: 'ca'
+              }
+            );
+          }
           form.innerHTML = '<p style="color:#1a1a1a;font-weight:600;font-size:1.1rem">You\'re in! Check your email for your discount code.</p>';
           setTimeout(closePopup, 3000);
         } else { alert('Something went wrong. Email us at sales@singhsprint.com for your discount!'); }

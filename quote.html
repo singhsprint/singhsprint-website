@@ -1688,7 +1688,30 @@
 
       fetch(action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
         .then(function(r) {
-          if (r.ok) { showSuccess(); }
+          if (r.ok) {
+            // ===== Meta Lead event (client Pixel + server CAPI, deduped via event_id) =====
+            // RAW PII is sent to OUR server only; /api/meta-capi hashes with SHA-256 before forwarding to Meta.
+            if (window.SP_PIXEL) {
+              var nameVal = document.getElementById('name').value || '';
+              var nameParts = nameVal.trim().split(/\s+/);
+              SP_PIXEL.track('Lead',
+                {
+                  content_name:     'Quote Form',
+                  content_category: (product || 'unknown') + '/' + (service || 'unknown'),
+                  value:            totalQty * 25,
+                  currency:         'CAD'
+                },
+                {
+                  em:      document.getElementById('email').value,
+                  ph:      document.getElementById('phone').value || undefined,
+                  fn:      nameParts[0] || undefined,
+                  ln:      nameParts.slice(1).join(' ') || undefined,
+                  country: 'ca'
+                }
+              );
+            }
+            showSuccess();
+          }
           else { alert('Something went wrong. Please call us at 514-915-1539 or email sales@singhsprint.com.'); }
         })
         .catch(function() {
