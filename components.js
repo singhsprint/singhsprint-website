@@ -145,6 +145,16 @@ function loadFooter() {
 // Real values pulled from Imprimerie Singhs Print GBP listing + legal entity records.
 // Legal entity: 95558110 QUEBEC INC.  NEQ: 1181573313.
 // GST: 71581 7169 RT0001  |  QST: 1233348101 TQ0001
+// Inject Google Search Console verification tag sitewide.
+function loadSearchConsoleVerification() {
+  if (document.getElementById('gsc-verify')) return;
+  var meta = document.createElement('meta');
+  meta.id = 'gsc-verify';
+  meta.name = 'google-site-verification';
+  meta.content = 'T6ALkpsK-HLL-gl9L-i_rCc-V6-WxEzwsupcnFELLWo';
+  document.head.appendChild(meta);
+}
+
 function loadSchema() {
   if (document.getElementById('singhsprint-schema')) return;
   var schema = {
@@ -239,6 +249,7 @@ function loadSchema() {
 
 // Auto-run when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+  loadSearchConsoleVerification();
   loadNav();
   loadFooter();
   loadSchema();
