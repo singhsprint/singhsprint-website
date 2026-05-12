@@ -4,10 +4,39 @@
 function loadNav() {
   var el = document.getElementById('nav-placeholder');
   if (!el) return;
+
+  // Promo bar: campaign-aware — visitors arriving from the jealous-meme ad
+  // see the price/timeline they were promised; everyone else sees the
+  // default 15% off message.
+  var promoHTML;
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var campaign = (params.get('utm_campaign') || '').toLowerCase();
+    var content = (params.get('utm_content') || '').toLowerCase();
+    var isJealousCampaign =
+      campaign.indexOf('jealous') >= 0 ||
+      content.indexOf('jealous') >= 0 ||
+      campaign.indexOf('bulk_tees') >= 0;
+    if (isJealousCampaign) {
+      promoHTML = ''
+        + '<div class="promo-bar" data-promo="jealous">'
+        + '  <span>50 custom tees from <strong>$13.95 each</strong> &middot; quote back in 15 minutes during business hours.</span> <a href="quote.html">Get your quote</a>'
+        + '</div>';
+    } else {
+      promoHTML = ''
+        + '<div class="promo-bar">'
+        + '  <span data-i18n="promo">15% OFF your first order. No code needed.</span> <a href="quote.html" data-i18n="promo.link">Get your quote</a>'
+        + '</div>';
+    }
+  } catch (err) {
+    promoHTML = ''
+      + '<div class="promo-bar">'
+      + '  <span data-i18n="promo">15% OFF your first order. No code needed.</span> <a href="quote.html" data-i18n="promo.link">Get your quote</a>'
+      + '</div>';
+  }
+
   el.innerHTML = ''
-    + '<div class="promo-bar">'
-    + '  <span data-i18n="promo">15% OFF your first order. No code needed.</span> <a href="quote.html" data-i18n="promo.link">Get your quote</a>'
-    + '</div>'
+    + promoHTML
     + '<nav class="navbar">'
     + '  <div class="navbar-inner">'
     + '    <a href="index.html" class="logo"><img src="images/logo.png" alt="Singhs Print" style="height:52px;width:auto"></a>'
