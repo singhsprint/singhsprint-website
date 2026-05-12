@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procurement Pricing Request | Singhs Print — Bulk Apparel Montreal</title>
+  <meta name="description" content="Request bulk procurement pricing for staff uniforms, branded apparel, and corporate merchandise. 50% deposit + Net 30 balance for qualified accounts. Same-day quotes during business hours.">
+  <meta name="robots" content="index,follow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#f8f7f4;line-height:1.6;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    button{cursor:pointer;border:none;background:none;font-family:inherit}
+    h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:800;line-height:1.2}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+    .page-header{padding:56px 0 28px;text-align:center}
+    .page-header .label{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:14px}
+    .page-header h1{font-size:clamp(2rem,4vw,2.8rem);margin-bottom:12px}
+    .page-header p{font-size:1.05rem;color:#666;max-width:640px;margin:0 auto}
+
+    .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:32px;max-width:1100px;margin:0 auto 80px;padding:0 24px;align-items:start}
+
+    .form-card{background:#fff;border-radius:20px;padding:36px;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+    .section-title{font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin:28px 0 14px;padding-top:20px;border-top:1px solid #eee}
+    .section-title:first-of-type{margin-top:0;padding-top:0;border-top:none}
+
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px;color:#444}
+    .form-group label .req{color:#c44}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:13px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:.95rem;font-family:inherit;background:#fff;transition:border-color .2s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1a1a1a}
+    .form-group textarea{resize:vertical;min-height:100px}
+    .form-group .hint{font-size:.78rem;color:#999;margin-top:4px}
+
+    .pill-group{display:flex;flex-wrap:wrap;gap:8px}
+    .pill{padding:9px 14px;border:1.5px solid #e0e0e0;border-radius:50px;font-size:.85rem;font-weight:500;background:#fff;color:#555;cursor:pointer;transition:all .15s;user-select:none}
+    .pill:hover{border-color:#aaa;color:#1a1a1a}
+    .pill.selected{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+    .file-upload{border:1.5px dashed #d4d4d4;border-radius:10px;padding:18px 16px;text-align:center;cursor:pointer;transition:all .15s}
+    .file-upload:hover{border-color:#1a1a1a;background:#fafafa}
+    .file-upload .up-text{font-size:.9rem;color:#555}
+    .file-upload .up-sub{font-size:.78rem;color:#999;margin-top:3px}
+    .file-upload input[type=file]{display:none}
+
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#1a1a1a;color:#fff;padding:16px 32px;border-radius:50px;font-size:1rem;font-weight:600;transition:all .25s;cursor:pointer;border:none}
+    .btn-primary:hover{background:#333;transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .submit-row{margin-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    .submit-row .compliance-line{font-size:.78rem;color:#999;max-width:380px;line-height:1.5}
+
+    /* Right rail */
+    .rail{position:sticky;top:24px}
+    .rail-card{background:#fff;border:1px solid #eee;border-radius:16px;padding:24px;margin-bottom:14px}
+    .rail-card h3{font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:12px}
+    .rail-card ul{list-style:none}
+    .rail-card li{font-size:.88rem;color:#555;line-height:1.6;padding:7px 0;display:flex;gap:10px;align-items:flex-start}
+    .rail-card li::before{content:'';flex-shrink:0;width:6px;height:6px;border-radius:50%;background:#1a1a1a;margin-top:9px}
+    .rail-quote{background:#1a1a1a;color:#fff;border:none}
+    .rail-quote .quote-mark{font-family:'Playfair Display',serif;font-size:2.6rem;line-height:1;color:#e8ff3c;margin-bottom:-12px}
+    .rail-quote .quote-body{font-size:.92rem;line-height:1.6;color:#fff;margin-bottom:10px}
+    .rail-quote .quote-attr{font-size:.78rem;color:#999;font-weight:500}
+
+    .form-success{display:none;text-align:center;padding:40px 0}
+    .form-success .icon{font-size:2.6rem;margin-bottom:14px}
+    .form-success h2{margin-bottom:10px;font-size:1.6rem}
+    .form-success p{color:#666;max-width:440px;margin:0 auto}
+
+    @media(max-width:880px){
+      .layout{grid-template-columns:1fr}
+      .rail{position:static}
+      .form-row{grid-template-columns:1fr}
+    }
+  </style>
+  <script src="../components.js"></script>
+  <script src="../lang.js"></script>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="page-header">
+  <span class="label">For Procurement &amp; Operations Teams</span>
+  <h1>Request procurement pricing</h1>
+  <p>Tell us about the program. We&rsquo;ll come back with a quote, sample timeline, and term sheet &mdash; usually within an hour during business hours.</p>
+</div>
+
+<div class="layout">
+  <div class="form-card">
+    <form id="rfpForm">
+
+      <div class="section-title">Company</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="company">Company / organization <span class="req">*</span></label>
+          <input type="text" id="company" name="company" required placeholder="Acme Construction Ltd.">
+        </div>
+        <div class="form-group">
+          <label for="industry">Industry <span class="req">*</span></label>
+          <select id="industry" name="industry" required>
+            <option value="">Select your sector</option>
+            <option>Construction &amp; Trades</option>
+            <option>Restaurant &amp; Hospitality</option>
+            <option>Corporate / Tech / Office</option>
+            <option>Charity / Non-profit / Event</option>
+            <option>School / University / Sports League</option>
+            <option>Healthcare / Clinic</option>
+            <option>Retail / E-commerce brand</option>
+            <option>Government / Public sector</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="contactName">Your name <span class="req">*</span></label>
+          <input type="text" id="contactName" name="contact_name" required>
+        </div>
+        <div class="form-group">
+          <label for="contactRole">Your role</label>
+          <select id="contactRole" name="contact_role">
+            <option value="">Select your role</option>
+            <option>HR / People Operations</option>
+            <option>Procurement / Purchasing</option>
+            <option>Operations / Ops Manager</option>
+            <option>Founder / Owner</option>
+            <option>Marketing / Brand</option>
+            <option>Event coordinator</option>
+            <option>Office manager</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Work email <span class="req">*</span></label>
+          <input type="email" id="email" name="email" required placeholder="you@company.com">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" placeholder="514-xxx-xxxx">
+        </div>
+      </div>
+
+      <div class="section-title">The order</div>
+
+      <div class="form-group">
+        <label>Annual unit volume <span class="req">*</span></label>
+        <div class="pill-group" data-name="volume">
+          <span class="pill" data-value="<500">Under 500 units</span>
+          <span class="pill" data-value="500-2000">500 – 2,000</span>
+          <span class="pill" data-value="2000-10000">2,000 – 10,000</span>
+          <span class="pill" data-value="10000+">10,000+</span>
+        </div>
+        <input type="hidden" name="annual_volume" id="annual_volume" required>
+      </div>
+
+      <div class="form-group">
+        <label>Order pattern <span class="req">*</span></label>
+        <div class="pill-group" data-name="cadence">
+          <span class="pill" data-value="one-time">One-time order</span>
+          <span class="pill" data-value="quarterly">Quarterly refresh</span>
+          <span class="pill" data-value="annual">Annual program</span>
+          <span class="pill" data-value="ongoing">Ongoing / reorder-driven</span>
+        </div>
+        <input type="hidden" name="order_cadence" id="order_cadence" required>
+      </div>
+
+      <div class="form-group">
+        <label for="garments">What are you ordering?</label>
+        <textarea id="garments" name="garments" placeholder="E.g. 80 hi-vis t-shirts (cotton blend, embroidered logo left chest), 40 fleece hoodies for winter. Include any spec you have."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="targetDate">Needed by</label>
+        <input type="date" id="targetDate" name="needed_by">
+        <p class="hint">Standard turnaround is 7&ndash;14 business days from sample approval. Faster possible with rush surcharge.</p>
+      </div>
+
+      <div class="section-title">Terms &amp; compliance</div>
+
+      <div class="form-group">
+        <label>Preferred payment terms</label>
+        <div class="pill-group" data-name="terms">
+          <span class="pill" data-value="prepaid">Prepaid (2% discount)</span>
+          <span class="pill selected" data-value="deposit-net30">50% deposit + Net 30 balance</span>
+          <span class="pill" data-value="net30">Full Net 30</span>
+          <span class="pill" data-value="net60">Net 60 / custom</span>
+        </div>
+        <input type="hidden" name="payment_terms" id="payment_terms" value="deposit-net30">
+        <p class="hint">50% deposit + Net 30 is our standard for new accounts. Better terms available once we&rsquo;ve worked together.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Required compliance / certifications</label>
+        <div class="pill-group" data-name="compliance" data-multi="1">
+          <span class="pill" data-value="CSA">CSA-compliant hi-vis</span>
+          <span class="pill" data-value="OEKO-TEX">OEKO-TEX certified</span>
+          <span class="pill" data-value="union-made">Union-made / All-Canadian</span>
+          <span class="pill" data-value="GOTS">Organic / GOTS</span>
+          <span class="pill" data-value="none">None required</span>
+        </div>
+        <input type="hidden" name="compliance" id="compliance">
+      </div>
+
+      <div class="form-group">
+        <label for="brandFile">Brand guidelines / sample artwork (optional)</label>
+        <label class="file-upload" for="brandFile">
+          <div class="up-text">Attach brand guidelines, existing artwork, or a previous sample</div>
+          <div class="up-sub">PDF, AI, PSD, PNG, JPG &mdash; up to 15&nbsp;MB</div>
+          <input type="file" id="brandFile" name="brand_file" accept=".pdf,.ai,.psd,.png,.jpg,.jpeg,.svg">
+        </label>
+        <p class="hint" id="brandFileName"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="extra">Anything else we should know?</label>
+        <textarea id="extra" name="extra" placeholder="Sizing data, attrition rate, existing supplier (and what's missing), specific compliance audit windows, etc."></textarea>
+      </div>
+
+      <div class="submit-row">
+        <p class="compliance-line">By submitting, you agree we may contact you with quote details. No spam, no list-sharing. We respond within an hour during business hours.</p>
+        <button type="submit" class="btn-primary">Send RFP &rarr;</button>
+      </div>
+
+    </form>
+
+    <div class="form-success" id="rfpSuccess">
+      <div class="icon">&#10003;</div>
+      <h2>RFP received</h2>
+      <p>We&rsquo;ll be in touch with quoted pricing, a sample timeline, and proposed payment terms &mdash; usually within the hour during business hours, otherwise first thing next business day.</p>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="rail-card">
+      <h3>What happens after you submit</h3>
+      <ul>
+        <li>We reply within the hour during business hours with quoted bulk pricing.</li>
+        <li>We send a physical sample for approval before any production run.</li>
+        <li>Approved samples kick off production. Standard turnaround is 7&ndash;14 business days.</li>
+        <li>Reorders for new hires or program refreshes go through your dedicated account manager.</li>
+      </ul>
+    </div>
+    <div class="rail-card">
+      <h3>Standard terms</h3>
+      <ul>
+        <li>50% deposit to start production, balance Net 30 from invoice date.</li>
+        <li>Custom terms available for repeat accounts and standing programs.</li>
+        <li>Free quote &mdash; no obligation, no commitment until you approve the sample.</li>
+        <li>5.0 stars on Google from 25 verified Montreal clients.</li>
+      </ul>
+    </div>
+    <div class="rail-card rail-quote">
+      <div class="quote-mark">&ldquo;</div>
+      <p class="quote-body">Perfect quality and excellent service. Definitely worth checking out!</p>
+      <p class="quote-attr">&mdash; Bavneet Kaur, verified Google review (5.0 / 25 on Google)</p>
+    </div>
+  </aside>
+</div>
+
+<div id="footer-placeholder"></div>
+
+<script>
+  // Pill behaviour — single-select unless data-multi
+  document.querySelectorAll('.pill-group').forEach(function(group) {
+    var multi = group.getAttribute('data-multi') === '1';
+    var name = group.getAttribute('data-name');
+    group.querySelectorAll('.pill').forEach(function(pill) {
+      pill.addEventListener('click', function() {
+        if (multi) {
+          pill.classList.toggle('selected');
+        } else {
+          group.querySelectorAll('.pill').forEach(function(p) { p.classList.remove('selected'); });
+          pill.classList.add('selected');
+        }
+        var selected = [];
+        group.querySelectorAll('.pill.selected').forEach(function(p) { selected.push(p.dataset.value); });
+        var hiddenId = name === 'volume' ? 'annual_volume'
+                     : name === 'cadence' ? 'order_cadence'
+                     : name === 'terms' ? 'payment_terms'
+                     : name === 'compliance' ? 'compliance'
+                     : null;
+        if (hiddenId) document.getElementById(hiddenId).value = selected.join(', ');
+      });
+    });
+  });
+
+  // File label
+  document.getElementById('brandFile').addEventListener('change', function(e) {
+    var f = e.target.files[0];
+    if (f) document.getElementById('brandFileName').textContent = '✓ ' + f.name;
+  });
+
+  // UTM capture into hidden inputs
+  (function() {
+    var keys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid'];
+    var params = new URLSearchParams(window.location.search);
+    var form = document.getElementById('rfpForm');
+    keys.forEach(function(k) {
+      var val = params.get(k);
+      if (!val) { try { val = sessionStorage.getItem('sp_' + k); } catch(e){} }
+      if (val) {
+        try { sessionStorage.setItem('sp_' + k, val); } catch(e){}
+        var inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = val;
+        form.appendChild(inp);
+      }
+    });
+  })();
+
+  // Supabase CRM push (same instance as quote.html)
+  var SUPABASE_URL = 'https://ptrqsjexrbyupexhcjdr.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cnFzamV4cmJ5dXBleGhjamRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODg5NzgsImV4cCI6MjA5MTc2NDk3OH0.aqYJAXmmCEjtHU97UDTLZZlWwoS9ERldFzxTvunZEgA';
+
+  // Volume-tier midpoints for the CRM estimated_value
+  var volumeMidpoint = {
+    '<500': 250, '500-2000': 1250, '2000-10000': 6000, '10000+': 15000
+  };
+  var perUnitGuess = 16; // conservative midpoint of bulk pricing range — refined when operator quotes
+
+  document.getElementById('rfpForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+
+    var volume = document.getElementById('annual_volume').value;
+    var units = volumeMidpoint[volume] || 500;
+    var estValue = units * perUnitGuess;
+
+    // Build payload for the CRM. source = 'rfp' so it routes to the B2B pipeline.
+    var notes = [
+      'RFP intake.',
+      'Industry: ' + (document.getElementById('industry').value || '—'),
+      'Role: ' + (document.getElementById('contactRole').value || '—'),
+      'Volume: ' + volume,
+      'Cadence: ' + (document.getElementById('order_cadence').value || '—'),
+      'Terms: ' + (document.getElementById('payment_terms').value || '—'),
+      'Compliance: ' + (document.getElementById('compliance').value || 'none'),
+      'Needed by: ' + (document.getElementById('targetDate').value || '—'),
+      'Garments: ' + (document.getElementById('garments').value || '—'),
+      'Extra: ' + (document.getElementById('extra').value || '—')
+    ].join(' | ');
+
+    var utmBits = '';
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid'].forEach(function(k) {
+      var inp = form.querySelector('input[name="' + k + '"]');
+      if (inp && inp.value) utmBits += ' [' + k + '=' + inp.value + ']';
+    });
+
+    var payload = {
+      contact_name: document.getElementById('contactName').value,
+      company_name: document.getElementById('company').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value || '',
+      source: 'rfp',
+      status: 'new',
+      estimated_value: estValue,
+      notes: notes + utmBits
+    };
+
+    fetch(SUPABASE_URL + '/rest/v1/leads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    }).catch(function() {});
+
+    // Fire Meta Pixel Lead event so the ad set can optimize toward RFP conversions too
+    try {
+      if (typeof fbq === 'function') {
+        fbq('track', 'Lead', {
+          content_name: 'RFP — ' + (document.getElementById('industry').value || 'B2B'),
+          content_category: 'B2B Procurement',
+          value: estValue,
+          currency: 'CAD'
+        });
+      }
+    } catch(err) {}
+
+    // Show success state, hide form
+    form.style.display = 'none';
+    document.getElementById('rfpSuccess').style.display = 'block';
+  });
+</script>
+
+<!-- Meta Pixel (mirrors quote.html) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1198620955711122');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1198620955711122&ev=PageView&noscript=1"/></noscript>
+
+</body>
+</html>

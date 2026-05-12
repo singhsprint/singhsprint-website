@@ -126,6 +126,20 @@
     .placement-section{margin-bottom:24px}
     .placement-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:10px;color:#555}
     .loc-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+
+    /* Placement preset cards — preset-driven alternative to the drag-on-canvas UX */
+    .placement-group{margin-bottom:18px}
+    .placement-group-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px}
+    .placement-preset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    @media (min-width:600px){.placement-preset-grid{grid-template-columns:repeat(4,1fr)}}
+    .preset-card{position:relative;border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .15s;background:#fff;user-select:none}
+    .preset-card:hover{border-color:#1a1a1a;transform:translateY(-1px)}
+    .preset-card.selected{border-color:#1a1a1a;background:#fafafa;box-shadow:0 0 0 1.5px #1a1a1a inset}
+    .preset-card .preset-shirt{width:42px;height:50px;margin:0 auto 6px;display:block}
+    .preset-card .preset-label{display:block;font-size:.82rem;font-weight:700;color:#1a1a1a;text-align:center;line-height:1.2}
+    .preset-card .preset-desc{display:block;font-size:.7rem;color:#888;text-align:center;margin-top:2px;line-height:1.2}
+    .preset-card .preset-check{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:none;align-items:center;justify-content:center;font-size:.6rem;font-weight:700}
+    .preset-card.selected .preset-check{display:flex}
     .loc-check{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;cursor:pointer;transition:all .15s;user-select:none}
     .loc-check:hover{border-color:#ccc;background:#fafafa}
     .loc-check.checked{border-color:#1a1a1a;background:#f8f8f6}
@@ -362,6 +376,12 @@
                   <span class="name">Long Sleeve</span>
                   <span class="from">From $13.95</span>
                 </div>
+                <div class="product-option" data-value="Hi-Vis Vest" data-garment="hivis" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6 L10 8 L4 16 L10 20 L14 13 L14 42 L34 42 L34 13 L38 20 L44 16 L38 8 L33 6 L33 13 L15 13 Z"/><line x1="14" y1="20" x2="34" y2="20"/><line x1="14" y1="30" x2="34" y2="30"/></svg></span>
+                  <span class="name">Hi-Vis Vest</span>
+                  <span class="from">From $14.95</span>
+                </div>
                 <div class="product-option" data-value="Other" data-garment="tshirt" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
                   <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="10" stroke-dasharray="3 3"/><line x1="24" y1="10" x2="24" y2="6"/><line x1="24" y1="42" x2="24" y2="38"/><line x1="10" y1="24" x2="6" y2="24"/><line x1="42" y1="24" x2="38" y2="24"/><circle cx="24" cy="24" r="3" fill="#1a1a1a" stroke="none"/></svg></span>
@@ -425,33 +445,112 @@
               </label>
             </div>
 
-            <!-- Print locations — checkboxes -->
+            <!-- Print locations — preset-driven picker (replaces drag-on-canvas) -->
             <div class="placement-section">
-              <label data-i18n="quote.printloc">Print locations <span class="placement-count-badge" id="locCountBadge">1 location</span></label>
-              <div class="loc-check-grid">
+              <label>Where do you want the design? <span class="placement-count-badge" id="locCountBadge">1 location</span></label>
+
+              <!-- FRONT presets -->
+              <div class="placement-group">
+                <div class="placement-group-label">Front</div>
+                <div class="placement-preset-grid">
+                  <div class="preset-card" data-preset="left-chest" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="6" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Left Chest</span>
+                    <span class="preset-desc">~3-4" &mdash; logo / pocket</span>
+                  </div>
+                  <div class="preset-card selected" data-preset="center-chest" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="14" y="17" width="14" height="10" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Center Chest</span>
+                    <span class="preset-desc">~7" mid-chest</span>
+                  </div>
+                  <div class="preset-card" data-preset="full-front" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="20" height="18" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Full Front</span>
+                    <span class="preset-desc">~11" chest panel</span>
+                  </div>
+                  <div class="preset-card" data-preset="oversized" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="9" y="12" width="24" height="28" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Oversized</span>
+                    <span class="preset-desc">~14" chest to waist</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BACK presets -->
+              <div class="placement-group">
+                <div class="placement-group-label">Back</div>
+                <div class="placement-preset-grid">
+                  <div class="preset-card" data-preset="back-top" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z"/><rect x="15" y="10" width="12" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Top Back</span>
+                    <span class="preset-desc">Under collar, ~5"</span>
+                  </div>
+                  <div class="preset-card" data-preset="back-across" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z"/><rect x="11" y="15" width="20" height="16" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Across Back</span>
+                    <span class="preset-desc">~12" upper back</span>
+                  </div>
+                  <div class="preset-card" data-preset="back-full" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z"/><rect x="9" y="12" width="24" height="28" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Full Back</span>
+                    <span class="preset-desc">~14" full panel</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLEEVE presets -->
+              <div class="placement-group">
+                <div class="placement-group-label">Sleeves</div>
+                <div class="placement-preset-grid">
+                  <div class="preset-card" data-preset="left-sleeve" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="3" y="13" width="4" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Left Sleeve</span>
+                    <span class="preset-desc">Bicep, small hit</span>
+                  </div>
+                  <div class="preset-card" data-preset="right-sleeve" onclick="togglePlacementPreset(this)">
+                    <span class="preset-check">&#10003;</span>
+                    <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="35" y="13" width="4" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
+                    <span class="preset-label">Right Sleeve</span>
+                    <span class="preset-desc">Bicep, small hit</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hidden checkboxes — still drive the canvas tabs + pricing; toggled programmatically by togglePlacementPreset -->
+              <div class="loc-check-grid" style="display:none" aria-hidden="true">
                 <label class="loc-check checked" data-loc="front" onclick="toggleLocCheck(this)">
                   <input type="checkbox" checked>
-                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="check-box"></span>
                   <span class="loc-label">Front</span>
                 </label>
                 <label class="loc-check" data-loc="back" onclick="toggleLocCheck(this)">
                   <input type="checkbox">
-                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="check-box"></span>
                   <span class="loc-label">Back</span>
                 </label>
                 <label class="loc-check" data-loc="left-sleeve" onclick="toggleLocCheck(this)">
                   <input type="checkbox">
-                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="check-box"></span>
                   <span class="loc-label">Left Sleeve</span>
                 </label>
                 <label class="loc-check" data-loc="right-sleeve" onclick="toggleLocCheck(this)">
                   <input type="checkbox">
-                  <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  <span class="check-box"></span>
                   <span class="loc-label">Right Sleeve</span>
                 </label>
               </div>
-              <p class="placement-summary" id="placementSummary">Select where you want your design printed</p>
+
+              <p class="placement-summary" id="placementSummary">Center Chest selected. Each placement is one print, billed per location.</p>
               <input type="hidden" name="placement" id="placementInput" value="front">
+              <input type="hidden" name="placement_preset" id="placementPresetInput" value="center-chest">
               <input type="hidden" name="print_count" id="printCountInput" value="1">
             </div>
 
@@ -645,168 +744,128 @@
               </defs>
 
             <!-- T-shirt -->
-            <g id="garment-tshirt" filter="url(#softShadow)">
-              <!-- Shadow layer -->
-              <path d="M105 60 L68 76 L30 138 L60 155 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L240 155 L270 138 L232 76 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" fill="#00000008"/>
-              <!-- Main body -->
-              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" id="garmentFill" fill="#111111"/>
-              <!-- Fabric sheen -->
-              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="url(#fabricSheen)"/>
-              <!-- Collar -->
-              <path d="M105 55 C112 73 130 85 150 85 C170 85 188 73 195 55" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="2"/>
-              <!-- Sleeve seams -->
-              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
-              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
-              <!-- Hem -->
-              <path d="M92 360 L208 360" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
+            <g id="garment-tshirt">
+              <path id="garmentFill" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 270 138 Q 273 144 268 147 L 240 158 Q 234 159 231 153 L 218 122 L 218 348 Q 218 358 208 359 L 92 359 Q 82 358 82 348 L 82 122 L 69 153 Q 66 159 60 158 L 32 147 Q 27 144 30 138 L 84 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path d="M 122 72 Q 134 81 150 82 Q 166 81 178 72" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.4"/>
+              <path d="M 126 76 Q 137 84 150 85 Q 163 84 174 76" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.55"/>
+              <path d="M 82 122 Q 86 96 116 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 218 122 Q 214 96 184 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 32 147 L 60 148 L 69 153" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.6"/>
+              <path d="M 268 147 L 240 148 L 231 153" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.6"/>
+              <line x1="82" y1="350" x2="218" y2="350" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
             </g>
 
             <!-- Hoodie -->
-            <g id="garment-hoodie" style="display:none" filter="url(#softShadow)">
-              <path d="M105 65 L62 85 L22 155 L58 172 L78 118 L78 360 Q78 370 90 370 L210 370 Q222 370 222 360 L222 118 L242 172 L278 155 L238 85 L195 65 C188 83 170 95 150 95 C130 95 112 83 105 65 Z" fill="#00000008"/>
-              <path d="M105 60 L62 80 L22 148 L58 165 L78 112 L78 355 Q78 365 90 365 L210 365 Q222 365 222 355 L222 112 L242 165 L278 148 L238 80 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" id="garmentFillHoodie" fill="#111111"/>
-              <path d="M105 60 L62 80 L22 148 L58 165 L78 112 L78 355 Q78 365 90 365 L210 365 Q222 365 222 355 L222 112 L242 165 L278 148 L238 80 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" fill="url(#fabricSheen)"/>
-              <!-- Hood -->
-              <path d="M105 60 C100 32 115 10 150 10 C185 10 200 32 195 60" id="hoodFill" fill="#111111"/>
-              <path d="M105 60 C100 32 115 10 150 10 C185 10 200 32 195 60" fill="url(#fabricSheen)"/>
-              <path d="M105 60 C100 32 115 10 150 10 C185 10 200 32 195 60" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
-              <!-- Hood opening -->
-              <ellipse cx="150" cy="52" rx="26" ry="14" fill="#00000015"/>
-              <!-- Kangaroo pocket -->
-              <path d="M110 240 Q110 235 115 235 L185 235 Q190 235 190 240 L190 275 Q190 280 185 280 L115 280 Q110 280 110 275 Z" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.2"/>
-              <!-- Drawstrings -->
-              <path d="M140 60 L138 90" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
-              <path d="M160 60 L162 90" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
-              <!-- Center seam -->
-              <line x1="150" y1="90" x2="150" y2="365" stroke="#ffffff" stroke-opacity="0.03" stroke-width="0.8"/>
+            <g id="garment-hoodie" style="display:none">
+              <path id="hoodFill" d="M 105 64 Q 100 30 132 16 Q 150 11 168 16 Q 200 30 195 64 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M 105 64 Q 116 60 150 60 Q 184 60 195 64" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
+              <ellipse cx="150" cy="60" rx="26" ry="10" fill="rgba(0,0,0,0.18)"/>
+              <path id="garmentFillHoodie" d="M 116 60 Q 116 70 124 78 Q 138 88 150 89 Q 162 88 176 78 Q 184 70 184 60 L 218 64 L 278 154 Q 281 160 276 163 L 246 174 Q 240 175 237 169 L 222 132 L 222 354 Q 222 364 212 365 L 88 365 Q 78 364 78 354 L 78 132 L 63 169 Q 60 175 54 174 L 24 163 Q 19 160 22 154 L 82 64 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path d="M 138 64 L 134 100" stroke="var(--garment-detail,#444)" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
+              <circle cx="134" cy="100" r="2" fill="var(--garment-detail,#444)" opacity="0.7"/>
+              <path d="M 162 64 L 166 100" stroke="var(--garment-detail,#444)" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
+              <circle cx="166" cy="100" r="2" fill="var(--garment-detail,#444)" opacity="0.7"/>
+              <path d="M 78 132 Q 82 102 116 64" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 222 132 Q 218 102 184 64" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 110 230 Q 110 224 117 224 L 183 224 Q 190 224 190 230 L 190 280 Q 190 286 183 286 L 117 286 Q 110 286 110 280 Z" fill="none" stroke="var(--garment-detail,#444)" stroke-width="1" opacity="0.6"/>
+              <path d="M 110 252 L 130 268" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 190 252 L 170 268" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 78 354 L 222 354" stroke="var(--garment-detail,#444)" stroke-width="1.2" opacity="0.55"/>
+              <path d="M 78 360 L 222 360" stroke="var(--garment-detail,#444)" stroke-width="0.4" opacity="0.4"/>
+              <path d="M 24 163 L 54 164 L 63 169" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.6"/>
+              <path d="M 276 163 L 246 164 L 237 169" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.6"/>
             </g>
 
-            <!-- Crewneck -->
-            <g id="garment-crewneck" style="display:none" filter="url(#softShadow)">
-              <!-- Shadow -->
-              <path d="M105 55 L52 78 L15 318 Q13 328 24 330 L52 332 Q60 332 62 324 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L238 324 Q240 332 248 332 L276 330 Q287 328 285 318 L248 78 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="#00000008"/>
-              <!-- Body with long sleeves -->
-              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" id="garmentFillCrewneck" fill="#111111"/>
-              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" fill="url(#fabricSheen)"/>
-              <!-- Ribbed crew neck -->
-              <ellipse cx="150" cy="58" rx="24" ry="10" fill="#00000012"/>
-              <path d="M126 58 C126 50 136 44 150 44 C164 44 174 50 174 58" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2.5"/>
-              <!-- Cuffs -->
-              <rect x="20" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
-              <rect x="242" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
-              <!-- Ribbed hem -->
-              <rect x="92" y="350" width="116" height="10" rx="2" fill="#ffffff" fill-opacity="0.03"/>
-              <!-- Seams -->
-              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+            <!-- Crewneck (long-sleeve sweatshirt) -->
+            <g id="garment-crewneck" style="display:none">
+              <path id="garmentFillCrewneck" d="M 116 54 Q 116 62 122 70 Q 134 79 150 80 Q 166 79 178 70 Q 184 62 184 54 L 216 58 L 282 312 Q 285 322 274 324 L 248 326 Q 240 326 238 318 L 220 124 L 220 348 Q 220 358 210 359 L 90 359 Q 80 358 80 348 L 80 124 L 62 318 Q 60 326 52 326 L 26 324 Q 15 322 18 312 L 84 58 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path d="M 122 70 Q 134 79 150 80 Q 166 79 178 70" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
+              <path d="M 124 64 Q 136 56 150 56 Q 164 56 176 64" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
+              <path d="M 128 67 Q 138 60 150 60 Q 162 60 172 67" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.5"/>
+              <path d="M 80 124 Q 84 100 116 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.4"/>
+              <path d="M 220 124 Q 216 100 184 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.4"/>
+              <path d="M 26 324 L 60 322 L 62 318" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
+              <path d="M 274 324 L 240 322 L 238 318" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
+              <line x1="26" y1="316" x2="60" y2="314" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.4"/>
+              <line x1="274" y1="316" x2="240" y2="314" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.4"/>
+              <path d="M 80 348 L 220 348" stroke="var(--garment-detail,#444)" stroke-width="1.2" opacity="0.55"/>
+              <path d="M 80 356 L 220 356" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.4"/>
             </g>
 
             <!-- Hat -->
-            <g id="garment-hat" style="display:none" filter="url(#softShadow)">
-              <!-- Brim shadow -->
-              <ellipse cx="150" cy="242" rx="128" ry="22" fill="#00000012"/>
-              <!-- Brim -->
-              <ellipse cx="150" cy="235" rx="125" ry="18" id="brimFill" fill="#0a0a0a"/>
-              <ellipse cx="150" cy="235" rx="125" ry="18" fill="url(#fabricSheen)"/>
-              <!-- Crown -->
-              <path d="M38 235 C38 135 82 60 150 60 C218 60 262 135 262 235" id="garmentFillHat" fill="#111111"/>
-              <path d="M38 235 C38 135 82 60 150 60 C218 60 262 135 262 235" fill="url(#fabricSheen)"/>
-              <!-- Panel lines -->
-              <path d="M150 60 L150 235" stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.8"/>
-              <path d="M95 72 L80 235" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <path d="M205 72 L220 235" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <!-- Button top -->
-              <circle cx="150" cy="60" r="4" fill="#ffffff" fill-opacity="0.08"/>
-              <!-- Front panel area -->
-              <rect x="85" y="140" width="130" height="70" rx="8" fill="#ffffff" fill-opacity="0.02"/>
-              <!-- Brim edge highlight -->
-              <path d="M28 235 C28 228 82 218 150 218 C218 218 272 228 272 235" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+            <g id="garment-hat" style="display:none">
+              <path id="garmentFillHat" d="M 50 230 C 50 138 92 78 150 78 C 208 78 250 138 250 230 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <ellipse id="brimFill" cx="150" cy="232" rx="120" ry="14" fill="#0a0a0a" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2"/>
+              <path d="M 30 232 Q 90 220 150 220 Q 210 220 270 232" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
+              <line x1="150" y1="80" x2="150" y2="230" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.4"/>
+              <path d="M 96 86 L 80 230" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.4" fill="none"/>
+              <path d="M 204 86 L 220 230" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.4" fill="none"/>
+              <circle cx="150" cy="80" r="3" fill="var(--garment-detail,#444)" opacity="0.6"/>
+              <path d="M 60 232 Q 150 246 240 232" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.35"/>
             </g>
 
             <!-- Tote bag -->
-            <g id="garment-tote" style="display:none" filter="url(#softShadow)">
-              <!-- Handles -->
-              <path d="M108 95 C108 48 118 25 138 25" fill="none" id="toteHandleL" stroke="#111111" stroke-width="8" stroke-linecap="round"/>
-              <path d="M192 95 C192 48 182 25 162 25" fill="none" id="toteHandleR" stroke="#111111" stroke-width="8" stroke-linecap="round"/>
-              <!-- Bag shadow -->
-              <rect x="62" y="98" width="176" height="258" rx="4" fill="#00000008"/>
-              <!-- Bag body -->
-              <rect x="60" y="92" width="180" height="258" rx="4" id="garmentFillTote" fill="#111111"/>
-              <rect x="60" y="92" width="180" height="258" rx="4" fill="url(#fabricSheen)"/>
-              <!-- Top fold -->
-              <path d="M60 92 L240 92" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2"/>
-              <rect x="60" y="92" width="180" height="12" rx="2" fill="#ffffff" fill-opacity="0.03"/>
-              <!-- Bottom seam -->
-              <path d="M60 346 Q150 356 240 346" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
-              <!-- Side seams -->
-              <line x1="60" y1="92" x2="60" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <line x1="240" y1="92" x2="240" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+            <g id="garment-tote" style="display:none">
+              <path id="toteHandleL" d="M 108 96 C 108 50 120 28 142 28" fill="none" stroke="#111111" stroke-width="6" stroke-linecap="round"/>
+              <path id="toteHandleR" d="M 192 96 C 192 50 180 28 158 28" fill="none" stroke="#111111" stroke-width="6" stroke-linecap="round"/>
+              <path d="M 108 96 C 108 50 120 28 142 28" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
+              <path d="M 192 96 C 192 50 180 28 158 28" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
+              <rect id="garmentFillTote" x="58" y="94" width="184" height="260" rx="3" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <line x1="58" y1="106" x2="242" y2="106" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
+              <line x1="58" y1="346" x2="242" y2="346" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.45"/>
+              <line x1="64" y1="94" x2="64" y2="354" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.3"/>
+              <line x1="236" y1="94" x2="236" y2="354" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.3"/>
             </g>
 
             <!-- Joggers -->
-            <g id="garment-joggers" style="display:none" filter="url(#softShadow)">
-              <!-- Waistband -->
-              <rect x="70" y="28" width="160" height="30" rx="5" id="garmentFillJoggersWaist" fill="#111111"/>
-              <rect x="70" y="28" width="160" height="30" rx="5" fill="url(#fabricSheen)"/>
-              <!-- Elastic texture -->
-              <rect x="70" y="28" width="160" height="8" rx="3" fill="#ffffff" fill-opacity="0.04"/>
-              <!-- Drawstring -->
-              <path d="M140 42 L136 62" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
-              <path d="M160 42 L164 62" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.2" stroke-linecap="round"/>
-              <!-- Left leg -->
-              <path d="M70 58 L78 318 Q80 332 92 332 L140 332 Q148 332 148 320 L150 58 Z" id="garmentFillJoggersL" fill="#111111"/>
-              <path d="M70 58 L78 318 Q80 332 92 332 L140 332 Q148 332 148 320 L150 58 Z" fill="url(#fabricSheen)"/>
-              <!-- Right leg -->
-              <path d="M150 58 L152 320 Q152 332 160 332 L208 332 Q220 332 222 318 L230 58 Z" id="garmentFillJoggersR" fill="#111111"/>
-              <path d="M150 58 L152 320 Q152 332 160 332 L208 332 Q220 332 222 318 L230 58 Z" fill="url(#fabricSheen)"/>
-              <!-- Cuffs -->
-              <rect x="82" y="322" width="62" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
-              <rect x="162" y="322" width="56" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
-              <!-- Center seam -->
-              <line x1="150" y1="58" x2="150" y2="100" stroke="#ffffff" stroke-opacity="0.05" stroke-width="0.8"/>
-              <!-- Knee creases -->
-              <path d="M90 200 Q115 195 140 200" stroke="#ffffff" stroke-opacity="0.03" stroke-width="0.8"/>
-              <path d="M160 200 Q185 195 215 200" stroke="#ffffff" stroke-opacity="0.03" stroke-width="0.8"/>
+            <g id="garment-joggers" style="display:none">
+              <rect id="garmentFillJoggersWaist" x="68" y="28" width="164" height="32" rx="5" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <line x1="68" y1="38" x2="232" y2="38" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.5"/>
+              <line x1="68" y1="44" x2="232" y2="44" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.35"/>
+              <line x1="68" y1="50" x2="232" y2="50" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.35"/>
+              <path d="M 142 42 L 138 64" stroke="var(--garment-detail,#444)" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
+              <circle cx="138" cy="64" r="1.6" fill="var(--garment-detail,#444)" opacity="0.65"/>
+              <path d="M 158 42 L 162 64" stroke="var(--garment-detail,#444)" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
+              <circle cx="162" cy="64" r="1.6" fill="var(--garment-detail,#444)" opacity="0.65"/>
+              <path id="garmentFillJoggersL" d="M 70 60 L 78 322 Q 80 336 92 336 L 140 336 Q 148 336 148 324 L 150 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <path id="garmentFillJoggersR" d="M 150 60 L 152 324 Q 152 336 160 336 L 208 336 Q 220 336 222 322 L 230 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <line x1="150" y1="62" x2="150" y2="324" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.35"/>
+              <path d="M 80 330 L 148 330" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
+              <path d="M 152 330 L 220 330" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
+              <path d="M 95 208 Q 116 204 142 208" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.4"/>
+              <path d="M 158 208 Q 184 204 205 208" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.4"/>
             </g>
 
             <!-- Long sleeve -->
-            <g id="garment-longsleeve" style="display:none" filter="url(#softShadow)">
-              <path d="M105 55 L52 78 L15 318 Q13 328 24 330 L52 332 Q60 332 62 324 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L238 324 Q240 332 248 332 L276 330 Q287 328 285 318 L248 78 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="#00000008"/>
-              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" id="garmentFillLong" fill="#111111"/>
-              <path d="M105 50 L52 72 L15 312 Q13 322 24 324 L52 326 Q60 326 62 318 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L238 318 Q240 326 248 326 L276 324 Q287 322 285 312 L248 72 L195 50 C188 68 170 80 150 80 C130 80 112 68 105 50 Z" fill="url(#fabricSheen)"/>
-              <!-- Collar -->
-              <path d="M105 50 C112 68 130 80 150 80 C170 80 188 68 195 50" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2"/>
-              <!-- Cuffs -->
-              <rect x="20" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
-              <rect x="242" y="316" width="38" height="12" rx="4" fill="#ffffff" fill-opacity="0.04"/>
-              <!-- Hem -->
-              <rect x="92" y="350" width="116" height="10" rx="2" fill="#ffffff" fill-opacity="0.03"/>
-              <!-- Sleeve seams -->
-              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
+            <g id="garment-longsleeve" style="display:none">
+              <path id="garmentFillLong" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 282 312 Q 285 322 274 324 L 248 326 Q 240 326 238 318 L 220 124 L 220 348 Q 220 358 210 359 L 90 359 Q 80 358 80 348 L 80 124 L 62 318 Q 60 326 52 326 L 26 324 Q 15 322 18 312 L 84 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path d="M 122 72 Q 134 81 150 82 Q 166 81 178 72" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.4"/>
+              <path d="M 126 76 Q 137 84 150 85 Q 163 84 174 76" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.55"/>
+              <path d="M 80 124 Q 86 100 116 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 220 124 Q 214 100 184 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 26 324 L 60 322 L 62 318" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
+              <path d="M 274 324 L 240 322 L 238 318" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
+              <line x1="26" y1="316" x2="60" y2="314" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.4"/>
+              <line x1="274" y1="316" x2="240" y2="314" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.4"/>
+              <line x1="80" y1="350" x2="220" y2="350" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
             </g>
 
             <!-- Polo -->
-            <g id="garment-polo" style="display:none" filter="url(#softShadow)">
-              <path d="M105 60 L68 76 L28 138 L60 155 L80 108 L80 355 Q80 365 92 365 L208 365 Q220 365 220 355 L220 108 L240 155 L272 138 L232 76 L195 60 C188 78 170 90 150 90 C130 90 112 78 105 60 Z" fill="#00000008"/>
-              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" id="garmentFillPolo" fill="#111111"/>
-              <path d="M105 55 L68 72 L28 132 L60 150 L80 102 L80 350 Q80 360 92 360 L208 360 Q220 360 220 350 L220 102 L240 150 L272 132 L232 72 L195 55 C188 73 170 85 150 85 C130 85 112 73 105 55 Z" fill="url(#fabricSheen)"/>
-              <!-- Collar -->
-              <path d="M108 55 L122 42 L150 58 L178 42 L192 55" id="garmentFillPoloCollar" fill="#111111" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
-              <path d="M108 55 C98 50 96 38 106 30 L128 42 Z" id="garmentFillPoloCollarL" fill="#111111"/>
-              <path d="M108 55 C98 50 96 38 106 30 L128 42 Z" fill="url(#fabricSheen)" stroke="#ffffff" stroke-opacity="0.06" stroke-width="0.8"/>
-              <path d="M192 55 C202 50 204 38 194 30 L172 42 Z" id="garmentFillPoloCollarR" fill="#111111"/>
-              <path d="M192 55 C202 50 204 38 194 30 L172 42 Z" fill="url(#fabricSheen)" stroke="#ffffff" stroke-opacity="0.06" stroke-width="0.8"/>
-              <!-- Button placket -->
-              <line x1="150" y1="58" x2="150" y2="110" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
-              <circle cx="150" cy="72" r="2.5" fill="#ffffff" fill-opacity="0.12"/>
-              <circle cx="150" cy="86" r="2.5" fill="#ffffff" fill-opacity="0.12"/>
-              <circle cx="150" cy="100" r="2.5" fill="#ffffff" fill-opacity="0.12"/>
-              <!-- Side seams -->
-              <line x1="80" y1="102" x2="80" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <line x1="220" y1="102" x2="220" y2="350" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.8"/>
-              <!-- Hem -->
-              <path d="M92 360 L208 360" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
+            <g id="garment-polo" style="display:none">
+              <path id="garmentFillPolo" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 270 138 Q 273 144 268 147 L 240 158 Q 234 159 231 153 L 218 122 L 218 348 Q 218 358 208 359 L 92 359 Q 82 358 82 348 L 82 122 L 69 153 Q 66 159 60 158 L 32 147 Q 27 144 30 138 L 84 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path id="garmentFillPoloCollarL" d="M 116 56 L 138 50 L 150 70 L 134 76 Q 118 70 116 56 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5" stroke-linejoin="round"/>
+              <path id="garmentFillPoloCollarR" d="M 184 56 L 162 50 L 150 70 L 166 76 Q 182 70 184 56 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5" stroke-linejoin="round"/>
+              <path id="garmentFillPoloCollar" d="M 138 50 L 150 70 L 162 50" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.6"/>
+              <line x1="150" y1="70" x2="150" y2="118" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.2"/>
+              <line x1="145" y1="70" x2="145" y2="118" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.5"/>
+              <line x1="155" y1="70" x2="155" y2="118" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.5"/>
+              <circle cx="150" cy="84" r="2" fill="var(--garment-detail,#444)" opacity="0.65"/>
+              <circle cx="150" cy="100" r="2" fill="var(--garment-detail,#444)" opacity="0.65"/>
+              <path d="M 82 122 Q 86 96 116 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 218 122 Q 214 96 184 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
+              <path d="M 32 147 L 60 148 L 69 153" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.6"/>
+              <path d="M 268 147 L 240 148 L 231 153" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.6"/>
+              <line x1="82" y1="350" x2="218" y2="350" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
             </g>
           </svg>
           </div>
@@ -837,8 +896,8 @@
               <span class="size-label">Print size</span>
               <button type="button" class="print-area-btn" data-size="right-chest" onclick="setPrintAreaSize('right-chest')">Chest</button>
               <button type="button" class="print-area-btn" data-size="small" onclick="setPrintAreaSize('small')">S</button>
-              <button type="button" class="print-area-btn" data-size="medium" onclick="setPrintAreaSize('medium')">M</button>
-              <button type="button" class="print-area-btn active" data-size="large" onclick="setPrintAreaSize('large')">L</button>
+              <button type="button" class="print-area-btn active" data-size="medium" onclick="setPrintAreaSize('medium')">M</button>
+              <button type="button" class="print-area-btn" data-size="large" onclick="setPrintAreaSize('large')">L</button>
               <button type="button" class="print-area-btn" data-size="xl" onclick="setPrintAreaSize('xl')">XL</button>
             </div>
           </div>
@@ -1186,6 +1245,8 @@
       var garment = state.garment;
       // Map "other" to tshirt as default
       if (garment === 'other') garment = 'tshirt';
+      // Hi-Vis vest uses the t-shirt mockup silhouette (closest shape) until a dedicated SVG ships
+      if (garment === 'hivis') garment = 'tshirt';
       var target = document.getElementById('garment-' + garment);
       if (target) target.style.display = 'block';
 
@@ -1222,7 +1283,22 @@
 
     function updateGarmentColor() {
       var c = state.color;
-      // All fill IDs that need color updates
+      var isLight = isLightColor(c);
+      // Outline + detail strokes adapt to fill brightness so line work stays visible
+      // on every shade — pure dark on light fills, lighter shades of fill on dark fills.
+      var stroke = isLight ? '#1a1a1a' : lightenColor(c, 70);
+      var detail = isLight ? '#444444' : lightenColor(c, 45);
+      // Push stroke colors as CSS vars on each garment group; new line-art paths read these.
+      ['tshirt','hoodie','crewneck','hat','tote','joggers','longsleeve','polo'].forEach(function(name) {
+        var el = document.getElementById('garment-' + name);
+        if (el) {
+          el.style.setProperty('--garment-fill', c);
+          el.style.setProperty('--garment-stroke', stroke);
+          el.style.setProperty('--garment-detail', detail);
+        }
+      });
+
+      // All fill IDs that need color updates (backward compat for any path still using ID)
       var fillIds = [
         'garmentFill', 'garmentFillHoodie', 'hoodFill',
         'garmentFillCrewneck', 'garmentFillHat',
@@ -1243,6 +1319,25 @@
       var handleR = document.getElementById('toteHandleR');
       if (handleL) handleL.setAttribute('stroke', darkenColor(c, 20));
       if (handleR) handleR.setAttribute('stroke', darkenColor(c, 20));
+
+      // Update line/detail colors so the new technical-illustration garments
+      // stay legible across every fill (black lines on white shirts, light
+      // lines on black shirts, etc.).
+      var lineColor = getLineColor(c);
+      var lineIds = ['garmentLine','garmentLineHoodie','hoodLine','garmentLineCrewneck',
+        'garmentLineLong','garmentLinePolo','garmentLinePoloCollarL','garmentLinePoloCollarR',
+        'garmentLineHat','garmentLineTote','garmentLineJoggersWaist',
+        'garmentLineJoggersL','garmentLineJoggersR'];
+      lineIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.setAttribute('stroke', lineColor);
+      });
+      document.querySelectorAll('.trim').forEach(function(el) {
+        el.setAttribute('stroke', lineColor);
+      });
+      document.querySelectorAll('.trim-fill').forEach(function(el) {
+        el.setAttribute('fill', lineColor);
+      });
 
       // Garment is rendered as SVG in the DOM; canvas is overlay-only for design,
       // so no canvas re-render is needed when garment color changes.
@@ -1265,6 +1360,29 @@
       return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
     }
 
+    function lightenColor(hex, amount) {
+      hex = hex.replace('#', '');
+      var r = Math.min(255, parseInt(hex.substr(0,2),16) + amount);
+      var g = Math.min(255, parseInt(hex.substr(2,2),16) + amount);
+      var b = Math.min(255, parseInt(hex.substr(4,2),16) + amount);
+      return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
+    }
+
+    function lightenColor(hex, amount) {
+      hex = hex.replace('#', '');
+      var r = Math.min(255, parseInt(hex.substr(0,2),16) + amount);
+      var g = Math.min(255, parseInt(hex.substr(2,2),16) + amount);
+      var b = Math.min(255, parseInt(hex.substr(4,2),16) + amount);
+      return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + b.toString(16).padStart(2,'0');
+    }
+
+    // Pick a line/detail color that stays visible against the chosen garment fill.
+    // Light fills get near-black; dark fills get a lighter version of the fill so
+    // the construction details (collar, cuffs, hem) read without overpowering.
+    function getLineColor(fill) {
+      return isLightColor(fill) ? '#1a1a1a' : lightenColor(fill, 80);
+    }
+
     // ===== CANVAS EDITOR =====
     // Approach: Garment SVG renders natively in HTML (always visible).
     // Fabric.js canvas is transparent overlay for design placement only.
@@ -1282,7 +1400,7 @@
       large:         {w: 0.35, h: 0.38},
       xl:            {w: 0.45, h: 0.48}
     };
-    var currentPrintArea = 'large';
+    var currentPrintArea = 'medium'; // default matches center-chest preset
 
     // Location-specific print area positions (cx, cy as fraction of canvas)
     var locationPositions = {
@@ -1314,6 +1432,96 @@
     var nameMap = {'front':'Front','back':'Back','left-sleeve':'Left Sleeve','right-sleeve':'Right Sleeve'};
 
     // ===== LOCATION CHECKBOXES (in form) — drive selection =====
+    // ===== PLACEMENT PRESETS =====
+    // Map each preset card to a canvas location + print-area size key, so customers
+    // pick a named placement instead of dragging on the mockup.
+    var placementPresets = {
+      'left-chest':   { loc: 'front',        size: 'left-chest', label: 'Left Chest' },
+      'center-chest': { loc: 'front',        size: 'medium',     label: 'Center Chest' },
+      'full-front':   { loc: 'front',        size: 'large',      label: 'Full Front' },
+      'oversized':    { loc: 'front',        size: 'xl',         label: 'Oversized Front' },
+      'back-top':     { loc: 'back',         size: 'small',      label: 'Top Back' },
+      'back-across':  { loc: 'back',         size: 'large',      label: 'Across Back' },
+      'back-full':    { loc: 'back',         size: 'xl',         label: 'Full Back' },
+      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest', label: 'Left Sleeve' },
+      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', label: 'Right Sleeve' }
+    };
+    var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
+    var presetByLocation = { front: 'center-chest' }; // default state
+
+    // Programmatic version of toggleLocCheck — no event required.
+    function setLocationChecked(loc, checked) {
+      var el = document.querySelector('.loc-check[data-loc="' + loc + '"]');
+      if (!el) return false;
+      var wasChecked = el.classList.contains('checked');
+      var allChecked = document.querySelectorAll('.loc-check.checked');
+      if (!checked && wasChecked && allChecked.length <= 1) return false; // never zero out
+      if (checked && !wasChecked) {
+        el.classList.add('checked');
+        el.querySelector('input').checked = true;
+      } else if (!checked && wasChecked) {
+        el.classList.remove('checked');
+        el.querySelector('input').checked = false;
+      }
+      return true;
+    }
+
+    function togglePlacementPreset(card) {
+      var presetId = card.getAttribute('data-preset');
+      var preset = placementPresets[presetId];
+      if (!preset) return;
+      var loc = preset.loc;
+
+      var alreadySelected = card.classList.contains('selected');
+      var locActive = (presetByLocation[loc] === presetId);
+
+      if (locActive) {
+        // Clicking the active preset for this location: deselect this location entirely
+        // (only if at least one other location is selected — never zero out).
+        var otherLocations = Object.keys(presetByLocation).filter(function(k) { return k !== loc; });
+        if (otherLocations.length === 0) return; // last one — don't allow
+        delete presetByLocation[loc];
+        card.classList.remove('selected');
+        setLocationChecked(loc, false);
+      } else {
+        // Pick this preset for its location (replaces any other preset in same location).
+        presetByLocation[loc] = presetId;
+        // Visually deselect siblings in the same group
+        Object.keys(placementPresets).forEach(function(id) {
+          if (placementPresets[id].loc === loc) {
+            var c = document.querySelector('.preset-card[data-preset="' + id + '"]');
+            if (c) c.classList.toggle('selected', id === presetId);
+          }
+        });
+        setLocationChecked(loc, true);
+      }
+
+      // Set print area for the just-clicked location (drives canvas)
+      presetSizeByLocation[loc] = preset.size;
+      currentPrintArea = preset.size;
+
+      // Switch canvas view to this location & re-render
+      var tab = document.querySelector('.loc-tab[data-loc="' + loc + '"]');
+      if (tab && typeof switchLocationView === 'function') switchLocationView(tab);
+
+      // Push the preset id + size into hidden inputs for the CRM payload
+      var activePresets = Object.values(presetByLocation);
+      var presetInput = document.getElementById('placementPresetInput');
+      if (presetInput) presetInput.value = activePresets.join(', ');
+
+      // Drive the existing UI updates (loc-check changed → re-sync everything)
+      if (typeof updateLocationSelection === 'function') updateLocationSelection();
+
+      // Refresh the placement summary copy
+      var summaryEl = document.getElementById('placementSummary');
+      if (summaryEl) {
+        var labels = activePresets.map(function(id) { return placementPresets[id].label; });
+        summaryEl.textContent = labels.length
+          ? labels.join(', ') + (labels.length > 1 ? ' — ' + labels.length + ' prints, billed per location.' : ' selected.')
+          : 'Pick at least one placement.';
+      }
+    }
+
     function toggleLocCheck(el) {
       // Prevent default label click from double-firing
       event.preventDefault();
@@ -1587,19 +1795,22 @@
         fitDesignToPrintArea(img);
 
         img.set({
-          cornerColor: '#e8ff3c',
-          cornerStrokeColor: '#1a1a1a',
-          cornerSize: 10,
-          cornerStyle: 'circle',
-          transparentCorners: false,
-          borderColor: '#1a1a1a',
-          borderDashArray: [4, 4],
-          padding: 4
+          // Lock movement / scaling / rotation — customers pick a preset placement,
+          // they don't manually position the design.
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true,
+          hoverCursor: 'default'
         });
 
         canvas.add(img);
         designObject = img;
-        canvas.setActiveObject(img);
         canvas.renderAll();
 
         document.getElementById('downloadMockup').style.display = 'block';
@@ -1912,6 +2123,24 @@
           {min: 50, max: 99, single: 18.95, multi: 21.95, fullprint: 24.95, wrap: 27.95},
           {min: 100, max: 199, single: 15.95, multi: 18.95, fullprint: 20.95, wrap: 23.95},
           {min: 200, max: Infinity, single: 13.95, multi: 15.95, fullprint: 17.95, wrap: 19.95}
+        ]}
+      },
+      hivis: {
+        dtg: {name: 'Hi-Vis Vest', tiers: [
+          {min: 5, max: 9, single: 25.95, multi: 29.95, fullprint: 33.95, wrap: 37.95},
+          {min: 10, max: 24, single: 22.95, multi: 26.95, fullprint: 30.95, wrap: 33.95},
+          {min: 25, max: 49, single: 20.95, multi: 23.95, fullprint: 26.95, wrap: 30.95},
+          {min: 50, max: 99, single: 19.95, multi: 22.95, fullprint: 25.95, wrap: 28.95},
+          {min: 100, max: 199, single: 16.95, multi: 19.95, fullprint: 21.95, wrap: 24.95},
+          {min: 200, max: Infinity, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95}
+        ]},
+        dtf: {name: 'Hi-Vis Vest', tiers: [
+          {min: 5, max: 9, single: 25.95, multi: 29.95, fullprint: 33.95, wrap: 37.95},
+          {min: 10, max: 24, single: 22.95, multi: 26.95, fullprint: 30.95, wrap: 33.95},
+          {min: 25, max: 49, single: 20.95, multi: 23.95, fullprint: 26.95, wrap: 30.95},
+          {min: 50, max: 99, single: 19.95, multi: 22.95, fullprint: 25.95, wrap: 28.95},
+          {min: 100, max: 199, single: 16.95, multi: 19.95, fullprint: 21.95, wrap: 24.95},
+          {min: 200, max: Infinity, single: 14.95, multi: 16.95, fullprint: 18.95, wrap: 20.95}
         ]}
       },
       crewneck: {
