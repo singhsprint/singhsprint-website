@@ -245,14 +245,52 @@
       .process-grid{grid-template-columns:1fr}
       .footer-grid{grid-template-columns:1fr}
       h1{font-size:clamp(1.9rem,7vw,2.6rem) !important;line-height:1.15}
-      .hero-stats{gap:14px;font-size:.78rem}
-      .hero-stats > div{flex:1;min-width:0}
+      /* 2×2 grid on phones — flex row was wrapping "2-4" and "Days" to
+         separate lines, and the 4-up flex made every cell too narrow. */
+      .hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px 14px;padding-top:18px}
+      .hero-stats > .stat{min-width:0;text-align:left}
+      .hero-stats .stat strong{font-size:1.1rem;line-height:1.1;white-space:nowrap}
+      .hero-stats .stat span{font-size:.72rem;line-height:1.3;display:block;margin-top:2px}
+      /* Proof bar — 2×2 on phones (was wrapping unevenly across 1/2/1 rows). */
+      .proof-stats{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;justify-items:center}
+      .proof-stat{text-align:center;min-width:0;max-width:160px}
+      .proof-stat strong{font-size:1.15rem;line-height:1.1;display:block;word-break:break-word}
+      .proof-stat span{font-size:.66rem;letter-spacing:.06em;line-height:1.3;display:block;margin-top:4px}
       .service-card{padding:24px 18px}
       .review-card p{font-size:.88rem}
       .trust-logos{gap:18px}
       .trust-logo-text{font-size:.78rem}
-      .section{padding:44px 0}
-      .hero{padding:28px 0 44px}
+      .section{padding:36px 0}
+      .hero{padding:24px 0 36px}
+      /* Mobile feedback: "feels overwhelming". Two surgical hides cut
+         vertical scroll by ~25% without losing core info. */
+      .recent-strip{display:none}                 /* dup of products + portfolio CTA */
+      .hero-buttons{margin-bottom:16px}
+      .hero .subhead{margin-bottom:18px;font-size:.95rem}
+      /* Compact the products grid further — 2 cols still, but tighter */
+      .products-grid{gap:10px}
+      .product-card .product-info{padding:10px 10px 12px}
+      .product-card .product-info h4{font-size:.92rem;line-height:1.2;margin-bottom:2px}
+      .product-card .product-info .price{font-size:.78rem;margin-bottom:6px}
+      .product-card .product-colors{gap:4px}
+      .product-card .color-dot{width:10px;height:10px}
+      .product-badge{font-size:.6rem;padding:3px 6px}
+      /* Tighter why-us cards + FAQ rows for less wall-of-text feel */
+      .why-card{padding:18px;gap:12px}
+      .why-card h3{font-size:.95rem}
+      .why-card p{font-size:.82rem}
+      .faq-q{font-size:.92rem;padding:14px 0}
+      .faq-a p{font-size:.86rem;line-height:1.55;padding-bottom:14px}
+      /* Section labels + h2 a bit smaller so they don't shout */
+      .label{font-size:.68rem}
+      h2{font-size:clamp(1.6rem,5.5vw,2rem) !important;line-height:1.2}
+    }
+    /* Tiny screens (< 360px) — single column for proof + tighter hero stats */
+    @media(max-width:360px){
+      .hero-stats{grid-template-columns:1fr 1fr;gap:12px}
+      .hero-stats .stat strong{font-size:1rem}
+      .proof-stats{grid-template-columns:1fr 1fr;gap:14px 10px}
+      .proof-stat strong{font-size:1.05rem}
     }
   </style>
 </head>
@@ -272,12 +310,10 @@
             <a href="quote" class="btn btn-accent" data-i18n="home.hero.cta1">Get a Free Quote &rarr;</a>
             <a href="portfolio" class="btn btn-outline" data-i18n="home.hero.cta2">See Our Work</a>
           </div>
-          <div class="hero-stats">
-            <div class="stat"><strong>100+</strong><span data-i18n="home.stats.orders">Orders done</span></div>
-            <div class="stat"><strong>5.0 &#9733;</strong><span data-i18n="home.stats.rating">Google rating</span></div>
-            <div class="stat"><strong>2-4 Days</strong><span data-i18n="home.stats.turnaround">Turnaround</span></div>
-            <div class="stat"><strong>$0 Min</strong><span data-i18n="home.stats.orderqty">Order any qty</span></div>
-          </div>
+          <!-- Hero stats removed — duplicated the proof bar below.
+               Mobile feedback was "overwhelming"; one consolidated stats
+               row (the proof bar) is plenty. -->
+
         </div>
         <div class="hero-visual">
           <!-- 16s muted loop. Audio stripped at encode time so even
@@ -499,8 +535,11 @@
     </div>
   </section>
 
-  <!-- ===== RECENT WORK STRIP ===== -->
-  <section style="padding:48px 0;border-top:1px solid #eee;border-bottom:1px solid #eee;overflow:hidden">
+  <!-- ===== RECENT WORK STRIP =====
+       Hidden on phones — redundant with the products grid above (which
+       also has photos) and the portfolio CTA in the nav. Mobile feedback
+       was "overwhelming"; cutting a section pays for itself. -->
+  <section class="recent-strip" style="padding:48px 0;border-top:1px solid #eee;border-bottom:1px solid #eee;overflow:hidden">
     <div class="container">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
         <div><span class="label" data-i18n="home.recent.label">Recent Work</span><h3 style="font-size:1.3rem" data-i18n="home.recent.h">Fresh off the press</h3></div>
