@@ -120,8 +120,12 @@ function loadFooter() {
       + '@media(max-width:560px){.footer-grid{grid-template-columns:1fr !important}}';
     document.head.appendChild(s);
   }
+  // data-nosnippet on the whole footer tells Google not to use any text in
+  // here for SERP snippets. Previously Google's sitelink for guides was
+  // scraping "514-915-1539sales@singhsprint.com@singhsprint on..." because
+  // the <a> siblings extract as one continuous string.
   el.innerHTML = ''
-    + '<footer class="footer">'
+    + '<footer class="footer" data-nosnippet>'
     + '  <div class="container">'
     + '    <div class="footer-grid" style="grid-template-columns:1.6fr 1fr 1fr 1fr 1fr">'
     + '      <div class="footer-brand">'
@@ -131,7 +135,7 @@ function loadFooter() {
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/about" data-i18n="footer.about">About</a></div>'
     + '      <div class="footer-col"><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
     + '      <div class="footer-col"><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/procurement-checklist">Procurement checklist</a><a href="/guides/charity-run-timeline">Charity run timeline</a><a href="/guides/construction-crew-cost">Crew cost analysis</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
-    + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:5149151539">514-915-1539</a><a href="mailto:sales@singhsprint.com">sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank">@singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" data-i18n="footer.location">West Island, Montreal</a></div>'
+    + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:5149151539" aria-label="Call us at 514-915-1539">Call 514-915-1539</a><a href="mailto:sales@singhsprint.com" aria-label="Email sales@singhsprint.com">Email sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank" rel="noopener" aria-label="Follow on Instagram">Instagram @singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener" data-i18n="footer.location">West Island, Montreal</a></div>'
     + '    </div>'
     + '    <div class="footer-bottom">'
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Imprimerie Singhs Print &middot; NEQ 1181573313</span></span>'
