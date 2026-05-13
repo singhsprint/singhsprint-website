@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalog | Singhs Print — Custom Apparel Montreal</title>
-  <meta name="description" content="Browse 18,000+ blanks across S&S, SanMar, and Blanks.com. Filter by brand, fit, fabric, Canadian-made, or Hi-Vis. Pick a SKU and get a custom-print quote in under a minute.">
+  <meta name="description" content="Browse 1,100+ printable blanks from S&S Activewear — Bella+Canvas, Gildan, Berne, Adidas. Filter by brand, fit, fabric, Canadian-made, or Hi-Vis. Pick a SKU and get a printed-garment quote in under a minute.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,13 +118,13 @@
 
   <section class="cat-hero">
     <h1>Our blanks catalog</h1>
-    <p>Browse <strong id="catCount">18,400+</strong> SKUs across S&amp;S, SanMar, Blanks.com and Canadian-made suppliers. Filter by brand, fit, fabric, certification — find the right blank, then get a quote in under a minute.</p>
+    <p>Browse <strong id="catCount">1,100+</strong> blanks from S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
     <div class="meta">
-      <span><strong id="catUpdated">Synced</strong> with suppliers nightly</span>
+      <span><strong>Stock + prices</strong> refresh daily</span>
       <span>·</span>
       <span><strong>5–10 day</strong> typical turnaround</span>
       <span>·</span>
-      <span>From <strong>$6.95/unit</strong> bulk</span>
+      <span>SanMar &amp; Canadian-made supplier integrations coming soon</span>
     </div>
   </section>
 
@@ -155,14 +155,56 @@
       </select>
     </div>
   </div>
-  <!-- Customer-facing reminder: every "From $X" price on a card is the
-       printed garment, not a bare blank. Sits below the toolbar so it's
-       impossible to miss. -->
-  <p style="font-size:.84rem;color:var(--muted);margin:-4px 0 18px;line-height:1.5">
-    Prices shown are <strong>starting prices for printed garments</strong> (blank +
-    1-side decoration, qty 200+). Final price depends on quantity, number of print
-    locations, and decoration method — get an exact quote on any product.
-  </p>
+  <!-- Customer-facing qty slider. Every "From $X" on the cards re-prices to
+       whatever number the slider's on. Snaps to canonical pricing tiers
+       (5, 10, 25, 50, 100, 200, 500) but the customer can fine-tune to any
+       number in between via the readout. Server does the math —
+       /api/catalog?qty=N — so prices stay consistent with the engine. -->
+  <style>
+    .qty-bar{background:#1a1a1a;color:#fff;border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+    .qty-bar__row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .qty-bar__tag{background:var(--hi);color:var(--ink);font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:50px;white-space:nowrap}
+    .qty-bar__readout{display:flex;align-items:baseline;gap:6px;font-family:'Playfair Display',serif}
+    .qty-bar__readout strong{font-size:1.6rem;font-weight:700;color:#fff;line-height:1}
+    .qty-bar__readout span{font-size:.85rem;color:#bbb;font-family:'Inter',sans-serif}
+    .qty-bar__note{flex:1;min-width:200px;font-size:.78rem;color:#bbb;line-height:1.5}
+    .qty-bar__note strong{color:#fff}
+    /* Slider */
+    .qty-slider-wrap{position:relative;padding:6px 0 22px}
+    .qty-slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:50px;background:linear-gradient(to right,#e8ff3c var(--qty-pct,40%),#3a3a3a var(--qty-pct,40%));outline:none}
+    .qty-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+    .qty-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+    .qty-ticks{position:absolute;top:24px;left:0;right:0;display:flex;justify-content:space-between;font-size:.66rem;color:#888;font-weight:500;letter-spacing:.04em}
+    .qty-ticks span{cursor:pointer;transition:color .15s;padding:0 2px}
+    .qty-ticks span:hover{color:#e8ff3c}
+    .qty-ticks span.active{color:#e8ff3c;font-weight:700}
+    .qty-input{width:78px;padding:6px 8px;border:1.5px solid #444;background:#0d0d0d;color:#fff;border-radius:8px;font-size:.95rem;font-family:inherit;font-weight:600;text-align:right}
+  </style>
+  <div id="qtyPricingBar" style="max-width:1200px;margin:-4px auto 22px;padding:0 24px">
+    <div class="qty-bar">
+      <div class="qty-bar__row">
+        <span class="qty-bar__tag">Live pricing for</span>
+        <div class="qty-bar__readout">
+          <strong id="qtyReadout">200</strong>
+          <span>units · 1 print side</span>
+        </div>
+        <span class="qty-bar__note">Drag the slider to see how every product re-prices at <strong>your quantity</strong>. Bigger orders = lower per-unit. Each <strong>From $X</strong> is the printed garment (blank + 1-side decoration).</span>
+        <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:#bbb">Custom <input id="qtyInput" type="number" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)"/></label>
+      </div>
+      <div class="qty-slider-wrap">
+        <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)"/>
+        <div class="qty-ticks">
+          <span data-step="0" onclick="setQty(5)">5</span>
+          <span data-step="1" onclick="setQty(10)">10</span>
+          <span data-step="2" onclick="setQty(25)">25</span>
+          <span data-step="3" onclick="setQty(50)">50</span>
+          <span data-step="4" onclick="setQty(100)">100</span>
+          <span data-step="5" class="active" onclick="setQty(200)">200</span>
+          <span data-step="6" onclick="setQty(500)">500+</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="cat-grid" id="catGrid"></div>
   <div class="cat-loading" id="catLoading" style="display:none">Loading more…</div>
@@ -201,11 +243,66 @@
       inStockOnly: true              // default ON — hide fully OOS items
     },
     sort:    getQueryParam('sort') || 'bestseller',
+    // Qty used to compute every card's "From $X". Default 200 = top tier
+    // (matches the old behaviour). The URL can override via ?qty=50 so
+    // links from other pages can pre-select a tier.
+    qty:     Math.max(1, Math.min(10000, parseInt(getQueryParam('qty') || '200', 10) || 200)),
     products: [],
     page: 0,
     loading: false,
     done: false
   };
+
+  // =========================================================================
+  // Qty control — slider snaps to canonical pricing tiers; the number input
+  // lets the customer override to any qty in between. Both write into
+  // state.qty and refetch the catalog (debounced).
+  // =========================================================================
+  const QTY_TIERS = [5, 10, 25, 50, 100, 200, 500];   // index = slider step
+  let _qtyDebounce = null;
+
+  // Map an arbitrary qty to the closest slider step (so the thumb stays in
+  // a sensible position even after a custom number entry).
+  function qtyToStep(q) {
+    let bestIdx = 0, bestDist = Infinity;
+    QTY_TIERS.forEach((t, i) => {
+      const d = Math.abs(t - q);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    return bestIdx;
+  }
+
+  function onQtySliderChanged(stepStr) {
+    const step = parseInt(stepStr, 10);
+    setQty(QTY_TIERS[step] || 200);
+  }
+  function onQtyInputChanged(val) {
+    const n = parseInt(val, 10);
+    if (!Number.isFinite(n) || n < 1) return;
+    setQty(Math.min(10000, n));
+  }
+  function setQty(n) {
+    state.qty = n;
+    // Sync UI: slider position, readout, number input, tick highlight.
+    const step = qtyToStep(n);
+    const slider = document.getElementById('qtySlider');
+    if (slider) {
+      slider.value = step;
+      slider.style.setProperty('--qty-pct', ((step / (QTY_TIERS.length - 1)) * 100) + '%');
+    }
+    const readout = document.getElementById('qtyReadout');
+    if (readout) readout.textContent = n >= 500 ? '500+' : String(n);
+    const input = document.getElementById('qtyInput');
+    if (input && document.activeElement !== input) input.value = n;
+    document.querySelectorAll('.qty-ticks span').forEach(s => s.classList.toggle('active', parseInt(s.dataset.step,10) === step));
+    // Reflect in URL so deep links carry the qty
+    const url = new URL(location.href);
+    if (n === 200) url.searchParams.delete('qty'); else url.searchParams.set('qty', String(n));
+    history.replaceState(null, '', url.toString());
+    // Debounced refetch — server recomputes every card's "From $X" at this qty
+    if (_qtyDebounce) clearTimeout(_qtyDebounce);
+    _qtyDebounce = setTimeout(() => resetAndFetch(), 250);
+  }
 
   // Garment types we surface in the filter panel + chips, with friendly labels
   // matching the seed in pricing_configs. Keep in sync if a new garment_type
@@ -249,6 +346,8 @@
     if (state.filters.csa)         params.set('csa', '1');
     state.filters.brand.forEach(b => params.append('brand', b));
     params.set('limit', '1500');
+    // Drive the "From $X" cards by the customer-chosen qty (default 200).
+    if (state.qty && state.qty !== 200) params.set('qty', String(state.qty));
 
     try {
       const res = await fetch(`${CATALOG_API}?${params.toString()}`);
@@ -304,7 +403,10 @@
     const card = document.createElement('a');
     card.className = 'card';
     if (p.in_stock === false) card.classList.add('card--oos');
-    card.href = `/quote.html?product=${encodeURIComponent(p.product_id)}&color=${encodeURIComponent(p.colors[0]?.color_id || '')}`;
+    // Carry the customer's chosen qty into the quote so the per-piece price
+    // they saw on the card is what they see on the quote builder's live strip.
+    const qtyParam = state.qty && state.qty !== 200 ? `&qty=${state.qty}` : '';
+    card.href = `/quote.html?product=${encodeURIComponent(p.product_id)}&color=${encodeURIComponent(p.colors[0]?.color_id || '')}${qtyParam}`;
 
     const heroColor = p.colors[0] || {};
     const photoUrl = heroColor.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
@@ -636,6 +738,8 @@
   // Init
   // =========================================================================
   document.addEventListener('DOMContentLoaded', () => {
+    // Initialise the qty slider from state.qty (may have been seeded from ?qty=…)
+    setQty(state.qty);
     fetchPage();
   });
   </script>
