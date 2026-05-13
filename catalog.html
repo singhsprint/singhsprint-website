@@ -280,7 +280,7 @@
         <div class="brand-row">${(p.brand || '').toUpperCase()} · ${p.style_number || ''}</div>
         <div class="name">${p.name}</div>
         <div class="swatches">${swatches}${extra}</div>
-        <div class="price">From <strong>$${(p.price_from || 0).toFixed(2)}</strong>${p.weight_oz ? ' · ' + p.weight_oz + ' oz' : ''}</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · ' + p.weight_oz + ' oz' : ''}</div>
       </div>
     `;
     return card;
