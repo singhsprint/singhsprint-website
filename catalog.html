@@ -85,7 +85,11 @@
     .card .body{padding:12px 14px}
     .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
     .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
-    .card .swatches{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px;max-height:44px;overflow:hidden}
+    /* overflow:visible so the selected-state ring (box-shadow + scale) on
+       a swatch isn't clipped at the top of the row. max-height clamped to
+       fit roughly 2 rows of 16px swatches plus the selected ring breathing
+       room. The "+N" overflow indicator stays inline at row end. */
+    .card .swatches{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px;max-height:56px;overflow:visible}
     .card .swatches .more{font-size:.7rem;color:var(--soft);padding:0 4px;align-self:center;white-space:nowrap}
     .card .swatch{width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s;padding:0;background-clip:padding-box;outline:none}
     .card .swatch:hover{transform:scale(1.2)}
@@ -201,25 +205,31 @@
   <div id="nav-placeholder"></div>
 
   <section class="cat-hero">
-    <h1>Our blanks catalog</h1>
-    <p>Browse <strong id="catCount">1,100+</strong> blanks from S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
+    <h1 data-i18n="cat.hero.h1">Our blanks catalog</h1>
+    <p data-i18n="cat.hero.p">Browse <strong id="catCount">1,100+</strong> blanks from S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
+    <!-- Auto-translation badge — only visible when FR is active. The
+         supplier feeds (S&S Activewear) only provide English copy, so we
+         machine-translate product/color/spec text on the fly. -->
+    <div id="aiTransBadge" style="display:none;margin-top:12px;padding:8px 12px;background:#fef9c3;border:1px solid #f7d77a;border-radius:10px;font-size:.78rem;color:#5b4500;max-width:fit-content;line-height:1.4">
+      <strong>🌐 Traduction automatique active</strong> — les noms de produits et couleurs sont traduits automatiquement depuis l'anglais. Le reste du site est en français professionnel.
+    </div>
     <div class="meta">
-      <span><strong>Stock + prices</strong> refresh daily</span>
+      <span data-i18n="cat.hero.meta1"><strong>Stock + prices</strong> refresh daily</span>
       <span>·</span>
-      <span><strong>5–10 day</strong> typical turnaround</span>
+      <span data-i18n="cat.hero.meta2"><strong>5–10 day</strong> typical turnaround</span>
       <span>·</span>
-      <span>SanMar &amp; Canadian-made supplier integrations coming soon</span>
+      <span data-i18n="cat.hero.meta3">SanMar &amp; Canadian-made supplier integrations coming soon</span>
     </div>
   </section>
 
   <div class="cat-toolbar">
     <div class="cat-search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="searchInput" placeholder="Search by brand, style number, fabric…" autocomplete="off"/>
+      <input type="text" id="searchInput" placeholder="Search by brand, style number, fabric…" data-i18n-placeholder="cat.search.placeholder" autocomplete="off"/>
     </div>
     <button class="cat-filter-btn" onclick="openFilterPanel()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="2" fill="white"/><circle cx="16" cy="12" r="2" fill="white"/><circle cx="8" cy="18" r="2" fill="white"/></svg>
-      Filters
+      <span data-i18n="cat.btn.filters">Filters</span>
       <span class="pill" id="filterCount" style="display:none">0</span>
     </button>
   </div>
@@ -227,15 +237,15 @@
   <div class="cat-chips" id="chipRow"></div>
 
   <div class="cat-meta-row">
-    <div><strong id="resultCount">—</strong> products</div>
+    <div><strong id="resultCount">—</strong> <span data-i18n="cat.results.products">products</span></div>
     <div class="cat-sort">
-      Sort:
+      <span data-i18n="cat.sort.label">Sort:</span>
       <select id="sortSelect" onchange="setSort(this.value)" style="font-family:inherit;font-weight:600;border:none;background:transparent;cursor:pointer;font-size:.95rem;color:var(--ink);padding:0">
-        <option value="bestseller">Bestseller</option>
-        <option value="price_asc">Price ↑ (low → high)</option>
-        <option value="price_desc">Price ↓ (high → low)</option>
-        <option value="name_asc">Name A → Z</option>
-        <option value="brand_asc">Brand A → Z</option>
+        <option value="bestseller" data-i18n="cat.sort.bestseller">Bestseller</option>
+        <option value="price_asc" data-i18n="cat.sort.price_asc">Price ↑ (low → high)</option>
+        <option value="price_desc" data-i18n="cat.sort.price_desc">Price ↓ (high → low)</option>
+        <option value="name_asc" data-i18n="cat.sort.name_asc">Name A → Z</option>
+        <option value="brand_asc" data-i18n="cat.sort.brand_asc">Brand A → Z</option>
       </select>
     </div>
   </div>
@@ -265,8 +275,8 @@
   </style>
   <div id="qtyPricingBar" class="qty-bar">
     <div class="qty-bar__label">
-      Pricing for <strong><span id="qtyReadout">200</span> units</strong>
-      <span style="font-size:.72rem;color:var(--soft);font-weight:500">· 1 print side</span>
+      <span data-i18n="cat.qty.label">Pricing for</span> <strong><span id="qtyReadout">200</span> <span data-i18n="cat.qty.units">units</span></strong>
+      <span style="font-size:.72rem;color:var(--soft);font-weight:500" data-i18n="cat.qty.oneside">· 1 print side</span>
     </div>
     <div class="qty-bar__slider-wrap">
       <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
@@ -281,13 +291,13 @@
       </div>
     </div>
     <label class="qty-bar__custom">
-      Custom <input id="qtyInput" type="number" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 
   <div class="cat-grid" id="catGrid"></div>
-  <div class="cat-loading" id="catLoading" style="display:none">Loading more…</div>
-  <div class="cat-empty" id="catEmpty" style="display:none"><h3>No matches</h3><p>Try removing a filter or check our "Bring your own blank" option.</p></div>
+  <div class="cat-loading" id="catLoading" style="display:none" data-i18n="cat.loading">Loading more…</div>
+  <div class="cat-empty" id="catEmpty" style="display:none"><h3 data-i18n="cat.empty.h3">No matches</h3><p data-i18n="cat.empty.p">Try removing a filter or check our "Bring your own blank" option.</p></div>
 
   <!-- Floating cart bar — appears whenever the customer has 1+ items
        queued for their quote. Stays sticky at the bottom of the viewport
@@ -316,8 +326,8 @@
   </style>
   <div id="cartBar" class="cart-bar">
     <span class="cart-bar__count" id="cartCount">0</span>
-    <span class="cart-bar__label"><strong id="cartUnits">0</strong> units in your quote</span>
-    <button type="button" class="cart-bar__cta" onclick="goToQuote()">Continue to quote →</button>
+    <span class="cart-bar__label"><strong id="cartUnits">0</strong> <span data-i18n="cat.cart.units">units in your quote</span></span>
+    <button type="button" class="cart-bar__cta" onclick="goToQuote()" data-i18n="cat.cart.cta">Continue to quote →</button>
   </div>
   <div id="cartToast" class="cart-toast" aria-live="polite"></div>
 
@@ -347,35 +357,35 @@
         </div>
         <!-- Tech specs — parsed from the S&S product description. -->
         <div id="detailModalSpecsWrap" style="margin-bottom:22px;display:none">
-          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600">Tech specs</div>
+          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600" data-i18n="cat.detail.specs">Tech specs</div>
           <ul id="detailModalSpecs" class="detail-modal__specs"></ul>
           <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
         </div>
-        <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600">All colors (<span id="detailModalCount">0</span>)</div>
+        <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span data-i18n="cat.detail.allcolors">All colors</span> (<span id="detailModalCount">0</span>)</div>
         <div class="detail-modal__swatches" id="detailModalSwatches"></div>
       </div>
       <div class="detail-modal__foot">
         <div class="detail-modal__qty">
-          <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700">Qty</span>
+          <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700" data-i18n="cat.detail.qty">Qty</span>
           <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
           <input type="number" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
           <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
         </div>
-        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem">+ Add <span id="detailModalAddQty">25</span> to quote</button>
+        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span data-i18n="cat.card.add-to-quote">+ Add to quote</span> · <span id="detailModalAddQty">25</span></button>
       </div>
     </div>
   </div>
   <aside class="filter-panel" id="filterPanel" aria-hidden="true">
     <header>
-      <h3>Refine results</h3>
+      <h3 data-i18n="cat.filter.refine">Refine results</h3>
       <button onclick="closeFilterPanel()" aria-label="Close">×</button>
     </header>
     <div class="scroll" id="filterBody">
       <!-- Filter groups injected by JS once /api/catalog/facets returns -->
     </div>
     <footer>
-      <button class="clear" onclick="clearAllFilters()">Clear all</button>
-      <button class="apply" onclick="applyFilters()">Apply</button>
+      <button class="clear" onclick="clearAllFilters()" data-i18n="cat.filter.clear">Clear all</button>
+      <button class="apply" onclick="applyFilters()" data-i18n="cat.filter.apply">Apply</button>
     </footer>
   </aside>
 
@@ -420,7 +430,8 @@
   function showCartToast(item) {
     const t = document.getElementById('cartToast');
     if (!t) return;
-    t.innerHTML = '<strong>✓ Added to quote</strong> · ' + (item.brand || '') + ' ' + (item.style_number || '');
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    t.innerHTML = '<strong>' + (_t('cat.toast.added') || '✓ Added to quote') + '</strong> · ' + (item.brand || '') + ' ' + (item.style_number || '');
     t.classList.add('show');
     clearTimeout(showCartToast._tid);
     showCartToast._tid = setTimeout(function(){ t.classList.remove('show'); }, 1800);
@@ -451,9 +462,10 @@
     _detailColorIdx = 0;
     document.getElementById('detailModalBrand').textContent = (p.brand || '').toUpperCase() + ' · ' + (p.style_number || '');
     document.getElementById('detailModalTitle').textContent = p.name || '';
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     document.getElementById('detailModalPrice').innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
-      ? 'From <strong>$' + p.price_from.toFixed(2) + '</strong> /unit · <span style="color:#888;font-weight:500">1-side print</span>'
-      : '<strong>Quote on request</strong>';
+      ? (_t('cat.card.from') || 'From') + ' <strong>$' + p.price_from.toFixed(2) + '</strong> ' + (_t('cat.card.perunit') || '/unit') + ' · <span style="color:#888;font-weight:500">' + (_t('cat.card.oneside') || '1-side print') + '</span>'
+      : '<strong>' + (_t('cat.card.quote-on-request') || 'Quote on request') + '</strong>';
     const metaBits = [];
     if (p.weight_oz)     metaBits.push(p.weight_oz + ' oz');
     if (p.fabric)        metaBits.push(p.fabric);
@@ -478,7 +490,8 @@
       ).join('');
       if (specs.length > PREVIEW) {
         specsToggle.style.display = 'inline-block';
-        specsToggle.textContent = 'Show all ' + specs.length + ' specs ▾';
+        var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+        specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
         specsToggle.dataset.expanded = '0';
       } else {
         specsToggle.style.display = 'none';
@@ -514,17 +527,21 @@
     document.getElementById('detailOverlay').classList.add('open');
     document.getElementById('detailModal').classList.add('open');
     document.body.style.overflow = 'hidden';
+    // If FR is active, machine-translate the dynamic strings (title,
+    // selected color, color names in the grid, spec bullets).
+    maybeTranslateDetailModal();
   }
 
   function paintDetailHero() {
     const p = _detailProduct; if (!p) return;
     const c = (p.colors || [])[_detailColorIdx] || {};
-    document.getElementById('detailModalImg').src = c.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
-    document.getElementById('detailModalSelectedColor').textContent = 'Color: ' + ((c.color_name || '').replace(/_\d+$/, '') || '—');
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    document.getElementById('detailModalImg').src = imgUrl(c.mockup_front_url || p.hero_image_url);
+    document.getElementById('detailModalSelectedColor').textContent = (_t('cat.detail.color') || 'Color:') + ' ' + ((c.color_name || '').replace(/_\d+$/, '') || '—');
     const sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
     document.getElementById('detailModalSelectedSizes').textContent = sizes.length
-      ? 'Sizes in stock: ' + sizes.join(', ')
-      : 'Sizes in stock: contact us';
+      ? (_t('cat.detail.sizes') || 'Sizes in stock:') + ' ' + sizes.join(', ')
+      : (_t('cat.detail.sizes') || 'Sizes in stock:') + ' ' + (_t('cat.detail.contactus') || 'contact us');
   }
 
   function closeProductDetail() {
@@ -569,9 +586,10 @@
       });
       specsToggle.dataset.expanded = expanded ? '0' : '1';
       const allCount = document.querySelectorAll('#detailModalSpecs li').length;
+      var _ts2 = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       specsToggle.textContent = expanded
-        ? 'Show all ' + allCount + ' specs ▾'
-        : 'Show fewer specs ▴';
+        ? (_ts2('cat.detail.showall') || 'Show all') + ' ' + allCount + ' ' + (_ts2('cat.detail.specs-suffix') || 'specs ▾')
+        : (_ts2('cat.detail.showfewer') || 'Show fewer specs ▴');
     });
 
     // Add → cart, using the modal's own qty (not the page slider).
@@ -587,7 +605,7 @@
         style_number: p.style_number || '',
         name:         p.name || '',
         garment_type: p.garment_type || null,
-        hero_url:     c.mockup_front_url || p.hero_image_url || '',
+        hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
         qty:          n,
       });
       closeProductDetail();
@@ -621,9 +639,10 @@
     // Visual confirmation on the card itself
     const btn = document.querySelector('button[data-add-id="' + productId + '"]');
     if (btn) {
+      var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       btn.classList.add('added');
-      btn.textContent = '✓ Added';
-      setTimeout(function(){ btn.classList.remove('added'); btn.textContent = '+ Add to quote'; }, 1400);
+      btn.textContent = _t('cat.toast.added') || '✓ Added';
+      setTimeout(function(){ btn.classList.remove('added'); btn.textContent = _t('cat.card.add-to-quote') || '+ Add to quote'; }, 1400);
     }
   }
 
@@ -720,6 +739,20 @@
 
   // Catalog API endpoint — singhsprint-crm Vercel project
   const CATALOG_API = 'https://singhsprint-crm.vercel.app/api/catalog';
+  const IMAGE_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+
+  // S&S Activewear started 403'ing direct hotlinks from external pages, so
+  // every supplier image is routed through our /api/image-proxy endpoint
+  // (server-side fetch with auth + 24h edge cache). Local /images/* URLs and
+  // anything already on singhsprint.com is passed through untouched.
+  function imgUrl(raw) {
+    if (!raw) return '/images/product-tshirt-white.jpg';
+    if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
+    if (raw.indexOf('ssactivewear.com') >= 0) {
+      return IMAGE_PROXY + '?url=' + encodeURIComponent(raw);
+    }
+    return raw;
+  }
 
   function getQueryParam(name) {
     const m = new URLSearchParams(location.search).get(name);
@@ -796,7 +829,54 @@
 
     document.getElementById('resultCount').textContent = visible.length.toLocaleString();
     renderChips();
+    // Re-apply the active language to all freshly-rendered cards (they
+    // contain inline data-i18n attributes for the static CTA strings).
+    if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
+    // Auto-translate the supplier-fed dynamic strings (product names +
+    // selected color names) when FR is active. Uses the MyMemory API via
+    // window.AITranslate with localStorage caching.
+    maybeTranslateCatalog();
   }
+
+  // ===== AI translate overlay for dynamic catalog content =====
+  // Translates product names + color names on cards (and inside the
+  // detail modal) when SP_LANG is 'fr'. Static UI strings still go
+  // through lang.js. We use data-orig-en attributes so flipping back
+  // to EN is instant — no network.
+  function isAITranslateActive() {
+    return typeof SP_LANG !== 'undefined' && SP_LANG.getLang && SP_LANG.getLang() === 'fr';
+  }
+  function maybeTranslateCatalog() {
+    var grid = document.getElementById('catGrid');
+    var badge = document.getElementById('aiTransBadge');
+    if (!window.AITranslate || !grid) return;
+    if (!isAITranslateActive()) {
+      window.AITranslate.restoreContainer(grid);
+      if (badge) badge.style.display = 'none';
+      return;
+    }
+    if (badge) badge.style.display = 'block';
+    // Translate product names + currently-selected color labels on each card.
+    window.AITranslate.translateContainer(grid,
+      ['.card .name', '.card .selected-color-name'], 'fr', 6);
+  }
+  function maybeTranslateDetailModal() {
+    var modal = document.getElementById('detailModal');
+    if (!window.AITranslate || !modal) return;
+    if (!isAITranslateActive()) {
+      window.AITranslate.restoreContainer(modal);
+      return;
+    }
+    window.AITranslate.translateContainer(modal,
+      ['#detailModalTitle', '.detail-modal__swatch-name',
+       '#detailModalSelectedColor', '#detailModalSpecs li'],
+      'fr', 6);
+  }
+  // Re-translate whenever the language toggles.
+  document.addEventListener('sp-lang-change', function () {
+    maybeTranslateCatalog();
+    maybeTranslateDetailModal();
+  });
 
   function productCard(p) {
     // Card is now a clickable surface (not an anchor). Whole-card click =
@@ -815,12 +895,12 @@
     card._selectedColorIdx = firstInStockIdx >= 0 ? firstInStockIdx : 0;
 
     let badge = '';
-    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos">Out of stock</div>`;
+    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos" data-i18n="cat.card.oos">Out of stock</div>`;
     else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2)
-                                                                         badge = `<div class="badge badge--low">Low stock</div>`;
-    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller">★ Bestseller</div>`;
-    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
-    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
+                                                                         badge = `<div class="badge badge--low" data-i18n="cat.card.low">Low stock</div>`;
+    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller" data-i18n="cat.card.bestseller">★ Bestseller</div>`;
+    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian" data-i18n="cat.card.canadian">🇨🇦 Canadian</div>`;
+    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa" data-i18n="cat.card.csa">CSA Hi-Vis</div>`;
 
     // Catalog cards display up to 24 swatches in a 2-row wrap (16px × 2 rows
     // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
@@ -842,7 +922,7 @@
 
     const repaintCard = () => {
       const c = (p.colors || [])[card._selectedColorIdx] || {};
-      const photoUrl = c.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
+      const photoUrl = imgUrl(c.mockup_front_url || p.hero_image_url);
       const img = card.querySelector('.photo img');
       if (img) img.src = photoUrl;
       const colorLabel = card.querySelector('.selected-color-name');
@@ -854,7 +934,7 @@
     };
 
     const heroColor = (p.colors || [])[card._selectedColorIdx] || {};
-    const photoUrl = heroColor.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
+    const photoUrl = imgUrl(heroColor.mockup_front_url || p.hero_image_url);
 
     card.innerHTML = `
       ${badge}
@@ -864,9 +944,9 @@
         <div class="name">${p.name}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
-        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>/unit · <span class="price-meta">1-side print</span>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
-        <button type="button" class="card-details-link" data-detail-trigger="${p.product_id}">View details ↗</button>
-        <div class="card-cta">+ Add <span class="card-cta__qty">${state.qty}</span> to quote</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>` : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <button type="button" class="card-details-link" data-detail-trigger="${p.product_id}" data-i18n="cat.card.view-details">View details ↗</button>
+        <div class="card-cta"><span data-i18n="cat.card.add-to-quote">+ Add to quote</span> · <span class="card-cta__qty">${state.qty}</span></div>
       </div>
     `;
 
@@ -904,7 +984,7 @@
           style_number: p.style_number || '',
           name:         p.name || '',
           garment_type: p.garment_type || null,
-          hero_url:     c.mockup_front_url || p.hero_image_url || '',
+          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
         });
         // Visual feedback on the card
         card.classList.add('card--just-added');
@@ -925,8 +1005,8 @@
     a.href = '/quote.html?source=byo';
     a.innerHTML = `
       <div class="add">+</div>
-      <strong>Bring your own blank</strong>
-      <span>Got a SKU or tech pack? Send it over — we'll source and quote it.</span>
+      <strong data-i18n="cat.byo.title">Bring your own blank</strong>
+      <span data-i18n="cat.byo.sub">Got a SKU or tech pack? Send it over — we'll source and quote it.</span>
     `;
     return a;
   }
@@ -1215,5 +1295,6 @@
   </script>
 
   <script src="lang.js" defer></script>
+  <script src="ai-translate.js" defer></script>
 </body>
 </html>

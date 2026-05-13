@@ -92,183 +92,183 @@
 <div id="nav-placeholder"></div>
 
 <div class="page-header">
-  <span class="label">For Procurement &amp; Operations Teams</span>
-  <h1>Request procurement pricing</h1>
-  <p>Tell us about the program. We&rsquo;ll come back with a quote, sample timeline, and term sheet &mdash; usually within an hour during business hours.</p>
+  <span class="label" data-i18n="rfp.label">For Procurement &amp; Operations Teams</span>
+  <h1 data-i18n="rfp.h1">Request procurement pricing</h1>
+  <p data-i18n="rfp.sub">Tell us about the program. We&rsquo;ll come back with a quote, sample timeline, and term sheet &mdash; usually within an hour during business hours.</p>
 </div>
 
 <div class="layout">
   <div class="form-card">
     <form id="rfpForm">
 
-      <div class="section-title">Company</div>
+      <div class="section-title" data-i18n="rfp.sect.company">Company</div>
       <div class="form-row">
         <div class="form-group">
-          <label for="company">Company / organization <span class="req">*</span></label>
-          <input type="text" id="company" name="company" required placeholder="Acme Construction Ltd.">
+          <label for="company"><span data-i18n="rfp.label.company">Company / organization</span> <span class="req">*</span></label>
+          <input type="text" id="company" name="company" required placeholder="Acme Construction Ltd." data-i18n-placeholder="rfp.ph.company">
         </div>
         <div class="form-group">
-          <label for="industry">Industry <span class="req">*</span></label>
+          <label for="industry"><span data-i18n="rfp.label.industry">Industry</span> <span class="req">*</span></label>
           <select id="industry" name="industry" required>
-            <option value="">Select your sector</option>
-            <option>Construction &amp; Trades</option>
-            <option>Restaurant &amp; Hospitality</option>
-            <option>Corporate / Tech / Office</option>
-            <option>Charity / Non-profit / Event</option>
-            <option>School / University / Sports League</option>
-            <option>Healthcare / Clinic</option>
-            <option>Retail / E-commerce brand</option>
-            <option>Government / Public sector</option>
-            <option>Other</option>
+            <option value="" data-i18n="rfp.opt.industry0">Select your sector</option>
+            <option data-i18n="rfp.opt.industry1">Construction &amp; Trades</option>
+            <option data-i18n="rfp.opt.industry2">Restaurant &amp; Hospitality</option>
+            <option data-i18n="rfp.opt.industry3">Corporate / Tech / Office</option>
+            <option data-i18n="rfp.opt.industry4">Charity / Non-profit / Event</option>
+            <option data-i18n="rfp.opt.industry5">School / University / Sports League</option>
+            <option data-i18n="rfp.opt.industry6">Healthcare / Clinic</option>
+            <option data-i18n="rfp.opt.industry7">Retail / E-commerce brand</option>
+            <option data-i18n="rfp.opt.industry8">Government / Public sector</option>
+            <option data-i18n="rfp.opt.industry9">Other</option>
           </select>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="contactName">Your name <span class="req">*</span></label>
+          <label for="contactName"><span data-i18n="rfp.label.name">Your name</span> <span class="req">*</span></label>
           <input type="text" id="contactName" name="contact_name" required>
         </div>
         <div class="form-group">
-          <label for="contactRole">Your role</label>
+          <label for="contactRole" data-i18n="rfp.label.role">Your role</label>
           <select id="contactRole" name="contact_role">
-            <option value="">Select your role</option>
-            <option>HR / People Operations</option>
-            <option>Procurement / Purchasing</option>
-            <option>Operations / Ops Manager</option>
-            <option>Founder / Owner</option>
-            <option>Marketing / Brand</option>
-            <option>Event coordinator</option>
-            <option>Office manager</option>
-            <option>Other</option>
+            <option value="" data-i18n="rfp.opt.role0">Select your role</option>
+            <option data-i18n="rfp.opt.role1">HR / People Operations</option>
+            <option data-i18n="rfp.opt.role2">Procurement / Purchasing</option>
+            <option data-i18n="rfp.opt.role3">Operations / Ops Manager</option>
+            <option data-i18n="rfp.opt.role4">Founder / Owner</option>
+            <option data-i18n="rfp.opt.role5">Marketing / Brand</option>
+            <option data-i18n="rfp.opt.role6">Event coordinator</option>
+            <option data-i18n="rfp.opt.role7">Office manager</option>
+            <option data-i18n="rfp.opt.role8">Other</option>
           </select>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="email">Work email <span class="req">*</span></label>
-          <input type="email" id="email" name="email" required placeholder="you@company.com">
+          <label for="email"><span data-i18n="rfp.label.email">Work email</span> <span class="req">*</span></label>
+          <input type="email" id="email" name="email" required placeholder="you@company.com" data-i18n-placeholder="rfp.ph.email">
         </div>
         <div class="form-group">
-          <label for="phone">Phone</label>
+          <label for="phone" data-i18n="rfp.label.phone">Phone</label>
           <input type="tel" id="phone" name="phone" placeholder="514-xxx-xxxx">
         </div>
       </div>
 
-      <div class="section-title">The order</div>
+      <div class="section-title" data-i18n="rfp.sect.order">The order</div>
 
       <div class="form-group">
-        <label>Annual unit volume <span class="req">*</span></label>
+        <label><span data-i18n="rfp.label.volume">Annual unit volume</span> <span class="req">*</span></label>
         <div class="pill-group" data-name="volume">
-          <span class="pill" data-value="<500">Under 500 units</span>
-          <span class="pill" data-value="500-2000">500 – 2,000</span>
-          <span class="pill" data-value="2000-10000">2,000 – 10,000</span>
-          <span class="pill" data-value="10000+">10,000+</span>
+          <span class="pill" data-value="<500" data-i18n="rfp.vol.500">Under 500 units</span>
+          <span class="pill" data-value="500-2000" data-i18n="rfp.vol.500-2000">500 – 2,000</span>
+          <span class="pill" data-value="2000-10000" data-i18n="rfp.vol.2000-10000">2,000 – 10,000</span>
+          <span class="pill" data-value="10000+" data-i18n="rfp.vol.10000+">10,000+</span>
         </div>
         <input type="hidden" name="annual_volume" id="annual_volume" required>
       </div>
 
       <div class="form-group">
-        <label>Order pattern <span class="req">*</span></label>
+        <label><span data-i18n="rfp.label.cadence">Order pattern</span> <span class="req">*</span></label>
         <div class="pill-group" data-name="cadence">
-          <span class="pill" data-value="one-time">One-time order</span>
-          <span class="pill" data-value="quarterly">Quarterly refresh</span>
-          <span class="pill" data-value="annual">Annual program</span>
-          <span class="pill" data-value="ongoing">Ongoing / reorder-driven</span>
+          <span class="pill" data-value="one-time" data-i18n="rfp.cad.onetime">One-time order</span>
+          <span class="pill" data-value="quarterly" data-i18n="rfp.cad.quarterly">Quarterly refresh</span>
+          <span class="pill" data-value="annual" data-i18n="rfp.cad.annual">Annual program</span>
+          <span class="pill" data-value="ongoing" data-i18n="rfp.cad.ongoing">Ongoing / reorder-driven</span>
         </div>
         <input type="hidden" name="order_cadence" id="order_cadence" required>
       </div>
 
       <div class="form-group">
-        <label for="garments">What are you ordering?</label>
-        <textarea id="garments" name="garments" placeholder="E.g. 80 hi-vis t-shirts (cotton blend, embroidered logo left chest), 40 fleece hoodies for winter. Include any spec you have."></textarea>
+        <label for="garments" data-i18n="rfp.label.garments">What are you ordering?</label>
+        <textarea id="garments" name="garments" placeholder="E.g. 80 hi-vis t-shirts (cotton blend, embroidered logo left chest), 40 fleece hoodies for winter. Include any spec you have." data-i18n-placeholder="rfp.ph.garments"></textarea>
       </div>
 
       <div class="form-group">
-        <label for="targetDate">Needed by</label>
+        <label for="targetDate" data-i18n="rfp.label.needed">Needed by</label>
         <input type="date" id="targetDate" name="needed_by">
-        <p class="hint">Standard turnaround is 7&ndash;14 business days from sample approval. Faster possible with rush surcharge.</p>
+        <p class="hint" data-i18n="rfp.hint.turnaround">Standard turnaround is 7&ndash;14 business days from sample approval. Faster possible with rush surcharge.</p>
       </div>
 
-      <div class="section-title">Terms &amp; compliance</div>
+      <div class="section-title" data-i18n="rfp.sect.terms">Terms &amp; compliance</div>
 
       <div class="form-group">
-        <label>Preferred payment terms</label>
+        <label data-i18n="rfp.label.terms">Preferred payment terms</label>
         <div class="pill-group" data-name="terms">
-          <span class="pill" data-value="prepaid">Prepaid (2% discount)</span>
-          <span class="pill selected" data-value="deposit-net30">50% deposit + Net 30 balance</span>
-          <span class="pill" data-value="net30">Full Net 30</span>
-          <span class="pill" data-value="net60">Net 60 / custom</span>
+          <span class="pill" data-value="prepaid" data-i18n="rfp.terms.prepaid">Prepaid (2% discount)</span>
+          <span class="pill selected" data-value="deposit-net30" data-i18n="rfp.terms.deposit30">50% deposit + Net 30 balance</span>
+          <span class="pill" data-value="net30" data-i18n="rfp.terms.net30">Full Net 30</span>
+          <span class="pill" data-value="net60" data-i18n="rfp.terms.net60">Net 60 / custom</span>
         </div>
         <input type="hidden" name="payment_terms" id="payment_terms" value="deposit-net30">
-        <p class="hint">50% deposit + Net 30 is our standard for new accounts. Better terms available once we&rsquo;ve worked together.</p>
+        <p class="hint" data-i18n="rfp.hint.terms">50% deposit + Net 30 is our standard for new accounts. Better terms available once we&rsquo;ve worked together.</p>
       </div>
 
       <div class="form-group">
-        <label>Required compliance / certifications</label>
+        <label data-i18n="rfp.label.compliance">Required compliance / certifications</label>
         <div class="pill-group" data-name="compliance" data-multi="1">
-          <span class="pill" data-value="CSA">CSA-compliant hi-vis</span>
-          <span class="pill" data-value="OEKO-TEX">OEKO-TEX certified</span>
-          <span class="pill" data-value="union-made">Union-made / All-Canadian</span>
-          <span class="pill" data-value="GOTS">Organic / GOTS</span>
-          <span class="pill" data-value="none">None required</span>
+          <span class="pill" data-value="CSA" data-i18n="rfp.comp.csa">CSA-compliant hi-vis</span>
+          <span class="pill" data-value="OEKO-TEX" data-i18n="rfp.comp.oeko">OEKO-TEX certified</span>
+          <span class="pill" data-value="union-made" data-i18n="rfp.comp.union">Union-made / All-Canadian</span>
+          <span class="pill" data-value="GOTS" data-i18n="rfp.comp.gots">Organic / GOTS</span>
+          <span class="pill" data-value="none" data-i18n="rfp.comp.none">None required</span>
         </div>
         <input type="hidden" name="compliance" id="compliance">
       </div>
 
       <div class="form-group">
-        <label for="brandFile">Brand guidelines / sample artwork (optional)</label>
+        <label for="brandFile" data-i18n="rfp.label.brandfile">Brand guidelines / sample artwork (optional)</label>
         <label class="file-upload" for="brandFile">
-          <div class="up-text">Attach brand guidelines, existing artwork, or a previous sample</div>
-          <div class="up-sub">PDF, AI, PSD, PNG, JPG &mdash; up to 15&nbsp;MB</div>
+          <div class="up-text" data-i18n="rfp.upload.text">Attach brand guidelines, existing artwork, or a previous sample</div>
+          <div class="up-sub" data-i18n="rfp.upload.sub">PDF, AI, PSD, PNG, JPG &mdash; up to 15&nbsp;MB</div>
           <input type="file" id="brandFile" name="brand_file" accept=".pdf,.ai,.psd,.png,.jpg,.jpeg,.svg">
         </label>
         <p class="hint" id="brandFileName"></p>
       </div>
 
       <div class="form-group">
-        <label for="extra">Anything else we should know?</label>
-        <textarea id="extra" name="extra" placeholder="Sizing data, attrition rate, existing supplier (and what's missing), specific compliance audit windows, etc."></textarea>
+        <label for="extra" data-i18n="rfp.label.extra">Anything else we should know?</label>
+        <textarea id="extra" name="extra" placeholder="Sizing data, attrition rate, existing supplier (and what's missing), specific compliance audit windows, etc." data-i18n-placeholder="rfp.ph.extra"></textarea>
       </div>
 
       <div class="submit-row">
-        <p class="compliance-line">By submitting, you agree we may contact you with quote details. No spam, no list-sharing. We respond within an hour during business hours.</p>
-        <button type="submit" class="btn-primary">Send RFP &rarr;</button>
+        <p class="compliance-line" data-i18n="rfp.compliance.line">By submitting, you agree we may contact you with quote details. No spam, no list-sharing. We respond within an hour during business hours.</p>
+        <button type="submit" class="btn-primary" data-i18n="rfp.submit">Send RFP &rarr;</button>
       </div>
 
     </form>
 
     <div class="form-success" id="rfpSuccess">
       <div class="icon">&#10003;</div>
-      <h2>RFP received</h2>
-      <p>We&rsquo;ll be in touch with quoted pricing, a sample timeline, and proposed payment terms &mdash; usually within the hour during business hours, otherwise first thing next business day.</p>
+      <h2 data-i18n="rfp.success.h2">RFP received</h2>
+      <p data-i18n="rfp.success.p">We&rsquo;ll be in touch with quoted pricing, a sample timeline, and proposed payment terms &mdash; usually within the hour during business hours, otherwise first thing next business day.</p>
     </div>
   </div>
 
   <aside class="rail">
     <div class="rail-card">
-      <h3>What happens after you submit</h3>
+      <h3 data-i18n="rfp.rail.next.h">What happens after you submit</h3>
       <ul>
-        <li>We reply within the hour during business hours with quoted bulk pricing.</li>
-        <li>We send a physical sample for approval before any production run.</li>
-        <li>Approved samples kick off production. Standard turnaround is 7&ndash;14 business days.</li>
-        <li>Reorders for new hires or program refreshes go through your dedicated account manager.</li>
+        <li data-i18n="rfp.rail.next.li1">We reply within the hour during business hours with quoted bulk pricing.</li>
+        <li data-i18n="rfp.rail.next.li2">We send a physical sample for approval before any production run.</li>
+        <li data-i18n="rfp.rail.next.li3">Approved samples kick off production. Standard turnaround is 7&ndash;14 business days.</li>
+        <li data-i18n="rfp.rail.next.li4">Reorders for new hires or program refreshes go through your dedicated account manager.</li>
       </ul>
     </div>
     <div class="rail-card">
-      <h3>Standard terms</h3>
+      <h3 data-i18n="rfp.rail.terms.h">Standard terms</h3>
       <ul>
-        <li>50% deposit to start production, balance Net 30 from invoice date.</li>
-        <li>Custom terms available for repeat accounts and standing programs.</li>
-        <li>Free quote &mdash; no obligation, no commitment until you approve the sample.</li>
-        <li>5.0 stars on Google from 25 verified Montreal clients.</li>
+        <li data-i18n="rfp.rail.terms.li1">50% deposit to start production, balance Net 30 from invoice date.</li>
+        <li data-i18n="rfp.rail.terms.li2">Custom terms available for repeat accounts and standing programs.</li>
+        <li data-i18n="rfp.rail.terms.li3">Free quote &mdash; no obligation, no commitment until you approve the sample.</li>
+        <li data-i18n="rfp.rail.terms.li4">5.0 stars on Google from 25 verified Montreal clients.</li>
       </ul>
     </div>
     <div class="rail-card rail-quote">
       <div class="quote-mark">&ldquo;</div>
-      <p class="quote-body">Perfect quality and excellent service. Definitely worth checking out!</p>
-      <p class="quote-attr">&mdash; Bavneet Kaur, verified Google review (5.0 / 25 on Google)</p>
+      <p class="quote-body" data-i18n="rfp.rail.quote.body">Perfect quality and excellent service. Definitely worth checking out!</p>
+      <p class="quote-attr" data-i18n="rfp.rail.quote.attr">&mdash; Bavneet Kaur, verified Google review (5.0 / 25 on Google)</p>
     </div>
   </aside>
 </div>

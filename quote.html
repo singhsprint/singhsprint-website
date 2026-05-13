@@ -415,9 +415,9 @@
           <div class="step-pill" data-step="3"></div>
         </div>
         <div class="steps-labels" aria-hidden="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:-6px 0 18px;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888">
-          <span data-step-label="1" style="color:#1a1a1a">1 · Product &amp; design</span>
-          <span data-step-label="2">2 · Sizes &amp; quantity</span>
-          <span data-step-label="3">3 · Your details</span>
+          <span data-step-label="1" style="color:#1a1a1a" data-i18n="quote.step.label1">1 · Product &amp; design</span>
+          <span data-step-label="2" data-i18n="quote.step.label2">2 · Sizes &amp; quantity</span>
+          <span data-step-label="3" data-i18n="quote.step.label3">3 · Your details</span>
         </div>
 
         <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data">
@@ -436,7 +436,7 @@
                  visible, the single-product catalogPick card below is hidden. -->
             <div id="cartList" style="display:none;flex-direction:column;gap:12px;margin-bottom:18px"></div>
             <div id="cartAddMore" style="display:none;margin-bottom:18px">
-              <a href="/catalog" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1.5px dashed #d0cdc0;color:#1a1a1a;font-weight:600;padding:10px 16px;border-radius:50px;text-decoration:none;font-size:.86rem">+ Add another item from catalog</a>
+              <a href="/catalog" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1.5px dashed #d0cdc0;color:#1a1a1a;font-weight:600;padding:10px 16px;border-radius:50px;text-decoration:none;font-size:.86rem" data-i18n="quote.cart.addmore">+ Add another item from catalog</a>
             </div>
 
             <!-- If the user came in via /catalog?product=&color= we render this
@@ -452,7 +452,7 @@
                 <div class="catalog-pick__meta" id="catalogPickMeta"></div>
                 <div class="catalog-pick__price" id="catalogPickPrice"></div>
               </div>
-              <a href="/catalog" class="catalog-pick__change">Change product</a>
+              <a href="/catalog" class="catalog-pick__change" data-i18n="quote.cart.change">Change product</a>
             </div>
 
 
@@ -464,10 +464,10 @@
             <div id="catalogPickEmpty" style="display:none;margin-bottom:22px;border:2px dashed #d0cdc0;border-radius:14px;padding:22px 24px;background:#fafaf6;display:flex;align-items:center;gap:18px">
               <div style="width:54px;height:54px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">📦</div>
               <div style="flex:1">
-                <strong style="display:block;font-size:1rem;color:#1a1a1a;margin-bottom:2px">Pick your blank from the catalog</strong>
-                <span style="font-size:.86rem;color:#666">1,100+ Bella+Canvas, Gildan, Berne, Adidas, Canadian-made &amp; more. We'll pre-fill this quote, show live pricing as you change qty / sides, and skip the back-and-forth.</span>
+                <strong style="display:block;font-size:1rem;color:#1a1a1a;margin-bottom:2px" data-i18n="quote.cart.empty.title">Pick your blank from the catalog</strong>
+                <span style="font-size:.86rem;color:#666" data-i18n="quote.cart.empty.sub">1,100+ Bella+Canvas, Gildan, Berne, Adidas, Canadian-made &amp; more. We'll pre-fill this quote, show live pricing as you change qty / sides, and skip the back-and-forth.</span>
               </div>
-              <a href="/catalog" style="background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 18px;border-radius:50px;font-size:.9rem;font-weight:600;white-space:nowrap">Browse catalog →</a>
+              <a href="/catalog" style="background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 18px;border-radius:50px;font-size:.9rem;font-weight:600;white-space:nowrap" data-i18n="quote.cart.empty.cta">Browse catalog →</a>
             </div>
             <input type="hidden" id="catalogProductId" name="product_id" value="">
             <input type="hidden" id="catalogColorId"   name="color_id"   value="">
@@ -476,7 +476,7 @@
             <input type="hidden" id="catalogVariantColor" name="catalog_color" value="">
 
             <div class="form-group" id="legacyProductGroup">
-              <label>Product type</label>
+              <label data-i18n="quote.product.type">Product type</label>
               <div class="product-grid">
                 <div class="product-option" data-value="T-Shirt" data-garment="tshirt" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
@@ -566,10 +566,10 @@
               <label data-i18n="quote.garmentsource">Garment source</label>
               <div class="service-row">
                 <div class="svc-btn selected" data-value="We Supply" onclick="selectGarmentSource(this)">
-                  <strong>We Supply</strong><span>We source the blank</span>
+                  <strong data-i18n="quote.method.we_supply.l">We Supply</strong><span data-i18n="quote.method.we_supply.s">We source the blank</span>
                 </div>
                 <div class="svc-btn" data-value="BYOG" onclick="selectGarmentSource(this)">
-                  <strong>Bring Your Own</strong><span>You provide garments</span>
+                  <strong data-i18n="quote.method.byo.l">Bring Your Own</strong><span data-i18n="quote.method.byo.s">You provide garments</span>
                 </div>
               </div>
               <input type="hidden" name="garment_source" id="garmentSourceInput" value="We Supply">
@@ -580,23 +580,23 @@
                  only with no blank cost — just per-piece decoration + setup
                  amortised + per-piece overhead + 20% margin. -->
             <div id="byoPricePanel" class="form-group" style="display:none;background:#1a1a1a;color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:24px">
-              <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px">Decoration only · Bring-your-own</div>
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px" data-i18n="quote.byo.tag">Decoration only · Bring-your-own</div>
               <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
                 <div>
-                  <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="byoPriceUnit">$—</span><span style="font-size:.78rem;font-weight:500;color:#aaa">/garment</span></div>
+                  <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="byoPriceUnit">$—</span><span style="font-size:.78rem;font-weight:500;color:#aaa" data-i18n="quote.byo.per">/garment</span></div>
                   <div style="font-size:.78rem;color:#aaa;margin-top:4px"><span id="byoPriceMethod">DTF</span> · <span id="byoPriceSides">1 side</span></div>
                 </div>
                 <div style="flex:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                  <label style="display:flex;flex-direction:column;font-size:.66rem;color:#aaa;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Qty
+                  <label style="display:flex;flex-direction:column;font-size:.66rem;color:#aaa;font-weight:600;letter-spacing:.04em;text-transform:uppercase"><span data-i18n="quote.byo.qty">Qty</span>
                     <input id="byoQty" type="number" min="1" max="10000" value="50" oninput="refreshByoPrice()" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #444;background:#0d0d0d;color:#fff;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>
                   </label>
                 </div>
                 <div style="text-align:right">
-                  <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.04em">Total decoration</div>
+                  <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.04em" data-i18n="quote.byo.total">Total decoration</div>
                   <div style="font-size:1.2rem;font-weight:700"><span id="byoPriceTotal">$—</span></div>
                 </div>
               </div>
-              <div style="font-size:.72rem;color:#888;margin-top:10px;line-height:1.5">You ship us the garments, we print/embroider. Final number depends on artwork complexity, deadline, and decoration method. Pick a print method below to refresh.</div>
+              <div style="font-size:.72rem;color:#888;margin-top:10px;line-height:1.5" data-i18n="quote.byo.note">You ship us the garments, we print/embroider. Final number depends on artwork complexity, deadline, and decoration method. Pick a print method below to refresh.</div>
             </div>
 
             <!-- Blank brand selector (shown when We Supply, options change by garment) -->
@@ -613,87 +613,87 @@
                 <input type="checkbox" id="canadianBlanksCheckbox" name="canadian_blanks" value="yes">
                 <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
                 <span class="loc-label" style="display:flex;flex-direction:column;gap:2px">
-                  <span><span style="color:#d00">&#127464;&#127462;</span> All-Canadian made blanks <strong style="color:#1a1a1a;margin-left:4px">+$2/unit</strong></span>
-                  <span style="font-size:.78rem;color:#888;font-weight:400">Locally sourced &amp; manufactured. Optional upgrade from the standard blanks.</span>
+                  <span><span style="color:#d00">&#127464;&#127462;</span> <span data-i18n="quote.canadian.label">All-Canadian made blanks</span> <strong style="color:#1a1a1a;margin-left:4px" data-i18n="quote.canadian.surcharge">+$2/unit</strong></span>
+                  <span style="font-size:.78rem;color:#888;font-weight:400" data-i18n="quote.canadian.sub">Locally sourced &amp; manufactured. Optional upgrade from the standard blanks.</span>
                 </span>
               </label>
             </div>
 
             <!-- Print locations — preset-driven picker (replaces drag-on-canvas) -->
             <div class="placement-section">
-              <label>Where do you want the design? <span class="placement-count-badge" id="locCountBadge">1 location</span></label>
+              <label><span data-i18n="quote.placement.title">Where do you want the design?</span> <span class="placement-count-badge" id="locCountBadge" data-i18n="quote.placement.badge.one">1 location</span></label>
 
               <!-- FRONT presets -->
               <div class="placement-group">
-                <div class="placement-group-label">Front</div>
+                <div class="placement-group-label" data-i18n="quote.placement.group.front">Front</div>
                 <div class="placement-preset-grid">
                   <div class="preset-card" data-preset="left-chest" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="6" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Left Chest</span>
-                    <span class="preset-desc">~3-4" &mdash; logo / pocket</span>
+                    <span class="preset-label" data-i18n="quote.placement.leftchest.l">Left Chest</span>
+                    <span class="preset-desc" data-i18n="quote.placement.leftchest.d">~3-4" &mdash; logo / pocket</span>
                   </div>
                   <div class="preset-card selected" data-preset="center-chest" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="14" y="17" width="14" height="10" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Center Chest</span>
-                    <span class="preset-desc">~7" mid-chest</span>
+                    <span class="preset-label" data-i18n="quote.placement.centerchest.l">Center Chest</span>
+                    <span class="preset-desc" data-i18n="quote.placement.centerchest.d">~7" mid-chest</span>
                   </div>
                   <div class="preset-card" data-preset="full-front" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="20" height="18" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Full Front</span>
-                    <span class="preset-desc">~11" chest panel</span>
+                    <span class="preset-label" data-i18n="quote.placement.fullfront.l">Full Front</span>
+                    <span class="preset-desc" data-i18n="quote.placement.fullfront.d">~11" chest panel</span>
                   </div>
                   <div class="preset-card" data-preset="oversized" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="9" y="12" width="24" height="28" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Oversized</span>
-                    <span class="preset-desc">~14" chest to waist</span>
+                    <span class="preset-label" data-i18n="quote.placement.oversized.l">Oversized</span>
+                    <span class="preset-desc" data-i18n="quote.placement.oversized.d">~14" chest to waist</span>
                   </div>
                 </div>
               </div>
 
               <!-- BACK presets -->
               <div class="placement-group">
-                <div class="placement-group-label">Back</div>
+                <div class="placement-group-label" data-i18n="quote.placement.group.back">Back</div>
                 <div class="placement-preset-grid">
                   <div class="preset-card" data-preset="back-top" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z"/><rect x="15" y="10" width="12" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Top Back</span>
-                    <span class="preset-desc">Under collar, ~5"</span>
+                    <span class="preset-label" data-i18n="quote.placement.backtop.l">Top Back</span>
+                    <span class="preset-desc" data-i18n="quote.placement.backtop.d">Under collar, ~5"</span>
                   </div>
                   <div class="preset-card" data-preset="back-across" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z"/><rect x="11" y="15" width="20" height="16" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Across Back</span>
-                    <span class="preset-desc">~12" upper back</span>
+                    <span class="preset-label" data-i18n="quote.placement.backacross.l">Across Back</span>
+                    <span class="preset-desc" data-i18n="quote.placement.backacross.d">~12" upper back</span>
                   </div>
                   <div class="preset-card" data-preset="back-full" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z"/><rect x="9" y="12" width="24" height="28" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Full Back</span>
-                    <span class="preset-desc">~14" full panel</span>
+                    <span class="preset-label" data-i18n="quote.placement.backfull.l">Full Back</span>
+                    <span class="preset-desc" data-i18n="quote.placement.backfull.d">~14" full panel</span>
                   </div>
                 </div>
               </div>
 
               <!-- SLEEVE presets -->
               <div class="placement-group">
-                <div class="placement-group-label">Sleeves</div>
+                <div class="placement-group-label" data-i18n="quote.placement.group.sleeves">Sleeves</div>
                 <div class="placement-preset-grid">
                   <div class="preset-card" data-preset="left-sleeve" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="3" y="13" width="4" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Left Sleeve</span>
-                    <span class="preset-desc">Bicep, small hit</span>
+                    <span class="preset-label" data-i18n="quote.placement.leftsleeve.l">Left Sleeve</span>
+                    <span class="preset-desc" data-i18n="quote.placement.leftsleeve.d">Bicep, small hit</span>
                   </div>
                   <div class="preset-card" data-preset="right-sleeve" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="35" y="13" width="4" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
-                    <span class="preset-label">Right Sleeve</span>
-                    <span class="preset-desc">Bicep, small hit</span>
+                    <span class="preset-label" data-i18n="quote.placement.rightsleeve.l">Right Sleeve</span>
+                    <span class="preset-desc" data-i18n="quote.placement.rightsleeve.d">Bicep, small hit</span>
                   </div>
                 </div>
               </div>
@@ -722,7 +722,7 @@
                 </label>
               </div>
 
-              <p class="placement-summary" id="placementSummary">Center Chest selected. Each placement is one print, billed per location.</p>
+              <p class="placement-summary" id="placementSummary" data-i18n="quote.placement.summary">Center Chest selected. Each placement is one print, billed per location.</p>
               <input type="hidden" name="placement" id="placementInput" value="front">
               <input type="hidden" name="placement_preset" id="placementPresetInput" value="center-chest">
               <input type="hidden" name="print_count" id="printCountInput" value="1">
@@ -741,23 +741,23 @@
               <label data-i18n="quote.method">Printing method</label>
               <div class="method-grid">
                 <div class="method-card" data-value="DTG" onclick="selectService(this)">
-                  <strong>DTG</strong>
-                  <span class="m-desc">Direct-to-garment digital printing for full-colour, photo-quality detail.</span>
-                  <span class="m-best">Best for: photos, gradients, complex artwork</span>
+                  <strong data-i18n="quote.method.dtg.short">DTG</strong>
+                  <span class="m-desc" data-i18n="quote.method.dtg.descshort">Direct-to-garment digital printing for full-colour, photo-quality detail.</span>
+                  <span class="m-best" data-i18n="quote.method.dtg.bestshort">Best for: photos, gradients, complex artwork</span>
                 </div>
                 <div class="method-card" data-value="DTF" onclick="selectService(this)">
-                  <strong>DTF</strong>
-                  <span class="m-desc">Heat-transfer film that bonds to any fabric, dark or light, stretchy or rigid.</span>
-                  <span class="m-best">Best for: dark fabrics, athletic wear, blends</span>
+                  <strong data-i18n="quote.method.dtf.short">DTF</strong>
+                  <span class="m-desc" data-i18n="quote.method.dtf.descshort">Heat-transfer film that bonds to any fabric, dark or light, stretchy or rigid.</span>
+                  <span class="m-best" data-i18n="quote.method.dtf.bestshort">Best for: dark fabrics, athletic wear, blends</span>
                 </div>
                 <div class="method-card" data-value="Embroidery" onclick="selectService(this)">
-                  <strong>Embroidery</strong>
-                  <span class="m-desc">Stitched logos and text for a premium, tactile, professional finish.</span>
-                  <span class="m-best">Best for: caps, polos, corporate uniforms</span>
+                  <strong data-i18n="quote.method.emb.short">Embroidery</strong>
+                  <span class="m-desc" data-i18n="quote.method.emb.descshort">Stitched logos and text for a premium, tactile, professional finish.</span>
+                  <span class="m-best" data-i18n="quote.method.emb.bestshort">Best for: caps, polos, corporate uniforms</span>
                 </div>
                 <div class="method-card method-card-help" data-value="Not Sure" onclick="selectService(this)">
-                  <strong>Not sure yet</strong>
-                  <span class="m-desc">We'll recommend the best method when we follow up with your quote.</span>
+                  <strong data-i18n="quote.method.notsure.short">Not sure yet</strong>
+                  <span class="m-desc" data-i18n="quote.method.notsure.descshort">We'll recommend the best method when we follow up with your quote.</span>
                 </div>
               </div>
               <input type="hidden" name="service" id="serviceInput" required>
@@ -766,11 +766,11 @@
             <!-- Bulk pricing preview — visible after product is selected, lets visitors confirm tier prices before submitting -->
             <details id="bulkPricingDetails" style="margin-bottom:24px;border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 18px;background:#fafafa;cursor:pointer">
               <summary style="font-weight:600;font-size:.95rem;outline:none;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between">
-                <span>See bulk pricing for <span id="bulkPricingProductName">your product</span></span>
-                <span style="font-size:.78rem;color:#999;font-weight:500">tap to expand &or;</span>
+                <span><span data-i18n="quote.bulk.label">See bulk pricing for</span> <span id="bulkPricingProductName" data-i18n="quote.bulk.product">your product</span></span>
+                <span style="font-size:.78rem;color:#999;font-weight:500" data-i18n="quote.bulk.expand">tap to expand &or;</span>
               </summary>
               <div id="bulkPricingTableHost" style="margin-top:14px"></div>
-              <p style="margin-top:10px;font-size:.78rem;color:#888;line-height:1.5">Prices are per unit and include standard blank + printing. Bulk pricing kicks in at 5+ units; smaller orders use retail pricing. <span style="display:block;margin-top:2px">All-Canadian blanks add $2/unit on T-shirts and Long Sleeves.</span></p>
+              <p style="margin-top:10px;font-size:.78rem;color:#888;line-height:1.5"><span data-i18n="quote.bulk.note">Prices are per unit and include standard blank + printing. Bulk pricing kicks in at 5+ units; smaller orders use retail pricing.</span> <span style="display:block;margin-top:2px" data-i18n="quote.bulk.canadianadd">All-Canadian blanks add $2/unit on T-shirts and Long Sleeves.</span></p>
             </details>
 
             <div class="form-buttons" style="justify-content:flex-end">
@@ -798,7 +798,7 @@
             <!-- Size breakdown -->
             <div class="size-section">
               <label data-i18n="quote.sizes">Size breakdown (enter qty per size)</label>
-              <div class="size-hint" style="font-size:.78rem;color:var(--soft,#666);margin:-4px 0 8px">2XL &amp; up add a <strong>$3/pc</strong> surcharge — standard industry rate.</div>
+              <div class="size-hint" style="font-size:.78rem;color:var(--soft,#666);margin:-4px 0 8px" data-i18n="quote.size.surcharge">2XL &amp; up add a <strong>$3/pc</strong> surcharge — standard industry rate.</div>
               <div class="size-grid">
                 <div class="size-item"><label>XS</label><input type="number" name="size_xs" min="0" value="0" onchange="updateSizeTotal()"></div>
                 <div class="size-item"><label>S</label><input type="number" name="size_s" min="0" value="0" onchange="updateSizeTotal()"></div>
@@ -810,26 +810,26 @@
                 <div class="size-item"><label>4XL</label><input type="number" name="size_4xl" min="0" value="0" onchange="updateSizeTotal()"></div>
                 <div class="size-item"><label>5XL</label><input type="number" name="size_5xl" min="0" value="0" onchange="updateSizeTotal()"></div>
               </div>
-              <div class="size-total">Total units: <span id="sizeTotal">0</span></div>
+              <div class="size-total"><span data-i18n="quote.size.total">Total units:</span> <span id="sizeTotal">0</span></div>
               <input type="hidden" name="total_quantity" id="totalQtyInput">
             </div>
 
             <div class="form-group">
               <label for="details" data-i18n="quote.notes">Additional details (optional)</label>
-              <textarea id="details" name="details" placeholder="Colors, placement notes, deadline, or anything that helps us quote accurately."></textarea>
+              <textarea id="details" name="details" placeholder="Colors, placement notes, deadline, or anything that helps us quote accurately." data-i18n-placeholder="quote.notes.placeholder"></textarea>
             </div>
 
             <div class="form-group">
-              <label for="purpose">What's this for?</label>
+              <label for="purpose" data-i18n="quote.purpose.label">What's this for?</label>
               <select id="purpose" name="purpose">
-                <option value="">Select...</option>
-                <option>Business / brand merch</option>
-                <option>Team uniforms</option>
-                <option>Event or conference</option>
-                <option>Content creator / influencer</option>
-                <option>Personal / gift</option>
-                <option>Resale / store</option>
-                <option>Other</option>
+                <option value="" data-i18n="quote.purpose.opt0">Select...</option>
+                <option data-i18n="quote.purpose.opt1">Business / brand merch</option>
+                <option data-i18n="quote.purpose.opt2">Team uniforms</option>
+                <option data-i18n="quote.purpose.opt3">Event or conference</option>
+                <option data-i18n="quote.purpose.opt4">Content creator / influencer</option>
+                <option data-i18n="quote.purpose.opt5">Personal / gift</option>
+                <option data-i18n="quote.purpose.opt6">Resale / store</option>
+                <option data-i18n="quote.purpose.opt7">Other</option>
               </select>
             </div>
 
@@ -845,32 +845,32 @@
             <p class="step-desc" data-i18n="quote.step3.desc">We'll send your quote by email, usually within an hour during business hours (9am-9pm).</p>
 
             <div class="form-row">
-              <div class="form-group"><label for="name" data-i18n="quote.name">Full name *</label><input type="text" id="name" name="name" placeholder="Your name" required></div>
-              <div class="form-group"><label for="company">Company / brand</label><input type="text" id="company" name="company" placeholder="Optional"></div>
+              <div class="form-group"><label for="name" data-i18n="quote.contact.namelabel">Full name *</label><input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="quote.contact.name.ph" required></div>
+              <div class="form-group"><label for="company" data-i18n="quote.contact.companylabel">Company / brand</label><input type="text" id="company" name="company" placeholder="Optional" data-i18n-placeholder="quote.contact.company.ph"></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label for="email" data-i18n="quote.email">Email *</label><input type="email" id="email" name="email" placeholder="you@example.com" required></div>
-              <div class="form-group"><label for="phone" data-i18n="quote.phone">Phone</label><input type="tel" id="phone" name="phone" placeholder="514-xxx-xxxx"></div>
+              <div class="form-group"><label for="email" data-i18n="quote.contact.emaillabel">Email *</label><input type="email" id="email" name="email" placeholder="you@example.com" data-i18n-placeholder="quote.contact.email.ph" required></div>
+              <div class="form-group"><label for="phone" data-i18n="quote.contact.phonelabel">Phone</label><input type="tel" id="phone" name="phone" placeholder="514-xxx-xxxx" data-i18n-placeholder="quote.contact.phone.ph"></div>
             </div>
             <div class="form-group">
-              <label for="delivery">Delivery preference</label>
+              <label for="delivery" data-i18n="quote.contact.delivery">Delivery preference</label>
               <select id="delivery" name="delivery">
-                <option value="">Select...</option>
-                <option>Local pickup (West Island)</option>
-                <option>Montreal delivery</option>
-                <option>Shipping (Canada-wide)</option>
+                <option value="" data-i18n="quote.purpose.opt0">Select...</option>
+                <option data-i18n="quote.contact.delivery.opt1">Local pickup (West Island)</option>
+                <option data-i18n="quote.contact.delivery.opt2">Montreal delivery</option>
+                <option data-i18n="quote.contact.delivery.opt3">Shipping (Canada-wide)</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="hearAbout">How did you hear about us?</label>
+              <label for="hearAbout" data-i18n="quote.contact.hear">How did you hear about us?</label>
               <select id="hearAbout" name="hear_about">
-                <option value="">Select...</option>
-                <option>Google search</option>
-                <option>Instagram</option>
-                <option>Facebook</option>
-                <option>Friend / referral</option>
-                <option>Repeat customer</option>
-                <option>Other</option>
+                <option value="" data-i18n="quote.purpose.opt0">Select...</option>
+                <option data-i18n="quote.contact.hear.opt1">Google search</option>
+                <option data-i18n="quote.contact.hear.opt2">Instagram</option>
+                <option data-i18n="quote.contact.hear.opt3">Facebook</option>
+                <option data-i18n="quote.contact.hear.opt4">Friend / referral</option>
+                <option data-i18n="quote.contact.hear.opt5">Repeat customer</option>
+                <option data-i18n="quote.contact.hear.opt6">Other</option>
               </select>
             </div>
 
@@ -883,9 +883,9 @@
 
         <div class="form-success" id="formSuccess">
           <div class="success-icon">&#127881;</div>
-          <h2>Quote request sent!</h2>
-          <p>We'll send your quote by email within an hour during business hours (9am-9pm). Check your inbox — and spam, just in case.</p>
-          <br><a href="/" class="btn btn-primary">Back to Home</a>
+          <h2 data-i18n="quote.success.h2">Quote request sent!</h2>
+          <p data-i18n="quote.success.p">We'll send your quote by email within an hour during business hours (9am-9pm). Check your inbox — and spam, just in case.</p>
+          <br><a href="/" class="btn btn-primary" data-i18n="quote.success.btn">Back to Home</a>
         </div>
       </div>
     </div>
@@ -898,18 +898,18 @@
            (Step 1) and sizes (Step 2). The whole .mockup-panel is already
            position:sticky so this never disappears as they scroll. -->
       <div id="livePriceStrip" style="display:none;margin:0 0 16px;padding:18px 20px;border-radius:16px;background:#1a1a1a;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.12)">
-        <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px">Live estimate</div>
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px" data-i18n="quote.liveprice.tag">Live estimate</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap">
           <div>
-            <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="livePriceUnit">$—</span><span id="livePriceUnitSuffix" style="font-size:.78rem;font-weight:500;color:#aaa">/unit</span></div>
-            <div id="livePriceQty" style="font-size:.78rem;color:#aaa;margin-top:4px">pick qty in Step 2</div>
+            <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="livePriceUnit">$—</span><span id="livePriceUnitSuffix" style="font-size:.78rem;font-weight:500;color:#aaa" data-i18n="quote.liveprice.unitsuffix">/unit</span></div>
+            <div id="livePriceQty" style="font-size:.78rem;color:#aaa;margin-top:4px" data-i18n="quote.liveprice.pickqty">pick qty in Step 2</div>
           </div>
           <div id="livePriceTotalWrap" style="display:none;text-align:right">
-            <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.06em">Total</div>
+            <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.06em" data-i18n="quote.liveprice.total">Total</div>
             <div id="livePriceTotal" style="font-size:1.6rem;font-weight:700;line-height:1.1">$—</div>
           </div>
         </div>
-        <div style="font-size:.7rem;color:#888;margin-top:10px;line-height:1.4">Final quote may vary based on artwork complexity, decoration method, and delivery deadline.</div>
+        <div style="font-size:.7rem;color:#888;margin-top:10px;line-height:1.4" data-i18n="quote.liveprice.note">Final quote may vary based on artwork complexity, decoration method, and delivery deadline.</div>
       </div>
 
       <!-- BRAND-STYLED REASSURANCE CARD
@@ -919,7 +919,7 @@
            from the supplier product photo + the uploaded design, then
            approved by the Singhs team before it goes out.) -->
       <div class="mockup-reassure">
-        <div class="mockup-reassure__tag">Included with your quote</div>
+        <div class="mockup-reassure__tag" data-i18n="quote.reassure.tag">Included with your quote</div>
         <div class="mockup-reassure__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="34" height="34">
             <rect x="3" y="3" width="18" height="18" rx="3"/>
@@ -927,16 +927,16 @@
             <path d="m21 15-5-5L5 21"/>
           </svg>
         </div>
-        <h3 class="mockup-reassure__title">A photoreal mockup, made for you</h3>
-        <p class="mockup-reassure__copy">Fill in your details below. Within an hour our team renders a printed-quality preview on the exact garment + colour you picked — no fake-looking SVG, no guesswork — and emails it to you with the price.</p>
+        <h3 class="mockup-reassure__title" data-i18n="quote.reassure.title">A photoreal mockup, made for you</h3>
+        <p class="mockup-reassure__copy" data-i18n="quote.reassure.copy">Fill in your details below. Within an hour our team renders a printed-quality preview on the exact garment + colour you picked — no fake-looking SVG, no guesswork — and emails it to you with the price.</p>
         <ol class="mockup-reassure__steps">
-          <li><span class="step-num">1</span><span>You submit your design &amp; details</span></li>
-          <li><span class="step-num">2</span><span>We render the mockup &amp; price the order</span></li>
-          <li><span class="step-num">3</span><span>You approve &mdash; we print &amp; ship</span></li>
+          <li><span class="step-num">1</span><span data-i18n="quote.reassure.step1">You submit your design &amp; details</span></li>
+          <li><span class="step-num">2</span><span data-i18n="quote.reassure.step2">We render the mockup &amp; price the order</span></li>
+          <li><span class="step-num">3</span><span data-i18n="quote.reassure.step3">You approve &mdash; we print &amp; ship</span></li>
         </ol>
         <div class="mockup-reassure__foot">
           <span class="foot-dot"></span>
-          <span>Usually back within the hour, 9am–9pm.</span>
+          <span data-i18n="quote.reassure.foot">Usually back within the hour, 9am–9pm.</span>
         </div>
       </div>
 
@@ -945,10 +945,10 @@
            lands. For now display:none keeps it inert.) -->
       <div class="mockup-card" style="display:none">
         <div class="mockup-header">
-          <h3 data-i18n="quote.summary">Live Preview</h3>
+          <h3 data-i18n="quote.summary.live">Live Preview</h3>
           <div class="mockup-view-toggle">
-            <button class="view-btn active" data-view="front" onclick="switchView('front',this)">Front</button>
-            <button class="view-btn" data-view="back" onclick="switchView('back',this)">Back</button>
+            <button class="view-btn active" data-view="front" onclick="switchView('front',this)" data-i18n="quote.view.front">Front</button>
+            <button class="view-btn" data-view="back" onclick="switchView('back',this)" data-i18n="quote.view.back">Back</button>
           </div>
         </div>
 
@@ -1137,11 +1137,11 @@
 
         <!-- Summary -->
         <div class="mockup-summary" id="mockupSummary">
-          <div class="summary-row"><span>Product</span><span id="sumProduct">—</span></div>
-          <div class="summary-row"><span>Color</span><span id="sumColor">Black</span></div>
-          <div class="summary-row"><span>Placement</span><span id="sumPlacement">Front</span></div>
-          <div class="summary-row"><span>Method</span><span id="sumMethod">Pick in step 1</span></div>
-          <div class="summary-row"><span>Total units</span><span id="sumQty">Set in step 2</span></div>
+          <div class="summary-row"><span data-i18n="quote.summary.product.label">Product</span><span id="sumProduct">—</span></div>
+          <div class="summary-row"><span data-i18n="quote.summary.color">Color</span><span id="sumColor">Black</span></div>
+          <div class="summary-row"><span data-i18n="quote.summary.placement">Placement</span><span id="sumPlacement">Front</span></div>
+          <div class="summary-row"><span data-i18n="quote.summary.method">Method</span><span id="sumMethod" data-i18n="quote.summary.pickstep1">Pick in step 1</span></div>
+          <div class="summary-row"><span data-i18n="quote.summary.totalunits">Total units</span><span id="sumQty" data-i18n="quote.summary.setstep2">Set in step 2</span></div>
 
           <!-- Price calculator section (hidden until product+method+qty selected) -->
           <div class="price-section" id="priceSection" style="display:none">
@@ -1171,24 +1171,24 @@
 
         <div class="mockup-footer">
           <button type="button" id="downloadMockup" onclick="downloadMockup()" style="display:none;width:100%;padding:10px;border-radius:8px;border:1.5px solid #e0e0e0;background:#f9f9f9;font-weight:600;font-size:.8rem;cursor:pointer;margin-bottom:10px;transition:all .15s;color:#555" onmouseover="this.style.borderColor='#1a1a1a';this.style.color='#1a1a1a'" onmouseout="this.style.borderColor='#e0e0e0';this.style.color='#555'" data-i18n="quote.mockup.download"><svg style="display:inline;vertical-align:middle;margin-right:4px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Mockup</button>
-          <p>Approximate preview. Final placement confirmed during production.</p>
+          <p data-i18n="quote.foot.approx">Approximate preview. Final placement confirmed during production.</p>
         </div>
       </div>
 
       <div class="sidebar-card">
-        <h4>What happens next?</h4>
-        <div class="info-row"><span class="info-icon">&#9993;</span><p>We review your request and send a detailed quote &mdash; usually within an hour during business hours (9am&ndash;9pm).</p></div>
-        <div class="info-row"><span class="info-icon">&#128230;</span><p>Once approved, we print a real sample before your full order.</p></div>
+        <h4 data-i18n="quote.sidebar.next.h">What happens next?</h4>
+        <div class="info-row"><span class="info-icon">&#9993;</span><p data-i18n="quote.sidebar.next.p1">We review your request and send a detailed quote &mdash; usually within an hour during business hours (9am&ndash;9pm).</p></div>
+        <div class="info-row"><span class="info-icon">&#128230;</span><p data-i18n="quote.sidebar.next.p2">Once approved, we print a real sample before your full order.</p></div>
       </div>
       <div class="sidebar-card">
-        <h4>Prefer to talk?</h4>
+        <h4 data-i18n="quote.sidebar.talk.h">Prefer to talk?</h4>
         <p><strong><a href="tel:5149151539" style="color:#1a1a1a">514-915-1539</a></strong></p>
         <p style="margin-top:6px"><a href="mailto:sales@singhsprint.com" style="color:#1a1a1a">sales@singhsprint.com</a></p>
-        <p style="margin-top:6px;font-size:.8rem;color:#aaa">Open 7 days, 9AM – 9PM</p>
+        <p style="margin-top:6px;font-size:.8rem;color:#aaa" data-i18n="quote.sidebar.talk.hours">Open 7 days, 9AM – 9PM</p>
       </div>
       <div class="sidebar-card" style="background:#1a1a1a;color:#fff;border-color:#333">
-        <h4 style="color:#e8ff3c">15% off your first order</h4>
-        <p style="color:#aaa">Automatically applied to all new customers. No code needed.</p>
+        <h4 style="color:#e8ff3c" data-i18n="quote.sidebar.promo.h">15% off your first order</h4>
+        <p style="color:#aaa" data-i18n="quote.sidebar.promo.p">Automatically applied to all new customers. No code needed.</p>
       </div>
     </div>
   </div>
@@ -2369,8 +2369,8 @@
           // Cart mode: valid if there's at least one item in the cart.
           // Legacy single-product mode: require state.product.
           var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
-          if (!cartHasItems && !state.product) { alert('Please select a product from the catalog.'); return; }
-          if (!state.service) { alert('Please select a printing method.'); return; }
+          if (!cartHasItems && !state.product) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.product')) || 'Please select a product from the catalog.'); return; }
+          if (!state.service) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.method')) || 'Please select a printing method.'); return; }
         }
       }
 
@@ -2940,6 +2940,18 @@
     // =========================================================================
     var CATALOG_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/catalog';
     var PRICING_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/pricing';
+    var IMAGE_PROXY_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+    // S&S Activewear 403's external hotlinks — route their images through
+    // our server-side proxy. Mirrors imgUrl() in catalog.html.
+    function imgUrl(raw) {
+      if (!raw) return '';
+      if (raw.indexOf('/api/image-proxy') >= 0) return raw;     // already proxied
+      if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
+      if (raw.indexOf('ssactivewear.com') >= 0) {
+        return IMAGE_PROXY_FOR_QUOTE + '?url=' + encodeURIComponent(raw);
+      }
+      return raw;
+    }
 
     // XXL+ size surcharge in CAD per piece. Mirrors SIZE_SURCHARGE_CAD in
     // singhsprint-crm/src/lib/pricing/index.ts — server is source of truth, this
@@ -3048,27 +3060,32 @@
       });
       var dz = document.getElementById('dropZoneWrapper'); if (dz) dz.style.display = 'none';
 
+      var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      var lblColor  = _t('quote.cart.item.color')  || 'Color:';
+      var lblQty    = _t('quote.cart.item.qty')    || 'Qty';
+      var lblSides  = _t('quote.cart.item.sides')  || 'Sides';
+      var lblRemove = _t('quote.cart.item.remove') || 'Remove';
       host.innerHTML = items.map(function(it, idx) {
         var label = (it.color_name || '').replace(/_\d+$/, '');
         return '' +
           '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:center;flex-wrap:wrap">' +
           '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
-          '    <img id="ci-img-' + idx + '" src="' + (it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
+          '    <img id="ci-img-' + idx + '" src="' + imgUrl(it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
           '  </div>' +
           '  <div style="flex:1;min-width:200px">' +
           '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">' + (it.brand||'') + ' · ' + (it.style_number||'') + '</div>' +
           '    <div style="font-size:.95rem;font-weight:600;line-height:1.3">' + (it.name||'') + '</div>' +
           '    <div id="ci-color-row-' + idx + '" style="font-size:.78rem;color:#666;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
-          '      Color: <strong id="ci-color-' + idx + '" style="color:#1a1a1a">' + (label || '—') + '</strong>' +
+          '      ' + lblColor + ' <strong id="ci-color-' + idx + '" style="color:#1a1a1a">' + (label || '—') + '</strong>' +
           '      <span id="ci-swatches-' + idx + '" class="ci-swatches ci-swatches--collapsed" style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center"></span>' +
           '    </div>' +
           '    <div class="cart-item-price" id="ci-price-' + idx + '" style="font-size:.82rem;color:#666;margin-top:6px">$— /unit</div>' +
           '  </div>' +
           '  <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">' +
-          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Qty' +
+          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblQty +
           '      <input type="number" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
           '    </label>' +
-          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Sides' +
+          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblSides +
           '      <select onchange="onCartItemChange(' + idx + ', {sides: parseInt(this.value)})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;background:#fff">' +
           '        <option value="1"' + (it.sides==1?' selected':'') + '>1</option>' +
           '        <option value="2"' + (it.sides==2?' selected':'') + '>2</option>' +
@@ -3076,7 +3093,7 @@
           '        <option value="4"' + (it.sides==4?' selected':'') + '>4</option>' +
           '      </select>' +
           '    </label>' +
-          '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">Remove</button>' +
+          '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
           '  </div>' +
           '</div>';
       }).join('');
@@ -3100,7 +3117,7 @@
             var qty = it.qty || 50;
             el.innerHTML = '<strong style="color:#1a1a1a">$' + price.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (price*qty).toFixed(2) + '</strong>';
           } else {
-            el.textContent = 'Price loading…';
+            el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
         });
@@ -3134,8 +3151,12 @@
         var oos = c.in_stock ? '' : ' opacity:.35;';
         return '<button type="button" class="ci-swatch" data-cid="' + c.color_id + '" data-name="' + (c.color_name||'').replace(/"/g,'&quot;') + '" data-hero="' + (c.hero||'').replace(/"/g,'&quot;') + '" title="' + (c.color_name||'').replace(/"/g,'&quot;') + (c.in_stock ? '' : ' (out of stock)') + '" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #ddd;background:' + (c.hex||'#ccc') + ';cursor:pointer;padding:0;' + oos + '"' + selected + '></button>';
       }).join('');
+      // i18n-friendly labels for the swatch expand/collapse toggle.
+      var moreTpl  = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.swatches.more'))  || '+ {n} more ▾';
+      var fewerTpl = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.swatches.fewer')) || 'Show fewer ▴';
+      var moreLabel = moreTpl.replace('{n}', (deduped.length - COLLAPSED_COUNT));
       var toggle = deduped.length > COLLAPSED_COUNT
-        ? '<button type="button" class="ci-swatch-toggle" data-collapsed-label="+ ' + (deduped.length - COLLAPSED_COUNT) + ' more ▾" data-expanded-label="Show fewer ▴" onclick="toggleCartSwatches(' + idx + ')">+ ' + (deduped.length - COLLAPSED_COUNT) + ' more ▾</button>'
+        ? '<button type="button" class="ci-swatch-toggle" data-collapsed-label="' + moreLabel + '" data-expanded-label="' + fewerTpl + '" onclick="toggleCartSwatches(' + idx + ')">' + moreLabel + '</button>'
         : '';
       host.innerHTML = swatchesHtml + toggle;
       // Wire clicks — scoped to .ci-swatch so the expand toggle doesn't get
@@ -3152,7 +3173,7 @@
           var nameEl = document.getElementById('ci-color-' + idx);
           if (nameEl) nameEl.textContent = (nm || '').replace(/_\d+$/, '');
           var img = document.getElementById('ci-img-' + idx);
-          if (img && her) img.src = her;
+          if (img && her) img.src = imgUrl(her);
           host.querySelectorAll('button.ci-swatch').forEach(function(b){ b.style.boxShadow = ''; });
           btn.style.boxShadow = '0 0 0 2px #1a1a1a';
         });
@@ -3360,7 +3381,7 @@
           var c = (p.colors || []).find(function(x) { return x.color_id === colorId; }) || p.colors[0];
 
           // Paint the "Your pick" card
-          document.getElementById('catalogPickImg').src        = (c && c.mockup_front_url) || p.hero_image_url || '';
+          document.getElementById('catalogPickImg').src        = imgUrl((c && c.mockup_front_url) || p.hero_image_url);
           document.getElementById('catalogPickBrand').textContent = (p.brand || '').toUpperCase() + (p.style_number ? ' · ' + p.style_number : '');
           document.getElementById('catalogPickName').textContent  = p.name || '';
           var metaParts = [];

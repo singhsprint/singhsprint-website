@@ -154,7 +154,12 @@ function loadFooter() {
       + '.footer-col a:hover{color:#e8ff3c}'
       + '.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-top:32px;margin-top:48px;border-top:1px solid #222;font-size:.8rem;color:#777}'
       + '@media(max-width:900px){.footer{padding:48px 0 24px}.footer-grid{grid-template-columns:1fr 1fr !important;gap:28px}.footer-brand{grid-column:1/-1}}'
-      + '@media(max-width:560px){.footer-grid{grid-template-columns:1fr !important;gap:24px}.footer-col h4{font-size:.86rem}.footer-col a{font-size:.92rem;padding:8px 0}.footer-bottom{margin-top:32px;padding-top:24px;font-size:.74rem}}';
+      + '@media(max-width:560px){.footer-grid{grid-template-columns:1fr !important;gap:24px}.footer-col h4{font-size:.86rem}.footer-col a{font-size:.92rem;padding:8px 0}.footer-bottom{margin-top:32px;padding-top:24px;font-size:.74rem}}'
+      // Bilingual notice block — shown only when html lang is set to FR.
+      // Industry + guide pages use this to flag that the long-form body
+      // hasn't been translated yet.
+      + '.lang-fr-notice{display:none}'
+      + 'html[lang="fr"] .lang-fr-notice{display:block;background:#fffbe6;border:1px solid #f0d56b;color:#5a4a13;padding:14px 18px;border-radius:12px;margin:18px auto;max-width:820px;font-size:.92rem;line-height:1.55}';
     document.head.appendChild(s);
   }
   // data-nosnippet on the whole footer tells Google not to use any text in
