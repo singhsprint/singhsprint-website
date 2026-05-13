@@ -383,6 +383,44 @@
       body: JSON.stringify(payload)
     }).catch(function() {});
 
+    // Also post a STRUCTURED record to the CRM inbound pipeline. Unlike
+    // the legacy leads insert above (which mashes everything into notes),
+    // this gives reps an `inbound_requests` row with each field on its
+    // own column and the full meta blob preserved for context.
+    fetch('https://singhsprint-crm.vercel.app/api/inbound', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind:         'rfp',
+        contact_name: payload.contact_name,
+        email:        payload.email,
+        phone:        payload.phone,
+        company:      payload.company_name,
+        timeline:     document.getElementById('targetDate').value || null,
+        total_qty:    units,
+        estimated_total: estValue,
+        notes:        notes,
+        meta: {
+          industry:        document.getElementById('industry').value || null,
+          contact_role:    document.getElementById('contactRole').value || null,
+          annual_volume:   volume,
+          order_cadence:   document.getElementById('order_cadence').value || null,
+          payment_terms:   document.getElementById('payment_terms').value || null,
+          compliance:      document.getElementById('compliance').value || null,
+          garments:        document.getElementById('garments').value || null,
+          extra:           document.getElementById('extra').value || null,
+          utm: ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid']
+            .reduce(function(acc, k){
+              var inp = form.querySelector('input[name="' + k + '"]');
+              if (inp && inp.value) acc[k] = inp.value;
+              return acc;
+            }, {})
+        },
+        source_url: location.href
+      }),
+      keepalive: true
+    }).catch(function() { /* legacy leads insert still went through */ });
+
     // Fire Meta Pixel Lead event so the ad set can optimize toward RFP conversions too
     try {
       if (typeof fbq === 'function') {

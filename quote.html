@@ -3483,20 +3483,25 @@
       }
     });
 
-    // Stash cart contents into a hidden form field so the CRM gets the full
-    // multi-item payload on submit. Runs right before the form POSTs.
+    // On submit: (1) stash hidden inputs for the Web3Forms email + (2)
+    // fire-and-forget POST to the CRM's /api/inbound so the rep sees
+    // the request in /dashboard/inbox/requests with structured cart items
+    // they can convert to a draft order in one click. We do BOTH so the
+    // email backup keeps working even if the CRM is down at submit time.
+    var INBOUND_API = 'https://singhsprint-crm.vercel.app/api/inbound';
     document.addEventListener('DOMContentLoaded', function() {
       var form = document.getElementById('quoteForm');
       if (!form) return;
       form.addEventListener('submit', function() {
         var items = SinghsCart.read().items;
+
+        // 1) Hidden fields for the Web3Forms email backup
         if (items.length > 0) {
           var hidden = document.createElement('input');
           hidden.type = 'hidden';
           hidden.name = 'cart_items_json';
           hidden.value = JSON.stringify(items);
           form.appendChild(hidden);
-          // Also a human-readable summary for the email
           var summary = items.map(function(it, i) {
             return (i+1) + '. ' + (it.brand||'') + ' ' + (it.style_number||'') + ' — ' +
                    (it.name||'') + ' (' + (it.color_name||'').replace(/_\d+$/,'') + ') × ' +
@@ -3507,6 +3512,59 @@
           summaryHidden.name = 'cart_summary';
           summaryHidden.value = summary;
           form.appendChild(summaryHidden);
+        }
+
+        // 2) Structured POST to CRM /api/inbound
+        try {
+          var fd = new FormData(form);
+          var sizeBreakdown = {};
+          ['size_xs','size_s','size_m','size_l','size_xl','size_2xl','size_3xl','size_4xl','size_5xl'].forEach(function(k){
+            var label = k.replace('size_','').toUpperCase();
+            sizeBreakdown[label] = parseInt(fd.get(k) || '0', 10) || 0;
+          });
+          var sur = (typeof computeSizeSurcharge === 'function') ? computeSizeSurcharge() : { surchargeTotal: 0 };
+          var totalQty = parseInt((fd.get('total_quantity') || '0'), 10) || 0;
+          var liveTotalEl = document.getElementById('livePriceTotal');
+          var estimatedTotal = 0;
+          if (liveTotalEl) {
+            var m = (liveTotalEl.textContent || '').match(/[0-9]+\.?[0-9]*/);
+            if (m) estimatedTotal = parseFloat(m[0]) || 0;
+          }
+          var isBYO = (fd.get('garment_source') || '') === 'BYOG';
+          var payload = {
+            kind:            isBYO ? 'byo' : 'quote',
+            contact_name:    fd.get('name') || null,
+            email:           fd.get('email') || null,
+            phone:           fd.get('phone') || null,
+            company:         fd.get('company') || fd.get('organization') || null,
+            service:         (fd.get('service') || '').toLowerCase() || null,
+            garment_source:  isBYO ? 'byo' : 'we_supply',
+            timeline:        fd.get('timeline') || null,
+            total_qty:       totalQty,
+            num_sides:       parseInt(fd.get('print_sides') || '1', 10) || 1,
+            estimated_total: estimatedTotal,
+            notes:           fd.get('details') || null,
+            cart_items:      items,
+            size_breakdown:  sizeBreakdown,
+            meta: {
+              purpose:        fd.get('purpose') || null,
+              blank_brand:    fd.get('blank_brand') || null,
+              canadian_addon: !!fd.get('canadian_blanks'),
+              xxl_surcharge_total: sur.surchargeTotal || 0,
+              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; })
+            },
+            source_url: location.href
+          };
+          // Fire-and-forget; we don't await so the form submit isn't blocked.
+          fetch(INBOUND_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true
+          }).catch(function(){ /* email backup will still deliver */ });
+        } catch (e) {
+          // Never block the form submit on our own analytics path.
+          console.warn('[inbound dual-post] skipped:', e);
         }
       });
     });

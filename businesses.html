@@ -639,6 +639,20 @@
         })
       }).catch(function() {});
 
+      // Also into the structured inbound pipeline — gives the CRM a
+      // dedicated "Pricing PDF subscribers" view via kind='pricing_pdf'.
+      fetch('https://singhsprint-crm.vercel.app/api/inbound', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: 'pricing_pdf',
+          email: email,
+          source_url: location.href,
+          notes: 'Downloaded 2026 bulk pricing PDF'
+        }),
+        keepalive: true
+      }).catch(function() {});
+
       // Fire Pixel Lead event for retargeting audiences
       try {
         if (typeof fbq === 'function') {
