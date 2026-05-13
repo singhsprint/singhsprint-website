@@ -205,6 +205,38 @@
   <div class="cat-loading" id="catLoading" style="display:none">Loading more…</div>
   <div class="cat-empty" id="catEmpty" style="display:none"><h3>No matches</h3><p>Try removing a filter or check our "Bring your own blank" option.</p></div>
 
+  <!-- Floating cart bar — appears whenever the customer has 1+ items
+       queued for their quote. Stays sticky at the bottom of the viewport
+       so they can keep browsing the catalog and add more without losing
+       track of what they've already picked. -->
+  <style>
+    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px)}
+    .cart-bar.open{display:flex}
+    .cart-bar__count{background:var(--hi);color:var(--ink);font-weight:700;border-radius:50px;padding:3px 9px;font-size:.78rem;font-variant-numeric:tabular-nums}
+    .cart-bar__label{font-size:.86rem}
+    .cart-bar__label strong{font-weight:600}
+    .cart-bar__cta{background:var(--hi);color:var(--ink);border:none;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:50px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .cart-bar__cta:hover{filter:brightness(.95)}
+    .cart-toast{position:fixed;top:84px;right:18px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-size:.85rem;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:70;transform:translateY(-12px);opacity:0;transition:transform .25s,opacity .25s;pointer-events:none}
+    .cart-toast.show{transform:translateY(0);opacity:1}
+    .cart-toast strong{color:var(--hi)}
+    /* Add-to-quote button on each product card */
+    .card .add-cart{position:absolute;bottom:10px;right:10px;background:var(--ink);color:var(--hi);border:none;border-radius:50px;padding:6px 12px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;z-index:3;opacity:0;transition:opacity .15s,transform .15s,filter .15s}
+    .card:hover .add-cart,.add-cart:focus{opacity:1}
+    .add-cart:hover{filter:brightness(1.15);transform:translateY(-1px)}
+    .add-cart.added{background:var(--hi);color:var(--ink);opacity:1}
+    @media (hover:none){
+      /* On touch devices, always show the add button (no hover). */
+      .card .add-cart{opacity:1}
+    }
+  </style>
+  <div id="cartBar" class="cart-bar">
+    <span class="cart-bar__count" id="cartCount">0</span>
+    <span class="cart-bar__label"><strong id="cartUnits">0</strong> units in your quote</span>
+    <button type="button" class="cart-bar__cta" onclick="goToQuote()">Continue to quote →</button>
+  </div>
+  <div id="cartToast" class="cart-toast" aria-live="polite"></div>
+
   <!-- Filter slide-over -->
   <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
   <aside class="filter-panel" id="filterPanel" aria-hidden="true">
@@ -228,6 +260,73 @@
   // =========================================================================
   // Catalog state
   // =========================================================================
+  // =========================================================================
+  // Cart — shared with quote.html via sessionStorage. Items live for the
+  // browser session (cleared on tab close). Multi-item quotes use this;
+  // single-product ?product= URLs still work the old way for backwards
+  // compatibility — the cart just stays empty.
+  // =========================================================================
+  const SinghsCart = {
+    key: 'singhsCart_v1',
+    read() { try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
+    write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); },
+    add(item) {
+      const c = this.read();
+      const dup = c.items.find(x => x.product_id === item.product_id && x.color_id === item.color_id);
+      if (dup) dup.qty = (dup.qty || 0) + (item.qty || 0);
+      else c.items.push(item);
+      this.write(c);
+    },
+    count() { return this.read().items.length; },
+    totalUnits() { return this.read().items.reduce((s, i) => s + (Number(i.qty) || 0), 0); },
+  };
+
+  function renderCartBar() {
+    const bar = document.getElementById('cartBar');
+    if (!bar) return;
+    const n = SinghsCart.count();
+    if (n === 0) { bar.classList.remove('open'); return; }
+    bar.classList.add('open');
+    document.getElementById('cartCount').textContent = n;
+    document.getElementById('cartUnits').textContent = SinghsCart.totalUnits();
+  }
+
+  function showCartToast(item) {
+    const t = document.getElementById('cartToast');
+    if (!t) return;
+    t.innerHTML = '<strong>✓ Added to quote</strong> · ' + (item.brand || '') + ' ' + (item.style_number || '');
+    t.classList.add('show');
+    clearTimeout(showCartToast._tid);
+    showCartToast._tid = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+  }
+
+  function goToQuote() { window.location.href = '/quote'; }
+
+  // Adds the currently-selected product to the cart with the qty from the
+  // slider. Called from each card's "+ Add" button.
+  function addToCart(productId, payload) {
+    SinghsCart.add({
+      product_id:   productId,
+      color_id:     payload.color_id || null,
+      color_name:   payload.color_name || '',
+      brand:        payload.brand || '',
+      style_number: payload.style_number || '',
+      name:         payload.name || '',
+      garment_type: payload.garment_type || null,
+      hero_url:     payload.hero_url || '',
+      qty:          state.qty || 50,
+      sides:        1,
+    });
+    showCartToast(payload);
+    // Visual confirmation on the card itself
+    const btn = document.querySelector('button[data-add-id="' + productId + '"]');
+    if (btn) {
+      btn.classList.add('added');
+      btn.textContent = '✓ Added';
+      setTimeout(function(){ btn.classList.remove('added'); btn.textContent = '+ Add to quote'; }, 1400);
+    }
+  }
+
   const state = {
     filters: {                       // active filter state — drives /api/catalog query
       type: getQueryParam('type') || null,
@@ -438,6 +537,23 @@
     }).join('');
     const extra = p.colors.length > 7 ? `<span class="more">+${p.colors.length - 7}</span>` : '';
 
+    // Encode the payload for the Add button without touching the rest of
+    // the card's anchor behaviour. The button stops propagation so clicking
+    // it does NOT trigger the card's link.
+    const heroForCart = (heroColor.mockup_front_url || p.hero_image_url || '').replace(/"/g,'&quot;');
+    const payloadAttr = JSON.stringify({
+      color_id:     heroColor.color_id || null,
+      color_name:   heroColor.color_name || '',
+      brand:        p.brand || '',
+      style_number: p.style_number || '',
+      name:         p.name || '',
+      garment_type: p.garment_type || null,
+      hero_url:     heroForCart,
+    }).replace(/"/g, '&quot;');
+    const addBtn = p.in_stock === false
+      ? ''
+      : `<button type="button" class="add-cart" data-add-id="${p.product_id}" onclick="event.preventDefault(); event.stopPropagation(); addToCart('${p.product_id}', JSON.parse(this.dataset.payload))" data-payload="${payloadAttr}">+ Add to quote</button>`;
+
     card.innerHTML = `
       ${badge}
       <div class="photo"><img src="${photoUrl}" alt="${p.brand} ${p.style_number}" loading="lazy"/></div>
@@ -447,6 +563,7 @@
         <div class="swatches">${swatches}${extra}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · ' + p.weight_oz + ' oz' : ''}</div>
       </div>
+      ${addBtn}
     `;
     return card;
   }
@@ -740,6 +857,8 @@
   document.addEventListener('DOMContentLoaded', () => {
     // Initialise the qty slider from state.qty (may have been seeded from ?qty=…)
     setQty(state.qty);
+    // Show the floating cart bar if items were added in a previous tab visit.
+    renderCartBar();
     fetchPage();
   });
   </script>

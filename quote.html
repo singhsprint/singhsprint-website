@@ -384,6 +384,15 @@
             <h2 data-i18n="quote.step1.h">Choose your product</h2>
             <p class="step-desc" data-i18n="quote.step1.desc">Select a product, pick your color, and choose where to place your design.</p>
 
+            <!-- Multi-item cart list. Rendered when the customer added items
+                 via the catalog's "+ Add to quote" buttons. Each item has
+                 its own row with editable qty + sides + remove. When this is
+                 visible, the single-product catalogPick card below is hidden. -->
+            <div id="cartList" style="display:none;flex-direction:column;gap:12px;margin-bottom:18px"></div>
+            <div id="cartAddMore" style="display:none;margin-bottom:18px">
+              <a href="/catalog" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1.5px dashed #d0cdc0;color:#1a1a1a;font-weight:600;padding:10px 16px;border-radius:50px;text-decoration:none;font-size:.86rem">+ Add another item from catalog</a>
+            </div>
+
             <!-- If the user came in via /catalog?product=&color= we render this
                  "Your pick" card and hide the hardcoded product grid. Filled in
                  by the JS at the bottom of the page on DOMContentLoaded. -->
@@ -1310,6 +1319,35 @@
       var nameEl = document.getElementById('bulkPricingProductName');
       if (!host) return;
 
+      // When a catalog product is selected, fetch the LIVE bulk matrix for
+      // THAT specific product from the engine — same source of truth as the
+      // catalog-pick "From $X" card and the right-panel live-price strip.
+      // This used to read a hardcoded b2bPricing table that showed the
+      // generic Gildan-floor price, which contradicted the live engine for
+      // any product whose wholesale was above the floor (Gildan 18500 hoodie
+      // showed $24.95 in this table while the live card showed $34.95).
+      if (catalogPick && catalogPick.product_id) {
+        if (nameEl) nameEl.textContent = catalogPick.brand + ' ' + catalogPick.style_number;
+        host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Loading tier prices…</p>';
+        fetch(PRICING_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(catalogPick.product_id) + '&matrix=1')
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){
+            if (!d || !Array.isArray(d.bulk_matrix) || !d.bulk_matrix.length) {
+              host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">No bulk pricing available — submit a quote and we will price it for you.</p>';
+              return;
+            }
+            renderBulkMatrixHtml(host, d.bulk_matrix);
+          })
+          .catch(function(){
+            host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Couldn\'t load tier prices. Pricing on the right is still accurate.</p>';
+          });
+        return;
+      }
+
+      // Fallback: no catalog product picked → use the legacy hardcoded
+      // b2bPricing table by garment_type. Same behaviour as before for
+      // non-catalog visitors (e.g. someone who clicked a legacy "T-Shirt"
+      // tile).
       var garment = state.garment;
       var service = (state.service || 'DTG').toLowerCase();
       if (!garment || !b2bPricing[garment]) {
@@ -1317,23 +1355,17 @@
         if (nameEl) nameEl.textContent = 'your product';
         return;
       }
-
       var pricingInfo = b2bPricing[garment][service] || b2bPricing[garment]['dtg'] || b2bPricing[garment]['embroidery'];
       if (!pricingInfo) {
         host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">No bulk pricing available for this combination yet — submit a quote and we will price it for you.</p>';
         return;
       }
-
       if (nameEl) nameEl.textContent = pricingInfo.name || state.product;
 
-      // Build the HTML table. Columns: Qty range, 1-side, 2-side, 3-side, 4-side
-      // For hats (maxLocations:1) we collapse to 1-side only.
       var collapseToSingle = pricingInfo.maxLocations === 1;
       var rows = pricingInfo.tiers.slice().reverse().map(function(t) {
         var qtyLabel = t.max === Infinity ? (t.min + '+') : (t.min + '–' + t.max);
-        if (collapseToSingle) {
-          return '<tr><td>' + qtyLabel + '</td><td>$' + t.single.toFixed(2) + '</td></tr>';
-        }
+        if (collapseToSingle) return '<tr><td>' + qtyLabel + '</td><td>$' + t.single.toFixed(2) + '</td></tr>';
         return '<tr>'
           + '<td>' + qtyLabel + '</td>'
           + '<td>$' + (t.single != null ? t.single.toFixed(2) : '—') + '</td>'
@@ -1342,17 +1374,51 @@
           + '<td>$' + (t.wrap != null ? t.wrap.toFixed(2) : '—') + '</td>'
           + '</tr>';
       }).join('');
-
       var headers = collapseToSingle
         ? '<tr><th style="text-align:left">Quantity</th><th style="text-align:left">Per unit</th></tr>'
         : '<tr><th style="text-align:left">Quantity</th><th style="text-align:left">1 side</th><th style="text-align:left">2 sides</th><th style="text-align:left">3 sides</th><th style="text-align:left">4 sides</th></tr>';
-
       host.innerHTML =
         '<table style="width:100%;border-collapse:collapse;font-size:.85rem">'
         + '<thead style="background:#fff;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:#666">' + headers + '</thead>'
         + '<tbody>' + rows + '</tbody>'
         + '</table>'
-        + '<style>#bulkPricingTableHost td,#bulkPricingTableHost th{padding:7px 10px;border-bottom:1px solid #eee}#bulkPricingTableHost tr:last-child td{border-bottom:none}#bulkPricingTableHost tbody tr:hover{background:#fff}</style>';
+        + bulkTableStyle();
+    }
+
+    // Render a /api/pricing?matrix=1 response (array of { qty_min, qty_max,
+    // sides_1, sides_2, sides_3, sides_4 }) as the same table layout the
+    // legacy code produced.
+    function renderBulkMatrixHtml(host, matrix) {
+      // Reverse so 200+ shows at the top, descending to 5-9 at the bottom.
+      // The matrix from the engine comes in qty-tiers order (largest first).
+      // Detect collapse-to-single by checking if sides_2 is present anywhere.
+      var sidesAvailable = [];
+      [1,2,3,4].forEach(function(s){
+        if (matrix.some(function(r){ return r['sides_'+s] != null; })) sidesAvailable.push(s);
+      });
+      var rows = matrix.map(function(t) {
+        var qtyLabel = t.qty_max == null ? (t.qty_min + '+') : (t.qty_min + '–' + t.qty_max);
+        var cells = sidesAvailable.map(function(s){
+          var v = t['sides_'+s];
+          return '<td>' + (v != null ? '$' + Number(v).toFixed(2) : '—') + '</td>';
+        }).join('');
+        return '<tr><td>' + qtyLabel + '</td>' + cells + '</tr>';
+      }).join('');
+      var headerCells = sidesAvailable.map(function(s){
+        return '<th style="text-align:left">' + s + ' side' + (s>1?'s':'') + '</th>';
+      }).join('');
+      host.innerHTML =
+        '<table style="width:100%;border-collapse:collapse;font-size:.85rem">'
+        + '<thead style="background:#fff;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:#666">'
+        + '<tr><th style="text-align:left">Quantity</th>' + headerCells + '</tr>'
+        + '</thead>'
+        + '<tbody>' + rows + '</tbody>'
+        + '</table>'
+        + bulkTableStyle();
+    }
+
+    function bulkTableStyle() {
+      return '<style>#bulkPricingTableHost td,#bulkPricingTableHost th{padding:7px 10px;border-bottom:1px solid #eee}#bulkPricingTableHost tr:last-child td{border-bottom:none}#bulkPricingTableHost tbody tr:hover{background:#fff}</style>';
     }
 
     // ===== VIEW TOGGLE =====
@@ -2758,6 +2824,140 @@
     var CATALOG_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/catalog';
     var PRICING_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/pricing';
 
+    // =====================================================================
+    // SinghsCart — same module as catalog.html. Items live in sessionStorage
+    // so adding products on the catalog and arriving at /quote shows them.
+    // =====================================================================
+    var SinghsCart = {
+      key: 'singhsCart_v1',
+      read: function(){ try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
+      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); },
+      remove: function(i){ var c = this.read(); c.items.splice(i,1); this.write(c); },
+      update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.write(c); },
+      clear:  function(){ this.write({items:[]}); },
+      count:  function(){ return this.read().items.length; },
+    };
+
+    // Per-item live-price cache so we don't refetch every render. Keyed by
+    // product_id + qty + sides.
+    var _priceCache = {};
+    function liveUnitPrice(productId, qty, sides, cb) {
+      var key = productId + '_' + qty + '_' + sides;
+      if (_priceCache[key]) { cb(_priceCache[key]); return; }
+      fetch(PRICING_API_FOR_QUOTE +
+        '?product_id=' + encodeURIComponent(productId) +
+        '&qty=' + qty + '&sides=' + sides)
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
+          if (p != null) _priceCache[key] = p;
+          cb(p);
+        }).catch(function(){ cb(null); });
+    }
+
+    // Render the cart list on Step 1. Each item is a row with hero image,
+    // brand+style+name, editable qty + sides, per-unit + subtotal, remove.
+    function renderCartList() {
+      var host = document.getElementById('cartList');
+      var addMore = document.getElementById('cartAddMore');
+      var emptyCta = document.getElementById('catalogPickEmpty');
+      var singlePick = document.getElementById('catalogPick');
+      if (!host) return;
+      var items = SinghsCart.read().items;
+      if (items.length === 0) {
+        host.style.display = 'none';
+        if (addMore) addMore.style.display = 'none';
+        return;
+      }
+      // Cart is active — hide single-product UI + empty CTA.
+      host.style.display = 'flex';
+      if (addMore)    addMore.style.display = 'block';
+      if (emptyCta)   emptyCta.style.display = 'none';
+      if (singlePick) singlePick.style.display = 'none';
+      // Hide legacy product grid and redundant fields (same logic as
+      // single-product prefill).
+      ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+        .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = 'none'; });
+      document.querySelectorAll('.form-group, .color-section').forEach(function(g){
+        var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
+        if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
+      });
+      var dz = document.getElementById('dropZoneWrapper'); if (dz) dz.style.display = 'none';
+
+      host.innerHTML = items.map(function(it, idx) {
+        var label = (it.color_name || '').replace(/_\d+$/, '');
+        return '' +
+          '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:center;flex-wrap:wrap">' +
+          '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
+          '    <img src="' + (it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
+          '  </div>' +
+          '  <div style="flex:1;min-width:200px">' +
+          '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">' + (it.brand||'') + ' · ' + (it.style_number||'') + '</div>' +
+          '    <div style="font-size:.95rem;font-weight:600;line-height:1.3">' + (it.name||'') + '</div>' +
+          '    <div style="font-size:.78rem;color:#666;margin-top:2px">' + (label || '') + '</div>' +
+          '    <div class="cart-item-price" id="ci-price-' + idx + '" style="font-size:.82rem;color:#666;margin-top:6px">$— /unit</div>' +
+          '  </div>' +
+          '  <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">' +
+          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Qty' +
+          '      <input type="number" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
+          '    </label>' +
+          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Sides' +
+          '      <select onchange="onCartItemChange(' + idx + ', {sides: parseInt(this.value)})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;background:#fff">' +
+          '        <option value="1"' + (it.sides==1?' selected':'') + '>1</option>' +
+          '        <option value="2"' + (it.sides==2?' selected':'') + '>2</option>' +
+          '        <option value="3"' + (it.sides==3?' selected':'') + '>3</option>' +
+          '        <option value="4"' + (it.sides==4?' selected':'') + '>4</option>' +
+          '      </select>' +
+          '    </label>' +
+          '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">Remove</button>' +
+          '  </div>' +
+          '</div>';
+      }).join('');
+
+      // Fetch live unit prices for each row + update the right-panel total.
+      items.forEach(function(it, idx) {
+        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, function(p) {
+          var el = document.getElementById('ci-price-' + idx);
+          if (!el) return;
+          if (p != null) {
+            var qty = it.qty || 50;
+            el.innerHTML = '<strong style="color:#1a1a1a">$' + p.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (p*qty).toFixed(2) + '</strong>';
+          } else {
+            el.textContent = 'Price loading…';
+          }
+          updateCartTotal();
+        });
+      });
+    }
+
+    function onCartItemChange(idx, patch) { SinghsCart.update(idx, patch); }
+    function removeCartItem(idx)         { SinghsCart.remove(idx); }
+
+    // Update the right-panel live-price strip to show the cart total.
+    function updateCartTotal() {
+      var items = SinghsCart.read().items;
+      if (items.length === 0) return;
+      var totalUnits = 0, totalDollars = 0, knownAll = true;
+      items.forEach(function(it) {
+        var qty = Number(it.qty) || 0;
+        totalUnits += qty;
+        var key = it.product_id + '_' + qty + '_' + (it.sides || 1);
+        var p = _priceCache[key];
+        if (typeof p === 'number') totalDollars += p * qty;
+        else knownAll = false;
+      });
+      var strip = document.getElementById('livePriceStrip');
+      if (!strip) return;
+      strip.style.display = 'block';
+      document.getElementById('livePriceUnit').textContent = items.length + (items.length === 1 ? ' item' : ' items');
+      document.getElementById('livePriceQty').textContent = totalUnits + ' units across cart';
+      var totalWrap = document.getElementById('livePriceTotalWrap');
+      if (totalDollars > 0) {
+        totalWrap.style.display = 'block';
+        document.getElementById('livePriceTotal').textContent = (knownAll ? '$' : '~$') + totalDollars.toFixed(2);
+      }
+    }
+
     // Holds the prefilled product so other handlers (color picker, live price
     // calc) can read from it. Null = no catalog selection yet.
     var catalogPick = null;
@@ -3006,7 +3206,41 @@
       calculatePrice();
       renderBulkPricingTable();
       renderPlacementUploads();       // build the per-placement upload list (1 entry per selected placement)
-      prefillFromCatalog();           // if ?product=&color= are in the URL, paint the card
+      // If items were added via the catalog cart, render the multi-item
+      // list. Otherwise fall back to the single-product ?product= flow.
+      if (SinghsCart.count() > 0) {
+        renderCartList();
+      } else {
+        prefillFromCatalog();         // single-product mode — paint the card from URL
+      }
+    });
+
+    // Stash cart contents into a hidden form field so the CRM gets the full
+    // multi-item payload on submit. Runs right before the form POSTs.
+    document.addEventListener('DOMContentLoaded', function() {
+      var form = document.getElementById('quoteForm');
+      if (!form) return;
+      form.addEventListener('submit', function() {
+        var items = SinghsCart.read().items;
+        if (items.length > 0) {
+          var hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'cart_items_json';
+          hidden.value = JSON.stringify(items);
+          form.appendChild(hidden);
+          // Also a human-readable summary for the email
+          var summary = items.map(function(it, i) {
+            return (i+1) + '. ' + (it.brand||'') + ' ' + (it.style_number||'') + ' — ' +
+                   (it.name||'') + ' (' + (it.color_name||'').replace(/_\d+$/,'') + ') × ' +
+                   (it.qty||'?') + ' units, ' + (it.sides||1) + ' side' + ((it.sides||1)>1?'s':'');
+          }).join('\n');
+          var summaryHidden = document.createElement('input');
+          summaryHidden.type = 'hidden';
+          summaryHidden.name = 'cart_summary';
+          summaryHidden.value = summary;
+          form.appendChild(summaryHidden);
+        }
+      });
     });
 
     // Handle window resize

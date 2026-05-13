@@ -1,21 +1,8 @@
 {
   "version": 2,
   "builds": [{ "src": "**/*", "use": "@vercel/static" }],
-
-  "//": [
-    "cleanUrls — strips .html extensions everywhere:",
-    "  /catalog.html  →  /catalog  (auto 301 redirect, then serves catalog.html)",
-    "  /quote.html    →  /quote",
-    "  /index.html    →  /  (root)",
-    "trailingSlash:false — keep canonical URLs without a trailing /.",
-    "",
-    "The redirects[] block is belt-and-suspenders: cleanUrls handles top-level",
-    "files automatically, but nested .html paths (industries/*, guides/*, etc.)",
-    "are spelled out explicitly so old indexed links don't 404."
-  ],
   "cleanUrls": true,
   "trailingSlash": false,
-
   "redirects": [
     { "source": "/index.html",            "destination": "/",                "permanent": true },
     { "source": "/industries/:slug.html", "destination": "/industries/:slug", "permanent": true },
