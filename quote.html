@@ -2356,7 +2356,21 @@
       document.getElementById('sizeTotal').textContent = total;
       document.getElementById('sumQty').textContent = total;
       document.getElementById('totalQtyInput').value = total;
-      calculatePrice(); // Recalculate price when quantities change
+
+      // Recompute the right owner for the live-price strip:
+      //   cart mode  → updateCartTotal() (sums cart items + XXL surcharge)
+      //   single     → calculatePrice() (legacy single-product path)
+      // Without this branching, the legacy path clobbers the strip in cart
+      // mode the moment any size input changes — because calculatePrice
+      // calls updateLivePriceStrip() which hides the strip when there's
+      // no catalogPick. The "Recalculate price when quantities change"
+      // intent stays — we just route through the right path.
+      var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+      if (cartHasItems) {
+        updateCartTotal();
+      } else {
+        calculatePrice();
+      }
     }
 
     // ===== STEP NAVIGATION =====
@@ -2767,7 +2781,14 @@
     function updateLivePriceStrip(qty, perUnit, isLive) {
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
-      if (!catalogPick) { strip.style.display = 'none'; return; }
+      if (!catalogPick) {
+        // Defensive: in cart mode the strip is owned by updateCartTotal,
+        // so don't hide it just because there's no single catalogPick.
+        var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+        if (cartHasItems) { updateCartTotal(); return; }
+        strip.style.display = 'none';
+        return;
+      }
       strip.style.display = 'block';
       // Make sure the "/unit" suffix is visible — cart mode hides it.
       var suf = document.getElementById('livePriceUnitSuffix');

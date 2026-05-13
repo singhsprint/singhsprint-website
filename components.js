@@ -40,7 +40,13 @@ function loadNav() {
       +   '.navbar .logo img{height:38px}'
       +   '.nav-links{display:none}'
       +   '.nav-links.active{display:flex;position:absolute;top:60px;right:0;left:0;background:#fff;flex-direction:column;padding:18px 20px 22px;border-bottom:1px solid #eee;gap:8px;box-shadow:0 12px 28px rgba(0,0,0,.08)}'
-      +   '.nav-links.active a{padding:10px 0;font-size:1.05rem;font-weight:600;color:#1a1a1a}'
+      // Plain nav links inherit dark ink text. Use :not(.btn) so we DON\'T
+      // clobber the white "Get a Quote" button text inside the drawer.
+      +   '.nav-links.active a:not(.btn){padding:10px 0;font-size:1.05rem;font-weight:600;color:#1a1a1a}'
+      // Explicit win for the primary CTA button inside the drawer:
+      // dark background + white text + decent tap target on mobile.
+      +   '.nav-links.active a.btn,.nav-links.active a.btn-primary,.nav-mobile-extras a.btn,.nav-mobile-extras a.btn-primary{background:#1a1a1a !important;color:#fff !important;display:block;text-align:center;padding:13px 18px !important;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}'
+      +   '.nav-links.active a.btn:hover,.nav-mobile-extras a.btn:hover{background:#333 !important}'
       +   '.nav-links.active .nav-mobile-extras{display:block}'
       +   '.mobile-toggle{display:flex}'
       +   '.nav-cta{gap:6px}'

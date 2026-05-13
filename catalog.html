@@ -10,6 +10,11 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Catalog API + image proxy live on the CRM domain. Preconnect so the
+       browser warms TLS/DNS before the JS fires its first fetch. Cuts
+       ~200-300ms off first paint on cold connections. -->
+  <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
+  <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
 
   <style>
@@ -80,8 +85,22 @@
     .swatch.swatch--oos{opacity:.3;position:relative}
     .swatch.swatch--oos::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:inherit}
     .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
-    .card .photo{aspect-ratio:1;background:#f0eee5;display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .card .photo img{width:100%;height:100%;object-fit:cover}
+    .card .photo{aspect-ratio:1;background:#f0eee5;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .card .photo img{width:100%;height:100%;object-fit:cover;transition:opacity .25s ease}
+    /* Skeleton cards — shown immediately on first paint so the page
+       doesn't look frozen during the 1.4s initial catalog fetch. */
+    .skel{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .skel__photo{aspect-ratio:1;background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite}
+    .skel__body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .skel__line{height:10px;border-radius:6px;background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite}
+    .skel__line--short{width:42%}
+    .skel__line--medium{width:78%}
+    .skel__line--swatches{height:18px;border-radius:50px}
+    @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    /* Card render-fade: cards added by the lazy renderer pop in smoothly. */
+    .card{opacity:1;transition:opacity .22s ease}
+    .card--booting{opacity:0}
+    .cat-grid--booting{opacity:.96}
     .card .body{padding:12px 14px}
     .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
     .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
@@ -295,7 +314,34 @@
     </label>
   </div>
 
-  <div class="cat-grid" id="catGrid"></div>
+  <div class="cat-grid" id="catGrid">
+    <!-- Skeleton placeholders shown immediately on first paint so the
+         page doesn't look frozen for the ~1.4s the catalog API takes
+         to come back. JS replaces these the moment products arrive. -->
+    <script>
+      (function () {
+        var grid = document.currentScript.parentNode;
+        // Don't show skeletons on filter changes — only on the very first
+        // paint, when the grid is empty.
+        if (grid.children.length > 1) return;
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < 12; i++) {
+          var s = document.createElement('div');
+          s.className = 'skel';
+          s.innerHTML =
+            '<div class="skel__photo"></div>' +
+            '<div class="skel__body">' +
+              '<div class="skel__line skel__line--short"></div>' +
+              '<div class="skel__line skel__line--medium"></div>' +
+              '<div class="skel__line skel__line--swatches"></div>' +
+              '<div class="skel__line skel__line--short"></div>' +
+            '</div>';
+          frag.appendChild(s);
+        }
+        grid.appendChild(frag);
+      })();
+    </script>
+  </div>
   <div class="cat-loading" id="catLoading" style="display:none" data-i18n="cat.loading">Loading more…</div>
   <div class="cat-empty" id="catEmpty" style="display:none"><h3 data-i18n="cat.empty.h3">No matches</h3><p data-i18n="cat.empty.p">Try removing a filter or check our "Bring your own blank" option.</p></div>
 
@@ -874,6 +920,14 @@
   // =========================================================================
   // Render
   // =========================================================================
+  // Number of cards to inject synchronously on first paint. Above the
+  // fold + a little buffer so the user sees a full grid immediately
+  // instead of skeletons → flash → real cards. Remainder is rendered
+  // in idle chunks below (requestIdleCallback) so the main thread isn't
+  // pegged for 200 ms while 200 cards build their swatch grids.
+  const INITIAL_RENDER = 24;
+  const CHUNK_SIZE     = 12;
+
   function render() {
     const grid = document.getElementById('catGrid');
     const empty = document.getElementById('catEmpty');
@@ -882,27 +936,56 @@
     if (state.products.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
-    // Stock filter + client-side sort. Stock toggle is instant (no refetch);
-    // sort is client-side too because the catalog API doesn't expose a sort
-    // param and we already have all rows in memory.
     let visible = state.filters.inStockOnly
       ? state.products.filter(p => p.in_stock !== false)
       : state.products.slice();
     visible = sortProducts(visible, state.sort);
-    visible.forEach(p => grid.appendChild(productCard(p)));
 
-    // Always append a "Bring your own" card at the end of the grid
-    grid.appendChild(byoCard());
+    // First chunk: synchronous. The first 6 images get fetchpriority=high
+    // so the browser starts pulling them before the rest of the JS runs.
+    const head = visible.slice(0, INITIAL_RENDER);
+    head.forEach((p, i) => grid.appendChild(productCard(p, { eager: i < 6 })));
+
+    // "Bring your own" card sits at the end; append now if all products fit
+    // in the head chunk, otherwise wait until lazy render finishes.
+    if (visible.length <= INITIAL_RENDER) {
+      grid.appendChild(byoCard());
+    }
 
     document.getElementById('resultCount').textContent = visible.length.toLocaleString();
     renderChips();
-    // Re-apply the active language to all freshly-rendered cards (they
-    // contain inline data-i18n attributes for the static CTA strings).
     if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
-    // Auto-translate the supplier-fed dynamic strings (product names +
-    // selected color names) when FR is active. Uses the MyMemory API via
-    // window.AITranslate with localStorage caching.
     maybeTranslateCatalog();
+
+    // Lazy-render the remainder in idle chunks so the first paint stays
+    // snappy. Each chunk yields to the main thread, keeping scroll
+    // smooth even on slower devices.
+    if (visible.length > INITIAL_RENDER) {
+      lazyRenderRemainder(grid, visible.slice(INITIAL_RENDER));
+    }
+  }
+
+  function lazyRenderRemainder(grid, rest) {
+    let i = 0;
+    const ric = window.requestIdleCallback || function (cb) { return setTimeout(cb, 16); };
+    function pump() {
+      ric(function () {
+        const end = Math.min(i + CHUNK_SIZE, rest.length);
+        for (; i < end; i++) {
+          grid.appendChild(productCard(rest[i], { eager: false }));
+        }
+        if (i < rest.length) {
+          pump();
+        } else {
+          // Append the "Bring your own" card once the full grid is in place.
+          grid.appendChild(byoCard());
+          // Re-apply lang + AI translate to the freshly-rendered cards.
+          if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
+          maybeTranslateCatalog();
+        }
+      });
+    }
+    pump();
   }
 
   // ===== AI translate overlay for dynamic catalog content =====
@@ -945,12 +1028,16 @@
     maybeTranslateDetailModal();
   });
 
-  function productCard(p) {
+  function productCard(p, opts) {
     // Card is now a clickable surface (not an anchor). Whole-card click =
     // "add to cart with the currently-selected color". Swatches inside it
     // act as a color picker for THIS card — clicking one selects the color
     // without adding to the cart. A small "Details" link in the corner
     // still allows the legacy single-product flow.
+    //
+    // opts.eager = first row cards get fetchpriority="high" + loading="eager"
+    // so the LCP image starts coming down before the rest of the JS runs.
+    opts = opts || {};
     const card = document.createElement('div');
     card.className = 'card card--clickable';
     card.setAttribute('role', 'button');
@@ -1005,7 +1092,7 @@
 
     card.innerHTML = `
       ${badge}
-      <div class="photo"><img src="${photoUrl}" alt="${p.brand} ${p.style_number}" loading="lazy"/></div>
+      <div class="photo"><img src="${photoUrl}" alt="${p.brand} ${p.style_number}" loading="${opts.eager ? 'eager' : 'lazy'}" decoding="async"${opts.eager ? ' fetchpriority="high"' : ''}/></div>
       <div class="body">
         <div class="brand-row">${(p.brand || '').toUpperCase()} · ${p.style_number || ''}</div>
         <div class="name">${p.name}</div>
