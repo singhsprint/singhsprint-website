@@ -90,14 +90,17 @@
     .color-swatch[data-color="#FFFFFF"].selected::after{color:#1a1a1a;text-shadow:none}
     .color-name{font-size:.8rem;color:#999;margin-top:6px}
 
-    /* Method info cards */
-    .method-info-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-    .method-info-card{border:1px solid #f0f0f0;border-radius:12px;padding:14px;background:#fafafa;transition:all .2s}
-    .method-info-card h4{font-size:.85rem;font-weight:700;margin-bottom:6px;color:#1a1a1a}
-    .method-info-card .card-desc{font-size:.8rem;color:#666;margin-bottom:6px;line-height:1.4}
-    .method-info-card .card-label{font-size:.7rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
-    .method-info-card .card-value{font-size:.8rem;color:#1a1a1a;margin-top:4px}
-    @media(max-width:768px){.method-info-cards{grid-template-columns:1fr}}
+    /* Consolidated print-method picker — each card is both the descriptor AND the selector */
+    .method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+    .method-card{position:relative;border:2px solid #eee;border-radius:14px;padding:14px 16px;background:#fff;cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;gap:6px}
+    .method-card:hover{border-color:#bbb;transform:translateY(-1px)}
+    .method-card.selected{border-color:#1a1a1a;background:#fafafa;box-shadow:0 0 0 1.5px #1a1a1a inset}
+    .method-card.selected::after{content:'✓';position:absolute;top:10px;right:12px;width:20px;height:20px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700}
+    .method-card strong{font-size:.95rem;font-weight:700;color:#1a1a1a}
+    .method-card .m-desc{font-size:.78rem;color:#666;line-height:1.45}
+    .method-card .m-best{font-size:.7rem;color:#999;font-weight:500;margin-top:auto}
+    .method-card-help{background:#fafafa;border-style:dashed;grid-column:1/-1}
+    @media(max-width:768px){.method-grid{grid-template-columns:1fr}}
 
     /* Price section */
     .price-section{border-top:1px solid #f0f0f0;padding-top:12px;margin-top:12px}
@@ -256,9 +259,12 @@
     }
 
     /* ========== CANVAS EDITOR ========== */
-    .canvas-wrapper{position:relative;overflow:hidden;background:linear-gradient(145deg,#f2f1ee 0%,#e9e8e4 100%);aspect-ratio:5/6}
+    .canvas-wrapper{position:relative;overflow:hidden;background:#f4f3ef;aspect-ratio:5/6}
     .canvas-wrapper .garment-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
-    .canvas-wrapper .garment-display svg{width:72%;max-height:88%;transition:all .3s}
+    .canvas-wrapper .garment-display img{width:100%;height:100%;object-fit:cover;object-position:center;transition:opacity .25s ease}
+    /* Colour overlay — multiply blend tints the white/light product photo to the
+       customer's chosen colour. Sits between the photo and the fabric.js layer. */
+    .garment-tint{position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:multiply;transition:background-color .2s ease,opacity .2s ease}
     .canvas-wrapper .canvas-container{position:absolute!important;inset:0;z-index:2}
     #fabricCanvas{width:100%!important;height:100%!important;display:block;cursor:default}
 
@@ -554,43 +560,28 @@
               <input type="hidden" name="print_count" id="printCountInput" value="1">
             </div>
 
-            <!-- Printing method info cards -->
-            <div class="method-info-cards">
-              <div class="method-info-card">
-                <h4 data-i18n="quote.method.dtg.title">DTG</h4>
-                <p class="card-desc" data-i18n="quote.method.dtg.desc">Direct-to-garment printing for vibrant, detailed full-color designs</p>
-                <div class="card-label" data-i18n="quote.method.dtg.best">Best for:</div>
-                <div class="card-value" data-i18n="quote.method.dtg.use">Photo prints, gradients, complex artwork</div>
-              </div>
-              <div class="method-info-card">
-                <h4 data-i18n="quote.method.dtf.title">DTF</h4>
-                <p class="card-desc" data-i18n="quote.method.dtf.desc">Heat transfer film for durability on any fabric type</p>
-                <div class="card-label" data-i18n="quote.method.dtf.best">Best for:</div>
-                <div class="card-value" data-i18n="quote.method.dtf.use">Dark fabrics, athletic wear, blended materials</div>
-              </div>
-              <div class="method-info-card">
-                <h4 data-i18n="quote.method.emb.title">Embroidery</h4>
-                <p class="card-desc" data-i18n="quote.method.emb.desc">Stitched logos and text for a premium, professional look</p>
-                <div class="card-label" data-i18n="quote.method.emb.best">Best for:</div>
-                <div class="card-value" data-i18n="quote.method.emb.use">Logos, corporate branding, structured garments</div>
-              </div>
-            </div>
-
-            <!-- Printing method -->
+            <!-- Printing method (single selector — pick + see what it's best for in one place) -->
             <div class="form-group">
               <label data-i18n="quote.method">Printing method</label>
-              <div class="service-row">
-                <div class="svc-btn" data-value="DTG" onclick="selectService(this)">
-                  <strong>DTG</strong><span>Full-color prints</span>
+              <div class="method-grid">
+                <div class="method-card" data-value="DTG" onclick="selectService(this)">
+                  <strong>DTG</strong>
+                  <span class="m-desc">Direct-to-garment digital printing for full-colour, photo-quality detail.</span>
+                  <span class="m-best">Best for: photos, gradients, complex artwork</span>
                 </div>
-                <div class="svc-btn" data-value="DTF" onclick="selectService(this)">
-                  <strong>DTF</strong><span>Any fabric</span>
+                <div class="method-card" data-value="DTF" onclick="selectService(this)">
+                  <strong>DTF</strong>
+                  <span class="m-desc">Heat-transfer film that bonds to any fabric, dark or light, stretchy or rigid.</span>
+                  <span class="m-best">Best for: dark fabrics, athletic wear, blends</span>
                 </div>
-                <div class="svc-btn" data-value="Embroidery" onclick="selectService(this)">
-                  <strong>Embroidery</strong><span>Stitched logos</span>
+                <div class="method-card" data-value="Embroidery" onclick="selectService(this)">
+                  <strong>Embroidery</strong>
+                  <span class="m-desc">Stitched logos and text for a premium, tactile, professional finish.</span>
+                  <span class="m-best">Best for: caps, polos, corporate uniforms</span>
                 </div>
-                <div class="svc-btn" data-value="Not Sure" onclick="selectService(this)">
-                  <strong>Not Sure</strong><span>Help me choose</span>
+                <div class="method-card method-card-help" data-value="Not Sure" onclick="selectService(this)">
+                  <strong>Not sure yet</strong>
+                  <span class="m-desc">We'll recommend the best method when we follow up with your quote.</span>
                 </div>
               </div>
               <input type="hidden" name="service" id="serviceInput" required>
@@ -733,9 +724,17 @@
           </div>
         </div>
 
-        <!-- Canvas with garment background — compact ratio -->
+        <!-- Canvas with garment background. We swap the underlying photo per
+             garment, then a multiply-blend tint layer paints the customer's
+             chosen colour over the white base — same trick smaller print shops
+             use to fake a multi-colour photo library on a single base shot. -->
         <div class="canvas-wrapper" id="canvasWrapper">
           <div class="garment-display">
+            <img id="garmentImg" src="/images/product-tshirt-white.jpg" alt="Product mockup" />
+          </div>
+          <div class="garment-tint" id="garmentTint"></div>
+          <!-- legacy SVG block retained but hidden so older JS hooks don't crash -->
+          <div style="display:none">
             <svg id="garmentSvg" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <filter id="softShadow" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/></filter>
@@ -745,7 +744,7 @@
 
             <!-- T-shirt -->
             <g id="garment-tshirt">
-              <path id="garmentFill" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 270 138 Q 273 144 268 147 L 240 158 Q 234 159 231 153 L 218 122 L 218 348 Q 218 358 208 359 L 92 359 Q 82 358 82 348 L 82 122 L 69 153 Q 66 159 60 158 L 32 147 Q 27 144 30 138 L 84 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path id="garmentFill" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 270 138 Q 273 144 268 147 L 240 158 Q 234 159 231 153 L 218 122 L 218 348 Q 218 358 208 359 L 92 359 Q 82 358 82 348 L 82 122 L 69 153 Q 66 159 60 158 L 32 147 Q 27 144 30 138 L 84 60 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
               <path d="M 122 72 Q 134 81 150 82 Q 166 81 178 72" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.4"/>
               <path d="M 126 76 Q 137 84 150 85 Q 163 84 174 76" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.55"/>
               <path d="M 82 122 Q 86 96 116 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
@@ -757,10 +756,10 @@
 
             <!-- Hoodie -->
             <g id="garment-hoodie" style="display:none">
-              <path id="hoodFill" d="M 105 64 Q 100 30 132 16 Q 150 11 168 16 Q 200 30 195 64 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <path id="hoodFill" d="M 105 64 Q 100 30 132 16 Q 150 11 168 16 Q 200 30 195 64 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
               <path d="M 105 64 Q 116 60 150 60 Q 184 60 195 64" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
               <ellipse cx="150" cy="60" rx="26" ry="10" fill="rgba(0,0,0,0.18)"/>
-              <path id="garmentFillHoodie" d="M 116 60 Q 116 70 124 78 Q 138 88 150 89 Q 162 88 176 78 Q 184 70 184 60 L 218 64 L 278 154 Q 281 160 276 163 L 246 174 Q 240 175 237 169 L 222 132 L 222 354 Q 222 364 212 365 L 88 365 Q 78 364 78 354 L 78 132 L 63 169 Q 60 175 54 174 L 24 163 Q 19 160 22 154 L 82 64 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path id="garmentFillHoodie" d="M 116 60 Q 116 70 124 78 Q 138 88 150 89 Q 162 88 176 78 Q 184 70 184 60 L 218 64 L 278 154 Q 281 160 276 163 L 246 174 Q 240 175 237 169 L 222 132 L 222 354 Q 222 364 212 365 L 88 365 Q 78 364 78 354 L 78 132 L 63 169 Q 60 175 54 174 L 24 163 Q 19 160 22 154 L 82 64 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
               <path d="M 138 64 L 134 100" stroke="var(--garment-detail,#444)" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
               <circle cx="134" cy="100" r="2" fill="var(--garment-detail,#444)" opacity="0.7"/>
               <path d="M 162 64 L 166 100" stroke="var(--garment-detail,#444)" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
@@ -778,7 +777,7 @@
 
             <!-- Crewneck (long-sleeve sweatshirt) -->
             <g id="garment-crewneck" style="display:none">
-              <path id="garmentFillCrewneck" d="M 116 54 Q 116 62 122 70 Q 134 79 150 80 Q 166 79 178 70 Q 184 62 184 54 L 216 58 L 282 312 Q 285 322 274 324 L 248 326 Q 240 326 238 318 L 220 124 L 220 348 Q 220 358 210 359 L 90 359 Q 80 358 80 348 L 80 124 L 62 318 Q 60 326 52 326 L 26 324 Q 15 322 18 312 L 84 58 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path id="garmentFillCrewneck" d="M 116 54 Q 116 62 122 70 Q 134 79 150 80 Q 166 79 178 70 Q 184 62 184 54 L 216 58 L 282 312 Q 285 322 274 324 L 248 326 Q 240 326 238 318 L 220 124 L 220 348 Q 220 358 210 359 L 90 359 Q 80 358 80 348 L 80 124 L 62 318 Q 60 326 52 326 L 26 324 Q 15 322 18 312 L 84 58 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
               <path d="M 122 70 Q 134 79 150 80 Q 166 79 178 70" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
               <path d="M 124 64 Q 136 56 150 56 Q 164 56 176 64" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
               <path d="M 128 67 Q 138 60 150 60 Q 162 60 172 67" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.5"/>
@@ -794,8 +793,8 @@
 
             <!-- Hat -->
             <g id="garment-hat" style="display:none">
-              <path id="garmentFillHat" d="M 50 230 C 50 138 92 78 150 78 C 208 78 250 138 250 230 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
-              <ellipse id="brimFill" cx="150" cy="232" rx="120" ry="14" fill="#0a0a0a" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2"/>
+              <path id="garmentFillHat" d="M 50 230 C 50 138 92 78 150 78 C 208 78 250 138 250 230 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <ellipse id="brimFill" cx="150" cy="232" rx="120" ry="14" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2"/>
               <path d="M 30 232 Q 90 220 150 220 Q 210 220 270 232" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
               <line x1="150" y1="80" x2="150" y2="230" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.4"/>
               <path d="M 96 86 L 80 230" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.4" fill="none"/>
@@ -806,11 +805,11 @@
 
             <!-- Tote bag -->
             <g id="garment-tote" style="display:none">
-              <path id="toteHandleL" d="M 108 96 C 108 50 120 28 142 28" fill="none" stroke="#111111" stroke-width="6" stroke-linecap="round"/>
-              <path id="toteHandleR" d="M 192 96 C 192 50 180 28 158 28" fill="none" stroke="#111111" stroke-width="6" stroke-linecap="round"/>
+              <path id="toteHandleL" d="M 108 96 C 108 50 120 28 142 28" fill="none" stroke="var(--garment-fill,#1a1a1a)" stroke-width="6" stroke-linecap="round"/>
+              <path id="toteHandleR" d="M 192 96 C 192 50 180 28 158 28" fill="none" stroke="var(--garment-fill,#1a1a1a)" stroke-width="6" stroke-linecap="round"/>
               <path d="M 108 96 C 108 50 120 28 142 28" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
               <path d="M 192 96 C 192 50 180 28 158 28" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5"/>
-              <rect id="garmentFillTote" x="58" y="94" width="184" height="260" rx="3" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <rect id="garmentFillTote" x="58" y="94" width="184" height="260" rx="3" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
               <line x1="58" y1="106" x2="242" y2="106" stroke="var(--garment-detail,#444)" stroke-width="0.9" opacity="0.55"/>
               <line x1="58" y1="346" x2="242" y2="346" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.45"/>
               <line x1="64" y1="94" x2="64" y2="354" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.3"/>
@@ -819,7 +818,7 @@
 
             <!-- Joggers -->
             <g id="garment-joggers" style="display:none">
-              <rect id="garmentFillJoggersWaist" x="68" y="28" width="164" height="32" rx="5" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <rect id="garmentFillJoggersWaist" x="68" y="28" width="164" height="32" rx="5" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
               <line x1="68" y1="38" x2="232" y2="38" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.5"/>
               <line x1="68" y1="44" x2="232" y2="44" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.35"/>
               <line x1="68" y1="50" x2="232" y2="50" stroke="var(--garment-detail,#444)" stroke-width="0.5" opacity="0.35"/>
@@ -827,8 +826,8 @@
               <circle cx="138" cy="64" r="1.6" fill="var(--garment-detail,#444)" opacity="0.65"/>
               <path d="M 158 42 L 162 64" stroke="var(--garment-detail,#444)" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
               <circle cx="162" cy="64" r="1.6" fill="var(--garment-detail,#444)" opacity="0.65"/>
-              <path id="garmentFillJoggersL" d="M 70 60 L 78 322 Q 80 336 92 336 L 140 336 Q 148 336 148 324 L 150 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
-              <path id="garmentFillJoggersR" d="M 150 60 L 152 324 Q 152 336 160 336 L 208 336 Q 220 336 222 322 L 230 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <path id="garmentFillJoggersL" d="M 70 60 L 78 322 Q 80 336 92 336 L 140 336 Q 148 336 148 324 L 150 60 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
+              <path id="garmentFillJoggersR" d="M 150 60 L 152 324 Q 152 336 160 336 L 208 336 Q 220 336 222 322 L 230 60 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round"/>
               <line x1="150" y1="62" x2="150" y2="324" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.35"/>
               <path d="M 80 330 L 148 330" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
               <path d="M 152 330 L 220 330" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.5"/>
@@ -838,7 +837,7 @@
 
             <!-- Long sleeve -->
             <g id="garment-longsleeve" style="display:none">
-              <path id="garmentFillLong" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 282 312 Q 285 322 274 324 L 248 326 Q 240 326 238 318 L 220 124 L 220 348 Q 220 358 210 359 L 90 359 Q 80 358 80 348 L 80 124 L 62 318 Q 60 326 52 326 L 26 324 Q 15 322 18 312 L 84 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path id="garmentFillLong" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 282 312 Q 285 322 274 324 L 248 326 Q 240 326 238 318 L 220 124 L 220 348 Q 220 358 210 359 L 90 359 Q 80 358 80 348 L 80 124 L 62 318 Q 60 326 52 326 L 26 324 Q 15 322 18 312 L 84 60 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
               <path d="M 122 72 Q 134 81 150 82 Q 166 81 178 72" fill="none" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.4"/>
               <path d="M 126 76 Q 137 84 150 85 Q 163 84 174 76" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.55"/>
               <path d="M 80 124 Q 86 100 116 60" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.7" opacity="0.45"/>
@@ -852,9 +851,9 @@
 
             <!-- Polo -->
             <g id="garment-polo" style="display:none">
-              <path id="garmentFillPolo" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 270 138 Q 273 144 268 147 L 240 158 Q 234 159 231 153 L 218 122 L 218 348 Q 218 358 208 359 L 92 359 Q 82 358 82 348 L 82 122 L 69 153 Q 66 159 60 158 L 32 147 Q 27 144 30 138 L 84 60 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-              <path id="garmentFillPoloCollarL" d="M 116 56 L 138 50 L 150 70 L 134 76 Q 118 70 116 56 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5" stroke-linejoin="round"/>
-              <path id="garmentFillPoloCollarR" d="M 184 56 L 162 50 L 150 70 L 166 76 Q 182 70 184 56 Z" fill="#111111" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5" stroke-linejoin="round"/>
+              <path id="garmentFillPolo" d="M 116 56 Q 116 64 122 72 Q 134 81 150 82 Q 166 81 178 72 Q 184 64 184 56 L 216 60 L 270 138 Q 273 144 268 147 L 240 158 Q 234 159 231 153 L 218 122 L 218 348 Q 218 358 208 359 L 92 359 Q 82 358 82 348 L 82 122 L 69 153 Q 66 159 60 158 L 32 147 Q 27 144 30 138 L 84 60 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+              <path id="garmentFillPoloCollarL" d="M 116 56 L 138 50 L 150 70 L 134 76 Q 118 70 116 56 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5" stroke-linejoin="round"/>
+              <path id="garmentFillPoloCollarR" d="M 184 56 L 162 50 L 150 70 L 166 76 Q 182 70 184 56 Z" fill="var(--garment-fill,#ffffff)" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.5" stroke-linejoin="round"/>
               <path id="garmentFillPoloCollar" d="M 138 50 L 150 70 L 162 50" fill="none" stroke="var(--garment-detail,#444)" stroke-width="0.8" opacity="0.6"/>
               <line x1="150" y1="70" x2="150" y2="118" stroke="var(--garment-stroke,#1a1a1a)" stroke-width="1.2"/>
               <line x1="145" y1="70" x2="145" y2="118" stroke="var(--garment-detail,#444)" stroke-width="0.6" opacity="0.5"/>
@@ -869,6 +868,7 @@
             </g>
           </svg>
           </div>
+          <!-- /legacy hidden SVG -->
           <!-- Layer 2: Fabric.js canvas (transparent, handles design overlay) -->
           <canvas id="fabricCanvas"></canvas>
         </div>
@@ -887,9 +887,9 @@
           <div class="canvas-toolbar">
             <div class="toolbar-group">
               <button type="button" class="toolbar-btn" id="uploadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</button>
-              <button type="button" class="toolbar-btn" id="centerBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>Center</button>
-              <button type="button" class="toolbar-btn" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Flip</button>
-              <button type="button" class="toolbar-btn toolbar-btn--danger" id="deleteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/></svg>Remove</button>
+              <button type="button" class="toolbar-btn toolbar-btn--design" id="centerBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>Center</button>
+              <button type="button" class="toolbar-btn toolbar-btn--design" id="flipBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Flip</button>
+              <button type="button" class="toolbar-btn toolbar-btn--danger toolbar-btn--design" id="deleteBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/></svg>Remove</button>
             </div>
             <div class="toolbar-sep"></div>
             <div class="size-selector">
@@ -905,11 +905,11 @@
 
         <!-- Summary -->
         <div class="mockup-summary" id="mockupSummary">
-          <div class="summary-row"><span>Product</span><span id="sumProduct">-</span></div>
+          <div class="summary-row"><span>Product</span><span id="sumProduct">—</span></div>
           <div class="summary-row"><span>Color</span><span id="sumColor">Black</span></div>
           <div class="summary-row"><span>Placement</span><span id="sumPlacement">Front</span></div>
-          <div class="summary-row"><span>Method</span><span id="sumMethod">-</span></div>
-          <div class="summary-row"><span>Total units</span><span id="sumQty">0</span></div>
+          <div class="summary-row"><span>Method</span><span id="sumMethod">Pick in step 1</span></div>
+          <div class="summary-row"><span>Total units</span><span id="sumQty">Set in step 2</span></div>
 
           <!-- Price calculator section (hidden until product+method+qty selected) -->
           <div class="price-section" id="priceSection" style="display:none">
@@ -1095,7 +1095,9 @@
       document.getElementById('colorInput').value = state.colorName;
       document.getElementById('colorName').textContent = state.colorName;
       document.getElementById('sumColor').textContent = state.colorName;
-      updateGarmentColor();
+      // Photo-based mockup: swap T-shirt to black/white variant based on luminance.
+      // Other garments don't have per-colour photos so the swatch is just metadata.
+      updateGarmentShape();
     }
 
     // ===== PLACEMENT (multi-select) =====
@@ -1132,9 +1134,10 @@
 
     // ===== SERVICE =====
     function selectService(el) {
-      // Scope to the print-method row only, otherwise this also deselects
-      // the Garment Source buttons which share the .svc-btn class.
-      el.parentElement.querySelectorAll('.svc-btn').forEach(function(o) { o.classList.remove('selected'); });
+      // Works for both the legacy .svc-btn row and the new .method-card grid.
+      // Scope to siblings inside the same parent so it doesn't accidentally
+      // deselect the Garment Source buttons (which also use .svc-btn).
+      el.parentElement.querySelectorAll('.svc-btn, .method-card').forEach(function(o) { o.classList.remove('selected'); });
       el.classList.add('selected');
       state.service = el.dataset.value;
       document.getElementById('serviceInput').value = state.service;
@@ -1234,27 +1237,47 @@
       canvas.renderAll();
     }
 
-    // ===== GARMENT SVG =====
+    // ===== GARMENT PHOTO + COLOUR TINT =====
+    // One white/light base photo per garment. The customer's chosen colour is
+    // painted over the photo with mix-blend-mode: multiply — fabric shadows
+    // and folds show through, but the garment reads as the chosen colour.
+    // Same trick Bonfire, TeePublic etc. use to fake a multi-colour photo
+    // library on a single base shot.
+    var garmentPhotos = {
+      tshirt:     '/images/product-tshirt-white.jpg',
+      hoodie:     '/images/product-hoodie-concordia.jpg',
+      crewneck:   '/images/product-crewneck-mcgill.jpg',
+      hat:        '/images/product-hat-artwood.jpg',
+      tote:       '/images/product-tote-singh.jpg',
+      joggers:    '/images/product-sweatpants.jpg',
+      longsleeve: '/images/product-longsleeve.jpg',
+      polo:       '/images/product-polo.jpg',
+      hivis:      '/images/product-tshirt-white.jpg',
+      other:      '/images/product-tshirt-white.jpg'
+    };
+
     function updateGarmentShape() {
-      var allGarments = ['tshirt','hoodie','crewneck','hat','tote','joggers','longsleeve','polo'];
-      allGarments.forEach(function(g) {
-        var el = document.getElementById('garment-' + g);
-        if (el) el.style.display = 'none';
-      });
+      var garment = state.garment || 'tshirt';
+      var src = garmentPhotos[garment] || garmentPhotos.tshirt;
+      var img = document.getElementById('garmentImg');
+      if (img && img.getAttribute('src') !== src) img.setAttribute('src', src);
 
-      var garment = state.garment;
-      // Map "other" to tshirt as default
-      if (garment === 'other') garment = 'tshirt';
-      // Hi-Vis vest uses the t-shirt mockup silhouette (closest shape) until a dedicated SVG ships
-      if (garment === 'hivis') garment = 'tshirt';
-      var target = document.getElementById('garment-' + garment);
-      if (target) target.style.display = 'block';
-
-      updateGarmentColor();
+      applyGarmentTint();
       updatePlacementRestrictions();
-
-      // Redraw print area (garment SVG updates itself via DOM)
       if (canvas) drawPrintAreaBoundary();
+    }
+
+    // Multiply-blend tint: white × anything = no change, so leave the tint off
+    // for white picks. Every other colour rides on top of the photo.
+    function applyGarmentTint() {
+      var tint = document.getElementById('garmentTint');
+      if (!tint) return;
+      var c = (state.color || '#ffffff').toLowerCase();
+      if (c === '#ffffff' || c === '#fff') {
+        tint.style.backgroundColor = 'transparent';
+      } else {
+        tint.style.backgroundColor = state.color;
+      }
     }
 
     function updatePlacementRestrictions() {
@@ -1285,9 +1308,10 @@
       var c = state.color;
       var isLight = isLightColor(c);
       // Outline + detail strokes adapt to fill brightness so line work stays visible
-      // on every shade — pure dark on light fills, lighter shades of fill on dark fills.
-      var stroke = isLight ? '#1a1a1a' : lightenColor(c, 70);
-      var detail = isLight ? '#444444' : lightenColor(c, 45);
+      // on every shade — pure dark on light fills, white-ish lines on dark fills
+      // (like a technical drawing in white pen on a chalkboard).
+      var stroke = isLight ? '#1a1a1a' : '#ffffff';
+      var detail = isLight ? '#444444' : '#cccccc';
       // Push stroke colors as CSS vars on each garment group; new line-art paths read these.
       ['tshirt','hoodie','crewneck','hat','tote','joggers','longsleeve','polo'].forEach(function(name) {
         var el = document.getElementById('garment-' + name);
@@ -1380,7 +1404,7 @@
     // Light fills get near-black; dark fills get a lighter version of the fill so
     // the construction details (collar, cuffs, hem) read without overpowering.
     function getLineColor(fill) {
-      return isLightColor(fill) ? '#1a1a1a' : lightenColor(fill, 80);
+      return isLightColor(fill) ? '#1a1a1a' : '#ffffff';
     }
 
     // ===== CANVAS EDITOR =====
@@ -1814,7 +1838,16 @@
         canvas.renderAll();
 
         document.getElementById('downloadMockup').style.display = 'block';
+        toggleDesignToolbar(true);
       }, { crossOrigin: 'anonymous' });
+    }
+
+    // Show/hide design-action buttons (Center, Flip, Remove) based on whether a
+    // design is on the canvas. Avoids the dead-button confusion on first load.
+    function toggleDesignToolbar(visible) {
+      document.querySelectorAll('.toolbar-btn--design').forEach(function(btn) {
+        btn.style.display = visible ? '' : 'none';
+      });
     }
 
     // Toolbar handlers
@@ -1836,6 +1869,7 @@
       canvas.remove(designObject);
       designObject = null;
       document.getElementById('downloadMockup').style.display = 'none';
+      toggleDesignToolbar(false);
       canvas.renderAll();
     });
 
@@ -2401,6 +2435,8 @@
 
     // Init
     window.addEventListener('load', function() {
+      updateGarmentShape();           // load correct product photo on first paint
+      updatePlacementRestrictions();
       updatePricingTabs();
       initFabricCanvas();
       calculatePrice();
