@@ -128,6 +128,36 @@
     .filter-group label input{width:16px;height:16px;accent-color:var(--ink)}
     .filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:99}
     .filter-overlay.open{opacity:1;pointer-events:auto}
+
+    /* Product detail modal — "View details" on each card opens this */
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:200}
+    .detail-overlay.open{opacity:1;pointer-events:auto}
+    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:201;pointer-events:none}
+    .detail-modal.open{pointer-events:auto}
+    .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+    .detail-modal.open .detail-modal__inner{transform:scale(1);opacity:1}
+    .detail-modal__head{padding:18px 22px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .detail-modal__body{flex:1;overflow-y:auto;padding:22px}
+    .detail-modal__hero{display:grid;grid-template-columns:240px 1fr;gap:22px;margin-bottom:22px}
+    .detail-modal__hero img{width:100%;border-radius:12px;background:#f4f2eb;aspect-ratio:1/1;object-fit:cover}
+    .detail-modal__swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+    .detail-modal__swatch{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:8px 6px;border-radius:10px;transition:background .12s;border:1.5px solid transparent;background:transparent;font-family:inherit}
+    .detail-modal__swatch:hover{background:#f4f2eb}
+    .detail-modal__swatch[aria-selected="true"]{background:#f4f2eb;border-color:#1a1a1a}
+    .detail-modal__swatch--oos{opacity:.45}
+    .detail-modal__swatch-dot{width:38px;height:38px;border-radius:50%;border:1.5px solid #ddd}
+    .detail-modal__swatch-name{font-size:.7rem;color:#1a1a1a;text-align:center;line-height:1.2;word-break:break-word}
+    .detail-modal__close{background:transparent;border:none;font-size:1.3rem;cursor:pointer;color:#888;padding:4px 8px;line-height:1}
+    .detail-modal__close:hover{color:#1a1a1a}
+    .detail-modal__foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .card-details-link{display:inline-block;font-size:.74rem;color:#666;text-decoration:underline;text-decoration-color:#ccc;text-underline-offset:2px;background:none;border:none;padding:2px 0;cursor:pointer;font-family:inherit;margin-top:4px}
+    .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
+    @media (max-width:640px){
+      .detail-modal{padding:0}
+      .detail-modal__inner{max-height:100vh;border-radius:0}
+      .detail-modal__hero{grid-template-columns:1fr}
+      .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+    }
   </style>
 </head>
 <body>
@@ -257,6 +287,37 @@
 
   <!-- Filter slide-over -->
   <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
+
+  <!-- Product detail modal — opened by "View details" on each card -->
+  <div class="detail-overlay" id="detailOverlay" onclick="closeProductDetail()"></div>
+  <div class="detail-modal" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+    <div class="detail-modal__inner">
+      <div class="detail-modal__head">
+        <div style="min-width:0">
+          <div id="detailModalBrand" style="font-size:.7rem;letter-spacing:.06em;color:#888;text-transform:uppercase;font-weight:700"></div>
+          <div id="detailModalTitle" style="font-size:1.15rem;font-weight:700;margin-top:2px;line-height:1.25"></div>
+        </div>
+        <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Close">✕</button>
+      </div>
+      <div class="detail-modal__body">
+        <div class="detail-modal__hero">
+          <img id="detailModalImg" src="" alt="" />
+          <div>
+            <div id="detailModalPrice" style="font-size:1.1rem;font-weight:600;margin-bottom:8px"></div>
+            <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5"></div>
+            <div id="detailModalSelectedColor" style="font-size:.82rem;color:#1a1a1a;margin-top:12px;font-weight:600"></div>
+            <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;margin-top:4px"></div>
+          </div>
+        </div>
+        <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600">All colors (<span id="detailModalCount">0</span>)</div>
+        <div class="detail-modal__swatches" id="detailModalSwatches"></div>
+      </div>
+      <div class="detail-modal__foot">
+        <div style="font-size:.84rem;color:#666">Qty <strong id="detailModalQty">25</strong></div>
+        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem">+ Add to quote</button>
+      </div>
+    </div>
+  </div>
   <aside class="filter-panel" id="filterPanel" aria-hidden="true">
     <header>
       <h3>Refine results</h3>
@@ -319,6 +380,98 @@
   }
 
   function goToQuote() { window.location.href = '/quote'; }
+
+  // =====================================================================
+  // Product detail modal — opened by the "View details ↗" link on each
+  // card. Shows the full color grid (sized swatches + names), per-color
+  // sizes_in_stock, weight, garment type, and lets the customer add to
+  // cart in their picked color without leaving the catalog view.
+  // =====================================================================
+  let _detailProduct = null;
+  let _detailColorIdx = 0;
+  function openProductDetail(p) {
+    _detailProduct = p;
+    _detailColorIdx = 0;
+    document.getElementById('detailModalBrand').textContent = (p.brand || '').toUpperCase() + ' · ' + (p.style_number || '');
+    document.getElementById('detailModalTitle').textContent = p.name || '';
+    document.getElementById('detailModalPrice').innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
+      ? 'From <strong>$' + p.price_from.toFixed(2) + '</strong> /unit · <span style="color:#888;font-weight:500">1-side print</span>'
+      : '<strong>Quote on request</strong>';
+    const metaBits = [];
+    if (p.weight_oz)     metaBits.push(p.weight_oz + ' oz');
+    if (p.garment_type)  metaBits.push(p.garment_type);
+    if (p.colors)        metaBits.push(p.colors.length + ' color' + (p.colors.length === 1 ? '' : 's'));
+    document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
+    document.getElementById('detailModalQty').textContent = state.qty;
+    document.getElementById('detailModalCount').textContent = (p.colors || []).length;
+
+    // Full color grid with names underneath.
+    const host = document.getElementById('detailModalSwatches');
+    host.innerHTML = (p.colors || []).map((c, i) => {
+      const hex = c.hex_code || '#ccc';
+      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+      const cleanName = (c.color_name || '').replace(/_\d+$/, '');
+      const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
+      return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${i === 0 ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
+        <span class="detail-modal__swatch-dot" style="background:${hex}"></span>
+        <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
+      </button>`;
+    }).join('');
+    host.querySelectorAll('.detail-modal__swatch').forEach(s => {
+      s.addEventListener('click', () => {
+        _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
+        host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
+        s.setAttribute('aria-selected', 'true');
+        paintDetailHero();
+      });
+    });
+    paintDetailHero();
+    document.getElementById('detailOverlay').classList.add('open');
+    document.getElementById('detailModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function paintDetailHero() {
+    const p = _detailProduct; if (!p) return;
+    const c = (p.colors || [])[_detailColorIdx] || {};
+    document.getElementById('detailModalImg').src = c.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
+    document.getElementById('detailModalSelectedColor').textContent = 'Color: ' + ((c.color_name || '').replace(/_\d+$/, '') || '—');
+    const sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
+    document.getElementById('detailModalSelectedSizes').textContent = sizes.length
+      ? 'Sizes in stock: ' + sizes.join(', ')
+      : 'Sizes in stock: contact us';
+  }
+
+  function closeProductDetail() {
+    document.getElementById('detailOverlay').classList.remove('open');
+    document.getElementById('detailModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Wire the modal's Add button + Esc-to-close once at boot.
+  document.addEventListener('DOMContentLoaded', () => {
+    const addBtn = document.getElementById('detailModalAddBtn');
+    if (addBtn) addBtn.addEventListener('click', () => {
+      const p = _detailProduct; if (!p) return;
+      const c = (p.colors || [])[_detailColorIdx] || {};
+      addToCart(p.product_id, {
+        color_id:     c.color_id || null,
+        color_name:   (c.color_name || ''),
+        brand:        p.brand || '',
+        style_number: p.style_number || '',
+        name:         p.name || '',
+        garment_type: p.garment_type || null,
+        hero_url:     c.mockup_front_url || p.hero_image_url || '',
+      });
+      closeProductDetail();
+      showCartToast({ brand: p.brand, style_number: p.style_number });
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && document.getElementById('detailModal').classList.contains('open')) {
+        closeProductDetail();
+      }
+    });
+  });
 
   // Adds the currently-selected product to the cart with the qty from the
   // slider. Called from each card's "+ Add" button.
@@ -583,6 +736,7 @@
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>/unit · <span class="price-meta">1-side print</span>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <button type="button" class="card-details-link" data-detail-trigger="${p.product_id}">View details ↗</button>
         <div class="card-cta">+ Add <span class="card-cta__qty">${state.qty}</span> to quote</div>
       </div>
     `;
@@ -598,6 +752,16 @@
         }
       });
     });
+
+    // "View details ↗" opens the full-product modal — and crucially stops
+    // propagation so clicking it doesn't also fire the whole-card add.
+    const detailsBtn = card.querySelector('.card-details-link');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        openProductDetail(p);
+      });
+    }
 
     // Whole-card click → add to cart with the currently-selected color.
     if (p.in_stock !== false) {
