@@ -397,7 +397,7 @@
                 <div class="catalog-pick__meta" id="catalogPickMeta"></div>
                 <div class="catalog-pick__price" id="catalogPickPrice"></div>
               </div>
-              <a href="/catalog.html" class="catalog-pick__change">Change product</a>
+              <a href="/catalog" class="catalog-pick__change">Change product</a>
             </div>
 
 
@@ -412,7 +412,7 @@
                 <strong style="display:block;font-size:1rem;color:#1a1a1a;margin-bottom:2px">Pick your blank from the catalog</strong>
                 <span style="font-size:.86rem;color:#666">1,100+ Bella+Canvas, Gildan, Berne, Adidas, Canadian-made &amp; more. We'll pre-fill this quote, show live pricing as you change qty / sides, and skip the back-and-forth.</span>
               </div>
-              <a href="/catalog.html" style="background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 18px;border-radius:50px;font-size:.9rem;font-weight:600;white-space:nowrap">Browse catalog →</a>
+              <a href="/catalog" style="background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 18px;border-radius:50px;font-size:.9rem;font-weight:600;white-space:nowrap">Browse catalog →</a>
             </div>
             <input type="hidden" id="catalogProductId" name="product_id" value="">
             <input type="hidden" id="catalogColorId"   name="color_id"   value="">
@@ -810,7 +810,7 @@
           <div class="success-icon">&#127881;</div>
           <h2>Quote request sent!</h2>
           <p>We'll send your quote by email within an hour during business hours (9am-9pm). Check your inbox — and spam, just in case.</p>
-          <br><a href="index.html" class="btn btn-primary">Back to Home</a>
+          <br><a href="/" class="btn btn-primary">Back to Home</a>
         </div>
       </div>
     </div>
@@ -2892,6 +2892,9 @@
       var params = new URLSearchParams(location.search);
       var productId = params.get('product');
       var colorId   = params.get('color');
+      // ?qty=N from the catalog slider — pre-fills a size-S quantity so the
+      // live-price strip matches what the customer saw on the catalog card.
+      var qtyHint   = parseInt(params.get('qty') || '', 10);
       if (!productId) {
         // No catalog selection — surface the CTA so the customer is nudged
         // back to /catalog.html before they fill out the rest of the form.
@@ -2969,6 +2972,14 @@
           var sumCol  = document.getElementById('sumColor');   if (sumCol)  sumCol.textContent  = state.colorName;
           calculatePrice();
           renderBulkPricingTable();
+          // If the catalog slider passed a qty, drop it into the size-M box
+          // so the live-price strip shows the price they saw on the card.
+          // The customer can adjust per-size on Step 2; this is just the
+          // sensible default.
+          if (qtyHint && qtyHint >= 1 && qtyHint <= 10000) {
+            var mInput = document.querySelector('input[name="size_m"]');
+            if (mInput) { mInput.value = qtyHint; if (typeof updateSizeTotal === 'function') updateSizeTotal(); }
+          }
           // Fetch + paint the top-tier estimate so the live-price strip is
           // populated immediately even before the customer enters a qty.
           fetchAndRenderTopTierEstimate();
