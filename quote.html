@@ -71,6 +71,20 @@
     .product-option .check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:none;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
     .product-option.selected .check{display:flex}
 
+    /* Catalog-pick card — shown when the user arrives from /catalog.html with
+       a specific product + color in the URL. Replaces the generic product grid. */
+    .catalog-pick{display:flex;align-items:center;gap:14px;background:#fafaf6;border:1.5px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:18px;position:relative}
+    .catalog-pick__img{flex-shrink:0;width:88px;height:88px;border-radius:10px;overflow:hidden;background:#fff;border:1px solid #e8e6df}
+    .catalog-pick__img img{width:100%;height:100%;object-fit:cover}
+    .catalog-pick__body{flex:1;min-width:0}
+    .catalog-pick__brand{font-size:.7rem;font-weight:700;letter-spacing:.06em;color:#888;text-transform:uppercase}
+    .catalog-pick__name{font-size:1rem;font-weight:600;color:#1a1a1a;line-height:1.25;margin-top:2px}
+    .catalog-pick__meta{font-size:.78rem;color:#666;margin-top:3px}
+    .catalog-pick__price{font-size:.85rem;color:#1a1a1a;margin-top:6px}
+    .catalog-pick__price strong{font-weight:700}
+    .catalog-pick__change{font-size:.78rem;font-weight:600;color:#1a1a1a;border-bottom:1.5px solid #1a1a1a;padding-bottom:1px;flex-shrink:0;align-self:flex-start;margin-top:4px}
+    .catalog-pick__change:hover{color:#555;border-color:#555}
+
     /* Service selector */
     .service-row{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
     .svc-btn{flex:1;min-width:120px;border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
@@ -357,7 +371,28 @@
             <h2 data-i18n="quote.step1.h">Choose your product</h2>
             <p class="step-desc" data-i18n="quote.step1.desc">Select a product, pick your color, and choose where to place your design.</p>
 
-            <div class="form-group">
+            <!-- If the user came in via /catalog?product=&color= we render this
+                 "Your pick" card and hide the hardcoded product grid. Filled in
+                 by the JS at the bottom of the page on DOMContentLoaded. -->
+            <div id="catalogPick" class="catalog-pick" style="display:none">
+              <div class="catalog-pick__img">
+                <img id="catalogPickImg" src="" alt="" />
+              </div>
+              <div class="catalog-pick__body">
+                <div class="catalog-pick__brand" id="catalogPickBrand"></div>
+                <div class="catalog-pick__name" id="catalogPickName"></div>
+                <div class="catalog-pick__meta" id="catalogPickMeta"></div>
+                <div class="catalog-pick__price" id="catalogPickPrice"></div>
+              </div>
+              <a href="/catalog.html" class="catalog-pick__change">Change product</a>
+            </div>
+            <input type="hidden" id="catalogProductId" name="product_id" value="">
+            <input type="hidden" id="catalogColorId"   name="color_id"   value="">
+            <input type="hidden" id="catalogVariantBrand" name="catalog_brand" value="">
+            <input type="hidden" id="catalogVariantStyle" name="catalog_style" value="">
+            <input type="hidden" id="catalogVariantColor" name="catalog_color" value="">
+
+            <div class="form-group" id="legacyProductGroup">
               <label>Product type</label>
               <div class="product-grid">
                 <div class="product-option" data-value="T-Shirt" data-garment="tshirt" onclick="selectProduct(this)">
@@ -2526,6 +2561,70 @@
       }
     });
 
+    // =========================================================================
+    // CATALOG HANDOFF — read ?product=<uuid>&color=<uuid> in the URL and
+    // prefill the "Your pick" card if present. Falls back silently if the
+    // product can't be fetched (e.g. catalog API down) so the legacy product
+    // grid still works.
+    // =========================================================================
+    var CATALOG_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/catalog';
+
+    function prefillFromCatalog() {
+      var params = new URLSearchParams(location.search);
+      var productId = params.get('product');
+      var colorId   = params.get('color');
+      if (!productId) return Promise.resolve(false);
+
+      return fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(productId))
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data || !data.products || !data.products.length) return false;
+          var p = data.products[0];
+          var c = (p.colors || []).find(function(x) { return x.color_id === colorId; }) || p.colors[0];
+
+          // Paint the "Your pick" card
+          document.getElementById('catalogPickImg').src        = (c && c.mockup_front_url) || p.hero_image_url || '';
+          document.getElementById('catalogPickBrand').textContent = (p.brand || '').toUpperCase() + (p.style_number ? ' · ' + p.style_number : '');
+          document.getElementById('catalogPickName').textContent  = p.name || '';
+          var metaParts = [];
+          if (c && c.color_name) metaParts.push(c.color_name);
+          if (p.weight_oz)       metaParts.push(p.weight_oz + ' oz');
+          if (p.color_count)     metaParts.push(p.color_count + ' colours available');
+          document.getElementById('catalogPickMeta').textContent = metaParts.join(' · ');
+          if (typeof p.price_from === 'number') {
+            document.getElementById('catalogPickPrice').innerHTML =
+              'From <strong>$' + p.price_from.toFixed(2) + '/unit</strong> at top-tier qty';
+          }
+
+          // Hidden inputs that ride along on quote submit
+          document.getElementById('catalogProductId').value     = p.product_id;
+          document.getElementById('catalogColorId').value       = (c && c.color_id) || '';
+          document.getElementById('catalogVariantBrand').value  = p.brand || '';
+          document.getElementById('catalogVariantStyle').value  = p.style_number || '';
+          document.getElementById('catalogVariantColor').value  = (c && c.color_name) || '';
+
+          // Show the pick card, hide the generic product grid
+          document.getElementById('catalogPick').style.display = 'flex';
+          var legacy = document.getElementById('legacyProductGroup');
+          if (legacy) legacy.style.display = 'none';
+
+          // Wire state so the rest of the form knows which garment we're on
+          state.garment    = p.garment_type || 'tshirt';
+          state.product    = p.name || (p.brand + ' ' + p.style_number);
+          state.color      = (c && c.hex_code) || state.color;
+          state.colorName  = (c && c.color_name) || state.colorName;
+
+          // Refresh dependent UI
+          updateGarmentShape();
+          var sumProd = document.getElementById('sumProduct'); if (sumProd) sumProd.textContent = state.product;
+          var sumCol  = document.getElementById('sumColor');   if (sumCol)  sumCol.textContent  = state.colorName;
+          calculatePrice();
+          renderBulkPricingTable();
+          return true;
+        })
+        .catch(function() { return false; });
+    }
+
     // Init
     window.addEventListener('load', function() {
       updateGarmentShape();           // show the right SVG silhouette + colour it
@@ -2534,6 +2633,7 @@
       initFabricCanvas();
       calculatePrice();
       renderBulkPricingTable();
+      prefillFromCatalog();           // if ?product=&color= are in the URL, paint the card
     });
 
     // Handle window resize

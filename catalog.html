@@ -198,22 +198,25 @@
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
 
+    // The catalog API now returns one row per product (post-v2 view). We
+    // pull the full filtered set in a single call — there are ~1,100 styles
+    // total, so 'pagination' is really just 'show all'. Filters narrow the
+    // set on the server.
     const params = new URLSearchParams();
     if (state.filters.type)        params.set('type', state.filters.type);
     if (state.filters.q)           params.set('q', state.filters.q);
     if (state.filters.canadian)    params.set('canadian', '1');
     if (state.filters.csa)         params.set('csa', '1');
     state.filters.brand.forEach(b => params.append('brand', b));
-    params.set('page', state.page);
+    params.set('limit', '1500');
 
     try {
       const res = await fetch(`${CATALOG_API}?${params.toString()}`);
       if (!res.ok) throw new Error(res.status);
       const data = await res.json();
       const fresh = data.products || [];
-      state.products = state.page === 0 ? fresh : state.products.concat(fresh);
-      state.done = fresh.length < 24;
-      state.page++;
+      state.products = fresh;
+      state.done = true;             // single-shot fetch
       render();
     } catch (e) {
       // Empty-state fallback — until the S&S sync runs, render a curated mock so
