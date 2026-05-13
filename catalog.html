@@ -149,7 +149,17 @@
     .detail-modal__swatch-name{font-size:.7rem;color:#1a1a1a;text-align:center;line-height:1.2;word-break:break-word}
     .detail-modal__close{background:transparent;border:none;font-size:1.3rem;cursor:pointer;color:#888;padding:4px 8px;line-height:1}
     .detail-modal__close:hover{color:#1a1a1a}
-    .detail-modal__foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .detail-modal__foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
+    .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
+    .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
+    .detail-modal__qty{display:inline-flex;align-items:center;gap:8px}
+    .detail-modal__qty-btn{width:30px;height:30px;border:1.5px solid #d8d5cb;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;color:#1a1a1a;line-height:1;transition:background .12s,border-color .12s;font-family:inherit;padding:0}
+    .detail-modal__qty-btn:hover{background:#f4f2eb;border-color:#1a1a1a}
+    .detail-modal__qty-btn:active{transform:scale(.96)}
+    .detail-modal__qty-input{width:64px;height:30px;text-align:center;border:1.5px solid #d8d5cb;border-radius:8px;font-size:.92rem;font-weight:600;font-family:inherit;background:#fff;color:#1a1a1a;padding:0 4px;-moz-appearance:textfield}
+    .detail-modal__qty-input::-webkit-outer-spin-button,.detail-modal__qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .detail-modal__qty-input:focus{outline:none;border-color:#1a1a1a}
     .card-details-link{display:inline-block;font-size:.74rem;color:#666;text-decoration:underline;text-decoration-color:#ccc;text-underline-offset:2px;background:none;border:none;padding:2px 0;cursor:pointer;font-family:inherit;margin-top:4px}
     .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
     @media (max-width:640px){
@@ -324,12 +334,23 @@
             <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;margin-top:4px"></div>
           </div>
         </div>
+        <!-- Tech specs — parsed from the S&S product description. -->
+        <div id="detailModalSpecsWrap" style="margin-bottom:22px;display:none">
+          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600">Tech specs</div>
+          <ul id="detailModalSpecs" class="detail-modal__specs"></ul>
+          <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
+        </div>
         <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600">All colors (<span id="detailModalCount">0</span>)</div>
         <div class="detail-modal__swatches" id="detailModalSwatches"></div>
       </div>
       <div class="detail-modal__foot">
-        <div style="font-size:.84rem;color:#666">Qty <strong id="detailModalQty">25</strong></div>
-        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem">+ Add to quote</button>
+        <div class="detail-modal__qty">
+          <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700">Qty</span>
+          <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
+          <input type="number" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
+          <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
+        </div>
+        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem">+ Add <span id="detailModalAddQty">25</span> to quote</button>
       </div>
     </div>
   </div>
@@ -404,6 +425,16 @@
   // =====================================================================
   let _detailProduct = null;
   let _detailColorIdx = 0;
+  // S&S sends product descriptions as a single HTML <ul>. Parse into clean
+  // text bullets so we can render them in our own style (no foreign HTML
+  // injection, no <ul>-inside-modal weirdness, no &amp; / &nbsp; artifacts).
+  function parseSpecBullets(descHtml) {
+    if (!descHtml || typeof descHtml !== 'string') return [];
+    const tmp = document.createElement('div');
+    tmp.innerHTML = descHtml;
+    const lis = tmp.querySelectorAll('li');
+    return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
+  }
   function openProductDetail(p) {
     _detailProduct = p;
     _detailColorIdx = 0;
@@ -414,11 +445,39 @@
       : '<strong>Quote on request</strong>';
     const metaBits = [];
     if (p.weight_oz)     metaBits.push(p.weight_oz + ' oz');
+    if (p.fabric)        metaBits.push(p.fabric);
+    if (p.gender)        metaBits.push(p.gender);
     if (p.garment_type)  metaBits.push(p.garment_type);
     if (p.colors)        metaBits.push(p.colors.length + ' color' + (p.colors.length === 1 ? '' : 's'));
     document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
-    document.getElementById('detailModalQty').textContent = state.qty;
     document.getElementById('detailModalCount').textContent = (p.colors || []).length;
+
+    // Tech specs — render up to 4 bullets collapsed, "Show more" reveals the rest.
+    const specs = parseSpecBullets(p.description);
+    const specsWrap = document.getElementById('detailModalSpecsWrap');
+    const specsList = document.getElementById('detailModalSpecs');
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (specs.length === 0) {
+      specsWrap.style.display = 'none';
+    } else {
+      specsWrap.style.display = 'block';
+      const PREVIEW = 4;
+      specsList.innerHTML = specs.map((s, i) =>
+        `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
+      ).join('');
+      if (specs.length > PREVIEW) {
+        specsToggle.style.display = 'inline-block';
+        specsToggle.textContent = 'Show all ' + specs.length + ' specs ▾';
+        specsToggle.dataset.expanded = '0';
+      } else {
+        specsToggle.style.display = 'none';
+      }
+    }
+
+    // Seed the qty stepper from the catalog page's current slider value.
+    const qtyInput = document.getElementById('detailModalQtyInput');
+    qtyInput.value = state.qty || 25;
+    syncDetailAddBtn();
 
     // Full color grid with names underneath.
     const host = document.getElementById('detailModalSwatches');
@@ -463,12 +522,53 @@
     document.body.style.overflow = '';
   }
 
-  // Wire the modal's Add button + Esc-to-close once at boot.
+  // Keep the Add button label in sync with the qty stepper input.
+  function syncDetailAddBtn() {
+    const inp = document.getElementById('detailModalQtyInput');
+    let n = parseInt(inp.value, 10);
+    if (!n || n < 1) n = 1;
+    if (n > 10000) n = 10000;
+    inp.value = n;
+    const label = document.getElementById('detailModalAddQty');
+    if (label) label.textContent = n;
+  }
+
+  // Wire the modal's Add button, qty stepper, specs toggle, Esc-to-close.
   document.addEventListener('DOMContentLoaded', () => {
+    // Qty stepper
+    const qtyInp   = document.getElementById('detailModalQtyInput');
+    const qtyMinus = document.getElementById('detailModalQtyMinus');
+    const qtyPlus  = document.getElementById('detailModalQtyPlus');
+    if (qtyMinus) qtyMinus.addEventListener('click', () => {
+      qtyInp.value = Math.max(1, (parseInt(qtyInp.value, 10) || 1) - 1);
+      syncDetailAddBtn();
+    });
+    if (qtyPlus) qtyPlus.addEventListener('click', () => {
+      qtyInp.value = Math.min(10000, (parseInt(qtyInp.value, 10) || 0) + 1);
+      syncDetailAddBtn();
+    });
+    if (qtyInp) qtyInp.addEventListener('input', syncDetailAddBtn);
+
+    // Specs "Show more / Show fewer" toggle
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (specsToggle) specsToggle.addEventListener('click', () => {
+      const expanded = specsToggle.dataset.expanded === '1';
+      document.querySelectorAll('#detailModalSpecs li[data-extra="1"]').forEach(li => {
+        li.style.display = expanded ? 'none' : '';
+      });
+      specsToggle.dataset.expanded = expanded ? '0' : '1';
+      const allCount = document.querySelectorAll('#detailModalSpecs li').length;
+      specsToggle.textContent = expanded
+        ? 'Show all ' + allCount + ' specs ▾'
+        : 'Show fewer specs ▴';
+    });
+
+    // Add → cart, using the modal's own qty (not the page slider).
     const addBtn = document.getElementById('detailModalAddBtn');
     if (addBtn) addBtn.addEventListener('click', () => {
       const p = _detailProduct; if (!p) return;
       const c = (p.colors || [])[_detailColorIdx] || {};
+      const n = Math.max(1, parseInt(qtyInp.value, 10) || 1);
       addToCart(p.product_id, {
         color_id:     c.color_id || null,
         color_name:   (c.color_name || ''),
@@ -477,6 +577,7 @@
         name:         p.name || '',
         garment_type: p.garment_type || null,
         hero_url:     c.mockup_front_url || p.hero_image_url || '',
+        qty:          n,
       });
       closeProductDetail();
       showCartToast({ brand: p.brand, style_number: p.style_number });
@@ -500,7 +601,9 @@
       name:         payload.name || '',
       garment_type: payload.garment_type || null,
       hero_url:     payload.hero_url || '',
-      qty:          state.qty || 50,
+      // Modal can override the page-slider qty per-item; fall back to the
+      // catalog slider value (state.qty) for whole-card clicks.
+      qty:          Math.max(1, parseInt(payload.qty, 10) || state.qty || 50),
       sides:        1,
     });
     showCartToast(payload);
