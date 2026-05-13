@@ -75,9 +75,25 @@
     .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
     .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
     .card .swatches{display:flex;gap:4px;align-items:center;margin-bottom:8px}
-    .card .swatch{width:14px;height:14px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s}
+    .card .swatch{width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s;padding:0;background-clip:padding-box;outline:none}
     .card .swatch:hover{transform:scale(1.2)}
     .card .swatch.is-light{border-color:#ddd}
+    .card .swatch.swatch--selected{box-shadow:0 0 0 2px var(--ink);transform:scale(1.15);position:relative}
+    .card .swatch.swatch--selected::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid #fff;pointer-events:none}
+    .card.card--clickable{cursor:pointer}
+    .card .card-cta{margin-top:8px;padding:6px 10px;background:var(--ink);color:var(--hi);border-radius:8px;font-size:.78rem;font-weight:700;text-align:center;letter-spacing:.02em;opacity:0;transition:opacity .15s,transform .15s;transform:translateY(2px)}
+    .card .card-cta__qty{opacity:.7;font-weight:500}
+    .card.card--clickable:hover .card-cta,.card.card--clickable:focus-visible .card-cta{opacity:1;transform:translateY(0)}
+    .card.card--just-added{animation:cardPulse .8s ease-out}
+    @keyframes cardPulse{
+      0%{box-shadow:0 0 0 0 rgba(232,255,60,.7)}
+      60%{box-shadow:0 0 0 12px rgba(232,255,60,0)}
+      100%{box-shadow:0 0 0 0 rgba(232,255,60,0)}
+    }
+    @media (hover:none){
+      /* Always show the CTA on touch devices */
+      .card .card-cta{opacity:1;transform:translateY(0)}
+    }
     .card .more{font-size:.72rem;color:var(--soft);font-weight:600;margin-left:2px}
     .card .price{font-size:.82rem;color:var(--muted)}
     .card .price strong{color:var(--ink);font-weight:600}
@@ -499,60 +515,57 @@
   }
 
   function productCard(p) {
-    const card = document.createElement('a');
-    card.className = 'card';
+    // Card is now a clickable surface (not an anchor). Whole-card click =
+    // "add to cart with the currently-selected color". Swatches inside it
+    // act as a color picker for THIS card — clicking one selects the color
+    // without adding to the cart. A small "Details" link in the corner
+    // still allows the legacy single-product flow.
+    const card = document.createElement('div');
+    card.className = 'card card--clickable';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
     if (p.in_stock === false) card.classList.add('card--oos');
-    // Carry the customer's chosen qty into the quote so the per-piece price
-    // they saw on the card is what they see on the quote builder's live strip.
-    const qtyParam = state.qty && state.qty !== 200 ? `&qty=${state.qty}` : '';
-    card.href = `/quote.html?product=${encodeURIComponent(p.product_id)}&color=${encodeURIComponent(p.colors[0]?.color_id || '')}${qtyParam}`;
 
-    const heroColor = p.colors[0] || {};
-    const photoUrl = heroColor.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
+    // Track the selected color INDEX per card (default: first in-stock).
+    const firstInStockIdx = (p.colors || []).findIndex(c => Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0);
+    card._selectedColorIdx = firstInStockIdx >= 0 ? firstInStockIdx : 0;
 
-    // Pick the most informative badge. Stock state takes priority over
-    // marketing badges — if a customer is going to be disappointed when
-    // they click, we want to tell them upfront.
     let badge = '';
-    if (p.in_stock === false) {
-      badge = `<div class="badge badge--oos">Out of stock</div>`;
-    } else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2) {
-      badge = `<div class="badge badge--low">Low stock</div>`;
-    } else if (p.bestseller) {
-      badge = `<div class="badge badge--bestseller">★ Bestseller</div>`;
-    } else if (p.is_canadian_made) {
-      badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
-    } else if (p.has_csa_cert) {
-      badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
-    }
+    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos">Out of stock</div>`;
+    else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2)
+                                                                         badge = `<div class="badge badge--low">Low stock</div>`;
+    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller">★ Bestseller</div>`;
+    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
+    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
 
-    // Render swatches but dim colors that have no in-stock sizes. The view
-    // populates sizes_in_stock per color (null if every variant is OOS).
-    const swatches = (p.colors || []).slice(0, 7).map(c => {
-      const hex = c.hex_code || '#ccc';
-      const light = isLight(hex);
-      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
-      const oosCls = hasStock ? '' : 'swatch--oos';
-      return `<span class="swatch ${light ? 'is-light' : ''} ${oosCls}" style="background:${hex}" title="${c.color_name}${hasStock ? '' : ' (out of stock)'}"></span>`;
-    }).join('');
-    const extra = p.colors.length > 7 ? `<span class="more">+${p.colors.length - 7}</span>` : '';
+    const renderSwatches = () => {
+      return (p.colors || []).slice(0, 8).map((c, i) => {
+        const hex = c.hex_code || '#ccc';
+        const light = isLight(hex);
+        const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+        const oosCls = hasStock ? '' : 'swatch--oos';
+        const selected = i === card._selectedColorIdx ? 'swatch--selected' : '';
+        const cleanName = (c.color_name || '').replace(/_\d+$/, '');
+        return `<button type="button" class="swatch ${light ? 'is-light' : ''} ${oosCls} ${selected}" style="background:${hex}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}" data-idx="${i}" aria-label="${cleanName}"></button>`;
+      }).join('');
+    };
+    const extra = p.colors.length > 8 ? `<span class="more">+${p.colors.length - 8}</span>` : '';
 
-    // Encode the payload for the Add button without touching the rest of
-    // the card's anchor behaviour. The button stops propagation so clicking
-    // it does NOT trigger the card's link.
-    const heroForCart = (heroColor.mockup_front_url || p.hero_image_url || '').replace(/"/g,'&quot;');
-    const payloadAttr = JSON.stringify({
-      color_id:     heroColor.color_id || null,
-      color_name:   heroColor.color_name || '',
-      brand:        p.brand || '',
-      style_number: p.style_number || '',
-      name:         p.name || '',
-      garment_type: p.garment_type || null,
-      hero_url:     heroForCart,
-    }).replace(/"/g, '&quot;');
-    const addBtn = p.in_stock === false
-      ? ''
-      : `<button type="button" class="add-cart" data-add-id="${p.product_id}" onclick="event.preventDefault(); event.stopPropagation(); addToCart('${p.product_id}', JSON.parse(this.dataset.payload))" data-payload="${payloadAttr}">+ Add to quote</button>`;
+    const repaintCard = () => {
+      const c = (p.colors || [])[card._selectedColorIdx] || {};
+      const photoUrl = c.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
+      const img = card.querySelector('.photo img');
+      if (img) img.src = photoUrl;
+      const colorLabel = card.querySelector('.selected-color-name');
+      if (colorLabel) colorLabel.textContent = (c.color_name || '').replace(/_\d+$/, '');
+      // Update swatch selection state
+      card.querySelectorAll('.swatch').forEach((s, i) => {
+        s.classList.toggle('swatch--selected', i === card._selectedColorIdx);
+      });
+    };
+
+    const heroColor = (p.colors || [])[card._selectedColorIdx] || {};
+    const photoUrl = heroColor.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
 
     card.innerHTML = `
       ${badge}
@@ -560,11 +573,49 @@
       <div class="body">
         <div class="brand-row">${(p.brand || '').toUpperCase()} · ${p.style_number || ''}</div>
         <div class="name">${p.name}</div>
-        <div class="swatches">${swatches}${extra}</div>
+        <div class="swatches">${renderSwatches()}${extra}</div>
+        <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · ' + p.weight_oz + ' oz' : ''}</div>
+        <div class="card-cta">+ Add to quote · <span class="card-cta__qty">qty ${state.qty}</span></div>
       </div>
-      ${addBtn}
     `;
+
+    // Swatch clicks pick a color, don't trigger the whole-card add.
+    card.querySelectorAll('.swatch').forEach(s => {
+      s.addEventListener('click', (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        const idx = parseInt(s.dataset.idx, 10);
+        if (Number.isFinite(idx)) {
+          card._selectedColorIdx = idx;
+          repaintCard();
+        }
+      });
+    });
+
+    // Whole-card click → add to cart with the currently-selected color.
+    if (p.in_stock !== false) {
+      const addNow = (ev) => {
+        ev.preventDefault();
+        const c = (p.colors || [])[card._selectedColorIdx] || {};
+        addToCart(p.product_id, {
+          color_id:     c.color_id || null,
+          color_name:   (c.color_name || ''),
+          brand:        p.brand || '',
+          style_number: p.style_number || '',
+          name:         p.name || '',
+          garment_type: p.garment_type || null,
+          hero_url:     c.mockup_front_url || p.hero_image_url || '',
+        });
+        // Visual feedback on the card
+        card.classList.add('card--just-added');
+        setTimeout(() => card.classList.remove('card--just-added'), 800);
+      };
+      card.addEventListener('click', addNow);
+      card.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') addNow(ev);
+      });
+    }
+
     return card;
   }
 

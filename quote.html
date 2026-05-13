@@ -2889,12 +2889,15 @@
         return '' +
           '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:center;flex-wrap:wrap">' +
           '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
-          '    <img src="' + (it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
+          '    <img id="ci-img-' + idx + '" src="' + (it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
           '  </div>' +
           '  <div style="flex:1;min-width:200px">' +
           '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">' + (it.brand||'') + ' · ' + (it.style_number||'') + '</div>' +
           '    <div style="font-size:.95rem;font-weight:600;line-height:1.3">' + (it.name||'') + '</div>' +
-          '    <div style="font-size:.78rem;color:#666;margin-top:2px">' + (label || '') + '</div>' +
+          '    <div id="ci-color-row-' + idx + '" style="font-size:.78rem;color:#666;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '      Color: <strong id="ci-color-' + idx + '" style="color:#1a1a1a">' + (label || '—') + '</strong>' +
+          '      <span id="ci-swatches-' + idx + '" style="display:inline-flex;gap:4px;flex-wrap:wrap"></span>' +
+          '    </div>' +
           '    <div class="cart-item-price" id="ci-price-' + idx + '" style="font-size:.82rem;color:#666;margin-top:6px">$— /unit</div>' +
           '  </div>' +
           '  <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">' +
@@ -2914,18 +2917,69 @@
           '</div>';
       }).join('');
 
-      // Fetch live unit prices for each row + update the right-panel total.
+      // Inject per-row swatches + fetch live unit prices.
       items.forEach(function(it, idx) {
-        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, function(p) {
+        // Fetch the product's full colour list once so the customer can
+        // switch colours per cart row without going back to the catalog.
+        fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d) {
+            if (!d || !d.products || !d.products.length) return;
+            var p = d.products[0];
+            paintCartItemSwatches(idx, p.colors || [], it.color_id);
+          });
+
+        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, function(price) {
           var el = document.getElementById('ci-price-' + idx);
           if (!el) return;
-          if (p != null) {
+          if (price != null) {
             var qty = it.qty || 50;
-            el.innerHTML = '<strong style="color:#1a1a1a">$' + p.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (p*qty).toFixed(2) + '</strong>';
+            el.innerHTML = '<strong style="color:#1a1a1a">$' + price.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (price*qty).toFixed(2) + '</strong>';
           } else {
             el.textContent = 'Price loading…';
           }
           updateCartTotal();
+        });
+      });
+    }
+
+    // Render the colour swatch picker for a cart row. Dedupes waist-size-
+    // suffixed colours (e.g. Black_32 / Black_34 → Black). Clicking a swatch
+    // updates the cart item's color_id + color_name and refreshes the row.
+    function paintCartItemSwatches(idx, colors, selectedColorId) {
+      var host = document.getElementById('ci-swatches-' + idx);
+      if (!host) return;
+      var seen = {}, deduped = [];
+      colors.forEach(function(c) {
+        var clean = (c.color_name || '').replace(/_\d+$/, '');
+        if (!clean) return;
+        if (!seen[clean]) {
+          seen[clean] = { hex: c.hex_code, color_id: c.color_id, color_name: clean, hero: c.mockup_front_url, in_stock: Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0 };
+          deduped.push(seen[clean]);
+        } else if (c.color_id === selectedColorId) {
+          seen[clean].color_id = c.color_id;
+        }
+      });
+      host.innerHTML = deduped.slice(0, 14).map(function(c) {
+        var selected = c.color_id === selectedColorId ? ' style="box-shadow:0 0 0 2px #1a1a1a"' : '';
+        var oos = c.in_stock ? '' : ' opacity:.35;';
+        return '<button type="button" data-cid="' + c.color_id + '" data-name="' + (c.color_name||'').replace(/"/g,'&quot;') + '" data-hero="' + (c.hero||'').replace(/"/g,'&quot;') + '" title="' + (c.color_name||'').replace(/"/g,'&quot;') + (c.in_stock ? '' : ' (out of stock)') + '" style="width:18px;height:18px;border-radius:50%;border:1.5px solid #ddd;background:' + (c.hex||'#ccc') + ';cursor:pointer;padding:0;' + oos + '"' + selected + '></button>';
+      }).join('');
+      // Wire clicks
+      host.querySelectorAll('button').forEach(function(btn) {
+        btn.addEventListener('click', function(ev) {
+          ev.preventDefault();
+          var cid = btn.getAttribute('data-cid');
+          var nm  = btn.getAttribute('data-name');
+          var her = btn.getAttribute('data-hero');
+          SinghsCart.update(idx, { color_id: cid, color_name: nm, hero_url: her || '' });
+          // Refresh visual state without a full re-render
+          var nameEl = document.getElementById('ci-color-' + idx);
+          if (nameEl) nameEl.textContent = (nm || '').replace(/_\d+$/, '');
+          var img = document.getElementById('ci-img-' + idx);
+          if (img && her) img.src = her;
+          host.querySelectorAll('button').forEach(function(b){ b.style.boxShadow = ''; });
+          btn.style.boxShadow = '0 0 0 2px #1a1a1a';
         });
       });
     }
