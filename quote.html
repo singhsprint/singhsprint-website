@@ -156,6 +156,16 @@
     .placement-count-badge{display:inline-block;background:#e8ff3c;color:#1a1a1a;padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:700;margin-left:6px;vertical-align:middle}
     .placement-summary{font-size:.82rem;color:#888;margin-top:4px}
 
+    /* Inline upload zone that lives with the placement presets so customers
+       choose their spot and drop their artwork without leaving the section. */
+    .placement-upload{margin-top:16px;display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed #d0d0d0;border-radius:14px;background:#fafafa;cursor:pointer;transition:all .15s ease}
+    .placement-upload:hover{border-color:#1a1a1a;background:#f5f5f1}
+    .placement-upload.has-file{border-style:solid;border-color:#1a1a1a;background:#f8f8f4}
+    .placement-upload__icon{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:1rem}
+    .placement-upload__copy{display:flex;flex-direction:column;gap:2px}
+    .placement-upload__copy strong{font-size:.92rem;color:#1a1a1a}
+    .placement-upload__copy span{font-size:.78rem;color:#888}
+
     /* Location bar under mockup — multi-select toggle */
     .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
     .loc-btn{padding:7px 14px;border-radius:50px;font-size:.72rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s;white-space:nowrap}
@@ -259,12 +269,13 @@
     }
 
     /* ========== CANVAS EDITOR ========== */
-    .canvas-wrapper{position:relative;overflow:hidden;background:#f4f3ef;aspect-ratio:5/6}
+    .canvas-wrapper{position:relative;overflow:hidden;background:linear-gradient(145deg,#f2f1ee 0%,#e9e8e4 100%);aspect-ratio:5/6}
     .canvas-wrapper .garment-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
+    .canvas-wrapper .garment-display svg{width:72%;max-height:88%;transition:all .3s}
     .canvas-wrapper .garment-display img{width:100%;height:100%;object-fit:cover;object-position:center;transition:opacity .25s ease}
-    /* Colour overlay — multiply blend tints the white/light product photo to the
-       customer's chosen colour. Sits between the photo and the fabric.js layer. */
-    .garment-tint{position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:multiply;transition:background-color .2s ease,opacity .2s ease}
+    /* Colour overlay for the future photo-based mode — multiply blend tints
+       the white product photo. Hidden while we run on SVG placeholders. */
+    .garment-tint{position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:multiply;transition:background-color .2s ease}
     .canvas-wrapper .canvas-container{position:absolute!important;inset:0;z-index:2}
     #fabricCanvas{width:100%!important;height:100%!important;display:block;cursor:default}
 
@@ -558,6 +569,19 @@
               <input type="hidden" name="placement" id="placementInput" value="front">
               <input type="hidden" name="placement_preset" id="placementPresetInput" value="center-chest">
               <input type="hidden" name="print_count" id="printCountInput" value="1">
+
+              <!-- Upload zone for the placement(s) just picked. Writes to the
+                   same hidden file input that Step 2 uses, so the design gets
+                   uploaded with the quote regardless of which spot the user
+                   clicks. Sits inside the placement section so it reads
+                   "decide where → drop the file here". -->
+              <div class="placement-upload" id="placementUpload" onclick="document.getElementById('designFile').click()">
+                <div class="placement-upload__icon">&#x21E7;</div>
+                <div class="placement-upload__copy">
+                  <strong id="placementUploadTitle">Upload your design for these placements</strong>
+                  <span id="placementUploadHint">PNG, JPG, PDF, AI, PSD, SVG — up to 10MB</span>
+                </div>
+              </div>
             </div>
 
             <!-- Printing method (single selector — pick + see what it's best for in one place) -->
@@ -724,17 +748,20 @@
           </div>
         </div>
 
-        <!-- Canvas with garment background. We swap the underlying photo per
-             garment, then a multiply-blend tint layer paints the customer's
-             chosen colour over the white base — same trick smaller print shops
-             use to fake a multi-colour photo library on a single base shot. -->
+        <!-- Canvas with garment background.
+             For now we render a clean line-art SVG silhouette per garment as a
+             placeholder. When the SnS / SanMar / Blanks catalog API is wired
+             in, the .garment-photo layer below will get the real per-colour
+             product photo and the SVG layer flips off. For "Bring Your Own"
+             garments (no supplier SKU) we keep the SVG fallback. -->
         <div class="canvas-wrapper" id="canvasWrapper">
-          <div class="garment-display">
+          <!-- Catalog-photo layer (dormant until SnS wire-up) -->
+          <div class="garment-display garment-photo" id="garmentPhoto" style="display:none">
             <img id="garmentImg" src="/images/product-tshirt-white.jpg" alt="Product mockup" />
           </div>
-          <div class="garment-tint" id="garmentTint"></div>
-          <!-- legacy SVG block retained but hidden so older JS hooks don't crash -->
-          <div style="display:none">
+          <div class="garment-tint" id="garmentTint" style="display:none"></div>
+          <!-- SVG placeholder layer (active for the customizer right now) -->
+          <div class="garment-display">
             <svg id="garmentSvg" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <filter id="softShadow" x="-5%" y="-5%" width="115%" height="115%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.08"/></filter>
@@ -883,13 +910,14 @@
             <button type="button" class="loc-tab" data-loc="right-sleeve" onclick="switchLocationView(this)">R. Sleeve</button>
           </div>
 
-          <!-- Toolbar -->
-          <div class="canvas-toolbar">
+          <!-- Toolbar — only design-action buttons stay in the side panel; the
+               Upload affordance lives down in the placement section of the
+               form so it sits with the placement preset cards. -->
+          <div class="canvas-toolbar" id="canvasToolbar" style="display:none">
             <div class="toolbar-group">
-              <button type="button" class="toolbar-btn" id="uploadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload</button>
-              <button type="button" class="toolbar-btn toolbar-btn--design" id="centerBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>Center</button>
-              <button type="button" class="toolbar-btn toolbar-btn--design" id="flipBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Flip</button>
-              <button type="button" class="toolbar-btn toolbar-btn--danger toolbar-btn--design" id="deleteBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/></svg>Remove</button>
+              <button type="button" class="toolbar-btn toolbar-btn--design" id="centerBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>Center</button>
+              <button type="button" class="toolbar-btn toolbar-btn--design" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Flip</button>
+              <button type="button" class="toolbar-btn toolbar-btn--danger toolbar-btn--design" id="deleteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/></svg>Remove</button>
             </div>
             <div class="toolbar-sep"></div>
             <div class="size-selector">
@@ -1095,9 +1123,9 @@
       document.getElementById('colorInput').value = state.colorName;
       document.getElementById('colorName').textContent = state.colorName;
       document.getElementById('sumColor').textContent = state.colorName;
-      // Photo-based mockup: swap T-shirt to black/white variant based on luminance.
-      // Other garments don't have per-colour photos so the swatch is just metadata.
-      updateGarmentShape();
+      // SVG placeholder mode: recolour the silhouette. Stroke/detail flip to
+      // white on dark fills so the line work stays readable.
+      updateGarmentColor();
     }
 
     // ===== PLACEMENT (multi-select) =====
@@ -1237,47 +1265,28 @@
       canvas.renderAll();
     }
 
-    // ===== GARMENT PHOTO + COLOUR TINT =====
-    // One white/light base photo per garment. The customer's chosen colour is
-    // painted over the photo with mix-blend-mode: multiply — fabric shadows
-    // and folds show through, but the garment reads as the chosen colour.
-    // Same trick Bonfire, TeePublic etc. use to fake a multi-colour photo
-    // library on a single base shot.
-    var garmentPhotos = {
-      tshirt:     '/images/product-tshirt-white.jpg',
-      hoodie:     '/images/product-hoodie-concordia.jpg',
-      crewneck:   '/images/product-crewneck-mcgill.jpg',
-      hat:        '/images/product-hat-artwood.jpg',
-      tote:       '/images/product-tote-singh.jpg',
-      joggers:    '/images/product-sweatpants.jpg',
-      longsleeve: '/images/product-longsleeve.jpg',
-      polo:       '/images/product-polo.jpg',
-      hivis:      '/images/product-tshirt-white.jpg',
-      other:      '/images/product-tshirt-white.jpg'
-    };
-
+    // ===== GARMENT SVG PLACEHOLDER =====
+    // Show one line-art SVG group per garment. Each group is in the DOM and
+    // hidden by default; we flip the right one on. The photo+tint layer is
+    // dormant — when the SnS catalog API is wired we'll flip the photo layer
+    // on and the SVG off, with the SVG staying as the "Bring Your Own"
+    // fallback for garments we don't have a supplier SKU for.
     function updateGarmentShape() {
-      var garment = state.garment || 'tshirt';
-      var src = garmentPhotos[garment] || garmentPhotos.tshirt;
-      var img = document.getElementById('garmentImg');
-      if (img && img.getAttribute('src') !== src) img.setAttribute('src', src);
+      var allGarments = ['tshirt','hoodie','crewneck','hat','tote','joggers','longsleeve','polo'];
+      allGarments.forEach(function(g) {
+        var el = document.getElementById('garment-' + g);
+        if (el) el.style.display = 'none';
+      });
 
-      applyGarmentTint();
+      var garment = state.garment || 'tshirt';
+      if (garment === 'other') garment = 'tshirt';
+      if (garment === 'hivis') garment = 'tshirt';   // closest silhouette
+      var target = document.getElementById('garment-' + garment);
+      if (target) target.style.display = 'block';
+
+      updateGarmentColor();
       updatePlacementRestrictions();
       if (canvas) drawPrintAreaBoundary();
-    }
-
-    // Multiply-blend tint: white × anything = no change, so leave the tint off
-    // for white picks. Every other colour rides on top of the photo.
-    function applyGarmentTint() {
-      var tint = document.getElementById('garmentTint');
-      if (!tint) return;
-      var c = (state.color || '#ffffff').toLowerCase();
-      if (c === '#ffffff' || c === '#fff') {
-        tint.style.backgroundColor = 'transparent';
-      } else {
-        tint.style.backgroundColor = state.color;
-      }
     }
 
     function updatePlacementRestrictions() {
@@ -1425,22 +1434,35 @@
       xl:            {w: 0.45, h: 0.48}
     };
     var currentPrintArea = 'medium'; // default matches center-chest preset
+    var currentPresetId = 'center-chest'; // tracks the active placement preset, drives position
 
-    // Location-specific print area positions (cx, cy as fraction of canvas)
+    // Fallback per-location positions used when no preset is active (e.g. when
+    // the user has only clicked a location tab, not a preset card).
     var locationPositions = {
       'front':        {cx: 0.50, cy: 0.42},
       'back':         {cx: 0.50, cy: 0.42},
-      'left-sleeve':  {cx: 0.78, cy: 0.32},
-      'right-sleeve': {cx: 0.22, cy: 0.32}
+      'left-sleeve':  {cx: 0.22, cy: 0.32},
+      'right-sleeve': {cx: 0.78, cy: 0.32}
     };
 
     function getPrintAreaRect() {
       if (!canvas) return null;
       var cw = canvas.width;
       var ch = canvas.height;
-      var loc = locationPositions[currentLocation] || locationPositions['front'];
+
+      // Prefer the active preset's position over the location fallback so
+      // "Left Chest" actually lands on the left chest, "Top Back" near the
+      // collar, etc. — instead of every preset on a side defaulting to centre.
+      var preset = placementPresets[currentPresetId];
+      var loc;
+      if (preset && typeof preset.cx === 'number' && typeof preset.cy === 'number'
+          && preset.loc === currentLocation) {
+        loc = { cx: preset.cx, cy: preset.cy };
+      } else {
+        loc = locationPositions[currentLocation] || locationPositions['front'];
+      }
+
       var sizeKey = currentPrintArea;
-      // Chest/arm locations cap the max size
       if (loc.maxSize) {
         var sizeOrder = ['small','medium','large','xl'];
         var maxIdx = sizeOrder.indexOf(loc.maxSize);
@@ -1459,16 +1481,19 @@
     // ===== PLACEMENT PRESETS =====
     // Map each preset card to a canvas location + print-area size key, so customers
     // pick a named placement instead of dragging on the mockup.
+    // cx/cy = canvas fractions where the print-area box centres. Tuned for the
+    // SVG silhouette (which fills ~14%–86% of the canvas horizontally). When
+    // we move to real product photos these will need a small retune.
     var placementPresets = {
-      'left-chest':   { loc: 'front',        size: 'left-chest', label: 'Left Chest' },
-      'center-chest': { loc: 'front',        size: 'medium',     label: 'Center Chest' },
-      'full-front':   { loc: 'front',        size: 'large',      label: 'Full Front' },
-      'oversized':    { loc: 'front',        size: 'xl',         label: 'Oversized Front' },
-      'back-top':     { loc: 'back',         size: 'small',      label: 'Top Back' },
-      'back-across':  { loc: 'back',         size: 'large',      label: 'Across Back' },
-      'back-full':    { loc: 'back',         size: 'xl',         label: 'Full Back' },
-      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest', label: 'Left Sleeve' },
-      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', label: 'Right Sleeve' }
+      'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest' },
+      'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest' },
+      'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front' },
+      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front' },
+      'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back' },
+      'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back' },
+      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back' },
+      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve' },
+      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve' }
     };
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state
@@ -1523,6 +1548,7 @@
       // Set print area for the just-clicked location (drives canvas)
       presetSizeByLocation[loc] = preset.size;
       currentPrintArea = preset.size;
+      currentPresetId   = presetId;    // → getPrintAreaRect() uses preset.cx/cy
 
       // Switch canvas view to this location & re-render
       var tab = document.querySelector('.loc-tab[data-loc="' + loc + '"]');
@@ -1623,6 +1649,14 @@
       // Highlight active tab
       document.querySelectorAll('.loc-tab').forEach(function(t) { t.classList.remove('active'); });
       tab.classList.add('active');
+
+      // Whichever preset is active for this location drives the box position
+      // and size now — so flipping to Back actually moves things to the back.
+      var presetForLoc = presetByLocation[loc];
+      if (presetForLoc) {
+        currentPresetId = presetForLoc;
+        currentPrintArea = placementPresets[presetForLoc].size;
+      }
 
       // Redraw print area at this location
       drawPrintAreaBoundary();
@@ -1788,6 +1822,13 @@
     function handleFile(file) {
       if (!file) return;
       document.getElementById('fileName').textContent = file.name;
+      // Reflect the upload in the in-section placement upload card too
+      var pu      = document.getElementById('placementUpload');
+      var puTitle = document.getElementById('placementUploadTitle');
+      var puHint  = document.getElementById('placementUploadHint');
+      if (pu)      pu.classList.add('has-file');
+      if (puTitle) puTitle.textContent = 'Design ready: ' + file.name;
+      if (puHint)  puHint.textContent  = 'Tap to replace with a different file';
       if (file.type.startsWith('image/')) {
         var reader = new FileReader();
         reader.onload = function(e) {
@@ -1842,18 +1883,13 @@
       }, { crossOrigin: 'anonymous' });
     }
 
-    // Show/hide design-action buttons (Center, Flip, Remove) based on whether a
-    // design is on the canvas. Avoids the dead-button confusion on first load.
+    // Show/hide the whole side-panel toolbar (Center / Flip / Remove + Print
+     // size) based on whether a design is on the canvas. Upload no longer
+     // lives here — it's now inside the placement section in Step 1.
     function toggleDesignToolbar(visible) {
-      document.querySelectorAll('.toolbar-btn--design').forEach(function(btn) {
-        btn.style.display = visible ? '' : 'none';
-      });
+      var bar = document.getElementById('canvasToolbar');
+      if (bar) bar.style.display = visible ? '' : 'none';
     }
-
-    // Toolbar handlers
-    document.getElementById('uploadBtn').addEventListener('click', function() {
-      document.getElementById('designFile').click();
-    });
 
     document.getElementById('centerBtn').addEventListener('click', function() {
       if (!designObject || !canvas) return;
@@ -1868,7 +1904,17 @@
       if (!designObject || !canvas) return;
       canvas.remove(designObject);
       designObject = null;
+      state.designSrc = null;
       document.getElementById('downloadMockup').style.display = 'none';
+      document.getElementById('fileName').textContent = '';
+      document.getElementById('designFile').value = '';
+      // Reset placement-upload card back to its empty-state copy
+      var pu      = document.getElementById('placementUpload');
+      var puTitle = document.getElementById('placementUploadTitle');
+      var puHint  = document.getElementById('placementUploadHint');
+      if (pu)      pu.classList.remove('has-file');
+      if (puTitle) puTitle.textContent = 'Upload your design for these placements';
+      if (puHint)  puHint.textContent  = 'PNG, JPG, PDF, AI, PSD, SVG — up to 10MB';
       toggleDesignToolbar(false);
       canvas.renderAll();
     });
@@ -2435,7 +2481,7 @@
 
     // Init
     window.addEventListener('load', function() {
-      updateGarmentShape();           // load correct product photo on first paint
+      updateGarmentShape();           // show the right SVG silhouette + colour it
       updatePlacementRestrictions();
       updatePricingTabs();
       initFabricCanvas();
