@@ -62,6 +62,12 @@
     .card .badge--bestseller{background:var(--hi);color:var(--ink);right:10px}
     .card .badge--canadian{background:#fff;color:var(--ink);border:1px solid var(--line);right:10px;text-transform:none;letter-spacing:0}
     .card .badge--csa{background:#1a1a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--oos{background:#a01a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--low{background:#b8780f;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card.card--oos{opacity:.55}
+    .card.card--oos .photo img{filter:grayscale(.7)}
+    .swatch.swatch--oos{opacity:.3;position:relative}
+    .swatch.swatch--oos::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:inherit}
     .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
     .card .photo{aspect-ratio:1;background:#f0eee5;display:flex;align-items:center;justify-content:center;overflow:hidden}
     .card .photo img{width:100%;height:100%;object-fit:cover}
@@ -138,8 +144,25 @@
 
   <div class="cat-meta-row">
     <div><strong id="resultCount">—</strong> products</div>
-    <div class="cat-sort">Sort: <strong>Bestseller</strong> ▾</div>
+    <div class="cat-sort">
+      Sort:
+      <select id="sortSelect" onchange="setSort(this.value)" style="font-family:inherit;font-weight:600;border:none;background:transparent;cursor:pointer;font-size:.95rem;color:var(--ink);padding:0">
+        <option value="bestseller">Bestseller</option>
+        <option value="price_asc">Price ↑ (low → high)</option>
+        <option value="price_desc">Price ↓ (high → low)</option>
+        <option value="name_asc">Name A → Z</option>
+        <option value="brand_asc">Brand A → Z</option>
+      </select>
+    </div>
   </div>
+  <!-- Customer-facing reminder: every "From $X" price on a card is the
+       printed garment, not a bare blank. Sits below the toolbar so it's
+       impossible to miss. -->
+  <p style="font-size:.84rem;color:var(--muted);margin:-4px 0 18px;line-height:1.5">
+    Prices shown are <strong>starting prices for printed garments</strong> (blank +
+    1-side decoration, qty 200+). Final price depends on quantity, number of print
+    locations, and decoration method — get an exact quote on any product.
+  </p>
 
   <div class="cat-grid" id="catGrid"></div>
   <div class="cat-loading" id="catLoading" style="display:none">Loading more…</div>
@@ -174,13 +197,30 @@
       brand: [],
       canadian: false,
       csa: false,
-      q: ''
+      q: '',
+      inStockOnly: true              // default ON — hide fully OOS items
     },
+    sort:    getQueryParam('sort') || 'bestseller',
     products: [],
     page: 0,
     loading: false,
     done: false
   };
+
+  // Garment types we surface in the filter panel + chips, with friendly labels
+  // matching the seed in pricing_configs. Keep in sync if a new garment_type
+  // ever ships in the CRM.
+  const GARMENT_TYPES = [
+    ['tshirt','T-shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
+    ['longsleeve','Long sleeves'], ['polo','Polos'], ['performance_shirt','Performance / fishing'],
+    ['workshirt','Work shirts'], ['hat','Hats / caps'], ['tote','Totes / bags'],
+    ['joggers','Joggers'], ['shorts','Shorts'], ['hivis','Hi-vis safety'],
+    ['vest','Vests'], ['coverall','Coveralls'], ['chore_coat','Chore / insulated'],
+    ['softshell','Softshells'], ['pullover_jacket','Pullover jackets'],
+    ['cardigan','Cardigans'], ['sweater','Sweaters'], ['chef_coat','Chef coats'],
+    ['scrub_top','Scrub tops'], ['scrub_pants','Scrub pants'], ['lab_coat','Lab coats'],
+    ['apron','Aprons'], ['other','Other / workwear'],
+  ];
 
   // Catalog API endpoint — singhsprint-crm Vercel project
   const CATALOG_API = 'https://singhsprint-crm.vercel.app/api/catalog';
@@ -244,32 +284,55 @@
     if (state.products.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
-    state.products.forEach(p => grid.appendChild(productCard(p)));
+    // Stock filter + client-side sort. Stock toggle is instant (no refetch);
+    // sort is client-side too because the catalog API doesn't expose a sort
+    // param and we already have all rows in memory.
+    let visible = state.filters.inStockOnly
+      ? state.products.filter(p => p.in_stock !== false)
+      : state.products.slice();
+    visible = sortProducts(visible, state.sort);
+    visible.forEach(p => grid.appendChild(productCard(p)));
 
     // Always append a "Bring your own" card at the end of the grid
     grid.appendChild(byoCard());
 
-    document.getElementById('resultCount').textContent = state.products.length.toLocaleString();
+    document.getElementById('resultCount').textContent = visible.length.toLocaleString();
     renderChips();
   }
 
   function productCard(p) {
     const card = document.createElement('a');
     card.className = 'card';
+    if (p.in_stock === false) card.classList.add('card--oos');
     card.href = `/quote.html?product=${encodeURIComponent(p.product_id)}&color=${encodeURIComponent(p.colors[0]?.color_id || '')}`;
 
     const heroColor = p.colors[0] || {};
     const photoUrl = heroColor.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
 
+    // Pick the most informative badge. Stock state takes priority over
+    // marketing badges — if a customer is going to be disappointed when
+    // they click, we want to tell them upfront.
     let badge = '';
-    if (p.bestseller)        badge = `<div class="badge badge--bestseller">★ Bestseller</div>`;
-    else if (p.is_canadian_made) badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
-    else if (p.has_csa_cert) badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
+    if (p.in_stock === false) {
+      badge = `<div class="badge badge--oos">Out of stock</div>`;
+    } else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2) {
+      badge = `<div class="badge badge--low">Low stock</div>`;
+    } else if (p.bestseller) {
+      badge = `<div class="badge badge--bestseller">★ Bestseller</div>`;
+    } else if (p.is_canadian_made) {
+      badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
+    } else if (p.has_csa_cert) {
+      badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
+    }
 
+    // Render swatches but dim colors that have no in-stock sizes. The view
+    // populates sizes_in_stock per color (null if every variant is OOS).
     const swatches = (p.colors || []).slice(0, 7).map(c => {
       const hex = c.hex_code || '#ccc';
       const light = isLight(hex);
-      return `<span class="swatch ${light ? 'is-light' : ''}" style="background:${hex}" title="${c.color_name}"></span>`;
+      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+      const oosCls = hasStock ? '' : 'swatch--oos';
+      return `<span class="swatch ${light ? 'is-light' : ''} ${oosCls}" style="background:${hex}" title="${c.color_name}${hasStock ? '' : ' (out of stock)'}"></span>`;
     }).join('');
     const extra = p.colors.length > 7 ? `<span class="more">+${p.colors.length - 7}</span>` : '';
 
@@ -306,6 +369,112 @@
   }
 
   // =========================================================================
+  // Sort
+  // =========================================================================
+  function sortProducts(list, mode) {
+    const arr = list.slice();
+    switch (mode) {
+      case 'price_asc':  return arr.sort((a, b) => (a.price_from ?? 9e9) - (b.price_from ?? 9e9));
+      case 'price_desc': return arr.sort((a, b) => (b.price_from ?? -1)   - (a.price_from ?? -1));
+      case 'name_asc':   return arr.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      case 'brand_asc':  return arr.sort((a, b) => (a.brand || '').localeCompare(b.brand || '') || (a.style_number || '').localeCompare(b.style_number || ''));
+      case 'bestseller':
+      default:
+        // Heuristic: in-stock first, then by color_count desc (more options =
+        // popular SKU), then alphabetical.
+        return arr.sort((a, b) => {
+          const sa = a.in_stock === false ? 1 : 0;
+          const sb = b.in_stock === false ? 1 : 0;
+          if (sa !== sb) return sa - sb;
+          const ca = a.color_count || 0, cb = b.color_count || 0;
+          if (ca !== cb) return cb - ca;
+          return (a.brand || '').localeCompare(b.brand || '');
+        });
+    }
+  }
+  function setSort(mode) { state.sort = mode; render(); }
+
+  // =========================================================================
+  // Filter panel — populated from the products already loaded so we don't need
+  // a separate facets API. Brand list, garment-type list, and Canadian/CSA
+  // toggles all live here. Apply re-runs render() (or refetches if needed).
+  // =========================================================================
+  function renderFilterPanel() {
+    const body = document.getElementById('filterBody');
+    if (!body) return;
+
+    // Build brand list from the currently-loaded products. We always show
+    // every brand we know about, with a count next to it so the customer
+    // can gauge depth.
+    const brandCounts = {};
+    state.products.forEach(p => {
+      if (!p.brand) return;
+      brandCounts[p.brand] = (brandCounts[p.brand] || 0) + 1;
+    });
+    const brands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 30);
+
+    const typeCounts = {};
+    state.products.forEach(p => {
+      if (!p.garment_type) return;
+      typeCounts[p.garment_type] = (typeCounts[p.garment_type] || 0) + 1;
+    });
+
+    body.innerHTML = `
+      <div style="padding:18px 22px">
+        <div class="filter-group" style="margin-bottom:22px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Garment type</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${GARMENT_TYPES.filter(([gt]) => typeCounts[gt]).map(([gt, label]) => `
+              <button type="button" data-type="${gt}" class="fp-chip ${state.filters.type === gt ? 'active' : ''}"
+                onclick="toggleType('${gt}')"
+                style="font-size:.82rem;padding:6px 12px;border-radius:50px;border:1px solid ${state.filters.type === gt ? 'var(--ink)' : 'var(--line)'};background:${state.filters.type === gt ? 'var(--ink)' : '#fff'};color:${state.filters.type === gt ? '#fff' : 'var(--muted)'};cursor:pointer;font-family:inherit">
+                ${label} <span style="opacity:.6">${typeCounts[gt]}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="filter-group" style="margin-bottom:22px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Brand</div>
+          <div style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
+            ${brands.map(([b, n]) => `
+              <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer">
+                <input type="checkbox" ${state.filters.brand.includes(b) ? 'checked' : ''}
+                  onchange="toggleBrand('${b.replace(/'/g, "\\'")}', this.checked)"/>
+                <span>${b}</span>
+                <span style="margin-left:auto;color:var(--muted);font-size:.78rem">${n}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="filter-group" style="margin-bottom:22px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Special</div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:8px">
+            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; render()"/>
+            <span>In stock only</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:8px">
+            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked"/>
+            <span>🇨🇦 Canadian-made blanks</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer">
+            <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked"/>
+            <span>CSA / Hi-vis certified</span>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleType(gt)             { state.filters.type = (state.filters.type === gt) ? null : gt; }
+  function toggleBrand(brand, on) {
+    state.filters.brand = on
+      ? Array.from(new Set([...state.filters.brand, brand]))
+      : state.filters.brand.filter(b => b !== brand);
+  }
+
+  // =========================================================================
   // Chips (top of page)
   // =========================================================================
   function renderChips() {
@@ -332,6 +501,19 @@
     });
     if (!state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'passive', () => { state.filters.canadian = true; resetAndFetch(); }));
     if (!state.filters.csa)      row.appendChild(makeChip('Hi-Vis / CSA',     'passive', () => { state.filters.csa = true; resetAndFetch(); }));
+
+    // Stock toggle. When ON (default), out-of-stock items are hidden — chip
+    // is visible so customers can show them if they want to confirm a SKU
+    // exists at all (we'll just quote for re-supply on the back end).
+    if (state.filters.inStockOnly) {
+      row.appendChild(makeChip('In stock only', 'active', () => {
+        state.filters.inStockOnly = false; render();
+      }));
+    } else {
+      row.appendChild(makeChip('Show out of stock', 'passive', () => {
+        state.filters.inStockOnly = true; render();
+      }));
+    }
   }
 
   function makeChip(label, klass, onClick) {
@@ -350,10 +532,33 @@
   // =========================================================================
   // Filter panel + search
   // =========================================================================
-  function openFilterPanel()  { document.getElementById('filterPanel').classList.add('open'); document.getElementById('filterOverlay').classList.add('open'); }
+  function openFilterPanel()  {
+    renderFilterPanel();   // build the panel UI from current state + loaded products
+    document.getElementById('filterPanel').classList.add('open');
+    document.getElementById('filterOverlay').classList.add('open');
+  }
   function closeFilterPanel() { document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
-  function clearAllFilters()  { state.filters = { type:null, brand:[], canadian:false, csa:false, q:'' }; document.getElementById('searchInput').value=''; closeFilterPanel(); resetAndFetch(); }
-  function applyFilters()     { closeFilterPanel(); resetAndFetch(); }
+  function clearAllFilters()  {
+    state.filters = { type:null, brand:[], canadian:false, csa:false, q:'', inStockOnly:true };
+    document.getElementById('searchInput').value='';
+    closeFilterPanel();
+    resetAndFetch();
+  }
+  function applyFilters()     {
+    closeFilterPanel();
+    // Refresh the chip row + filter pill, then re-fetch with the new filters
+    const activeCount =
+      (state.filters.type ? 1 : 0) +
+      state.filters.brand.length +
+      (state.filters.canadian ? 1 : 0) +
+      (state.filters.csa ? 1 : 0);
+    const pill = document.getElementById('filterCount');
+    if (pill) {
+      pill.textContent = activeCount;
+      pill.style.display = activeCount ? 'inline-block' : 'none';
+    }
+    resetAndFetch();
+  }
 
   document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
     state.filters.q = e.target.value.trim();

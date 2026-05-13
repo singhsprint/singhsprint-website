@@ -98,8 +98,11 @@
     .color-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
     .color-grid{display:flex;gap:8px;flex-wrap:wrap}
     .color-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;position:relative}
+    .color-swatch.light{border:3px solid #ddd}
     .color-swatch:hover{transform:scale(1.15)}
     .color-swatch.selected{border-color:#1a1a1a;transform:scale(1.15)}
+    .color-swatch.oos{opacity:.45;cursor:not-allowed}
+    .color-swatch.oos::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:50%}
     .color-swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.5)}
     .color-swatch[data-color="#FFFFFF"].selected::after{color:#1a1a1a;text-shadow:none}
     .color-name{font-size:.8rem;color:#999;margin-top:6px}
@@ -172,13 +175,18 @@
 
     /* Inline upload zone that lives with the placement presets so customers
        choose their spot and drop their artwork without leaving the section. */
-    .placement-upload{margin-top:16px;display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px dashed #d0d0d0;border-radius:14px;background:#fafafa;cursor:pointer;transition:all .15s ease}
+    .placement-upload{margin-top:0;display:flex;align-items:center;gap:14px;padding:12px 14px;border:1.5px dashed #d0d0d0;border-radius:12px;background:#fafafa;cursor:pointer;transition:all .15s ease}
     .placement-upload:hover{border-color:#1a1a1a;background:#f5f5f1}
     .placement-upload.has-file{border-style:solid;border-color:#1a1a1a;background:#f8f8f4}
-    .placement-upload__icon{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:1rem}
-    .placement-upload__copy{display:flex;flex-direction:column;gap:2px}
-    .placement-upload__copy strong{font-size:.92rem;color:#1a1a1a}
-    .placement-upload__copy span{font-size:.78rem;color:#888}
+    .placement-upload__icon{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+    .placement-upload__copy{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+    .placement-upload__copy strong{font-size:.9rem;color:#1a1a1a}
+    .placement-upload__copy span{font-size:.76rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .placement-upload__remove{background:transparent;border:none;color:#aaa;cursor:pointer;font-size:.8rem;padding:4px 8px;border-radius:6px}
+    .placement-upload__remove:hover{color:#a01a1a;background:#fef0f0}
+    .placement-upload-list{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+    .placement-upload-list:empty{display:none}
+    .placement-upload-list__hint{font-size:.8rem;color:#888;padding:8px 14px;background:#fafafa;border-radius:10px;border:1px dashed #ddd;text-align:center}
 
     /* Location bar under mockup — multi-select toggle */
     .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
@@ -385,6 +393,20 @@
                 <div class="catalog-pick__price" id="catalogPickPrice"></div>
               </div>
               <a href="/catalog.html" class="catalog-pick__change">Change product</a>
+            </div>
+
+            <!-- Empty-state CTA — shown when the customer landed on /quote.html
+                 without going through the catalog. Steers them to the catalog
+                 so we end up with a real product + variant + colour selection
+                 that the live pricing engine can quote against. The legacy
+                 placeholder grid below stays available as a fallback. -->
+            <div id="catalogPickEmpty" style="display:none;margin-bottom:22px;border:2px dashed #d0cdc0;border-radius:14px;padding:22px 24px;background:#fafaf6;display:flex;align-items:center;gap:18px">
+              <div style="width:54px;height:54px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">📦</div>
+              <div style="flex:1">
+                <strong style="display:block;font-size:1rem;color:#1a1a1a;margin-bottom:2px">Pick your blank from the catalog</strong>
+                <span style="font-size:.86rem;color:#666">1,100+ Bella+Canvas, Gildan, Berne, Adidas, Canadian-made &amp; more. We'll pre-fill this quote, show live pricing as you change qty / sides, and skip the back-and-forth.</span>
+              </div>
+              <a href="/catalog.html" style="background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 18px;border-radius:50px;font-size:.9rem;font-weight:600;white-space:nowrap">Browse catalog →</a>
             </div>
             <input type="hidden" id="catalogProductId" name="product_id" value="">
             <input type="hidden" id="catalogColorId"   name="color_id"   value="">
@@ -620,18 +642,13 @@
               <input type="hidden" name="placement_preset" id="placementPresetInput" value="center-chest">
               <input type="hidden" name="print_count" id="printCountInput" value="1">
 
-              <!-- Upload zone for the placement(s) just picked. Writes to the
-                   same hidden file input that Step 2 uses, so the design gets
-                   uploaded with the quote regardless of which spot the user
-                   clicks. Sits inside the placement section so it reads
-                   "decide where → drop the file here". -->
-              <div class="placement-upload" id="placementUpload" onclick="document.getElementById('designFile').click()">
-                <div class="placement-upload__icon">&#x21E7;</div>
-                <div class="placement-upload__copy">
-                  <strong id="placementUploadTitle">Upload your design for these placements</strong>
-                  <span id="placementUploadHint">PNG, JPG, PDF, AI, PSD, SVG — up to 10MB</span>
-                </div>
-              </div>
+              <!-- One upload zone per SELECTED placement. The list rebuilds
+                   whenever the customer toggles a placement card, so the
+                   number of upload zones always equals the number of prints
+                   the customer is paying for. Each zone writes to a unique
+                   hidden file input named design_<preset_id> so the CRM gets
+                   the right artwork tagged to the right placement. -->
+              <div id="placementUploadList" class="placement-upload-list"></div>
             </div>
 
             <!-- Printing method (single selector — pick + see what it's best for in one place) -->
@@ -681,7 +698,12 @@
             <h2 data-i18n="quote.step2.h">Your design &amp; sizes</h2>
             <p class="step-desc" data-i18n="quote.step2.desc">Upload your artwork to see it on the mockup. Then enter your size breakdown.</p>
 
-            <div class="form-group">
+            <!-- This block is the fallback uploader for visitors who jumped
+                 straight to Step 2 without going through the placement picker
+                 in Step 1. When a catalog product is prefilled, the placement-
+                 upload zone in Step 1 already handles the design file and this
+                 block is hidden (see prefillFromCatalog). -->
+            <div class="form-group" id="dropZoneWrapper">
               <label data-i18n="quote.upload">Upload your design</label>
               <label class="file-upload" for="designFile" id="dropZone">
                 <div class="up-icon">&#128193;</div>
@@ -1652,6 +1674,64 @@
           ? labels.join(', ') + (labels.length > 1 ? ' — ' + labels.length + ' prints, billed per location.' : ' selected.')
           : 'Pick at least one placement.';
       }
+
+      // Rebuild per-placement upload list so customer can attach a separate
+      // design to each spot (or the same one — they choose).
+      renderPlacementUploads();
+    }
+
+    // -----------------------------------------------------------------
+    // Per-placement upload list. One row per currently-selected placement,
+    // each with its own hidden file input named design_<presetId>. The form
+    // submission picks up every file input by name so the CRM receives the
+    // right artwork tagged to the right placement.
+    // Saves attached files in a local map so re-renders (e.g. when a new
+    // placement is selected) don't drop already-uploaded files.
+    // -----------------------------------------------------------------
+    var placementFiles = {};   // presetId → File
+
+    function renderPlacementUploads() {
+      var host = document.getElementById('placementUploadList');
+      if (!host) return;
+      var activePresets = Object.values(presetByLocation);
+
+      if (activePresets.length === 0) {
+        host.innerHTML = '<div class="placement-upload-list__hint">Pick at least one placement above to upload artwork.</div>';
+        return;
+      }
+
+      host.innerHTML = activePresets.map(function(presetId) {
+        var p = placementPresets[presetId];
+        if (!p) return '';
+        var f = placementFiles[presetId];
+        var has = !!f;
+        var fileLabel = has ? (f.name + ' (' + Math.round(f.size / 1024) + ' KB)') : 'PNG, JPG, PDF, AI, PSD, SVG — up to 10MB';
+        return '' +
+          '<label class="placement-upload ' + (has ? 'has-file' : '') + '" for="design_' + presetId + '">' +
+          '  <div class="placement-upload__icon">' + (has ? '✓' : '⇧') + '</div>' +
+          '  <div class="placement-upload__copy">' +
+          '    <strong>' + (has ? 'Design for ' : 'Upload design for ') + p.label + '</strong>' +
+          '    <span>' + escapeAttr(fileLabel) + '</span>' +
+          '  </div>' +
+          (has ? '<button type="button" class="placement-upload__remove" onclick="event.preventDefault(); event.stopPropagation(); clearPlacementFile(\'' + presetId + '\')">Remove</button>' : '') +
+          '  <input type="file" id="design_' + presetId + '" name="design_' + presetId + '"' +
+          '    accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg" style="display:none"' +
+          '    onchange="attachPlacementFile(\'' + presetId + '\', this.files && this.files[0])"/>' +
+          '</label>';
+      }).join('');
+    }
+
+    function attachPlacementFile(presetId, file) {
+      if (!file) return;
+      placementFiles[presetId] = file;
+      renderPlacementUploads();
+    }
+
+    function clearPlacementFile(presetId) {
+      delete placementFiles[presetId];
+      var input = document.getElementById('design_' + presetId);
+      if (input) input.value = '';
+      renderPlacementUploads();
     }
 
     function toggleLocCheck(el) {
@@ -2443,11 +2523,56 @@
       return basePrice;
     }
 
+    // Renders the price section + payment section using a unit price and
+    // qty. Shared by the live-API and legacy-table code paths in
+    // calculatePrice(). The "isLive" badge is added when the number came
+    // from the engine (so the customer knows it's a real quote-quality
+    // estimate, not a generic placeholder).
+    function renderPriceDisplay(qty, perUnit, isLive) {
+      if (!qty || !perUnit) {
+        document.getElementById('priceSection').style.display = 'none';
+        document.getElementById('paymentSection').style.display = 'none';
+        return;
+      }
+      var total = perUnit * qty;
+      document.getElementById('priceSection').style.display = 'block';
+      document.getElementById('paymentSection').style.display = 'block';
+      var liveTag = isLive
+        ? '<span style="font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:50px;background:#e8ff3c;color:#1a1a1a;margin-left:6px;vertical-align:middle">live</span>'
+        : '';
+      var breakdown = document.getElementById('priceBreakdown');
+      breakdown.innerHTML =
+        '<div class="price-row"><span>Per unit ' + liveTag + ':</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
+        '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>';
+      document.getElementById('priceTotal').textContent = '$' + total.toFixed(2);
+    }
+
     function calculatePrice() {
       var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
       if (qty === 0) {
         document.getElementById('priceSection').style.display = 'none';
         document.getElementById('paymentSection').style.display = 'none';
+        return;
+      }
+
+      // If a catalog product is selected, get the live engine price (matches
+      // what catalog.html shows + what the CRM uses for quotes). Falls back
+      // to the legacy hardcoded table while waiting on the fetch, or if the
+      // visitor is using a non-catalog garment (BYOG / generic picker).
+      if (catalogPick && catalogPick.product_id) {
+        fetchLiveUnitPrice(function(livePrice) {
+          if (typeof livePrice === 'number' && livePrice > 0) {
+            renderPriceDisplay(qty, livePrice, true);
+          } else {
+            // live fetch failed → fall back to legacy table
+            var perUnit = getPricePerUnit();
+            if (perUnit) renderPriceDisplay(qty, perUnit, false);
+            else {
+              document.getElementById('priceSection').style.display = 'none';
+              document.getElementById('paymentSection').style.display = 'none';
+            }
+          }
+        });
         return;
       }
 
@@ -2474,16 +2599,7 @@
         document.getElementById('paymentSection').style.display = 'none';
         return;
       }
-      var total = perUnit * qty;
-
-      // Update price display
-      document.getElementById('priceSection').style.display = 'block';
-      document.getElementById('paymentSection').style.display = 'block';
-
-      var breakdown = document.getElementById('priceBreakdown');
-      breakdown.innerHTML = '<div class="price-row"><span>Per unit:</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
-        '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>';
-      document.getElementById('priceTotal').textContent = '$' + total.toFixed(2);
+      renderPriceDisplay(qty, perUnit, false);
 
       // Show volume discount note for bulk
       var discountNote = document.getElementById('priceDiscountNote');
@@ -2568,12 +2684,99 @@
     // grid still works.
     // =========================================================================
     var CATALOG_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/catalog';
+    var PRICING_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/pricing';
+
+    // Holds the prefilled product so other handlers (color picker, live price
+    // calc) can read from it. Null = no catalog selection yet.
+    var catalogPick = null;
+
+    // Replace the hardcoded color swatch grid with the real colors from the
+    // selected product. Greys out colors that have no in-stock sizes so
+    // customers don't pick something we can't ship.
+    function paintProductColors(product, selectedColorId) {
+      var grid = document.querySelector('.color-grid');
+      if (!grid || !product || !Array.isArray(product.colors)) return;
+      var html = product.colors.map(function(c) {
+        var hex      = c.hex_code || '#cccccc';
+        var hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+        var selected = c.color_id === selectedColorId ? ' selected' : '';
+        var oosCls   = hasStock ? '' : ' oos';
+        var light    = isLightHex(hex) ? ' light' : '';
+        return '<div class="color-swatch' + selected + oosCls + light +
+               '" data-color="' + hex + '" data-color-id="' + c.color_id +
+               '" data-color-name="' + escapeAttr(c.color_name || '') + '"' +
+               ' style="background:' + hex + '"' +
+               ' onclick="selectProductColor(this)" title="' + escapeAttr(c.color_name || '') +
+               (hasStock ? '' : ' (out of stock)') + '"></div>';
+      }).join('');
+      grid.innerHTML = html;
+      // Trigger an initial selection sync so colorName + hidden input match
+      var first = grid.querySelector('.color-swatch.selected') || grid.querySelector('.color-swatch:not(.oos)') || grid.querySelector('.color-swatch');
+      if (first) selectProductColor(first);
+    }
+
+    function selectProductColor(el) {
+      document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('selected'); });
+      el.classList.add('selected');
+      var name = el.getAttribute('data-color-name') || '';
+      var hex  = el.getAttribute('data-color') || '';
+      var id   = el.getAttribute('data-color-id') || '';
+      var nameEl = document.getElementById('colorName');
+      if (nameEl)  nameEl.textContent = name;
+      var input  = document.getElementById('colorInput');
+      if (input)   input.value = name;
+      var cidIn  = document.getElementById('catalogColorId');
+      if (cidIn)   cidIn.value = id;
+      var sumCol = document.getElementById('sumColor');
+      if (sumCol)  sumCol.textContent = name;
+      state.color = hex; state.colorName = name;
+      if (typeof updateGarmentShape === 'function') updateGarmentShape();
+    }
+    function isLightHex(hex) {
+      var h = (hex || '').replace('#',''); if (h.length !== 6) return false;
+      var r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+      return (r*299 + g*587 + b*114) / 1000 > 200;
+    }
+    function escapeAttr(s) { return String(s).replace(/[<>"'&]/g, function(c){ return ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'})[c]; }); }
+
+    // -----------------------------------------------------------------
+    // Live price fetch. Whenever qty / sides change while a catalog product
+    // is selected, hit /api/pricing for the real engine number instead of
+    // the legacy hardcoded b2bPricing table.
+    // -----------------------------------------------------------------
+    var _livePriceAbort = null;
+    function fetchLiveUnitPrice(cb) {
+      if (!catalogPick || !catalogPick.product_id) { cb(null); return; }
+      var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
+      if (qty < 1) { cb(null); return; }
+      var sides = parseInt(document.getElementById('printCountInput').value) || 1;
+
+      if (_livePriceAbort) _livePriceAbort.abort();
+      _livePriceAbort = new AbortController();
+
+      var url = PRICING_API_FOR_QUOTE +
+        '?product_id=' + encodeURIComponent(catalogPick.product_id) +
+        '&qty='   + qty +
+        '&sides=' + sides;
+      fetch(url, { signal: _livePriceAbort.signal })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) { cb(d && typeof d.unit_price === 'number' ? d.unit_price : null); })
+        .catch(function() { cb(null); });
+    }
 
     function prefillFromCatalog() {
       var params = new URLSearchParams(location.search);
       var productId = params.get('product');
       var colorId   = params.get('color');
-      if (!productId) return Promise.resolve(false);
+      if (!productId) {
+        // No catalog selection — surface the CTA so the customer is nudged
+        // back to /catalog.html before they fill out the rest of the form.
+        var empty = document.getElementById('catalogPickEmpty');
+        if (empty) empty.style.display = 'flex';
+        return Promise.resolve(false);
+      }
+      var empty = document.getElementById('catalogPickEmpty');
+      if (empty) empty.style.display = 'none';
 
       return fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(productId))
         .then(function(r) { return r.ok ? r.json() : null; })
@@ -2614,12 +2817,22 @@
           state.color      = (c && c.hex_code) || state.color;
           state.colorName  = (c && c.color_name) || state.colorName;
 
+          // Stash the pick globally so live price + color picker can read it.
+          catalogPick = p;
+          // Repaint the colour swatches with this product's actual colours
+          // (replaces the static 10-colour grid).
+          paintProductColors(p, c && c.color_id);
+
           // Refresh dependent UI
           updateGarmentShape();
           var sumProd = document.getElementById('sumProduct'); if (sumProd) sumProd.textContent = state.product;
           var sumCol  = document.getElementById('sumColor');   if (sumCol)  sumCol.textContent  = state.colorName;
           calculatePrice();
           renderBulkPricingTable();
+          // Also hide the bottom-of-page legacy file-upload zone now that the
+          // placement upload at the top covers it (was duplicated).
+          var dz = document.getElementById('dropZoneWrapper');
+          if (dz) dz.style.display = 'none';
           return true;
         })
         .catch(function() { return false; });
@@ -2633,6 +2846,7 @@
       initFabricCanvas();
       calculatePrice();
       renderBulkPricingTable();
+      renderPlacementUploads();       // build the per-placement upload list (1 entry per selected placement)
       prefillFromCatalog();           // if ?product=&color= are in the URL, paint the card
     });
 
