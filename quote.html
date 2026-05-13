@@ -3261,35 +3261,97 @@
     function onCartItemChange(idx, patch) { SinghsCart.update(idx, patch); }
     function removeCartItem(idx)         { SinghsCart.remove(idx); }
 
-    // Update the right-panel live-price strip to show the cart total.
+    // Update the right-panel live-price strip.
+    //
+    // Display rule (decided after watching customers see "$697.50 TOTAL"
+    // before they'd filled in any sizes and feel committed to it):
+    //
+    //   Before any sizes entered → show PER-UNIT estimate only
+    //     "Estimate: $13.95 /unit at this qty tier · enter sizes for total"
+    //
+    //   After sizes entered → show TOTAL using the size-grid quantity
+    //   (overrides the cart item's qty because the size grid is the
+    //   authoritative count once filled). Single-item carts re-fetch the
+    //   unit price at the real qty so the price tier is accurate.
     function updateCartTotal() {
       var items = SinghsCart.read().items;
       if (items.length === 0) return;
-      var totalUnits = 0, totalDollars = 0, knownAll = true;
-      items.forEach(function(it) {
-        var qty = Number(it.qty) || 0;
-        totalUnits += qty;
-        var key = it.product_id + '_' + qty + '_' + (it.sides || 1);
-        var p = _priceCache[key];
-        if (typeof p === 'number') totalDollars += p * qty;
-        else knownAll = false;
-      });
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
       strip.style.display = 'block';
-      document.getElementById('livePriceUnit').textContent = items.length + (items.length === 1 ? ' item' : ' items');
-      document.getElementById('livePriceQty').textContent = totalUnits + ' units across cart';
-      // In cart mode, the "/unit" suffix from the single-product layout
-      // would render "1 item/unit" — hide it so the readout reads cleanly.
+
+      // Per-item unit prices live in _priceCache keyed by product_id+qty+sides.
+      var cartUnitSum = 0, cartUnits = 0, knownAll = true;
+      items.forEach(function (it) {
+        var qty   = Number(it.qty) || 0;
+        var sides = it.sides || 1;
+        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides];
+        cartUnits += qty;
+        if (typeof p === 'number') cartUnitSum += p;
+        else knownAll = false;
+      });
+      var avgUnitPrice = items.length > 0 ? (cartUnitSum / items.length) : null;
+
+      // Size grid total — the authoritative count once filled.
+      var sizeTotalEl = document.getElementById('sizeTotal');
+      var sizeTotal = sizeTotalEl ? (parseInt(sizeTotalEl.textContent, 10) || 0) : 0;
+      var sur = (typeof computeSizeSurcharge === 'function') ? computeSizeSurcharge() : { surchargeTotal: 0, count: 0 };
+
+      // Header line — items count.
+      document.getElementById('livePriceUnit').textContent =
+        items.length + (items.length === 1 ? ' item' : ' items');
       var suf = document.getElementById('livePriceUnitSuffix');
       if (suf) suf.style.display = 'none';
+
       var totalWrap = document.getElementById('livePriceTotalWrap');
-      if (totalDollars > 0) {
+
+      if (sizeTotal > 0 && knownAll && avgUnitPrice != null) {
+        // SIZES FILLED → show the real total at the size-grid quantity.
+        // Re-price single-item carts at the actual size total so the
+        // price tier reflects what they're really buying. Multi-item
+        // carts fall back to the cart's mixed unit average × sizeTotal.
+        var liveTotal;
+        var perUnitDisplay = avgUnitPrice;
+        if (items.length === 1 && items[0].product_id) {
+          // Async refetch — meanwhile show the cart-qty estimate so the
+          // strip doesn't blank out.
+          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, function (livePx) {
+            if (typeof livePx === 'number' && livePx > 0) {
+              document.getElementById('livePriceUnit').textContent =
+                '$' + livePx.toFixed(2);
+              document.getElementById('livePriceQty').textContent =
+                sizeTotal + ' units · ' + (items[0].sides || 1) + ' side' + ((items[0].sides || 1) > 1 ? 's' : '');
+              document.getElementById('livePriceTotal').textContent =
+                '$' + ((livePx * sizeTotal) + sur.surchargeTotal).toFixed(2);
+            }
+          });
+          liveTotal = perUnitDisplay * sizeTotal + sur.surchargeTotal;
+        } else {
+          liveTotal = avgUnitPrice * sizeTotal + sur.surchargeTotal;
+        }
+        document.getElementById('livePriceQty').textContent =
+          sizeTotal + ' units' + (cartUnits !== sizeTotal ? ' (size grid)' : '');
         totalWrap.style.display = 'block';
-        // Surcharge applies once across the whole order regardless of cart
-        // mode — size grid is shared across all cart items in this build.
-        var sur = computeSizeSurcharge();
-        document.getElementById('livePriceTotal').textContent = (knownAll ? '$' : '~$') + (totalDollars + sur.surchargeTotal).toFixed(2);
+        document.getElementById('livePriceTotal').textContent = '$' + liveTotal.toFixed(2);
+      } else if (avgUnitPrice != null) {
+        // NO SIZES YET → show per-unit estimate only. Hide the total
+        // so customers don't feel anchored to a number that's based on
+        // a placeholder qty they haven't committed to.
+        document.getElementById('livePriceUnit').textContent =
+          '$' + avgUnitPrice.toFixed(2);
+        if (suf) {
+          suf.style.display = '';
+          suf.textContent = '/unit est.';
+        }
+        document.getElementById('livePriceQty').textContent =
+          'Enter sizes in Step 2 for the total';
+        totalWrap.style.display = 'none';
+      } else {
+        // Prices haven't loaded yet.
+        document.getElementById('livePriceUnit').textContent = '$—';
+        document.getElementById('livePriceQty').textContent =
+          cartUnits + (cartUnits === 1 ? ' unit' : ' units') + ' · loading…';
+        totalWrap.style.display = 'none';
       }
     }
 
