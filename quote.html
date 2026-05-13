@@ -368,6 +368,11 @@
           <div class="step-pill" data-step="2"></div>
           <div class="step-pill" data-step="3"></div>
         </div>
+        <div class="steps-labels" aria-hidden="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:-6px 0 18px;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888">
+          <span data-step-label="1" style="color:#1a1a1a">1 · Product &amp; design</span>
+          <span data-step-label="2">2 · Sizes &amp; quantity</span>
+          <span data-step-label="3">3 · Your details</span>
+        </div>
 
         <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
@@ -393,6 +398,25 @@
                 <div class="catalog-pick__price" id="catalogPickPrice"></div>
               </div>
               <a href="/catalog.html" class="catalog-pick__change">Change product</a>
+            </div>
+
+            <!-- Live-price strip — updates as the customer changes placements
+                 (Step 1) or sizes (Step 2). Stays visible across both steps
+                 so the customer always knows what their current selection
+                 quotes at. -->
+            <div id="livePriceStrip" style="display:none;margin:-6px 0 20px;padding:14px 18px;border-radius:14px;background:#1a1a1a;color:#fff;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div style="flex:1;min-width:200px">
+                <div style="font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#e8ff3c;margin-bottom:2px">Live estimate</div>
+                <div id="livePriceLine" style="font-size:1.05rem;font-weight:600;line-height:1.3">
+                  <span id="livePriceUnit">$—</span>
+                  <span style="font-weight:400;color:#aaa;font-size:.86rem">/unit · </span>
+                  <span id="livePriceQty">pick a quantity in Step 2</span>
+                </div>
+              </div>
+              <div id="livePriceTotalWrap" style="text-align:right;display:none">
+                <div style="font-size:.7rem;color:#aaa;text-transform:uppercase;letter-spacing:.04em">Total</div>
+                <div id="livePriceTotal" style="font-size:1.2rem;font-weight:700">$—</div>
+              </div>
             </div>
 
             <!-- Empty-state CTA — shown when the customer landed on /quote.html
@@ -1678,6 +1702,9 @@
       // Rebuild per-placement upload list so customer can attach a separate
       // design to each spot (or the same one — they choose).
       renderPlacementUploads();
+
+      // Refresh live-price strip with the new sides count.
+      fetchAndRenderTopTierEstimate();
     }
 
     // -----------------------------------------------------------------
@@ -2183,6 +2210,11 @@
         if (s === step) p.classList.add('active');
         else if (s < step) p.classList.add('done');
       });
+      // Light up the corresponding label
+      document.querySelectorAll('[data-step-label]').forEach(function(el) {
+        var s = parseInt(el.getAttribute('data-step-label'));
+        el.style.color = (s === step) ? '#1a1a1a' : (s < step ? '#1a1a1a' : '#888');
+      });
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2529,6 +2561,9 @@
     // from the engine (so the customer knows it's a real quote-quality
     // estimate, not a generic placeholder).
     function renderPriceDisplay(qty, perUnit, isLive) {
+      // Update the live-price strip that's always visible across steps.
+      updateLivePriceStrip(qty, perUnit, isLive);
+
       if (!qty || !perUnit) {
         document.getElementById('priceSection').style.display = 'none';
         document.getElementById('paymentSection').style.display = 'none';
@@ -2545,6 +2580,42 @@
         '<div class="price-row"><span>Per unit ' + liveTag + ':</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
         '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>';
       document.getElementById('priceTotal').textContent = '$' + total.toFixed(2);
+    }
+
+    // Top-of-form live price strip — visible whenever a catalog product is
+    // picked. Updates with sides on Step 1 and qty on Step 2.
+    function updateLivePriceStrip(qty, perUnit, isLive) {
+      var strip = document.getElementById('livePriceStrip');
+      if (!strip) return;
+      if (!catalogPick) { strip.style.display = 'none'; return; }
+      strip.style.display = 'flex';
+      var sides = parseInt(document.getElementById('printCountInput').value) || 1;
+      document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
+      var qtyLabel = qty && qty > 0
+        ? (qty + ' units · ' + sides + ' side' + (sides>1?'s':'') + (isLive ? '' : ' · est.'))
+        : ('pick qty in Step 2 · ' + sides + ' side' + (sides>1?'s':''));
+      document.getElementById('livePriceQty').textContent = qtyLabel;
+      var totalWrap = document.getElementById('livePriceTotalWrap');
+      if (qty && perUnit) {
+        totalWrap.style.display = 'block';
+        document.getElementById('livePriceTotal').textContent = '$' + (qty * perUnit).toFixed(2);
+      } else {
+        totalWrap.style.display = 'none';
+      }
+    }
+
+    // When sides change on Step 1 (before any qty is entered), still fetch
+    // a live per-unit at the top tier so the strip shows something useful.
+    function fetchAndRenderTopTierEstimate() {
+      if (!catalogPick || !catalogPick.product_id) { updateLivePriceStrip(0, 0, false); return; }
+      var sides = parseInt(document.getElementById('printCountInput').value) || 1;
+      fetch(PRICING_API_FOR_QUOTE +
+        '?product_id=' + encodeURIComponent(catalogPick.product_id) +
+        '&qty=200&sides=' + sides
+      ).then(function(r){ return r.ok ? r.json() : null; })
+       .then(function(d){
+         if (d && typeof d.unit_price === 'number') updateLivePriceStrip(0, d.unit_price, true);
+       }).catch(function(){});
     }
 
     function calculatePrice() {
@@ -2690,23 +2761,51 @@
     // calc) can read from it. Null = no catalog selection yet.
     var catalogPick = null;
 
+    // Strip waist-size encoding from S&S color names: "Black_32" → "Black",
+    // "Brown Duck_40" → "Brown Duck". The S&S sync stores per-waist-size
+    // colors as separate rows for waist-sized garments (bib overalls, work
+    // pants etc.) which inflates the colour list. Dedupe by display name so
+    // the customer sees clean swatches.
+    function cleanColorName(raw) {
+      return String(raw || '').replace(/_\d+$/, '').replace(/\s+_\d+$/, '').trim();
+    }
+
     // Replace the hardcoded color swatch grid with the real colors from the
     // selected product. Greys out colors that have no in-stock sizes so
     // customers don't pick something we can't ship.
     function paintProductColors(product, selectedColorId) {
       var grid = document.querySelector('.color-grid');
       if (!grid || !product || !Array.isArray(product.colors)) return;
-      var html = product.colors.map(function(c) {
-        var hex      = c.hex_code || '#cccccc';
-        var hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+
+      // De-duplicate by cleaned color name — keep first occurrence with the
+      // most stock signal, prefer the one matching selectedColorId.
+      var seen = {};
+      var deduped = [];
+      product.colors.forEach(function(c) {
+        var clean = cleanColorName(c.color_name);
+        if (!clean) return;
+        if (!seen[clean]) {
+          seen[clean] = { hex: c.hex_code, color_id: c.color_id, color_name: clean, sizes_in_stock: c.sizes_in_stock || [] };
+          deduped.push(seen[clean]);
+        } else {
+          // Merge: accumulate sizes_in_stock, prefer color_id if matches selection
+          var entry = seen[clean];
+          entry.sizes_in_stock = entry.sizes_in_stock.concat(c.sizes_in_stock || []);
+          if (c.color_id === selectedColorId) entry.color_id = c.color_id;
+        }
+      });
+
+      var html = deduped.map(function(c) {
+        var hex      = c.hex || '#cccccc';
+        var hasStock = c.sizes_in_stock && c.sizes_in_stock.length > 0;
         var selected = c.color_id === selectedColorId ? ' selected' : '';
         var oosCls   = hasStock ? '' : ' oos';
         var light    = isLightHex(hex) ? ' light' : '';
         return '<div class="color-swatch' + selected + oosCls + light +
                '" data-color="' + hex + '" data-color-id="' + c.color_id +
-               '" data-color-name="' + escapeAttr(c.color_name || '') + '"' +
+               '" data-color-name="' + escapeAttr(c.color_name) + '"' +
                ' style="background:' + hex + '"' +
-               ' onclick="selectProductColor(this)" title="' + escapeAttr(c.color_name || '') +
+               ' onclick="selectProductColor(this)" title="' + escapeAttr(c.color_name) +
                (hasStock ? '' : ' (out of stock)') + '"></div>';
       }).join('');
       grid.innerHTML = html;
@@ -2738,6 +2837,30 @@
       return (r*299 + g*587 + b*114) / 1000 > 200;
     }
     function escapeAttr(s) { return String(s).replace(/[<>"'&]/g, function(c){ return ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'})[c]; }); }
+
+    // Surface a "Recommended for this garment" badge on the print-method card
+    // that matches the category's default decoration_method. Keeps the badge
+    // in sync with what the pricing engine actually uses to price the line.
+    function recommendDecorationMethod(garmentType) {
+      var embroideryFirst = new Set([
+        'hat','coverall','chore_coat','vest','softshell','pullover_jacket',
+        'cardigan','sweater','chef_coat','workshirt','lab_coat','hivis','polo',
+      ]);
+      var method = embroideryFirst.has(String(garmentType)) ? 'Embroidery' : 'DTF';
+      document.querySelectorAll('.method-card').forEach(function(c) {
+        var v = c.getAttribute('data-value');
+        // Remove any existing recommendation badge so re-prefilling doesn't stack
+        var prev = c.querySelector('.recommend-badge');
+        if (prev) prev.remove();
+        if (v === method) {
+          var badge = document.createElement('span');
+          badge.className = 'recommend-badge';
+          badge.textContent = '★ Recommended for this product';
+          badge.style.cssText = 'display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:50px;background:#e8ff3c;color:#1a1a1a;margin-top:8px';
+          c.appendChild(badge);
+        }
+      });
+    }
 
     // -----------------------------------------------------------------
     // Live price fetch. Whenever qty / sides change while a catalog product
@@ -2790,9 +2913,15 @@
           document.getElementById('catalogPickBrand').textContent = (p.brand || '').toUpperCase() + (p.style_number ? ' · ' + p.style_number : '');
           document.getElementById('catalogPickName').textContent  = p.name || '';
           var metaParts = [];
-          if (c && c.color_name) metaParts.push(c.color_name);
+          if (c && c.color_name) metaParts.push(cleanColorName(c.color_name));
           if (p.weight_oz)       metaParts.push(p.weight_oz + ' oz');
-          if (p.color_count)     metaParts.push(p.color_count + ' colours available');
+          // Use the deduped colour count, not the raw color_count which may
+          // double-count waist-size variants of the same colour.
+          if (Array.isArray(p.colors)) {
+            var uniqueColours = new Set(p.colors.map(function(x){ return cleanColorName(x.color_name); }));
+            uniqueColours.delete('');
+            if (uniqueColours.size) metaParts.push(uniqueColours.size + ' colour' + (uniqueColours.size > 1 ? 's' : '') + ' available');
+          }
           document.getElementById('catalogPickMeta').textContent = metaParts.join(' · ');
           if (typeof p.price_from === 'number') {
             document.getElementById('catalogPickPrice').innerHTML =
@@ -2806,10 +2935,20 @@
           document.getElementById('catalogVariantStyle').value  = p.style_number || '';
           document.getElementById('catalogVariantColor').value  = (c && c.color_name) || '';
 
-          // Show the pick card, hide the generic product grid
+          // Show the pick card, hide ALL the redundant fields. With a catalog
+          // product locked in, Garment Source / Blank Brand / All-Canadian /
+          // generic Color picker / legacy Product grid are all implied and
+          // just create noise. We drive them programmatically from the pick.
           document.getElementById('catalogPick').style.display = 'flex';
-          var legacy = document.getElementById('legacyProductGroup');
-          if (legacy) legacy.style.display = 'none';
+          ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+            .forEach(function(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; });
+          // Garment Source + Garment Color both live in form-group siblings —
+          // walk the catalog-pick parent to find and hide them by label text.
+          document.querySelectorAll('.form-group, .color-section').forEach(function(g) {
+            var lbl = g.querySelector('label');
+            var t = lbl ? (lbl.textContent || '').trim().toLowerCase() : '';
+            if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
+          });
 
           // Wire state so the rest of the form knows which garment we're on
           state.garment    = p.garment_type || 'tshirt';
@@ -2829,6 +2968,14 @@
           var sumCol  = document.getElementById('sumColor');   if (sumCol)  sumCol.textContent  = state.colorName;
           calculatePrice();
           renderBulkPricingTable();
+          // Fetch + paint the top-tier estimate so the live-price strip is
+          // populated immediately even before the customer enters a qty.
+          fetchAndRenderTopTierEstimate();
+          // Surface a "Recommended for this garment" hint on the right
+          // Print Method card. The recommendation comes from the same cost-
+          // up model the pricing engine uses (embroidery for outerwear /
+          // polos / hats / workwear; DTF for the rest).
+          recommendDecorationMethod(p.garment_type);
           // Also hide the bottom-of-page legacy file-upload zone now that the
           // placement upload at the top covers it (was duplicated).
           var dz = document.getElementById('dropZoneWrapper');
