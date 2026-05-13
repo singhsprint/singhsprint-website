@@ -11,27 +11,50 @@ function loadNav() {
     var s = document.createElement('style');
     s.id = 'sp-nav-styles';
     s.textContent = ''
-      + '.promo-bar{background:#e8ff3c;text-align:center;padding:10px 24px;font-weight:600;font-size:.9rem;color:#1a1a1a}'
+      + '.promo-bar{background:#e8ff3c;text-align:center;padding:10px 24px;font-weight:600;font-size:.9rem;color:#1a1a1a;line-height:1.4}'
       + '.promo-bar a{text-decoration:underline;font-weight:700;color:#1a1a1a}'
       + '.navbar{position:sticky;top:0;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);z-index:1000;border-bottom:1px solid rgba(0,0,0,.06);padding:0 24px}'
-      + '.navbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}'
-      + '.navbar .logo{display:flex;align-items:center}'
+      + '.navbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px;gap:12px}'
+      + '.navbar .logo{display:flex;align-items:center;flex-shrink:0}'
+      + '.navbar .logo img{height:52px;width:auto;transition:height .2s}'
       + '.nav-links{display:flex;align-items:center;gap:32px}'
       + '.nav-links a{font-size:.95rem;font-weight:500;color:#555;text-decoration:none;transition:color .2s}'
       + '.nav-links a:hover{color:#1a1a1a}'
-      + '.nav-cta{display:flex;align-items:center;gap:16px}'
-      + '.nav-phone{font-weight:600;font-size:.95rem;color:#1a1a1a;text-decoration:none}'
-      // .btn-sm style left intentionally unscoped here — each page defines .btn / .btn-primary
-      // and applies them via the "btn btn-primary btn-sm" class. The size-only override below
-      // matches the existing home page so existing pages are not visually shifted.
+      + '.nav-cta{display:flex;align-items:center;gap:12px;flex-shrink:0}'
+      + '.nav-phone{font-weight:600;font-size:.95rem;color:#1a1a1a;text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:50px;transition:background .15s}'
+      + '.nav-phone:hover{background:#f4f2eb}'
+      + '.nav-phone__icon{display:none;width:18px;height:18px}'
       + '.btn-sm{padding:12px 24px;font-size:.9rem}'
-      // Fallback: if a page doesn\'t define .btn / .btn-primary (true for some new pages\' nav button),
-      // we provide a minimal style so the "Get a Quote" CTA in the nav still renders correctly.
       + '.nav-cta .btn-sm{display:inline-flex;align-items:center;gap:6px;border-radius:50px;font-weight:600;text-decoration:none;background:#1a1a1a;color:#fff;border:none;transition:all .2s}'
       + '.nav-cta .btn-sm:hover{background:#333}'
-      + '.mobile-toggle{display:none;flex-direction:column;gap:5px;padding:8px;background:none;border:none;cursor:pointer}'
-      + '.mobile-toggle span{display:block;width:24px;height:2px;background:#1a1a1a}'
-      + '@media(max-width:900px){.nav-links{display:none}.nav-links.active{display:flex;position:absolute;top:72px;right:0;left:0;background:#fff;flex-direction:column;padding:18px 24px;border-bottom:1px solid #eee;gap:12px}.mobile-toggle{display:flex}}';
+      + '#langToggle{padding:8px 14px;border-radius:50px;border:1.5px solid #ddd;background:#fff;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:1px;flex-shrink:0}'
+      + '.mobile-toggle{display:none;flex-direction:column;gap:5px;padding:8px;background:none;border:none;cursor:pointer;flex-shrink:0}'
+      + '.mobile-toggle span{display:block;width:24px;height:2px;background:#1a1a1a;transition:transform .2s}'
+      // Mobile menu items injected only on the dropdown when nav-links collapses
+      + '.nav-mobile-extras{display:none;border-top:1px solid #eee;padding-top:14px;margin-top:8px;font-size:.85rem;color:#666}'
+      + '.nav-mobile-extras a{display:block;padding:6px 0;color:#1a1a1a;font-weight:600;text-decoration:none}'
+      // ≤900px: hide desktop nav-links, show hamburger, swap phone number for icon
+      + '@media(max-width:900px){'
+      +   '.navbar{padding:0 16px}'
+      +   '.navbar-inner{height:60px}'
+      +   '.navbar .logo img{height:38px}'
+      +   '.nav-links{display:none}'
+      +   '.nav-links.active{display:flex;position:absolute;top:60px;right:0;left:0;background:#fff;flex-direction:column;padding:18px 20px 22px;border-bottom:1px solid #eee;gap:8px;box-shadow:0 12px 28px rgba(0,0,0,.08)}'
+      +   '.nav-links.active a{padding:10px 0;font-size:1.05rem;font-weight:600;color:#1a1a1a}'
+      +   '.nav-links.active .nav-mobile-extras{display:block}'
+      +   '.mobile-toggle{display:flex}'
+      +   '.nav-cta{gap:6px}'
+      +   '.nav-phone__icon{display:inline-block}'
+      +   '.nav-phone__text{display:none}'
+      +   '.nav-phone{padding:8px;border:1.5px solid #ddd}'
+      +   '#langToggle{padding:7px 11px;font-size:.74rem}'
+      +   '.nav-cta .btn-sm{padding:9px 14px;font-size:.82rem}'
+      + '}'
+      // ≤420px: shed the inline "Get a Quote" — it lives inside the hamburger menu now
+      + '@media(max-width:420px){'
+      +   '.promo-bar{padding:8px 14px;font-size:.78rem}'
+      +   '.nav-cta .btn-sm.btn-quote-inline{display:none}'
+      + '}';
     document.head.appendChild(s);
   }
 
@@ -65,22 +88,36 @@ function loadNav() {
       + '</div>';
   }
 
+  // SVG phone icon — inline so we don't ship an extra request for ~250 bytes
+  var phoneIconSvg = '<svg class="nav-phone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+
   el.innerHTML = ''
     + promoHTML
     + '<nav class="navbar">'
     + '  <div class="navbar-inner">'
-    + '    <a href="/" class="logo"><img src="/images/logo.png" alt="Singhs Print" style="height:52px;width:auto"></a>'
+    + '    <a href="/" class="logo"><img src="/images/logo.png" alt="Singhs Print"></a>'
     + '    <div class="nav-links" id="navLinks">'
     + '      <a href="/catalog" data-i18n="nav.catalog">Catalog</a>'
     + '      <a href="/portfolio" data-i18n="nav.portfolio">Portfolio</a>'
     + '      <a href="/inkwear" data-i18n="nav.inkwear">Inkwear</a>'
     + '      <a href="/businesses" data-i18n="nav.businesses">For Businesses</a>'
     + '      <a href="/about" data-i18n="nav.about">About</a>'
+    // Extras only visible inside the dropdown on mobile (≤900px). Gives
+    // touch users a tap-target for the phone number + Get a Quote even
+    // when the inline button is hidden.
+    + '      <div class="nav-mobile-extras">'
+    + '        <a href="/quote" class="btn btn-primary btn-sm" data-i18n="nav.quote" style="display:block;text-align:center;margin-bottom:10px">Get a Quote</a>'
+    + '        <a href="tel:5149151539">Call 514-915-1539</a>'
+    + '        <a href="mailto:sales@singhsprint.com">Email sales@singhsprint.com</a>'
+    + '      </div>'
     + '    </div>'
     + '    <div class="nav-cta">'
-    + '      <a href="tel:5149151539" class="nav-phone">514-915-1539</a>'
-    + '      <button id="langToggle" onclick="SP_LANG.toggleLang()" style="padding:8px 14px;border-radius:50px;border:1.5px solid #ddd;background:#fff;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:1px">FR</button>'
-    + '      <a href="/quote" class="btn btn-primary btn-sm" data-i18n="nav.quote">Get a Quote</a>'
+    + '      <a href="tel:5149151539" class="nav-phone" aria-label="Call us at 514-915-1539">'
+    +          phoneIconSvg
+    + '        <span class="nav-phone__text">514-915-1539</span>'
+    + '      </a>'
+    + '      <button id="langToggle" onclick="SP_LANG.toggleLang()">FR</button>'
+    + '      <a href="/quote" class="btn btn-primary btn-sm btn-quote-inline" data-i18n="nav.quote">Get a Quote</a>'
     + '    </div>'
     + '    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">'
     + '      <span></span><span></span><span></span>'
@@ -116,8 +153,8 @@ function loadFooter() {
       + '.footer-col a{display:block;font-size:.85rem;color:#999;padding:5px 0;text-decoration:none;transition:color .2s}'
       + '.footer-col a:hover{color:#e8ff3c}'
       + '.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-top:32px;margin-top:48px;border-top:1px solid #222;font-size:.8rem;color:#777}'
-      + '@media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr !important}.footer-brand{grid-column:1/-1}}'
-      + '@media(max-width:560px){.footer-grid{grid-template-columns:1fr !important}}';
+      + '@media(max-width:900px){.footer{padding:48px 0 24px}.footer-grid{grid-template-columns:1fr 1fr !important;gap:28px}.footer-brand{grid-column:1/-1}}'
+      + '@media(max-width:560px){.footer-grid{grid-template-columns:1fr !important;gap:24px}.footer-col h4{font-size:.86rem}.footer-col a{font-size:.92rem;padding:8px 0}.footer-bottom{margin-top:32px;padding-top:24px;font-size:.74rem}}';
     document.head.appendChild(s);
   }
   // data-nosnippet on the whole footer tells Google not to use any text in

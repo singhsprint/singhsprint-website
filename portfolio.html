@@ -106,7 +106,11 @@
       .footer-grid{grid-template-columns:1fr}
       .footer-bottom{flex-direction:column;gap:8px}
     }
-    @media (max-width: 480px) { .gallery { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) {
+      .gallery { grid-template-columns: 1fr; gap: 12px; padding: 0 16px; }
+      .filter-bar { padding: 14px 16px; gap: 6px; overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; -webkit-overflow-scrolling: touch; }
+      .filter-btn { flex-shrink: 0; padding: 8px 14px; font-size: .82rem; }
+    }
   </style>
   <link rel="canonical" href="https://singhsprint.com/portfolio">
   <meta name="theme-color" content="#1a1a1a">

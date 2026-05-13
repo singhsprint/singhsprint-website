@@ -49,7 +49,7 @@
     .inkwear-hero{padding:100px 0 80px;background:#0a0a0a;color:#fff;text-align:center;position:relative;overflow:hidden}
     .inkwear-hero .container{position:relative;z-index:1}
     .inkwear-hero .label{color:#e8ff3c}
-    .inkwear-hero h1{color:#fff;margin-bottom:20px;font-size:clamp(3rem,6vw,5rem)}
+    .inkwear-hero h1{color:#fff;margin-bottom:20px;font-size:clamp(2rem,5vw,4.5rem);line-height:1.1}
     .inkwear-hero .tagline{font-size:clamp(1.2rem,2.5vw,1.6rem);color:#ccc;font-weight:500;max-width:700px;margin:0 auto 12px;font-family:'Playfair Display',serif;font-style:italic}
     .inkwear-hero .subhead{color:#999;margin:0 auto 36px}
 
@@ -109,6 +109,11 @@
       .nav-links.active{display:flex;flex-direction:column;position:absolute;top:72px;left:0;right:0;background:#fff;padding:24px;border-bottom:1px solid #eee;gap:16px;z-index:100}
       .footer-grid{grid-template-columns:1fr}
       .footer-bottom{flex-direction:column;gap:8px}
+    }
+    @media(max-width:640px){
+      .inkwear-hero{padding:64px 0 48px}
+      .two-col{gap:24px}
+      .win-grid{grid-template-columns:1fr;gap:16px}
     }
   </style>
   <link rel="canonical" href="https://singhsprint.com/inkwear">

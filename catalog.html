@@ -53,7 +53,18 @@
     /* Grid */
     .cat-grid{max-width:1200px;margin:0 auto 64px;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     @media (max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:540px){.cat-grid{grid-template-columns:1fr}}
+    @media (max-width:540px){.cat-grid{grid-template-columns:1fr;gap:14px;padding:0 16px}}
+    @media (max-width:540px){
+      .cat-toolbar{flex-direction:column;gap:8px;padding:0 16px}
+      .cat-filter-btn{width:100%;justify-content:center;padding:12px 18px}
+      .cat-search input{padding:12px 14px 12px 42px;font-size:.92rem}
+      .cat-chips{padding:0 16px;gap:6px}
+      .chip{font-size:.76rem;padding:5px 10px}
+      .card .name{font-size:.92rem;line-height:1.25}
+    }
+    @media (max-width:380px){
+      .filter-panel{width:100%}
+    }
 
     .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column}
     .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:#d0cdc0}

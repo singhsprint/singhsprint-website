@@ -325,6 +325,15 @@
       .toolbar-btn{padding:6px 8px;font-size:.72rem}
       .loc-tab{font-size:.7rem;padding:10px 4px}
       .loc-check-grid{grid-template-columns:1fr 1fr}
+      .form-card{padding:20px 14px}
+      .cart-item{flex-direction:column;align-items:stretch !important;gap:10px !important;padding:14px 12px !important}
+      .cart-item > div[style*="display:flex;align-items:flex-end"]{justify-content:flex-start}
+      h1{font-size:clamp(1.6rem,5vw,2.4rem) !important}
+      h2{font-size:clamp(1.2rem,4vw,1.6rem) !important}
+    }
+    @media(max-width:360px){
+      .placement-preset-grid{grid-template-columns:1fr}
+      .size-grid{grid-template-columns:repeat(3,1fr)}
     }
 
     /* ========== CANVAS EDITOR ========== */
