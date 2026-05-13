@@ -325,11 +325,31 @@
       .toolbar-btn{padding:6px 8px;font-size:.72rem}
       .loc-tab{font-size:.7rem;padding:10px 4px}
       .loc-check-grid{grid-template-columns:1fr 1fr}
-      .form-card{padding:20px 14px}
+      .form-card{padding:18px 14px;border-radius:14px}
       .cart-item{flex-direction:column;align-items:stretch !important;gap:10px !important;padding:14px 12px !important}
       .cart-item > div[style*="display:flex;align-items:flex-end"]{justify-content:flex-start}
       h1{font-size:clamp(1.6rem,5vw,2.4rem) !important}
       h2{font-size:clamp(1.2rem,4vw,1.6rem) !important}
+      /* Mobile feedback was "overwhelming". Step headers smaller, lower
+         density between rows. The 3-step progress strip + form card
+         account for most of the visual noise; both shrink here. */
+      .quote-hero{padding-top:18px !important;padding-bottom:6px !important}
+      .quote-hero h1{margin-bottom:6px !important}
+      .quote-hero .sub{font-size:.88rem !important;line-height:1.5}
+      .step-pills{gap:6px !important;margin-bottom:14px !important}
+      .step-pill{font-size:.7rem !important;padding:6px 10px !important;flex:1 1 0;min-width:0;text-align:center}
+      .step-pill__num{display:none}
+      .form-section{padding-top:8px}
+      .form-group{margin-bottom:14px !important}
+      .form-group label{font-size:.82rem !important;margin-bottom:6px !important}
+      .placement-section,.color-section,.service-row,.size-section{margin-bottom:14px !important}
+      .step-buttons{padding-top:14px !important;margin-top:14px !important}
+      .placement-preset-grid{gap:6px !important}
+      /* Mockup panel takes too much room on phones — make it a compact
+         summary card above the form rather than a giant preview. */
+      .mockup-panel{position:static !important;padding:12px !important;border-radius:14px !important;margin-bottom:14px}
+      .live-price-strip{padding:12px 14px !important;border-radius:12px !important}
+      .live-price-strip .ts{font-size:.7rem !important}
     }
     @media(max-width:360px){
       .placement-preset-grid{grid-template-columns:1fr}

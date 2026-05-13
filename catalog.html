@@ -60,12 +60,27 @@
     @media (max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
     @media (max-width:540px){.cat-grid{grid-template-columns:1fr;gap:14px;padding:0 16px}}
     @media (max-width:540px){
+      .cat-hero{padding:28px 16px 16px}
+      .cat-hero h1{font-size:clamp(1.5rem,6vw,2rem)}
+      .cat-hero p{font-size:.88rem;line-height:1.5}
+      .cat-hero .meta{flex-wrap:wrap;gap:6px 10px;font-size:.74rem}
       .cat-toolbar{flex-direction:column;gap:8px;padding:0 16px}
       .cat-filter-btn{width:100%;justify-content:center;padding:12px 18px}
-      .cat-search input{padding:12px 14px 12px 42px;font-size:.92rem}
-      .cat-chips{padding:0 16px;gap:6px}
+      .cat-search input{padding:12px 14px 12px 42px;font-size:16px}
+      .cat-chips{padding:0 16px;gap:6px;margin-bottom:10px}
       .chip{font-size:.76rem;padding:5px 10px}
-      .card .name{font-size:.92rem;line-height:1.25}
+      /* Compact cards on phones — less whitespace, more shelf */
+      .card{border-radius:12px}
+      .card .photo{aspect-ratio:1}
+      .card .body{padding:10px 12px}
+      .card .name{font-size:.92rem;line-height:1.2;margin-bottom:4px}
+      .card .brand-row{font-size:.68rem;margin-bottom:2px}
+      .card .price{font-size:.82rem;margin-bottom:6px}
+      .card .swatches{gap:3px;max-height:44px}
+      .card .swatch{width:14px;height:14px;border-width:1px}
+      .card .card-cta{padding:7px 10px;margin-top:6px}
+      .card .card-cta__main{font-size:.78rem}
+      .card .card-cta__sub{font-size:.62rem}
     }
     @media (max-width:380px){
       .filter-panel{width:100%}

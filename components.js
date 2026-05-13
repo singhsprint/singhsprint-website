@@ -300,9 +300,76 @@ function loadSchema() {
   document.head.appendChild(s);
 }
 
+// =====================================================================
+// Sitewide mobile simplification — injected once on every page.
+//
+// Brand cues we PRESERVE:
+//   • Playfair Display for headings, Inter for body
+//   • Highlight yellow (#e8ff3c) for accents
+//   • Ink #1a1a1a / cream #fafaf7 / soft #888 palette
+//   • Conversational copy, generous serif headlines on desktop
+//
+// What this trims on phones:
+//   • Section vertical padding: 60–80px → 32–44px
+//   • H1/H2 capped via clamp() so they don't dwarf the viewport
+//   • Multi-col grids → 1–2 col stacks
+//   • Card padding tightened
+//   • Eyebrow labels shrunk so they whisper, not shout
+//   • Hero photo aspect cropped slightly on tiny screens
+//   • Sticky bars get safe-area bottom inset on notched phones
+// =====================================================================
+function loadMobileTrim() {
+  if (document.getElementById('sp-mobile-trim')) return;
+  var s = document.createElement('style');
+  s.id = 'sp-mobile-trim';
+  s.textContent = ''
+    // -------- Phones (≤ 480px) --------
+    + '@media (max-width:480px){'
+    +   '.section,section.section{padding:32px 0 !important}'
+    // Headings: tighter scale + balance
+    +   'h1{font-size:clamp(1.7rem,6.5vw,2.4rem) !important;line-height:1.18 !important;text-wrap:balance}'
+    +   'h2{font-size:clamp(1.4rem,5vw,1.9rem) !important;line-height:1.2 !important;text-wrap:balance}'
+    +   'h3{font-size:clamp(1.05rem,4vw,1.25rem) !important;line-height:1.25 !important}'
+    +   '.label,.eyebrow{font-size:.66rem !important;letter-spacing:.08em !important}'
+    +   '.subhead{font-size:.95rem !important;line-height:1.55 !important;max-width:none !important}'
+    // Containers — a hair tighter so cards reach the screen edge cleanly
+    +   '.container{padding-left:18px !important;padding-right:18px !important}'
+    // Buttons: chunky enough to tap, not so big they dominate
+    +   '.btn{padding:11px 20px !important;font-size:.92rem !important}'
+    +   '.btn-sm{padding:9px 16px !important;font-size:.85rem !important}'
+    +   '.cta-buttons{gap:8px !important;flex-wrap:wrap}'
+    +   '.cta-buttons .btn{flex:1 1 auto;min-width:140px;justify-content:center}'
+    // Card padding generally chiller on phones
+    +   '.card,.review-card,.why-card,.service-card,.segment-card,.form-card{padding:18px !important}'
+    +   '.review-card p{font-size:.88rem !important;line-height:1.55 !important}'
+    // Grids: anything ≥3-col collapses to 1 or 2 on phones
+    +   '.services-grid,.process-grid,.why-grid,.win-grid,.two-col,.benefits-grid{grid-template-columns:1fr !important;gap:14px !important}'
+    +   '.segments-grid,.reviews-grid{grid-template-columns:1fr !important;gap:14px !important}'
+    // Forms — less white space inside dense steps
+    +   '.form-row{grid-template-columns:1fr !important;gap:10px !important}'
+    +   'input[type="text"],input[type="email"],input[type="tel"],input[type="number"],input[type="date"],select,textarea{font-size:16px !important}'  // iOS won't zoom on focus
+    // Sticky bottom bars respect notched phone home-indicator
+    +   '.sticky-cta,.cart-bar,#cartBar{padding-bottom:calc(12px + env(safe-area-inset-bottom)) !important}'
+    // Hero — universal trim for any page with a hero block
+    +   '.hero{padding:24px 0 36px !important}'
+    +   '.hero .subhead{margin-bottom:18px !important}'
+    +   '.hero-buttons{margin-bottom:16px !important}'
+    + '}'
+    // -------- Tiny screens (≤ 360px) — go a step further --------
+    + '@media (max-width:360px){'
+    +   '.section,section.section{padding:26px 0 !important}'
+    +   '.container{padding-left:14px !important;padding-right:14px !important}'
+    +   '.btn{padding:10px 16px !important;font-size:.88rem !important}'
+    +   'h1{font-size:clamp(1.55rem,7vw,2rem) !important}'
+    +   'h2{font-size:clamp(1.25rem,5.5vw,1.7rem) !important}'
+    + '}';
+  document.head.appendChild(s);
+}
+
 // Auto-run when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   loadSearchConsoleVerification();
+  loadMobileTrim();
   loadNav();
   loadFooter();
   loadSchema();
