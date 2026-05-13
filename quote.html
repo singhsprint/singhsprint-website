@@ -200,9 +200,27 @@
     .size-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
     .size-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:8px}
     /* Cart-row swatches: 12 visible collapsed, "Show all" reveals the rest. */
+    .ci-swatches{padding-top:6px}
     .ci-swatches--collapsed > button.ci-swatch:nth-of-type(n+13){display:none}
-    .ci-swatch-toggle{font-size:.74rem;color:#1a1a1a;background:#f4f2eb;border:1px solid #d8d5cb;border-radius:999px;padding:3px 10px;cursor:pointer;font-weight:600;line-height:1;letter-spacing:.01em;font-family:inherit;white-space:nowrap}
-    .ci-swatch-toggle:hover{background:#e8e6df}
+    .ci-swatch{position:relative;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;will-change:transform}
+    .ci-swatch:hover{transform:scale(1.5);z-index:5;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+    /* Animated tooltip showing the color name above the swatch on hover. */
+    .ci-swatch::after{
+      content:attr(data-name);position:absolute;bottom:calc(100% + 10px);left:50%;
+      transform:translateX(-50%) translateY(6px) scale(.9);
+      background:#1a1a1a;color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.01em;
+      padding:5px 9px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;
+      transition:opacity .18s ease-out,transform .18s cubic-bezier(.34,1.56,.64,1);
+      box-shadow:0 4px 14px rgba(0,0,0,.2);font-family:inherit
+    }
+    .ci-swatch::before{
+      content:"";position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);
+      border:5px solid transparent;border-top-color:#1a1a1a;opacity:0;pointer-events:none;transition:opacity .18s
+    }
+    .ci-swatch:hover::after{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+    .ci-swatch:hover::before{opacity:1}
+    .ci-swatch-toggle{font-size:.74rem;color:#1a1a1a;background:#f4f2eb;border:1px solid #d8d5cb;border-radius:999px;padding:3px 10px;cursor:pointer;font-weight:600;line-height:1;letter-spacing:.01em;font-family:inherit;white-space:nowrap;transition:background .15s,transform .15s}
+    .ci-swatch-toggle:hover{background:#e8e6df;transform:translateY(-1px)}
     .size-item{text-align:center}
     .size-item label{display:block;font-size:.78rem;font-weight:600;color:#777;margin-bottom:4px}
     .size-item input{width:100%;padding:10px 4px;border:1.5px solid #e0e0e0;border-radius:10px;text-align:center;font-size:.95rem;font-family:inherit}
@@ -2927,8 +2945,13 @@
       key: 'singhsCart_v1',
       read: function(){ try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
       write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); },
+      // Persist to storage without re-rendering. Used when the click handler
+      // is already updating the DOM in place (e.g. picking a colour shouldn't
+      // collapse the expanded swatch grid).
+      writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} },
       remove: function(i){ var c = this.read(); c.items.splice(i,1); this.write(c); },
       update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.write(c); },
+      updateSilent: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.writeSilent(c); },
       clear:  function(){ this.write({items:[]}); },
       count:  function(){ return this.read().items.length; },
     };
@@ -3092,15 +3115,16 @@
         : '';
       host.innerHTML = swatchesHtml + toggle;
       // Wire clicks — scoped to .ci-swatch so the expand toggle doesn't get
-      // treated as a color pick.
+      // treated as a color pick. Uses updateSilent so the row doesn't re-
+      // render (which would collapse the expanded swatch grid back to 12).
       host.querySelectorAll('button.ci-swatch').forEach(function(btn) {
         btn.addEventListener('click', function(ev) {
           ev.preventDefault();
           var cid = btn.getAttribute('data-cid');
           var nm  = btn.getAttribute('data-name');
           var her = btn.getAttribute('data-hero');
-          SinghsCart.update(idx, { color_id: cid, color_name: nm, hero_url: her || '' });
-          // Refresh visual state without a full re-render
+          SinghsCart.updateSilent(idx, { color_id: cid, color_name: nm, hero_url: her || '' });
+          // Refresh visual state in place (no re-render).
           var nameEl = document.getElementById('ci-color-' + idx);
           if (nameEl) nameEl.textContent = (nm || '').replace(/_\d+$/, '');
           var img = document.getElementById('ci-img-' + idx);
