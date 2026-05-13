@@ -515,6 +515,7 @@ var SP_LANG = (function() {
     'cat.detail.qty': { en: 'Qty', fr: 'Qté' },
     'cat.card.view-details': { en: 'View details ↗', fr: 'Voir les détails ↗' },
     'cat.card.add-to-quote': { en: '+ Add to quote', fr: '+ Ajouter à la soumission' },
+    'cat.card.units-at-tier': { en: 'units · adjust qty later', fr: 'unités · qté ajustable ensuite' },
     'cat.card.oneside': { en: '1-side print', fr: 'Impression 1 côté' },
     'cat.card.from': { en: 'From', fr: 'À partir de' },
     'cat.card.perunit': { en: '/unit', fr: '/unité' },

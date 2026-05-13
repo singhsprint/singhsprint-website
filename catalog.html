@@ -116,8 +116,13 @@
     .card .swatch.swatch--selected{box-shadow:0 0 0 2px var(--ink);transform:scale(1.15);position:relative}
     .card .swatch.swatch--selected::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid #fff;pointer-events:none}
     .card.card--clickable{cursor:pointer}
-    .card .card-cta{margin-top:8px;padding:6px 10px;background:var(--ink);color:var(--hi);border-radius:8px;font-size:.78rem;font-weight:700;text-align:center;letter-spacing:.02em;opacity:0;transition:opacity .15s,transform .15s;transform:translateY(2px)}
-    .card .card-cta__qty{opacity:.7;font-weight:500}
+    /* Two-line CTA: bold action on top, qty + hint below. Replaced
+       "+ Add to quote · 200" which read as a counter or price; this
+       version makes it unambiguous what 200 means and that it's editable. */
+    .card .card-cta{margin-top:8px;padding:9px 12px;background:var(--ink);color:#fff;border-radius:10px;text-align:center;letter-spacing:.02em;opacity:0;transition:opacity .15s,transform .15s;transform:translateY(2px);display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.15}
+    .card .card-cta__main{font-size:.82rem;font-weight:700;color:var(--hi);letter-spacing:.02em}
+    .card .card-cta__sub{font-size:.66rem;font-weight:500;color:#bbb;letter-spacing:.04em}
+    .card .card-cta__qty{font-weight:600;color:#fff}
     .card.card--clickable:hover .card-cta,.card.card--clickable:focus-visible .card-cta{opacity:1;transform:translateY(0)}
     .card.card--just-added{animation:cardPulse .8s ease-out}
     @keyframes cardPulse{
@@ -1100,7 +1105,10 @@
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>` : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <button type="button" class="card-details-link" data-detail-trigger="${p.product_id}" data-i18n="cat.card.view-details">View details ↗</button>
-        <div class="card-cta"><span data-i18n="cat.card.add-to-quote">+ Add to quote</span> · <span class="card-cta__qty">${state.qty}</span></div>
+        <div class="card-cta">
+          <span class="card-cta__main" data-i18n="cat.card.add-to-quote">+ Add to quote</span>
+          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span></span>
+        </div>
       </div>
     `;
 

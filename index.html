@@ -89,8 +89,15 @@
     .stat strong{display:block;font-size:1.4rem;font-weight:800;font-family:'Playfair Display',serif}
     .stat span{font-size:.8rem;color:#777}
     .hero-visual{position:relative}
-    .hero-photo{border-radius:20px;overflow:hidden;background:#e8e8e8;aspect-ratio:4/5;position:relative}
-    .hero-photo img{width:100%;height:100%;object-fit:cover}
+    /* 3:4 to match the source banner.mp4 (1080×1440). The slot used to
+       be 4:5 for a portrait photo; the loop is slightly taller so we
+       match the source rather than crop. */
+    .hero-photo{border-radius:20px;overflow:hidden;background:#e8e8e8;aspect-ratio:3/4;position:relative}
+    .hero-photo img,.hero-photo video{width:100%;height:100%;object-fit:cover;display:block}
+    /* Subtle dark gradient overlay at the bottom so the Quality Guarantee
+       pill sits on a consistent background regardless of frame brightness. */
+    .hero-photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(to top,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 100%);pointer-events:none}
+    .hero-video{background:#1a1a1a}
     .hero-guarantee{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #eee;border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);white-space:nowrap;font-size:.9rem;font-weight:600}
     .hero-guarantee .shield{font-size:1.3rem}
 
@@ -273,8 +280,22 @@
           </div>
         </div>
         <div class="hero-visual">
+          <!-- 16s muted loop. Audio stripped at encode time so even
+               JS that tries to unmute() finds nothing to play. The
+               poster JPG keeps the slot filled during load + acts as
+               the LCP element so Lighthouse stays happy. Mobile gets
+               a 720×960 variant via <source media>. -->
           <div class="hero-photo">
-            <img src="images/hero-duo.jpg" alt="Two people wearing custom printed apparel from Singhs Print Montreal" loading="eager">
+            <video
+              class="hero-video"
+              autoplay muted loop playsinline
+              preload="metadata"
+              poster="images/hero-poster.jpg"
+              aria-label="Singhs Print custom apparel in action">
+              <source src="images/hero-loop-mobile.mp4" type="video/mp4" media="(max-width: 768px)">
+              <source src="images/hero-loop.mp4" type="video/mp4">
+              <img src="images/hero-poster.jpg" alt="Custom printed apparel from Singhs Print Montreal" loading="eager">
+            </video>
           </div>
           <div class="hero-guarantee" data-i18n="home.hero.guarantee">
             <span class="shield">&#128737;</span>
