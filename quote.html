@@ -607,17 +607,13 @@
               </select>
             </div>
 
-            <!-- All-Canadian made blanks: +$2/unit upgrade -->
-            <div class="form-group" id="canadianBlanksSection" style="margin-bottom:24px">
-              <label class="loc-check" data-canadian-toggle onclick="toggleCanadianBlanks(this)" style="cursor:pointer">
-                <input type="checkbox" id="canadianBlanksCheckbox" name="canadian_blanks" value="yes">
-                <span class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-                <span class="loc-label" style="display:flex;flex-direction:column;gap:2px">
-                  <span><span style="color:#d00">&#127464;&#127462;</span> <span data-i18n="quote.canadian.label">All-Canadian made blanks</span> <strong style="color:#1a1a1a;margin-left:4px" data-i18n="quote.canadian.surcharge">+$2/unit</strong></span>
-                  <span style="font-size:.78rem;color:#888;font-weight:400" data-i18n="quote.canadian.sub">Locally sourced &amp; manufactured. Optional upgrade from the standard blanks.</span>
-                </span>
-              </label>
-            </div>
+            <!-- All-Canadian blanks upsell removed from the quote page:
+                 customers pick a specific blank in the catalog (where the
+                 supplier badge already tells the story). The +$2/unit
+                 surcharge stays in the pricing engine for Rue Saint-
+                 Patrick-supplied SKUs. Hidden input keeps the form
+                 schema stable for any legacy code paths.  -->
+            <input type="hidden" id="canadianBlanksCheckbox" name="canadian_blanks" value="">
 
             <!-- Print locations — preset-driven picker (replaces drag-on-canvas) -->
             <div class="placement-section">
