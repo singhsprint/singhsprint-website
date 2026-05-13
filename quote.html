@@ -400,24 +400,6 @@
               <a href="/catalog.html" class="catalog-pick__change">Change product</a>
             </div>
 
-            <!-- Live-price strip — updates as the customer changes placements
-                 (Step 1) or sizes (Step 2). Stays visible across both steps
-                 so the customer always knows what their current selection
-                 quotes at. -->
-            <div id="livePriceStrip" style="display:none;margin:-6px 0 20px;padding:14px 18px;border-radius:14px;background:#1a1a1a;color:#fff;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-              <div style="flex:1;min-width:200px">
-                <div style="font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#e8ff3c;margin-bottom:2px">Live estimate</div>
-                <div id="livePriceLine" style="font-size:1.05rem;font-weight:600;line-height:1.3">
-                  <span id="livePriceUnit">$—</span>
-                  <span style="font-weight:400;color:#aaa;font-size:.86rem">/unit · </span>
-                  <span id="livePriceQty">pick a quantity in Step 2</span>
-                </div>
-              </div>
-              <div id="livePriceTotalWrap" style="text-align:right;display:none">
-                <div style="font-size:.7rem;color:#aaa;text-transform:uppercase;letter-spacing:.04em">Total</div>
-                <div id="livePriceTotal" style="font-size:1.2rem;font-weight:700">$—</div>
-              </div>
-            </div>
 
             <!-- Empty-state CTA — shown when the customer landed on /quote.html
                  without going through the catalog. Steers them to the catalog
@@ -835,6 +817,25 @@
 
     <!-- RIGHT: Mockup Preview -->
     <div class="mockup-panel">
+
+      <!-- Live-price strip — sticky in the right panel so the customer always
+           sees their current per-unit + total as they change placements
+           (Step 1) and sizes (Step 2). The whole .mockup-panel is already
+           position:sticky so this never disappears as they scroll. -->
+      <div id="livePriceStrip" style="display:none;margin:0 0 16px;padding:18px 20px;border-radius:16px;background:#1a1a1a;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.12)">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px">Live estimate</div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="livePriceUnit">$—</span><span style="font-size:.78rem;font-weight:500;color:#aaa">/unit</span></div>
+            <div id="livePriceQty" style="font-size:.78rem;color:#aaa;margin-top:4px">pick qty in Step 2</div>
+          </div>
+          <div id="livePriceTotalWrap" style="display:none;text-align:right">
+            <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.06em">Total</div>
+            <div id="livePriceTotal" style="font-size:1.6rem;font-weight:700;line-height:1.1">$—</div>
+          </div>
+        </div>
+        <div style="font-size:.7rem;color:#888;margin-top:10px;line-height:1.4">Final quote may vary based on artwork complexity, decoration method, and delivery deadline.</div>
+      </div>
 
       <!-- BRAND-STYLED REASSURANCE CARD
            Replaces the live preview. Customer doesn't see a fake mockup
@@ -2588,7 +2589,7 @@
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
       if (!catalogPick) { strip.style.display = 'none'; return; }
-      strip.style.display = 'flex';
+      strip.style.display = 'block';
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
       var qtyLabel = qty && qty > 0
