@@ -97,6 +97,7 @@
     .card .more{font-size:.72rem;color:var(--soft);font-weight:600;margin-left:2px}
     .card .price{font-size:.82rem;color:var(--muted)}
     .card .price strong{color:var(--ink);font-weight:600}
+    .card .price-meta{color:var(--soft);font-weight:500;white-space:nowrap}
 
     /* BYO card */
     .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
@@ -575,7 +576,7 @@
         <div class="name">${p.name}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
-        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · ' + p.weight_oz + ' oz' : ''}</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>/unit · <span class="price-meta">1-side print</span>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">+ Add to quote · <span class="card-cta__qty">qty ${state.qty}</span></div>
       </div>
     `;
