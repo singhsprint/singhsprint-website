@@ -529,6 +529,30 @@
               <input type="hidden" name="garment_source" id="garmentSourceInput" value="We Supply">
             </div>
 
+            <!-- BYO decoration-only price preview. Shown only when "Bring
+                 Your Own" is selected. Pulls from /api/pricing/decoration-
+                 only with no blank cost — just per-piece decoration + setup
+                 amortised + per-piece overhead + 20% margin. -->
+            <div id="byoPricePanel" class="form-group" style="display:none;background:#1a1a1a;color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:24px">
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px">Decoration only · Bring-your-own</div>
+              <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+                <div>
+                  <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="byoPriceUnit">$—</span><span style="font-size:.78rem;font-weight:500;color:#aaa">/garment</span></div>
+                  <div style="font-size:.78rem;color:#aaa;margin-top:4px"><span id="byoPriceMethod">DTF</span> · <span id="byoPriceSides">1 side</span></div>
+                </div>
+                <div style="flex:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <label style="display:flex;flex-direction:column;font-size:.66rem;color:#aaa;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Qty
+                    <input id="byoQty" type="number" min="1" max="10000" value="50" oninput="refreshByoPrice()" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #444;background:#0d0d0d;color:#fff;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>
+                  </label>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.04em">Total decoration</div>
+                  <div style="font-size:1.2rem;font-weight:700"><span id="byoPriceTotal">$—</span></div>
+                </div>
+              </div>
+              <div style="font-size:.72rem;color:#888;margin-top:10px;line-height:1.5">You ship us the garments, we print/embroider. Final number depends on artwork complexity, deadline, and decoration method. Pick a print method below to refresh.</div>
+            </div>
+
             <!-- Blank brand selector (shown when We Supply, options change by garment) -->
             <div class="form-group" id="blankBrandSection">
               <label data-i18n="quote.blankbrand">Blank garment brand (optional)</label>
@@ -713,26 +737,22 @@
             <h2 data-i18n="quote.step2.h">Your design &amp; sizes</h2>
             <p class="step-desc" data-i18n="quote.step2.desc">Upload your artwork to see it on the mockup. Then enter your size breakdown.</p>
 
-            <!-- This block is the fallback uploader for visitors who jumped
-                 straight to Step 2 without going through the placement picker
-                 in Step 1. When a catalog product is prefilled, the placement-
-                 upload zone in Step 1 already handles the design file and this
-                 block is hidden (see prefillFromCatalog). -->
-            <div class="form-group" id="dropZoneWrapper">
-              <label data-i18n="quote.upload">Upload your design</label>
-              <label class="file-upload" for="designFile" id="dropZone">
-                <div class="up-icon">&#128193;</div>
-                <p>Click to upload or drag and drop</p>
-                <span>PNG, JPG, PDF, AI, PSD, SVG - Max 10MB</span>
+            <!-- Vestigial. The per-placement upload list in Step 1 handles
+                 every case (single-product, catalog cart, bring-your-own).
+                 We keep the hidden <input type="file" id="designFile"> here
+                 so older JS that still references designFile.click() doesn't
+                 explode, but the visual dropzone is permanently hidden. -->
+            <div class="form-group" id="dropZoneWrapper" style="display:none">
+              <label class="file-upload" for="designFile" id="dropZone" style="display:none">
                 <input type="file" id="designFile" name="design" accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg">
               </label>
-              <p class="hint" id="fileName"></p>
-              <p class="hint">Don't have artwork? No worries, we offer free design help.</p>
+              <p class="hint" id="fileName" style="display:none"></p>
             </div>
 
             <!-- Size breakdown -->
             <div class="size-section">
               <label data-i18n="quote.sizes">Size breakdown (enter qty per size)</label>
+              <div class="size-hint" style="font-size:.78rem;color:var(--soft,#666);margin:-4px 0 8px">2XL &amp; up add a <strong>$3/pc</strong> surcharge — standard industry rate.</div>
               <div class="size-grid">
                 <div class="size-item"><label>XS</label><input type="number" name="size_xs" min="0" value="0" onchange="updateSizeTotal()"></div>
                 <div class="size-item"><label>S</label><input type="number" name="size_s" min="0" value="0" onchange="updateSizeTotal()"></div>
@@ -835,7 +855,7 @@
         <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px">Live estimate</div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap">
           <div>
-            <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="livePriceUnit">$—</span><span style="font-size:.78rem;font-weight:500;color:#aaa">/unit</span></div>
+            <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="livePriceUnit">$—</span><span id="livePriceUnitSuffix" style="font-size:.78rem;font-weight:500;color:#aaa">/unit</span></div>
             <div id="livePriceQty" style="font-size:.78rem;color:#aaa;margin-top:4px">pick qty in Step 2</div>
           </div>
           <div id="livePriceTotalWrap" style="display:none;text-align:right">
@@ -1290,12 +1310,43 @@
       el.parentElement.querySelectorAll('.svc-btn').forEach(function(o) { o.classList.remove('selected'); });
       el.classList.add('selected');
       document.getElementById('garmentSourceInput').value = el.dataset.value;
-      var brandSection = document.getElementById('blankBrandSection');
-      if (el.dataset.value === 'BYOG') {
-        brandSection.style.display = 'none';
-      } else {
-        brandSection.style.display = 'block';
-      }
+      var brandSection   = document.getElementById('blankBrandSection');
+      var byoPanel       = document.getElementById('byoPricePanel');
+      var isBYO          = el.dataset.value === 'BYOG';
+      if (brandSection) brandSection.style.display = isBYO ? 'none' : 'block';
+      if (byoPanel)     byoPanel.style.display     = isBYO ? 'block' : 'none';
+      if (isBYO) refreshByoPrice();
+    }
+
+    // -----------------------------------------------------------------
+    // BYO (Bring Your Own Garment) decoration-only price preview.
+    // Hits /api/pricing/decoration-only which returns just the print/embr
+    // cost — no blank, no FX, no shipping — so customers see what we'd
+    // charge to decorate garments they ship to us.
+    // -----------------------------------------------------------------
+    function refreshByoPrice() {
+      var panel = document.getElementById('byoPricePanel');
+      if (!panel || panel.style.display === 'none') return;
+      var qty   = parseInt(document.getElementById('byoQty')?.value || '50', 10) || 50;
+      var sides = parseInt(document.getElementById('printCountInput')?.value || '1', 10) || 1;
+      var method = (state.service || 'DTF').toLowerCase();
+      // Map service labels → API methods
+      if (!['embroidery','dtf','dtg','screen'].includes(method)) method = 'dtf';
+      var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only' +
+                '?qty=' + qty + '&sides=' + sides + '&method=' + method;
+      document.getElementById('byoPriceUnit').textContent  = '…';
+      document.getElementById('byoPriceTotal').textContent = '…';
+      fetch(url).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+        if (!d || typeof d.unit_price !== 'number') {
+          document.getElementById('byoPriceUnit').textContent  = '—';
+          document.getElementById('byoPriceTotal').textContent = '—';
+          return;
+        }
+        document.getElementById('byoPriceUnit').textContent  = '$' + d.unit_price.toFixed(2);
+        document.getElementById('byoPriceTotal').textContent = '$' + (d.unit_price * qty).toFixed(2);
+        document.getElementById('byoPriceMethod').textContent = method.charAt(0).toUpperCase() + method.slice(1);
+        document.getElementById('byoPriceSides').textContent  = sides + ' side' + (sides>1?'s':'');
+      });
     }
 
     // ===== SERVICE =====
@@ -1309,6 +1360,8 @@
       document.getElementById('serviceInput').value = state.service;
       document.getElementById('sumMethod').textContent = state.service;
       renderBulkPricingTable();
+      // Refresh BYO decoration-only price (the method drives the per-piece cost)
+      refreshByoPrice();
     }
 
     // ===== BULK PRICING TABLE RENDERER =====
@@ -1772,6 +1825,10 @@
 
       // Refresh live-price strip with the new sides count.
       fetchAndRenderTopTierEstimate();
+
+      // If BYO is active, refresh the decoration-only price (sides change
+      // affects it materially).
+      refreshByoPrice();
     }
 
     // -----------------------------------------------------------------
@@ -2263,7 +2320,10 @@
 
       if (step > currentNum) {
         if (currentNum === 1) {
-          if (!state.product) { alert('Please select a product.'); return; }
+          // Cart mode: valid if there's at least one item in the cart.
+          // Legacy single-product mode: require state.product.
+          var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+          if (!cartHasItems && !state.product) { alert('Please select a product from the catalog.'); return; }
           if (!state.service) { alert('Please select a printing method.'); return; }
         }
       }
@@ -2636,16 +2696,23 @@
         document.getElementById('paymentSection').style.display = 'none';
         return;
       }
-      var total = perUnit * qty;
+      // Layer in the XXL+ surcharge (each 2XL/3XL/4XL/5XL unit adds $3) — see
+      // computeSizeSurcharge() + the matching SIZE_SURCHARGE_CAD constant.
+      var sur = computeSizeSurcharge();
+      var total = (perUnit * qty) + sur.surchargeTotal;
       document.getElementById('priceSection').style.display = 'block';
       document.getElementById('paymentSection').style.display = 'block';
       var liveTag = isLive
         ? '<span style="font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:50px;background:#e8ff3c;color:#1a1a1a;margin-left:6px;vertical-align:middle">live</span>'
         : '';
+      var surRow = sur.surchargeTotal > 0
+        ? '<div class="price-row"><span>2XL+ surcharge (' + sur.count + ' pc × $3):</span><span>$' + sur.surchargeTotal.toFixed(2) + '</span></div>'
+        : '';
       var breakdown = document.getElementById('priceBreakdown');
       breakdown.innerHTML =
         '<div class="price-row"><span>Per unit ' + liveTag + ':</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
-        '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>';
+        '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>' +
+        surRow;
       document.getElementById('priceTotal').textContent = '$' + total.toFixed(2);
     }
 
@@ -2656,6 +2723,9 @@
       if (!strip) return;
       if (!catalogPick) { strip.style.display = 'none'; return; }
       strip.style.display = 'block';
+      // Make sure the "/unit" suffix is visible — cart mode hides it.
+      var suf = document.getElementById('livePriceUnitSuffix');
+      if (suf) suf.style.display = '';
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
       var qtyLabel = qty && qty > 0
@@ -2665,7 +2735,8 @@
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (qty && perUnit) {
         totalWrap.style.display = 'block';
-        document.getElementById('livePriceTotal').textContent = '$' + (qty * perUnit).toFixed(2);
+        var sur = computeSizeSurcharge();
+        document.getElementById('livePriceTotal').textContent = '$' + ((qty * perUnit) + sur.surchargeTotal).toFixed(2);
       } else {
         totalWrap.style.display = 'none';
       }
@@ -2824,6 +2895,26 @@
     var CATALOG_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/catalog';
     var PRICING_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/pricing';
 
+    // XXL+ size surcharge in CAD per piece. Mirrors SIZE_SURCHARGE_CAD in
+    // singhsprint-crm/src/lib/pricing/index.ts — server is source of truth, this
+    // is a client fallback so we don't block the UI on a fetch. /api/pricing
+    // also echoes the map in `size_surcharge_cad` if you want to dynamic-load.
+    var SIZE_SURCHARGE_CAD = { '2XL': 3, '3XL': 3, '4XL': 3, '5XL': 3 };
+    // Read the size grid and return { count, surchargeTotal } for 2XL+ units.
+    function computeSizeSurcharge() {
+      var nameToSize = { size_xs:'XS', size_s:'S', size_m:'M', size_l:'L', size_xl:'XL', size_2xl:'2XL', size_3xl:'3XL', size_4xl:'4XL', size_5xl:'5XL' };
+      var count = 0, total = 0;
+      document.querySelectorAll('.size-grid input').forEach(function(inp){
+        var size = nameToSize[inp.name];
+        var add  = SIZE_SURCHARGE_CAD[size] || 0;
+        if (!add) return;
+        var n = parseInt(inp.value) || 0;
+        count += n;
+        total += n * add;
+      });
+      return { count: count, surchargeTotal: total };
+    }
+
     // =====================================================================
     // SinghsCart — same module as catalog.html. Items live in sessionStorage
     // so adding products on the catalog and arriving at /quote shows them.
@@ -2866,7 +2957,29 @@
       var items = SinghsCart.read().items;
       if (items.length === 0) {
         host.style.display = 'none';
+        host.innerHTML = '';
         if (addMore) addMore.style.display = 'none';
+        // If the cart was just emptied and there's no ?product= URL prefill
+        // either, surface the empty-state CTA so the customer has a clear
+        // next step (instead of an unexplained blank Step 1).
+        var hasUrlProduct = new URLSearchParams(location.search).get('product');
+        if (!hasUrlProduct) {
+          if (emptyCta)   emptyCta.style.display = 'flex';
+          if (singlePick) singlePick.style.display = 'none';
+          // Un-hide the legacy product grid + fields that cart mode hides
+          // so the visitor still has a fallback path to fill out the quote.
+          ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+            .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = ''; });
+          document.querySelectorAll('.form-group, .color-section').forEach(function(g){
+            var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
+            if (t === 'garment source' || t === 'garment color') g.style.display = '';
+          });
+          // dropZoneWrapper stays permanently hidden — per-placement uploads
+          // in Step 1 are the only upload path. (Old fallback removed.)
+        }
+        // Clear the right-panel cart total too
+        var strip = document.getElementById('livePriceStrip');
+        if (strip) strip.style.display = 'none';
         return;
       }
       // Cart is active — hide single-product UI + empty CTA.
@@ -3005,10 +3118,17 @@
       strip.style.display = 'block';
       document.getElementById('livePriceUnit').textContent = items.length + (items.length === 1 ? ' item' : ' items');
       document.getElementById('livePriceQty').textContent = totalUnits + ' units across cart';
+      // In cart mode, the "/unit" suffix from the single-product layout
+      // would render "1 item/unit" — hide it so the readout reads cleanly.
+      var suf = document.getElementById('livePriceUnitSuffix');
+      if (suf) suf.style.display = 'none';
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (totalDollars > 0) {
         totalWrap.style.display = 'block';
-        document.getElementById('livePriceTotal').textContent = (knownAll ? '$' : '~$') + totalDollars.toFixed(2);
+        // Surcharge applies once across the whole order regardless of cart
+        // mode — size grid is shared across all cart items in this build.
+        var sur = computeSizeSurcharge();
+        document.getElementById('livePriceTotal').textContent = (knownAll ? '$' : '~$') + (totalDollars + sur.surchargeTotal).toFixed(2);
       }
     }
 

@@ -74,7 +74,8 @@
     .card .body{padding:12px 14px}
     .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
     .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
-    .card .swatches{display:flex;gap:4px;align-items:center;margin-bottom:8px}
+    .card .swatches{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px;max-height:44px;overflow:hidden}
+    .card .swatches .more{font-size:.7rem;color:var(--soft);padding:0 4px;align-self:center;white-space:nowrap}
     .card .swatch{width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s;padding:0;background-clip:padding-box;outline:none}
     .card .swatch:hover{transform:scale(1.2)}
     .card .swatch.is-light{border-color:#ddd}
@@ -539,8 +540,13 @@
     else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
     else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
 
+    // Catalog cards display up to 24 swatches in a 2-row wrap (16px × 2 rows
+    // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
+    // colorways like Gildan 18500 (75 colors) still get accurate signal —
+    // before this we capped at 8 and a 75-color blank showed "8 + 67".
+    const SWATCH_LIMIT = 24;
     const renderSwatches = () => {
-      return (p.colors || []).slice(0, 8).map((c, i) => {
+      return (p.colors || []).slice(0, SWATCH_LIMIT).map((c, i) => {
         const hex = c.hex_code || '#ccc';
         const light = isLight(hex);
         const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
@@ -550,7 +556,7 @@
         return `<button type="button" class="swatch ${light ? 'is-light' : ''} ${oosCls} ${selected}" style="background:${hex}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}" data-idx="${i}" aria-label="${cleanName}"></button>`;
       }).join('');
     };
-    const extra = p.colors.length > 8 ? `<span class="more">+${p.colors.length - 8}</span>` : '';
+    const extra = p.colors.length > SWATCH_LIMIT ? `<span class="more">+${p.colors.length - SWATCH_LIMIT}</span>` : '';
 
     const repaintCard = () => {
       const c = (p.colors || [])[card._selectedColorIdx] || {};
@@ -577,7 +583,7 @@
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `From <strong>$${p.price_from.toFixed(2)}</strong>/unit · <span class="price-meta">1-side print</span>` : `<strong>Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
-        <div class="card-cta">+ Add to quote · <span class="card-cta__qty">qty ${state.qty}</span></div>
+        <div class="card-cta">+ Add <span class="card-cta__qty">${state.qty}</span> to quote</div>
       </div>
     `;
 
