@@ -402,10 +402,77 @@
   // single-product ?product= URLs still work the old way for backwards
   // compatibility — the cart just stays empty.
   // =========================================================================
+  // Cart abandonment recovery: a stable cart_id lives in localStorage so
+  // the same browser keeps the same row across tab closes. After every
+  // SinghsCart mutation we debounce-sync to /api/carts/upsert. If a
+  // visitor enters their email on /quote and doesn't submit, the daily
+  // sweeper emails them a recovery link.
+  function getCartId() {
+    var k = 'singhsCartId_v1';
+    var existing = null;
+    try { existing = localStorage.getItem(k); } catch(e){}
+    if (existing && /^[a-zA-Z0-9_-]{8,64}$/.test(existing)) return existing;
+    var id = '';
+    try {
+      if (window.crypto && crypto.randomUUID) id = crypto.randomUUID().replace(/-/g, '');
+    } catch(e){}
+    if (!id) id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    try { localStorage.setItem(k, id); } catch(e){}
+    return id;
+  }
+  let SINGHS_CART_ID = getCartId();
+
+  // Recovery-email link handling: when the URL has ?cart=<id>, hydrate
+  // sessionStorage from /api/carts/<id> + adopt that cart_id as ours so
+  // subsequent syncs target the same row. The query string is stripped
+  // afterwards so reloads / bookmarks don't keep re-triggering it.
+  (function hydrateFromRecoveryLink() {
+    try {
+      const params = new URLSearchParams(location.search);
+      const recoverId = params.get('cart');
+      if (!recoverId || !/^[a-zA-Z0-9_-]{8,64}$/.test(recoverId)) return;
+      // Don't re-hydrate if we already restored this cart.
+      if (sessionStorage.getItem('singhsCartHydrated') === recoverId) return;
+      fetch('https://singhsprint-crm.vercel.app/api/carts/' + encodeURIComponent(recoverId))
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (d && Array.isArray(d.items) && d.items.length > 0) {
+            sessionStorage.setItem('singhsCart_v1', JSON.stringify({ items: d.items }));
+            sessionStorage.setItem('singhsCartHydrated', recoverId);
+            localStorage.setItem('singhsCartId_v1', recoverId);
+            SINGHS_CART_ID = recoverId;
+            // Strip ?cart=... so reloads don't re-fire this path.
+            params.delete('cart');
+            const q = params.toString();
+            history.replaceState({}, '', location.pathname + (q ? '?' + q : '') + location.hash);
+            renderCartBar();
+            // Subtle toast so they know their cart came back.
+            showCartToast({ brand: '✓ Cart restored', style_number: '— ' + d.items.length + ' item' + (d.items.length === 1 ? '' : 's') });
+          }
+        })
+        .catch(function(){});
+    } catch(e) {}
+  })();
+  let _cartSyncTimer = null;
+  function queueCartSync() {
+    if (_cartSyncTimer) clearTimeout(_cartSyncTimer);
+    _cartSyncTimer = setTimeout(function () {
+      try {
+        var c = JSON.parse(sessionStorage.getItem('singhsCart_v1') || '{"items":[]}');
+        fetch('https://singhsprint-crm.vercel.app/api/carts/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart_id: SINGHS_CART_ID, items: c.items || [], source_url: location.href }),
+          keepalive: true,
+        }).catch(function(){});
+      } catch(e){}
+    }, 800);
+  }
+
   const SinghsCart = {
     key: 'singhsCart_v1',
     read() { try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
-    write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); },
+    write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); queueCartSync(); },
     add(item) {
       const c = this.read();
       const dup = c.items.find(x => x.product_id === item.product_id && x.color_id === item.color_id);

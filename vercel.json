@@ -8,5 +8,8 @@
     { "source": "/industries/:slug.html", "destination": "/industries/:slug", "permanent": true },
     { "source": "/guides/:slug.html",     "destination": "/guides/:slug",     "permanent": true },
     { "source": "/businesses/:slug.html", "destination": "/businesses/:slug", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/order/:token",          "destination": "/order.html" }
   ]
 }

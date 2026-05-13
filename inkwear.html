@@ -252,12 +252,82 @@
       <p class="tagline" data-i18n="inkwear.cta.tagline">Let's start small. One design. One product.</p>
       <h2 data-i18n="inkwear.cta.h2">If it works, we scale.</h2>
       <p class="subhead" data-i18n="inkwear.cta.sub">Get in touch to set up your first sample run. No commitment, no minimums.</p>
-      <div class="cta-buttons">
-        <a href="mailto:sales@singhsprint.com" class="btn btn-accent" data-i18n="inkwear.cta.email">Email Us to Get Started &rarr;</a>
+
+      <!-- 4-field intake form. Posts to /api/inbound with kind='inkwear'
+           — lands directly in the CRM's /inbox/requests where a rep can
+           one-click "Add to Inkwear partners" to promote it into the
+           partner pipeline. Mailto + phone stay as a fallback. -->
+      <form id="inkwearForm" style="max-width:520px;margin:0 auto 28px;display:grid;gap:10px;text-align:left">
+        <input type="text" id="ikStudio" name="studio_name" required placeholder="Studio name (e.g. Maison Tattoo)" data-i18n-placeholder="inkwear.form.studio" style="padding:14px 16px;border:1px solid #333;background:#111;color:#fff;border-radius:10px;font-family:inherit;font-size:.95rem"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <input type="text" id="ikName" name="contact_name" required placeholder="Your name" data-i18n-placeholder="inkwear.form.name" style="padding:14px 16px;border:1px solid #333;background:#111;color:#fff;border-radius:10px;font-family:inherit;font-size:.95rem"/>
+          <input type="email" id="ikEmail" name="email" required placeholder="Email" data-i18n-placeholder="inkwear.form.email" style="padding:14px 16px;border:1px solid #333;background:#111;color:#fff;border-radius:10px;font-family:inherit;font-size:.95rem"/>
+        </div>
+        <textarea id="ikWhat" name="what_to_sell" rows="3" required placeholder="What you'd like to sell (flash sheets, signature designs, post-tattoo upsell tees, ...)" data-i18n-placeholder="inkwear.form.what" style="padding:14px 16px;border:1px solid #333;background:#111;color:#fff;border-radius:10px;font-family:inherit;font-size:.95rem;resize:vertical;line-height:1.5"></textarea>
+        <button type="submit" class="btn btn-accent" data-i18n="inkwear.form.submit" style="justify-self:start;margin-top:4px">Start the conversation →</button>
+        <div id="inkwearStatus" aria-live="polite" style="font-size:.86rem;color:#aaa;min-height:1.2em"></div>
+      </form>
+
+      <div class="cta-buttons" style="opacity:.7">
+        <span style="color:#888;font-size:.85rem" data-i18n="inkwear.cta.or">— or —</span>
+        <a href="mailto:sales@singhsprint.com" class="btn btn-outline" style="border-color:#fff;color:#fff" data-i18n="inkwear.cta.email">Email sales@singhsprint.com</a>
         <a href="tel:5149151539" class="btn btn-outline" style="border-color:#fff;color:#fff">Call 514-915-1539</a>
       </div>
     </div>
   </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var form = document.getElementById('inkwearForm');
+      if (!form) return;
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var status = document.getElementById('inkwearStatus');
+        var btn = form.querySelector('button[type="submit"]');
+        var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) || function(){return null;};
+        var studio = document.getElementById('ikStudio').value.trim();
+        var name   = document.getElementById('ikName').value.trim();
+        var email  = document.getElementById('ikEmail').value.trim();
+        var what   = document.getElementById('ikWhat').value.trim();
+        if (!studio || !name || !email || !what) {
+          status.textContent = t('inkwear.form.missing') || 'Please fill every field.';
+          status.style.color = '#fda4a4';
+          return;
+        }
+        btn.disabled = true;
+        status.style.color = '#aaa';
+        status.textContent = t('inkwear.form.sending') || 'Sending…';
+        fetch('https://singhsprint-crm.vercel.app/api/inbound', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kind: 'inkwear',
+            contact_name: name,
+            email: email,
+            company: studio,           // populate company so the CRM dashboard surfaces the studio
+            notes: what,
+            meta: { studio_name: studio, what_to_sell: what },
+            source_url: location.href
+          }),
+          keepalive: true
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error('http ' + r.status);
+            return r.json();
+          })
+          .then(function () {
+            status.style.color = '#e8ff3c';
+            status.textContent = t('inkwear.form.thanks') || '✓ Thanks — we\'ll reach out within one business day.';
+            form.reset();
+          })
+          .catch(function () {
+            status.style.color = '#fda4a4';
+            status.textContent = t('inkwear.form.error') || 'Couldn\'t send — please email sales@singhsprint.com directly.';
+          })
+          .finally(function () { btn.disabled = false; });
+      });
+    });
+  </script>
 
   <div id="footer-placeholder"></div>
 

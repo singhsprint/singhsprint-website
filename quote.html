@@ -2977,20 +2977,66 @@
     // SinghsCart — same module as catalog.html. Items live in sessionStorage
     // so adding products on the catalog and arriving at /quote shows them.
     // =====================================================================
+    // Sync the cart to /api/carts/upsert so abandonment recovery can find
+    // it if the visitor never submits. cart_id stays stable across tab
+    // closes via localStorage. The catalog page sets the same id when
+    // they came from there; here we read or generate it.
+    function _singhsCartId() {
+      var k = 'singhsCartId_v1';
+      var v = null;
+      try { v = localStorage.getItem(k); } catch(e){}
+      if (v && /^[a-zA-Z0-9_-]{8,64}$/.test(v)) return v;
+      var id = '';
+      try { if (window.crypto && crypto.randomUUID) id = crypto.randomUUID().replace(/-/g, ''); } catch(e){}
+      if (!id) id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      try { localStorage.setItem(k, id); } catch(e){}
+      return id;
+    }
+    var SINGHS_CART_ID = _singhsCartId();
+    var _cartSyncT = null;
+    function _queueCartSync() {
+      if (_cartSyncT) clearTimeout(_cartSyncT);
+      _cartSyncT = setTimeout(function () {
+        try {
+          var items = SinghsCart.read().items;
+          var email = (document.getElementById('email') && document.getElementById('email').value) || null;
+          var name  = (document.getElementById('name')  && document.getElementById('name').value)  || null;
+          var phone = (document.getElementById('phone') && document.getElementById('phone').value) || null;
+          fetch('https://singhsprint-crm.vercel.app/api/carts/upsert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cart_id: SINGHS_CART_ID,
+              items: items,
+              email: email, contact_name: name, phone: phone,
+              source_url: location.href,
+            }),
+            keepalive: true,
+          }).catch(function(){});
+        } catch(e){}
+      }, 800);
+    }
+
     var SinghsCart = {
       key: 'singhsCart_v1',
       read: function(){ try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
-      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); },
-      // Persist to storage without re-rendering. Used when the click handler
-      // is already updating the DOM in place (e.g. picking a colour shouldn't
-      // collapse the expanded swatch grid).
-      writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} },
+      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); _queueCartSync(); },
+      writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} _queueCartSync(); },
       remove: function(i){ var c = this.read(); c.items.splice(i,1); this.write(c); },
       update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.write(c); },
       updateSilent: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.writeSilent(c); },
       clear:  function(){ this.write({items:[]}); },
       count:  function(){ return this.read().items.length; },
     };
+
+    // Re-sync whenever the visitor types their email/name/phone so the
+    // recovery mail has a destination even if they never submit.
+    document.addEventListener('DOMContentLoaded', function () {
+      ['email','name','phone'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('change', _queueCartSync);
+      });
+    });
 
     // Per-item live-price cache so we don't refetch every render. Keyed by
     // product_id + qty + sides.

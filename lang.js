@@ -256,7 +256,17 @@ var SP_LANG = (function() {
       en: 'Get in touch to set up your first sample run. No commitment, no minimums.',
       fr: 'Contactez-nous pour votre premier échantillon. Aucun engagement, aucun minimum.'
     },
-    'inkwear.cta.email': { en: 'Email Us to Get Started', fr: 'Écrivez-nous pour commencer' },
+    'inkwear.cta.email': { en: 'Email sales@singhsprint.com', fr: 'Écrire à sales@singhsprint.com' },
+    'inkwear.cta.or': { en: '— or —', fr: '— ou —' },
+    'inkwear.form.studio':  { en: 'Studio name (e.g. Maison Tattoo)', fr: 'Nom du studio (ex. Maison Tattoo)' },
+    'inkwear.form.name':    { en: 'Your name', fr: 'Votre nom' },
+    'inkwear.form.email':   { en: 'Email', fr: 'Courriel' },
+    'inkwear.form.what':    { en: 'What you\'d like to sell (flash sheets, signature designs, post-tattoo upsell tees, ...)', fr: 'Ce que vous voulez vendre (planches flash, designs signatures, t-shirts post-tatouage, ...)' },
+    'inkwear.form.submit':  { en: 'Start the conversation →', fr: 'Démarrer la conversation →' },
+    'inkwear.form.missing': { en: 'Please fill every field.', fr: 'Veuillez remplir tous les champs.' },
+    'inkwear.form.sending': { en: 'Sending…', fr: 'Envoi en cours…' },
+    'inkwear.form.thanks':  { en: '✓ Thanks — we\'ll reach out within one business day.', fr: '✓ Merci — on vous répond en un jour ouvrable.' },
+    'inkwear.form.error':   { en: 'Couldn\'t send — please email sales@singhsprint.com directly.', fr: 'Envoi impossible — écrivez à sales@singhsprint.com.' },
 
     // ===== BUSINESSES =====
     'biz.label': { en: 'For Businesses', fr: 'Pour entreprises' },
