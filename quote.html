@@ -2197,7 +2197,7 @@
         };
         reader.readAsDataURL(file);
       } else {
-        alert('Please upload an image file (PNG, JPG, SVG)');
+        alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.upload.imageonly')) || 'Please upload an image file (PNG, JPG, SVG)');
       }
     }
 
@@ -2209,7 +2209,7 @@
 
       fabric.Image.fromURL(imgSrc, function(img) {
         if (!img || !img.width) {
-          alert('Could not load your image. Try a different file.');
+          alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.upload.failed')) || 'Could not load your image. Try a different file.');
           return;
         }
 
@@ -2495,10 +2495,10 @@
       fetch(action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
         .then(function(r) {
           if (r.ok) { showSuccess(); }
-          else { alert('Something went wrong. Please call us at 514-915-1539 or email sales@singhsprint.com.'); }
+          else { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.submit.failed')) || 'Something went wrong. Please call us at 514-915-1539 or email sales@singhsprint.com.'); }
         })
         .catch(function() {
-          alert('Connection error. Please call us at 514-915-1539 or email sales@singhsprint.com.');
+          alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.submit.connection')) || 'Connection error. Please call us at 514-915-1539 or email sales@singhsprint.com.');
         });
     });
 
