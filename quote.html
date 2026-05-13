@@ -233,6 +233,21 @@
     .summary-row span:first-child{color:#999}
     .summary-row span:last-child{font-weight:600;color:#1a1a1a}
 
+    /* Reassurance card replaces the broken live preview. Brand-locked:
+       cream background, Playfair headline, yellow primary accent, Inter body. */
+    .mockup-reassure{background:#fff;border:1px solid #e8e8e8;border-radius:16px;padding:28px 26px;box-shadow:0 2px 14px rgba(0,0,0,.05),0 0 0 1px rgba(0,0,0,.02);position:relative;overflow:hidden}
+    .mockup-reassure::before{content:"";position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:#e8ff3c;opacity:.25;filter:blur(8px)}
+    .mockup-reassure__tag{display:inline-block;background:#1a1a1a;color:#e8ff3c;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:50px;margin-bottom:18px;position:relative;z-index:1}
+    .mockup-reassure__icon{width:54px;height:54px;border-radius:14px;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;margin-bottom:18px;position:relative;z-index:1}
+    .mockup-reassure__title{font-family:'Playfair Display',Georgia,serif;font-size:1.4rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:10px;position:relative;z-index:1}
+    .mockup-reassure__copy{font-size:.88rem;line-height:1.55;color:#555;margin-bottom:20px;position:relative;z-index:1}
+    .mockup-reassure__steps{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+    .mockup-reassure__steps li{display:flex;align-items:center;gap:12px;font-size:.88rem;color:#1a1a1a;font-weight:500}
+    .mockup-reassure__steps .step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#f5f5f0;border:1.5px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#1a1a1a}
+    .mockup-reassure__foot{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#888;padding-top:16px;border-top:1px solid #f0f0f0;position:relative;z-index:1}
+    .mockup-reassure__foot .foot-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);animation:reassurePulse 2s ease-in-out infinite}
+    @keyframes reassurePulse{0%,100%{opacity:1}50%{opacity:.55}}
+
     /* Sidebar extras */
     .sidebar-card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:20px;margin-top:12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
     .sidebar-card h4{font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;margin-bottom:8px}
@@ -739,7 +754,39 @@
 
     <!-- RIGHT: Mockup Preview -->
     <div class="mockup-panel">
-      <div class="mockup-card">
+
+      <!-- BRAND-STYLED REASSURANCE CARD
+           Replaces the live preview. Customer doesn't see a fake mockup
+           while they fill out the form — they see a clear promise that a
+           photoreal one is coming with the quote. (Generated server-side
+           from the supplier product photo + the uploaded design, then
+           approved by the Singhs team before it goes out.) -->
+      <div class="mockup-reassure">
+        <div class="mockup-reassure__tag">Included with your quote</div>
+        <div class="mockup-reassure__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="34" height="34">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="9" cy="9" r="1.8"/>
+            <path d="m21 15-5-5L5 21"/>
+          </svg>
+        </div>
+        <h3 class="mockup-reassure__title">A photoreal mockup, made for you</h3>
+        <p class="mockup-reassure__copy">Fill in your details below. Within an hour our team renders a printed-quality preview on the exact garment + colour you picked — no fake-looking SVG, no guesswork — and emails it to you with the price.</p>
+        <ol class="mockup-reassure__steps">
+          <li><span class="step-num">1</span><span>You submit your design &amp; details</span></li>
+          <li><span class="step-num">2</span><span>We render the mockup &amp; price the order</span></li>
+          <li><span class="step-num">3</span><span>You approve &mdash; we print &amp; ship</span></li>
+        </ol>
+        <div class="mockup-reassure__foot">
+          <span class="foot-dot"></span>
+          <span>Usually back within the hour, 9am–9pm.</span>
+        </div>
+      </div>
+
+      <!-- LEGACY LIVE PREVIEW (kept hidden — JS still touches some IDs in here.
+           Removing the whole block in a follow-up once the AI mockup pipeline
+           lands. For now display:none keeps it inert.) -->
+      <div class="mockup-card" style="display:none">
         <div class="mockup-header">
           <h3 data-i18n="quote.summary">Live Preview</h3>
           <div class="mockup-view-toggle">

@@ -71,6 +71,7 @@ function loadNav() {
     + '  <div class="navbar-inner">'
     + '    <a href="/index.html" class="logo"><img src="/images/logo.png" alt="Singhs Print" style="height:52px;width:auto"></a>'
     + '    <div class="nav-links" id="navLinks">'
+    + '      <a href="/catalog.html" data-i18n="nav.catalog">Catalog</a>'
     + '      <a href="/portfolio.html" data-i18n="nav.portfolio">Portfolio</a>'
     + '      <a href="/inkwear.html" data-i18n="nav.inkwear">Inkwear</a>'
     + '      <a href="/businesses.html" data-i18n="nav.businesses">For Businesses</a>'

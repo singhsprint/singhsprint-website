@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalog | Singhs Print — Custom Apparel Montreal</title>
+  <meta name="description" content="Browse 18,000+ blanks across S&S, SanMar, and Blanks.com. Filter by brand, fit, fabric, Canadian-made, or Hi-Vis. Pick a SKU and get a custom-print quote in under a minute.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
+
+  <style>
+    :root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+
+    /* Hero */
+    .cat-hero{max-width:1200px;margin:0 auto;padding:48px 24px 28px}
+    .cat-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.4rem;font-weight:700;line-height:1.1;margin-bottom:8px}
+    .cat-hero p{color:var(--muted);font-size:1rem;max-width:600px}
+    .cat-hero .meta{display:flex;align-items:center;gap:14px;margin-top:14px;font-size:.82rem;color:var(--soft)}
+    .cat-hero .meta strong{color:var(--ink);font-weight:600}
+
+    /* Search + filter row */
+    .cat-toolbar{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:10px;margin-bottom:16px}
+    .cat-search{flex:1;position:relative}
+    .cat-search input{width:100%;padding:14px 14px 14px 44px;border:1.5px solid var(--line);border-radius:14px;font-size:.95rem;font-family:inherit;background:#fff;transition:border-color .15s}
+    .cat-search input:focus{outline:none;border-color:var(--ink)}
+    .cat-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--soft)}
+    .cat-filter-btn{padding:14px 22px;background:var(--ink);color:#fff;border:none;border-radius:14px;font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .15s}
+    .cat-filter-btn:hover{transform:translateY(-1px)}
+    .cat-filter-btn .pill{background:var(--hi);color:var(--ink);padding:2px 7px;border-radius:50px;font-size:.72rem;font-weight:700}
+
+    /* Chip row */
+    .cat-chips{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;min-height:32px}
+    .chip{font-size:.8rem;font-weight:500;padding:6px 12px;border-radius:50px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+    .chip.active{background:var(--ink);color:var(--hi);font-weight:600}
+    .chip.active::after{content:'×';font-size:.95rem;margin-left:1px;opacity:.7}
+    .chip.passive{background:#fff;border:1px solid var(--line);color:var(--muted)}
+    .chip.passive:hover{border-color:var(--ink);color:var(--ink)}
+    .chip.passive::before{content:'+';margin-right:2px;color:var(--ink);font-weight:700}
+
+    /* Result count + sort */
+    .cat-meta-row{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:.85rem;color:var(--muted)}
+    .cat-meta-row strong{color:var(--ink);font-weight:600}
+    .cat-sort{cursor:pointer;display:flex;align-items:center;gap:4px}
+    .cat-sort strong{font-weight:600}
+
+    /* Grid */
+    .cat-grid{max-width:1200px;margin:0 auto 64px;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    @media (max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:540px){.cat-grid{grid-template-columns:1fr}}
+
+    .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column}
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:#d0cdc0}
+    .card.selected{border-color:var(--ink);border-width:2px}
+    .card .badge{position:absolute;top:10px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:50px;letter-spacing:.06em;z-index:2;text-transform:uppercase}
+    .card .badge--bestseller{background:var(--hi);color:var(--ink);right:10px}
+    .card .badge--canadian{background:#fff;color:var(--ink);border:1px solid var(--line);right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--csa{background:#1a1a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
+    .card .photo{aspect-ratio:1;background:#f0eee5;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .card .photo img{width:100%;height:100%;object-fit:cover}
+    .card .body{padding:12px 14px}
+    .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+    .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
+    .card .swatches{display:flex;gap:4px;align-items:center;margin-bottom:8px}
+    .card .swatch{width:14px;height:14px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s}
+    .card .swatch:hover{transform:scale(1.2)}
+    .card .swatch.is-light{border-color:#ddd}
+    .card .more{font-size:.72rem;color:var(--soft);font-weight:600;margin-left:2px}
+    .card .price{font-size:.82rem;color:var(--muted)}
+    .card .price strong{color:var(--ink);font-weight:600}
+
+    /* BYO card */
+    .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
+    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#f0eee5;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+    .card-byo strong{font-size:.95rem}
+    .card-byo span{font-size:.78rem;color:var(--muted);line-height:1.4}
+
+    /* Loading / empty */
+    .cat-loading{max-width:1200px;margin:0 auto;padding:20px 24px;text-align:center;color:var(--soft);font-size:.85rem}
+    .cat-empty{max-width:1200px;margin:0 auto;padding:60px 24px;text-align:center;color:var(--muted)}
+    .cat-empty h3{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:6px;color:var(--ink)}
+
+    /* Filter slide-over */
+    .filter-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;box-shadow:-8px 0 24px rgba(0,0,0,.08);transform:translateX(100%);transition:transform .25s ease;z-index:100;display:flex;flex-direction:column}
+    .filter-panel.open{transform:translateX(0)}
+    .filter-panel header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .filter-panel header h3{font-family:'Playfair Display',serif;font-size:1.2rem}
+    .filter-panel header button{border:none;background:transparent;font-size:1.2rem;cursor:pointer;color:var(--muted)}
+    .filter-panel .scroll{flex:1;overflow-y:auto;padding:18px 22px}
+    .filter-panel footer{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px}
+    .filter-panel footer button{flex:1;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.9rem;font-family:inherit;border:none}
+    .filter-panel footer .clear{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+    .filter-panel footer .apply{background:var(--ink);color:#fff}
+    .filter-group{margin-bottom:22px}
+    .filter-group h4{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:10px}
+    .filter-group label{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:.9rem;cursor:pointer}
+    .filter-group label input{width:16px;height:16px;accent-color:var(--ink)}
+    .filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:99}
+    .filter-overlay.open{opacity:1;pointer-events:auto}
+  </style>
+</head>
+<body>
+
+  <div id="navContainer"></div>
+
+  <section class="cat-hero">
+    <h1>Our blanks catalog</h1>
+    <p>Browse <strong id="catCount">18,400+</strong> SKUs across S&amp;S, SanMar, Blanks.com and Canadian-made suppliers. Filter by brand, fit, fabric, certification — find the right blank, then get a quote in under a minute.</p>
+    <div class="meta">
+      <span><strong id="catUpdated">Synced</strong> with suppliers nightly</span>
+      <span>·</span>
+      <span><strong>5–10 day</strong> typical turnaround</span>
+      <span>·</span>
+      <span>From <strong>$6.95/unit</strong> bulk</span>
+    </div>
+  </section>
+
+  <div class="cat-toolbar">
+    <div class="cat-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by brand, style number, fabric…" autocomplete="off"/>
+    </div>
+    <button class="cat-filter-btn" onclick="openFilterPanel()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="2" fill="white"/><circle cx="16" cy="12" r="2" fill="white"/><circle cx="8" cy="18" r="2" fill="white"/></svg>
+      Filters
+      <span class="pill" id="filterCount" style="display:none">0</span>
+    </button>
+  </div>
+
+  <div class="cat-chips" id="chipRow"></div>
+
+  <div class="cat-meta-row">
+    <div><strong id="resultCount">—</strong> products</div>
+    <div class="cat-sort">Sort: <strong>Bestseller</strong> ▾</div>
+  </div>
+
+  <div class="cat-grid" id="catGrid"></div>
+  <div class="cat-loading" id="catLoading" style="display:none">Loading more…</div>
+  <div class="cat-empty" id="catEmpty" style="display:none"><h3>No matches</h3><p>Try removing a filter or check our "Bring your own blank" option.</p></div>
+
+  <!-- Filter slide-over -->
+  <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
+  <aside class="filter-panel" id="filterPanel" aria-hidden="true">
+    <header>
+      <h3>Refine results</h3>
+      <button onclick="closeFilterPanel()" aria-label="Close">×</button>
+    </header>
+    <div class="scroll" id="filterBody">
+      <!-- Filter groups injected by JS once /api/catalog/facets returns -->
+    </div>
+    <footer>
+      <button class="clear" onclick="clearAllFilters()">Clear all</button>
+      <button class="apply" onclick="applyFilters()">Apply</button>
+    </footer>
+  </aside>
+
+  <div id="footerContainer"></div>
+
+  <script src="components.js"></script>
+  <script>
+  // =========================================================================
+  // Catalog state
+  // =========================================================================
+  const state = {
+    filters: {                       // active filter state — drives /api/catalog query
+      type: getQueryParam('type') || null,
+      brand: [],
+      canadian: false,
+      csa: false,
+      q: ''
+    },
+    products: [],
+    page: 0,
+    loading: false,
+    done: false
+  };
+
+  // Catalog API endpoint — singhsprint-crm Vercel project
+  const CATALOG_API = 'https://singhsprint-crm.vercel.app/api/catalog';
+
+  function getQueryParam(name) {
+    const m = new URLSearchParams(location.search).get(name);
+    return m || null;
+  }
+
+  // =========================================================================
+  // Fetch
+  // =========================================================================
+  async function fetchPage() {
+    if (state.loading || state.done) return;
+    state.loading = true;
+    document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
+
+    const params = new URLSearchParams();
+    if (state.filters.type)        params.set('type', state.filters.type);
+    if (state.filters.q)           params.set('q', state.filters.q);
+    if (state.filters.canadian)    params.set('canadian', '1');
+    if (state.filters.csa)         params.set('csa', '1');
+    state.filters.brand.forEach(b => params.append('brand', b));
+    params.set('page', state.page);
+
+    try {
+      const res = await fetch(`${CATALOG_API}?${params.toString()}`);
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      const fresh = data.products || [];
+      state.products = state.page === 0 ? fresh : state.products.concat(fresh);
+      state.done = fresh.length < 24;
+      state.page++;
+      render();
+    } catch (e) {
+      // Empty-state fallback — until the S&S sync runs, render a curated mock so
+      // the page isn't broken in front of customers.
+      if (state.products.length === 0) {
+        state.products = mockProducts();
+        state.done = true;
+        render();
+      }
+      console.warn('catalog fetch failed:', e);
+    } finally {
+      state.loading = false;
+      document.getElementById('catLoading').style.display = 'none';
+    }
+  }
+
+  // =========================================================================
+  // Render
+  // =========================================================================
+  function render() {
+    const grid = document.getElementById('catGrid');
+    const empty = document.getElementById('catEmpty');
+    grid.innerHTML = '';
+
+    if (state.products.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    state.products.forEach(p => grid.appendChild(productCard(p)));
+
+    // Always append a "Bring your own" card at the end of the grid
+    grid.appendChild(byoCard());
+
+    document.getElementById('resultCount').textContent = state.products.length.toLocaleString();
+    renderChips();
+  }
+
+  function productCard(p) {
+    const card = document.createElement('a');
+    card.className = 'card';
+    card.href = `/quote.html?product=${encodeURIComponent(p.product_id)}&color=${encodeURIComponent(p.colors[0]?.color_id || '')}`;
+
+    const heroColor = p.colors[0] || {};
+    const photoUrl = heroColor.mockup_front_url || p.hero_image_url || '/images/product-tshirt-white.jpg';
+
+    let badge = '';
+    if (p.bestseller)        badge = `<div class="badge badge--bestseller">★ Bestseller</div>`;
+    else if (p.is_canadian_made) badge = `<div class="badge badge--canadian">🇨🇦 Canadian</div>`;
+    else if (p.has_csa_cert) badge = `<div class="badge badge--csa">CSA Hi-Vis</div>`;
+
+    const swatches = (p.colors || []).slice(0, 7).map(c => {
+      const hex = c.hex_code || '#ccc';
+      const light = isLight(hex);
+      return `<span class="swatch ${light ? 'is-light' : ''}" style="background:${hex}" title="${c.color_name}"></span>`;
+    }).join('');
+    const extra = p.colors.length > 7 ? `<span class="more">+${p.colors.length - 7}</span>` : '';
+
+    card.innerHTML = `
+      ${badge}
+      <div class="photo"><img src="${photoUrl}" alt="${p.brand} ${p.style_number}" loading="lazy"/></div>
+      <div class="body">
+        <div class="brand-row">${(p.brand || '').toUpperCase()} · ${p.style_number || ''}</div>
+        <div class="name">${p.name}</div>
+        <div class="swatches">${swatches}${extra}</div>
+        <div class="price">From <strong>$${(p.price_from || 0).toFixed(2)}</strong>${p.weight_oz ? ' · ' + p.weight_oz + ' oz' : ''}</div>
+      </div>
+    `;
+    return card;
+  }
+
+  function byoCard() {
+    const a = document.createElement('a');
+    a.className = 'card card-byo';
+    a.href = '/quote.html?source=byo';
+    a.innerHTML = `
+      <div class="add">+</div>
+      <strong>Bring your own blank</strong>
+      <span>Got a SKU or tech pack? Send it over — we'll source and quote it.</span>
+    `;
+    return a;
+  }
+
+  function isLight(hex) {
+    if (!hex) return false;
+    const h = hex.replace('#','');
+    const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+    return (r*299 + g*587 + b*114) / 1000 > 200;
+  }
+
+  // =========================================================================
+  // Chips (top of page)
+  // =========================================================================
+  function renderChips() {
+    const row = document.getElementById('chipRow');
+    row.innerHTML = '';
+    const types = ['tshirt','hoodie','crewneck','polo','longsleeve','hat','tote','joggers','hivis'];
+    const labels = { tshirt:'T-Shirts', hoodie:'Hoodies', crewneck:'Crewnecks', polo:'Polos', longsleeve:'Long Sleeves', hat:'Hats / Caps', tote:'Tote Bags', joggers:'Joggers', hivis:'Hi-Vis Vests' };
+
+    // Active type chip
+    if (state.filters.type) {
+      row.appendChild(makeChip(labels[state.filters.type], 'active', () => { state.filters.type = null; resetAndFetch(); }));
+    }
+    if (state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'active', () => { state.filters.canadian = false; resetAndFetch(); }));
+    if (state.filters.csa)      row.appendChild(makeChip('CSA / Hi-Vis',    'active', () => { state.filters.csa = false; resetAndFetch(); }));
+    state.filters.brand.forEach(b => {
+      row.appendChild(makeChip(b, 'active', () => {
+        state.filters.brand = state.filters.brand.filter(x => x !== b); resetAndFetch();
+      }));
+    });
+
+    // Suggested next chips
+    types.filter(t => t !== state.filters.type).slice(0, 4).forEach(t => {
+      row.appendChild(makeChip(labels[t], 'passive', () => { state.filters.type = t; resetAndFetch(); }));
+    });
+    if (!state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'passive', () => { state.filters.canadian = true; resetAndFetch(); }));
+    if (!state.filters.csa)      row.appendChild(makeChip('Hi-Vis / CSA',     'passive', () => { state.filters.csa = true; resetAndFetch(); }));
+  }
+
+  function makeChip(label, klass, onClick) {
+    const c = document.createElement('span');
+    c.className = `chip ${klass}`;
+    c.textContent = label;
+    c.onclick = onClick;
+    return c;
+  }
+
+  function resetAndFetch() {
+    state.products = []; state.page = 0; state.done = false;
+    fetchPage();
+  }
+
+  // =========================================================================
+  // Filter panel + search
+  // =========================================================================
+  function openFilterPanel()  { document.getElementById('filterPanel').classList.add('open'); document.getElementById('filterOverlay').classList.add('open'); }
+  function closeFilterPanel() { document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
+  function clearAllFilters()  { state.filters = { type:null, brand:[], canadian:false, csa:false, q:'' }; document.getElementById('searchInput').value=''; closeFilterPanel(); resetAndFetch(); }
+  function applyFilters()     { closeFilterPanel(); resetAndFetch(); }
+
+  document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
+    state.filters.q = e.target.value.trim();
+    resetAndFetch();
+  }, 250));
+
+  function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), ms); }; }
+
+  // Infinite scroll
+  window.addEventListener('scroll', function() {
+    if (state.loading || state.done) return;
+    if (window.scrollY + window.innerHeight > document.body.offsetHeight - 600) fetchPage();
+  });
+
+  // =========================================================================
+  // Mock data — used until S&S sync populates the catalog. Curated to look
+  // right next to real data when it lands.
+  // =========================================================================
+  function mockProducts() {
+    return [
+      { product_id:'demo-bc3001', brand:'Bella+Canvas', style_number:'3001', name:'Unisex Jersey Short Sleeve Tee', weight_oz:4.2, price_from:9.95, bestseller:true,
+        hero_image_url:'/images/product-tshirt-black.jpg',
+        colors:[
+          {color_id:'c-black',  color_name:'Black',    hex_code:'#111111', mockup_front_url:'/images/product-tshirt-black.jpg'},
+          {color_id:'c-navy',   color_name:'Navy',     hex_code:'#1B365D'},
+          {color_id:'c-white',  color_name:'White',    hex_code:'#ffffff', mockup_front_url:'/images/product-tshirt-white.jpg'},
+          {color_id:'c-red',    color_name:'Red',      hex_code:'#8B2D27'},
+          {color_id:'c-olive',  color_name:'Olive',    hex_code:'#5b6e3f'},
+          {color_id:'c-tan',    color_name:'Tan',      hex_code:'#c2b66f'}
+        ]},
+      { product_id:'demo-as5026', brand:'AS Colour', style_number:'5026', name:'Staple Tee — Premium Cotton', weight_oz:6.5, price_from:13.95, is_canadian_made:false,
+        hero_image_url:'/images/product-tshirt-studio.jpg',
+        colors:[
+          {color_id:'c-as-black', color_name:'Black', hex_code:'#111111'},
+          {color_id:'c-as-white', color_name:'White', hex_code:'#ffffff'},
+          {color_id:'c-as-grey',  color_name:'Grey',  hex_code:'#666666'},
+          {color_id:'c-as-camel', color_name:'Camel', hex_code:'#d8a36b'}
+        ]},
+      { product_id:'demo-g500', brand:'Gildan', style_number:'G500', name:'Heavy Cotton Adult T-Shirt', weight_oz:5.3, price_from:6.95,
+        hero_image_url:'/images/product-tshirt-modavie.jpg',
+        colors:[
+          {color_id:'c-g-black', color_name:'Black',      hex_code:'#111111'},
+          {color_id:'c-g-white', color_name:'White',      hex_code:'#ffffff'},
+          {color_id:'c-g-navy',  color_name:'Navy',       hex_code:'#1B365D'},
+          {color_id:'c-g-red',   color_name:'Red',        hex_code:'#8B2D27'},
+          {color_id:'c-g-green', color_name:'Forest',     hex_code:'#2c4d2f'},
+          {color_id:'c-g-grey',  color_name:'Sport Grey', hex_code:'#a8a8a8'}
+        ]},
+      { product_id:'demo-cc1717', brand:'Comfort Colors', style_number:'1717', name:'Garment-Dyed Heavyweight Tee', weight_oz:6.1, price_from:14.95,
+        hero_image_url:'/images/product-tshirt-heart.jpg',
+        colors:[
+          {color_id:'c-cc-ivory', color_name:'Ivory',     hex_code:'#d4c69c'},
+          {color_id:'c-cc-sage',  color_name:'Sage',      hex_code:'#a8c099'},
+          {color_id:'c-cc-camel', color_name:'Camel',     hex_code:'#d8a36b'},
+          {color_id:'c-cc-mauve', color_name:'Mauve',     hex_code:'#9b8eaf'}
+        ]},
+      { product_id:'demo-bc3719', brand:'Bella+Canvas', style_number:'3719', name:'Unisex Sponge Fleece Pullover Hoodie', weight_oz:8.0, price_from:29.95,
+        hero_image_url:'/images/product-hoodie-concordia.jpg',
+        colors:[
+          {color_id:'c-bch-black',   color_name:'Black',          hex_code:'#111111'},
+          {color_id:'c-bch-heather', color_name:'Heather Forest', hex_code:'#3a4a3a'},
+          {color_id:'c-bch-navy',    color_name:'Navy',           hex_code:'#1B365D'},
+          {color_id:'c-bch-cream',   color_name:'Cream',          hex_code:'#f4eddb'}
+        ]},
+      { product_id:'demo-fl-csa', brand:'Forcefield', style_number:'FF-403', name:'Class 2 Hi-Vis Safety Vest (CSA Z96)', price_from:14.95, has_csa_cert:true,
+        hero_image_url:'/images/product-tshirt-white.jpg',
+        colors:[
+          {color_id:'c-hv-yellow', color_name:'Lime Yellow', hex_code:'#dfff00'},
+          {color_id:'c-hv-orange', color_name:'Hi-Vis Orange', hex_code:'#ff6a00'}
+        ]}
+    ];
+  }
+
+  // =========================================================================
+  // Init
+  // =========================================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchPage();
+  });
+  </script>
+
+  <script src="lang.js" defer></script>
+</body>
+</html>
