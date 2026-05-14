@@ -144,6 +144,16 @@
     }
     @media(max-width:640px){
       .segments-grid{grid-template-columns:1fr;gap:16px}
+      /* PDF capture card was 2-col grid (1.4fr 1fr) that refused to
+         collapse — text wrapped to 1-2 words per line on phones.
+         Force single column. */
+      .pricing-pdf-card{
+        grid-template-columns:1fr !important;
+        padding:24px 20px !important;
+        gap:18px !important;
+      }
+      .pricing-pdf-card h3{font-size:1.2rem !important;line-height:1.25}
+      .pricing-pdf-card p{font-size:.92rem !important;line-height:1.55}
     }
   </style>
   <link rel="canonical" href="https://singhsprint.com/businesses">
@@ -488,7 +498,7 @@
       </div>
 
       <!-- Pricing PDF download — gated email-capture for procurement leads -->
-      <div id="pricingPdfCard" style="max-width:900px;margin:40px auto 0;background:#1a1a1a;color:#fff;border-radius:16px;padding:36px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center">
+      <div id="pricingPdfCard" class="pricing-pdf-card" style="max-width:900px;margin:40px auto 0;background:#1a1a1a;color:#fff;border-radius:16px;padding:36px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center">
         <div>
           <div style="font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#e8ff3c;margin-bottom:10px">Take this with you</div>
           <h3 style="font-size:1.4rem;color:#fff;margin-bottom:8px">Download our 2026 bulk pricing sheet</h3>

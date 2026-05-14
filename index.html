@@ -352,6 +352,13 @@
       .proof-bar,
       .blank-brands,
       .why-us{display:none !important}
+      /* Final CTA — was 100px top + bottom padding which felt jarring
+         coming straight off the FAQ. Trimmed + tighter typography. */
+      .cta-section{padding:42px 0 38px !important}
+      .cta-section h2{font-size:clamp(1.5rem,5.5vw,2rem) !important;margin-bottom:10px !important;line-height:1.2}
+      .cta-section .subhead{font-size:.92rem !important;margin-bottom:18px !important;line-height:1.5}
+      .cta-section .cta-buttons{flex-direction:column;align-items:stretch;gap:10px}
+      .cta-section .cta-buttons .btn{width:100%;justify-content:center}
       /* FAQ trim: hide items 6 + 7 by default; "See all" reveals them. */
       .faq-list .faq-item:nth-child(n+6){display:none}
       .faq-list.faq-list--expanded .faq-item{display:block}

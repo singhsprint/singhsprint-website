@@ -302,6 +302,9 @@
 
     @media(max-width:900px){
       .customizer-layout{grid-template-columns:1fr}
+      /* On tablet the mockup-panel still surfaces above (to keep
+         live-price visible on Step 1). On phones below the sub-rule
+         (≤480px) flips it the other way so the form leads. */
       .mockup-panel{position:static;order:-1}
       .canvas-wrapper{aspect-ratio:1}
     }
@@ -345,11 +348,23 @@
       .placement-section,.color-section,.service-row,.size-section{margin-bottom:14px !important}
       .step-buttons{padding-top:14px !important;margin-top:14px !important}
       .placement-preset-grid{gap:6px !important}
-      /* Mockup panel takes too much room on phones — make it a compact
-         summary card above the form rather than a giant preview. */
-      .mockup-panel{position:static !important;padding:12px !important;border-radius:14px !important;margin-bottom:14px}
-      .live-price-strip{padding:12px 14px !important;border-radius:12px !important}
-      .live-price-strip .ts{font-size:.7rem !important}
+      /* PHONES: form leads, marketing follows.
+         - Restore natural source order (order:0) so the form renders
+           first, mockup-panel after.
+         - Hide the marketing reassurance + legacy mockup card —
+           customers came here to GET A QUOTE, not read about how good
+           we are at making mockups. They'll see that value in the
+           confirmation email.
+         - Live-price strip stays accessible via the sticky-bottom rule
+           in components.js (position:fixed at the bottom of the
+           viewport). So the only "thing" in mockup-panel that
+           survives on mobile is the floating price bar. */
+      .mockup-panel{position:static !important;order:0 !important;padding:0 !important;background:transparent !important;border:none !important;margin-bottom:0 !important}
+      .mockup-reassure,.mockup-card,.mockup-faq,.sidebar-card{display:none !important}
+      /* Hero gap fix — was rendering ~300px tall on phones */
+      .quote-hero{padding:14px 0 6px !important}
+      .quote-hero h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
+      .quote-hero .sub{font-size:.86rem !important;line-height:1.5;margin-bottom:0 !important}
     }
     @media(max-width:360px){
       .placement-preset-grid{grid-template-columns:1fr}

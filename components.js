@@ -160,7 +160,20 @@ function loadFooter() {
       + '.footer-col a:hover{color:#e8ff3c}'
       + '.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-top:32px;margin-top:48px;border-top:1px solid #222;font-size:.8rem;color:#777}'
       + '@media(max-width:900px){.footer{padding:48px 0 24px}.footer-grid{grid-template-columns:1fr 1fr !important;gap:28px}.footer-brand{grid-column:1/-1}}'
-      + '@media(max-width:560px){.footer-grid{grid-template-columns:1fr !important;gap:24px}.footer-col h4{font-size:.86rem}.footer-col a{font-size:.92rem;padding:8px 0}.footer-bottom{margin-top:32px;padding-top:24px;font-size:.74rem}}'
+      // Footer on phones: lean. The 5-col desktop layout collapses to
+       // a 2-col grid (Pages | Contact), the long "For Businesses" and
+       // "Guides" columns are hidden — they exist in the nav. The brand
+       // blurb shrinks. Total footer height drops from ~750px to ~280px.
+      + '@media(max-width:560px){'
+      +   '.footer{padding:32px 0 24px !important}'
+      +   '.footer-grid{grid-template-columns:1fr 1fr !important;gap:18px 14px}'
+      +   '.footer-brand{grid-column:1 / -1;margin-bottom:6px}'
+      +   '.footer-brand p{font-size:.82rem;line-height:1.5;max-width:none}'
+      +   '.footer-col[data-mobile-hide]{display:none}'  /* hide flagged cols */
+      +   '.footer-col h4{font-size:.74rem;margin-bottom:8px}'
+      +   '.footer-col a{font-size:.86rem;padding:5px 0}'
+      +   '.footer-bottom{margin-top:24px;padding-top:18px;font-size:.7rem;flex-direction:column;align-items:flex-start;gap:6px}'
+      + '}'
       // Bilingual notice block — shown only when html lang is set to FR.
       // Industry + guide pages use this to flag that the long-form body
       // hasn't been translated yet.
@@ -181,8 +194,8 @@ function loadFooter() {
     + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open 7 days, 9AM\u20139PM.</p>'
     + '      </div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/about" data-i18n="footer.about">About</a></div>'
-    + '      <div class="footer-col"><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
-    + '      <div class="footer-col"><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/procurement-checklist">Procurement checklist</a><a href="/guides/charity-run-timeline">Charity run timeline</a><a href="/guides/construction-crew-cost">Crew cost analysis</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
+    + '      <div class="footer-col" data-mobile-hide><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
+    + '      <div class="footer-col" data-mobile-hide><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/procurement-checklist">Procurement checklist</a><a href="/guides/charity-run-timeline">Charity run timeline</a><a href="/guides/construction-crew-cost">Crew cost analysis</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:5149151539" aria-label="Call us at 514-915-1539">Call 514-915-1539</a><a href="mailto:sales@singhsprint.com" aria-label="Email sales@singhsprint.com">Email sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank" rel="noopener" aria-label="Follow on Instagram">Instagram @singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener" data-i18n="footer.location">West Island, Montreal</a></div>'
     + '    </div>'
     + '    <div class="footer-bottom">'
@@ -385,7 +398,10 @@ function loadMobileTrim() {
     // / Apple Music pattern). Same treatment for the 3 service cards
     // and 6 why-us cards. Each card is sized to leave a peek of the
     // next so users instantly recognize it as swipeable.
-    +   '.products-grid,.services-grid,.why-grid{'
+    // Products grid stays a stacked 2-col on mobile — carousels hide
+    // content and hurt browse-and-pick conversion. Services + why-us
+    // (explainer cards, not items to compare) keep the scroll-snap pattern.
+    +   '.services-grid,.why-grid{'
     +     'display:flex !important;'
     +     'overflow-x:auto;overflow-y:visible;'
     +     'scroll-snap-type:x mandatory;'
@@ -397,16 +413,14 @@ function loadMobileTrim() {
     +     'scrollbar-width:none;'
     +     'grid-template-columns:none !important;'
     +   '}'
-    +   '.products-grid::-webkit-scrollbar,.services-grid::-webkit-scrollbar,.why-grid::-webkit-scrollbar{display:none}'
-    +   '.products-grid > *,.services-grid > *,.why-grid > *{'
-    +     'flex:0 0 78%;'
+    +   '.services-grid::-webkit-scrollbar,.why-grid::-webkit-scrollbar{display:none}'
+    +   '.services-grid > *,.why-grid > *{'
+    +     'flex:0 0 82%;'
     +     'scroll-snap-align:center;'
     +     'scroll-snap-stop:always;'
     +     'min-width:0;'
     +   '}'
-    +   '.services-grid > *,.why-grid > *{flex:0 0 82% !important}'
-    // Faint right-edge mask hints at "more off-screen"
-    +   '.products-grid,.services-grid,.why-grid{'
+    +   '.services-grid,.why-grid{'
     +     '-webkit-mask-image:linear-gradient(to right,#000 92%,transparent 100%);'
     +             'mask-image:linear-gradient(to right,#000 92%,transparent 100%);'
     +   '}'
