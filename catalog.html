@@ -197,6 +197,30 @@
     .detail-modal__body{flex:1;overflow-y:auto;padding:22px}
     .detail-modal__hero{display:grid;grid-template-columns:240px 1fr;gap:22px;margin-bottom:22px}
     .detail-modal__hero img{width:100%;border-radius:12px;background:#f4f2eb;aspect-ratio:1/1;object-fit:cover}
+    /* Gallery — main image + thumbnail strip */
+    .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
+    .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
+    .detail-modal__main img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#f4f2eb;transition:transform .25s ease}
+    .detail-modal__main:hover img{transform:scale(1.03)}
+    .detail-modal__zoom-hint{position:absolute;right:10px;bottom:10px;width:28px;height:28px;border-radius:50%;background:rgba(26,26,26,.78);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;pointer-events:none;backdrop-filter:blur(4px);opacity:0;transition:opacity .15s}
+    .detail-modal__main:hover .detail-modal__zoom-hint{opacity:1}
+    .detail-modal__thumbs{display:flex;gap:6px;flex-wrap:wrap}
+    .detail-modal__thumb{flex:0 0 56px;width:56px;height:56px;padding:0;border:1.5px solid #e8e6df;border-radius:8px;background:#fff;cursor:pointer;overflow:hidden;line-height:0;transition:border-color .12s,transform .12s}
+    .detail-modal__thumb:hover{border-color:#bbb;transform:translateY(-1px)}
+    .detail-modal__thumb.is-active{border-color:#1a1a1a;border-width:2px}
+    .detail-modal__thumb img{width:100%;height:100%;object-fit:cover;background:#f4f2eb}
+    .detail-modal__thumb--label{font-size:.62rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;align-self:flex-end;padding:6px 8px}
+    /* Lightbox */
+    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:1500;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+    .img-lightbox.open{display:flex}
+    .img-lightbox__img{max-width:min(1200px,96vw);max-height:92vh;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.5);background:#1a1a1a}
+    .img-lightbox__close{position:absolute;top:18px;right:22px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(8px)}
+    .img-lightbox__close:hover{background:rgba(255,255,255,.22)}
+    @media (max-width:640px){
+      .detail-modal__thumb{flex:0 0 48px;width:48px;height:48px}
+      .img-lightbox{padding:12px}
+      .img-lightbox__close{top:12px;right:12px}
+    }
     .detail-modal__swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
     .detail-modal__swatch{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:8px 6px;border-radius:10px;transition:background .12s;border:1.5px solid transparent;background:transparent;font-family:inherit}
     .detail-modal__swatch:hover{background:#f4f2eb}
@@ -431,7 +455,17 @@
       </div>
       <div class="detail-modal__body">
         <div class="detail-modal__hero">
-          <img id="detailModalImg" src="" alt="" />
+          <!-- Gallery — main image + thumbnail strip. The thumbs are
+               populated per-color in paintDetailHero() based on which
+               mockup_*_url fields S&S returned for that color. The main
+               image is clickable to open the lightbox. -->
+          <div class="detail-modal__gallery">
+            <button type="button" class="detail-modal__main" id="detailModalMainBtn" aria-label="View larger image">
+              <img id="detailModalImg" src="" alt="" />
+              <span class="detail-modal__zoom-hint" aria-hidden="true">⤢</span>
+            </button>
+            <div class="detail-modal__thumbs" id="detailModalThumbs"></div>
+          </div>
           <div>
             <div id="detailModalPrice" style="font-size:1.1rem;font-weight:600;margin-bottom:8px"></div>
             <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5"></div>
@@ -458,6 +492,14 @@
         <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span data-i18n="cat.card.add-to-quote">+ Add to quote</span> · <span id="detailModalAddQty">25</span></button>
       </div>
     </div>
+  </div>
+
+  <!-- Image lightbox — full-viewport overlay that pops open when the
+       main image in the detail modal is clicked. Click outside the image
+       or press ESC to close. Sits above the detail modal (z-index 1500). -->
+  <div class="img-lightbox" id="imgLightbox" role="dialog" aria-modal="true" aria-label="Enlarged product image" onclick="closeImgLightbox(event)">
+    <button type="button" class="img-lightbox__close" aria-label="Close" onclick="closeImgLightbox(event,true)">✕</button>
+    <img class="img-lightbox__img" id="imgLightboxImg" src="" alt="" />
   </div>
   <aside class="filter-panel" id="filterPanel" aria-hidden="true">
     <header>
@@ -630,6 +672,7 @@
   // =====================================================================
   let _detailProduct = null;
   let _detailColorIdx = 0;
+  let _detailGalleryIdx = 0;  // 0=front, 1=back, 2=side (only views with a URL render)
   // S&S sends product descriptions as a single HTML <ul>. Parse into clean
   // text bullets so we can render them in our own style (no foreign HTML
   // injection, no <ul>-inside-modal weirdness, no &amp; / &nbsp; artifacts).
@@ -640,9 +683,11 @@
     const lis = tmp.querySelectorAll('li');
     return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
   }
-  function openProductDetail(p) {
+  function openProductDetail(p, initialColorIdx) {
     _detailProduct = p;
-    _detailColorIdx = 0;
+    _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
+      ? initialColorIdx : 0;
+    _detailGalleryIdx = 0;  // always start gallery on front view when opening a new product
     document.getElementById('detailModalBrand').textContent = (p.brand || '').toUpperCase() + ' · ' + (p.style_number || '');
     document.getElementById('detailModalTitle').textContent = p.name || '';
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
@@ -701,6 +746,7 @@
     host.querySelectorAll('.detail-modal__swatch').forEach(s => {
       s.addEventListener('click', () => {
         _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
+        _detailGalleryIdx = 0; // reset to front view when color changes — new color may not have the previous view
         host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
         s.setAttribute('aria-selected', 'true');
         paintDetailHero();
@@ -719,11 +765,67 @@
     maybeTranslateDetailModal();
   }
 
+  // Build the list of available image views for THIS color. S&S gives us
+  // up to 3 mockups (front, back, side) per color but coverage varies —
+  // some hats only have a front shot, some tees have all three. We
+  // filter to whatever's actually populated so the thumb strip doesn't
+  // surface dead placeholders.
+  function _galleryViewsForColor(c, fallback) {
+    const out = [];
+    if (c && c.mockup_front_url) out.push({ key: 'front', label: 'Front', url: imgUrl(c.mockup_front_url) });
+    if (c && c.mockup_back_url)  out.push({ key: 'back',  label: 'Back',  url: imgUrl(c.mockup_back_url) });
+    if (c && c.mockup_side_url)  out.push({ key: 'side',  label: 'Side',  url: imgUrl(c.mockup_side_url) });
+    if (out.length === 0 && fallback) out.push({ key: 'hero', label: 'Front', url: imgUrl(fallback) });
+    return out;
+  }
+
   function paintDetailHero() {
     const p = _detailProduct; if (!p) return;
     const c = (p.colors || [])[_detailColorIdx] || {};
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
-    document.getElementById('detailModalImg').src = imgUrl(c.mockup_front_url || p.hero_image_url);
+
+    // Compute available views for this color + clamp the gallery index.
+    const views = _galleryViewsForColor(c, p.hero_image_url);
+    if (_detailGalleryIdx >= views.length) _detailGalleryIdx = 0;
+    const currentView = views[_detailGalleryIdx] || { url: '', label: 'Front' };
+
+    // Main image
+    const mainImg = document.getElementById('detailModalImg');
+    if (mainImg) {
+      mainImg.src = currentView.url;
+      mainImg.alt = (p.brand || '') + ' ' + (p.style_number || '') + ' — ' + ((c.color_name || '').replace(/_\d+$/, '')) + ' (' + currentView.label + ')';
+    }
+    // Main image click → open lightbox with the current full-size view
+    const mainBtn = document.getElementById('detailModalMainBtn');
+    if (mainBtn) {
+      mainBtn.onclick = function(ev) {
+        ev.preventDefault();
+        openImgLightbox(currentView.url);
+      };
+    }
+
+    // Thumbnail strip — one button per available view. Hidden entirely
+    // when there's only one image so the UI doesn't show a single useless
+    // thumb (most caps land here).
+    const thumbsHost = document.getElementById('detailModalThumbs');
+    if (thumbsHost) {
+      if (views.length <= 1) {
+        thumbsHost.innerHTML = '';
+      } else {
+        thumbsHost.innerHTML = views.map(function(v, i) {
+          const active = (i === _detailGalleryIdx) ? ' is-active' : '';
+          return '<button type="button" class="detail-modal__thumb' + active + '" data-gi="' + i + '" aria-label="' + v.label + '">' +
+                 '<img src="' + v.url + '" alt="' + v.label + '" loading="lazy"/></button>';
+        }).join('');
+        thumbsHost.querySelectorAll('.detail-modal__thumb').forEach(function(b) {
+          b.addEventListener('click', function() {
+            _detailGalleryIdx = parseInt(b.dataset.gi, 10) || 0;
+            paintDetailHero();
+          });
+        });
+      }
+    }
+
     document.getElementById('detailModalSelectedColor').textContent = (_t('cat.detail.color') || 'Color:') + ' ' + ((c.color_name || '').replace(/_\d+$/, '') || '—');
     const sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
     document.getElementById('detailModalSelectedSizes').textContent = sizes.length
@@ -737,6 +839,47 @@
     document.body.style.overflow = '';
     document.body.classList.remove('sp-detail-modal-open');
   }
+
+  // ---------------------------------------------------------------------
+  // Image lightbox — full-viewport zoom on the detail modal's main image
+  // ---------------------------------------------------------------------
+  function openImgLightbox(url) {
+    if (!url) return;
+    const lb  = document.getElementById('imgLightbox');
+    const img = document.getElementById('imgLightboxImg');
+    if (!lb || !img) return;
+    img.src = url;
+    lb.classList.add('open');
+    // Don't double-lock body scroll — the detail modal already did it,
+    // we just stack the lightbox above it. If the lightbox is opened
+    // standalone (no modal open), still lock scroll.
+    if (!document.body.classList.contains('sp-detail-modal-open')) {
+      document.body.style.overflow = 'hidden';
+    }
+    if (window.spTrack) window.spTrack('catalog_lightbox_open', { src: url });
+  }
+  function closeImgLightbox(ev, force) {
+    // Only close on backdrop click or explicit close button — not on
+    // the image itself (so a wandering click inside the image area
+    // doesn't fight the user's zoom).
+    if (!force && ev && ev.target && ev.target.tagName === 'IMG') return;
+    const lb = document.getElementById('imgLightbox');
+    if (!lb) return;
+    lb.classList.remove('open');
+    if (!document.body.classList.contains('sp-detail-modal-open')) {
+      document.body.style.overflow = '';
+    }
+  }
+  // ESC closes the lightbox first, then the modal. Reuses the existing
+  // body-class hook so we don't conflict with the modal's own ESC path.
+  document.addEventListener('keydown', function(ev) {
+    if (ev.key !== 'Escape') return;
+    const lb = document.getElementById('imgLightbox');
+    if (lb && lb.classList.contains('open')) {
+      closeImgLightbox(ev, true);
+      ev.stopPropagation();
+    }
+  });
 
   // Sync the Add-button label to the qty input. Does NOT clamp the
   // input value during typing — that prevented users from erasing the
@@ -1203,9 +1346,8 @@
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>` : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
-        <button type="button" class="card-details-link" data-detail-trigger="${p.product_id}" data-i18n="cat.card.view-details">View details ↗</button>
         <div class="card-cta">
-          <span class="card-cta__main" data-i18n="cat.card.add-to-quote">+ Add to quote</span>
+          <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
           <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span></span>
         </div>
       </div>
@@ -1233,29 +1375,19 @@
       });
     }
 
-    // Whole-card click → add to cart with the currently-selected color.
-    if (p.in_stock !== false) {
-      const addNow = (ev) => {
-        ev.preventDefault();
-        const c = (p.colors || [])[card._selectedColorIdx] || {};
-        addToCart(p.product_id, {
-          color_id:     c.color_id || null,
-          color_name:   (c.color_name || ''),
-          brand:        p.brand || '',
-          style_number: p.style_number || '',
-          name:         p.name || '',
-          garment_type: p.garment_type || null,
-          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
-        });
-        // Visual feedback on the card
-        card.classList.add('card--just-added');
-        setTimeout(() => card.classList.remove('card--just-added'), 800);
-      };
-      card.addEventListener('click', addNow);
-      card.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter' || ev.key === ' ') addNow(ev);
-      });
-    }
+    // Whole-card click → open the detail modal (where the customer can
+    // browse front/back/side mockups, zoom them, switch colors, and add
+    // to quote). Used to add-to-quote on click, but that hid the rest of
+    // the product's images behind a second click — now everyone goes
+    // through the detail view as the canonical product surface.
+    const openDetail = (ev) => {
+      ev.preventDefault();
+      openProductDetail(p, card._selectedColorIdx);
+    };
+    card.addEventListener('click', openDetail);
+    card.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') openDetail(ev);
+    });
 
     return card;
   }

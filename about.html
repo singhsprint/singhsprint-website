@@ -5,8 +5,8 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us | Singhs Print - Montreal Custom Apparel</title>
-  <meta name="description" content="Learn about Singhs Print, Montreal's in-house custom apparel printer. DTG, DTF & Embroidery for brands, businesses & creators.">
+  <title>About Singhs Print · Custom Apparel Printing in Sainte-Anne-de-Bellevue, Montreal</title>
+  <meta name="description" content="Family-run custom apparel studio in Sainte-Anne-de-Bellevue, Quebec. DTG, DTF, embroidery & screen printing for McGill clubs, West Island businesses, and Net-30 corporate accounts. 1,100+ blanks, 1-hour quote turnaround, NEQ 1181573313.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
@@ -38,7 +38,9 @@
     /* Hero */
     .about-hero { padding: 80px 24px 60px; text-align: center; background: #f8f7f4; }
     .about-hero h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 16px; }
-    .about-hero p { font-size: 1.15rem; color: #666; max-width: 640px; margin: 0 auto; line-height: 1.8; }
+    .about-hero p { font-size: 1.15rem; color: #666; max-width: 720px; margin: 0 auto; line-height: 1.8; }
+    .about-hero__chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 24px; }
+    .about-hero__chip { font-size: .76rem; font-weight: 600; color: #555; background: #fff; border: 1px solid #e8e6df; padding: 6px 12px; border-radius: 50px; letter-spacing: .02em; }
 
     /* Content sections */
     .about-section { padding: 80px 0; }
@@ -57,9 +59,18 @@
       font-weight: 600; font-size: 0.9rem; margin-bottom: 16px;
     }
 
+    /* By the numbers — 4-stat strip */
+    .stats-section { background: #1a1a1a; color: #fff; padding: 56px 0; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1100px; margin: 0 auto; }
+    .stat-cell { padding: 18px 24px; text-align: center; border-right: 1px solid rgba(255,255,255,.08); }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell strong { font-family: 'Playfair Display', serif; font-size: 2.2rem; line-height: 1; color: #e8ff3c; display: block; margin-bottom: 6px; }
+    .stat-cell span { font-size: .82rem; color: #999; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+
     /* Values */
     .values-section { background: #0a0a0a; color: #fff; padding: 80px 0; }
-    .values-section h2 { text-align: center; margin-bottom: 48px; }
+    .values-section h2 { text-align: center; margin-bottom: 12px; }
+    .values-section > .container > p.values-sub { text-align: center; color: #888; max-width: 620px; margin: 0 auto 40px; }
     .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
     .value-card {
       padding: 32px; border-radius: 16px; background: rgba(255,255,255,0.04);
@@ -69,15 +80,16 @@
     .value-card h3 { color: #fff; font-size: 1.15rem; margin-bottom: 8px; }
     .value-card p { color: #888; font-size: 0.95rem; line-height: 1.6; }
 
-    /* Equipment */
-    .equipment-section { padding: 80px 0; background: #f8f7f4; }
-    .equipment-section h2 { text-align: center; margin-bottom: 12px; }
-    .equipment-section > .container > p { text-align: center; color: #777; margin-bottom: 48px; font-size: 1.05rem; }
-    .equipment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .equipment-item {
-      border-radius: 16px; overflow: hidden; background: #e0e0e0; aspect-ratio: 4/3;
-      display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.85rem; text-align: center; padding: 16px;
-    }
+    /* Credentials — "boring details that matter" */
+    .creds-section { padding: 80px 0; background: #fafaf7; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+    .creds-section h2 { text-align: center; margin-bottom: 12px; }
+    .creds-section > .container > p.creds-sub { text-align: center; color: #777; max-width: 620px; margin: 0 auto 40px; font-size: 1.05rem; }
+    .creds-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 880px; margin: 0 auto; }
+    .cred-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; background: #fff; border: 1px solid #ece9e0; border-radius: 12px; }
+    .cred-row__icon { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: #1a1a1a; color: #e8ff3c; display: flex; align-items: center; justify-content: center; font-size: .76rem; font-weight: 700; }
+    .cred-row__body { flex: 1; min-width: 0; }
+    .cred-row__body strong { display: block; font-size: .92rem; color: #1a1a1a; margin-bottom: 2px; font-weight: 700; }
+    .cred-row__body span { font-size: .82rem; color: #777; line-height: 1.5; }
 
     /* CTA */
     .cta-section { background: #1a1a1a; padding: 80px 24px; text-align: center; color: #fff; }
@@ -106,10 +118,21 @@
     .footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid #222;display:flex;justify-content:space-between;font-size:.8rem;color:#555}
 
     @media (max-width: 768px) {
+      .about-section { padding: 56px 0; }
       .about-grid { grid-template-columns: 1fr; gap: 32px; }
       .about-grid.reverse { direction: ltr; }
+      .stats-section { padding: 36px 0; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0; }
+      .stat-cell { padding: 14px 6px; border-right: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); }
+      .stat-cell:nth-child(2n) { border-right: none; }
+      .stat-cell:nth-child(n+3) { border-bottom: none; }
+      .stat-cell strong { font-size: 1.6rem; }
+      .stat-cell span { font-size: .68rem; letter-spacing: 1px; }
+      .values-section { padding: 56px 0; }
       .values-grid { grid-template-columns: 1fr; }
-      .equipment-grid { grid-template-columns: repeat(2, 1fr); }
+      .creds-section { padding: 56px 0; }
+      .creds-grid { grid-template-columns: 1fr; }
+      .cta-section { padding: 56px 24px; }
       .nav-links { display: none; }
       .nav-cta .btn{display:none}
       .mobile-toggle{display:flex}
@@ -123,15 +146,15 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://singhsprint.com/about">
-  <meta property="og:title" content="About Singhs Print">
-  <meta property="og:description" content="Family-run Montreal apparel printer in the West Island. Meet the team, our methods, and the studio.">
+  <meta property="og:title" content="About Singhs Print · Custom Apparel Printing in Sainte-Anne-de-Bellevue">
+  <meta property="og:description" content="Family-run Quebec apparel decorator on the West Island of Montreal. DTG, DTF, embroidery & screen printing — 1,100+ blanks, Net-30 for repeat accounts, NEQ 1181573313.">
   <meta property="og:locale" content="en_CA">
   <meta property="og:image" content="https://singhsprint.com/images/hero-duo.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="About Singhs Print">
-  <meta name="twitter:description" content="Family-run Montreal apparel printer in the West Island. Meet the team, our methods, and the studio.">
+  <meta name="twitter:title" content="About Singhs Print · Sainte-Anne-de-Bellevue, Montreal">
+  <meta name="twitter:description" content="Family-run West Island apparel decorator. DTG, DTF, embroidery & screen printing for student orgs, local businesses and Net-30 corporate accounts.">
   <meta name="twitter:image" content="https://singhsprint.com/images/hero-duo.jpg">
 </head>
 <body>
@@ -139,19 +162,48 @@
   <div id="nav-placeholder"></div>
 
   <section class="about-hero">
-    <h1 data-i18n="about.hero.h1">Your local print shop,<br>built for real deadlines.</h1>
-    <p data-i18n="about.hero.p">Singhs Print is a Montreal-based custom apparel studio specializing in DTG, DTF, and embroidery. We help brands, businesses, creators, and teams bring their ideas to life with honest pricing, fast turnaround, and quality you can see and feel.</p>
+    <h1 data-i18n="about.hero.h1">Montreal's custom apparel studio,<br>built in Sainte-Anne-de-Bellevue.</h1>
+    <p data-i18n="about.hero.p">Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts — with 1,100+ blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.</p>
+    <div class="about-hero__chips" aria-hidden="true">
+      <span class="about-hero__chip" data-i18n="about.hero.chip.local">West Island, Montreal</span>
+      <span class="about-hero__chip" data-i18n="about.hero.chip.bilingual">EN · FR</span>
+      <span class="about-hero__chip" data-i18n="about.hero.chip.neq">NEQ 1181573313</span>
+      <span class="about-hero__chip" data-i18n="about.hero.chip.net30">Net-30 for repeat accounts</span>
+    </div>
   </section>
 
   <section class="about-section">
     <div class="container">
       <div class="about-grid">
-        <div class="about-image"><img src="images/lifestyle-intrusive.jpg" alt="Singhs Print studio workspace" loading="lazy"></div>
+        <div class="about-image"><img src="images/lifestyle-intrusive.jpg" alt="Singhs Print Sainte-Anne-de-Bellevue studio workspace" loading="lazy"></div>
         <div class="about-text">
           <span class="highlight" data-i18n="about.who.label">Who we are</span>
-          <h2 data-i18n="about.who.h2">A studio that actually cares about your order</h2>
-          <p data-i18n="about.who.p1">We started Singhs Print because we were tired of seeing custom apparel done poorly: slow turnarounds, inconsistent quality, and shops that treat small orders like an inconvenience.</p>
-          <p data-i18n="about.who.p2">Every order that comes through our door gets the same attention, whether it's 5 tees for a birthday or 500 hoodies for a brand launch. We print everything in-house in Montreal, which means we control the quality from start to finish.</p>
+          <h2 data-i18n="about.who.h2">A West Island studio that takes your order personally</h2>
+          <p data-i18n="about.who.p1">Singhs Print was started by a small family team in Sainte-Anne-de-Bellevue because we were tired of seeing custom apparel done sloppily: slow turnarounds, inconsistent quality, and shops that treated small orders like a nuisance.</p>
+          <p data-i18n="about.who.p2">Every order — whether it's 5 t-shirts for a birthday or 500 hoodies for a brand launch — runs through the same sample-and-approve process. Everything is decorated in-house in our Montreal studio so we control quality from artwork prep through final QC. We're Quebec-registered (Imprimerie Singhs Print · NEQ 1181573313), GST and QST compliant, and properly insured — important if you're a procurement-led organization or just like knowing the people printing your gear aren't trading out of a parking lot.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats-section" aria-label="Singhs Print by the numbers">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <strong>100+</strong>
+          <span data-i18n="about.stats.orders">Orders decorated</span>
+        </div>
+        <div class="stat-cell">
+          <strong>5.0★</strong>
+          <span data-i18n="about.stats.rating">Google rating · 21 reviews</span>
+        </div>
+        <div class="stat-cell">
+          <strong>1,100+</strong>
+          <span data-i18n="about.stats.blanks">Blank styles in catalog</span>
+        </div>
+        <div class="stat-cell">
+          <strong>1 hr</strong>
+          <span data-i18n="about.stats.quote">Typical quote turnaround</span>
         </div>
       </div>
     </div>
@@ -160,12 +212,12 @@
   <section class="about-section" style="background: #f8f7f4;">
     <div class="container">
       <div class="about-grid reverse">
-        <div class="about-image"><img src="images/hero-duo.jpg" alt="Custom DTG DTF and Embroidery printing at Singhs Print" loading="lazy"></div>
+        <div class="about-image"><img src="images/hero-duo.jpg" alt="DTG, DTF and embroidery printing at Singhs Print Montreal" loading="lazy"></div>
         <div class="about-text">
           <span class="highlight" data-i18n="about.what.label">What we do</span>
-          <h2 data-i18n="about.what.h2">DTG, DTF &amp; Embroidery under one roof</h2>
-          <p data-i18n="about.what.p1">Having all three printing methods in-house means we can recommend the right approach for your project instead of forcing everything through one method. Cotton tees? DTG. Polyester jerseys? DTF. Corporate polos with your logo? Embroidery.</p>
-          <p data-i18n="about.what.p2">We also have a design studio on-site for cleanups, mockups, and brand assets, so even if your artwork isn't print-ready, we'll get it there.</p>
+          <h2 data-i18n="about.what.h2">DTG, DTF, embroidery &amp; screen — under one roof</h2>
+          <p data-i18n="about.what.p1">Having every method in-house means we recommend the right one for your project instead of forcing everything through one machine. Cotton tees? DTG. Polyester athleisure and dark blends? DTF. Logo embroidery on caps, polos, and jackets? Stitched in-house. High-volume single-color screen runs? Same building.</p>
+          <p data-i18n="about.what.p2">We carry 1,100+ blank styles from S&amp;S Activewear, SanMar, AlphaBroder and Rue Saint-Patrick — every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you'd prefer — we'll decorate yours at the same per-piece rate.</p>
         </div>
       </div>
     </div>
@@ -174,12 +226,12 @@
   <section class="about-section">
     <div class="container">
       <div class="about-grid">
-        <div class="about-image"><img src="images/lifestyle-jacket.jpg" alt="Custom printed jacket showcase" loading="lazy"></div>
+        <div class="about-image"><img src="images/lifestyle-jacket.jpg" alt="Custom decorated jacket from Singhs Print Montreal" loading="lazy"></div>
         <div class="about-text">
           <span class="highlight" data-i18n="about.clients.label">Who we work with</span>
-          <h2 data-i18n="about.clients.h2">From startups to schools to Saturday markets</h2>
-          <p data-i18n="about.clients.p1">Our clients include local businesses needing staff uniforms, content creators launching merch, gyms and cafes with branded gear, schools and event organizers, and artists selling at pop-ups.</p>
-          <p data-i18n="about.clients.p2">Whether you need 1 item or 1,000+, there's no minimum and no judgment. We've built our process to be friendly for first-timers and efficient for repeat clients.</p>
+          <h2 data-i18n="about.clients.h2">From McGill clubs to construction crews to Saturday markets</h2>
+          <p data-i18n="about.clients.p1">Our work goes out to McGill student organizations (sororities, fraternities, sport clubs), Concordia associations, West Island restaurants and gyms, construction and landscaping outfits, Quebec institutions like the Morgan Arboretum, and content creators launching merch drops — Sigma Chi, McGill Pizza, Old Soul, Montreal Pinball, CUSEC, Artwood Construction, Durante Landscapers, CANAUST and dozens more.</p>
+          <p data-i18n="about.clients.p2">Minimums are 5 units for DTG/DTF and 12 for embroidery — lower than most decorators in the city. No judgment for first-timers, no extra friction for repeat clients. Standing accounts move onto Net-30 terms after a couple of clean orders, and procurement-led organizations can sign an MSA and submit RFPs through our intake form.</p>
         </div>
       </div>
     </div>
@@ -188,36 +240,88 @@
   <section class="values-section">
     <div class="container">
       <h2 data-i18n="about.values.h2">How we work</h2>
+      <p class="values-sub" data-i18n="about.values.sub">Six things we promise on every order — the same way for a sorority tee run as for a 1,000-piece corporate rollout.</p>
       <div class="values-grid">
         <div class="value-card">
           <div class="value-icon">&#128200;</div>
           <h3 data-i18n="about.values.transparent.h">Transparent pricing</h3>
-          <p data-i18n="about.values.transparent.p">You get a clear quote upfront with no hidden fees. Bulk discounts and business packages available for recurring orders.</p>
+          <p data-i18n="about.values.transparent.p">A firm written quote upfront with no hidden fees. Bulk tiers kick in at 5+ units, Net-30 terms for approved repeat accounts.</p>
         </div>
         <div class="value-card">
           <div class="value-icon">&#128269;</div>
           <h3 data-i18n="about.values.sample.h">Sample-first approach</h3>
-          <p data-i18n="about.values.sample.p">Every order gets a physical sample before full production. You verify colors, placement, and quality before we print a single extra piece.</p>
+          <p data-i18n="about.values.sample.p">Every order gets a real physical sample before full production. You verify colors, placement and quality before we print a single extra piece.</p>
         </div>
         <div class="value-card">
           <div class="value-icon">&#9889;</div>
           <h3 data-i18n="about.values.turnaround.h">Real turnaround times</h3>
-          <p data-i18n="about.values.turnaround.p">Most orders ready in 2-4 business days. We don't quote timelines we can't hit, and rush options are available when you need them.</p>
+          <p data-i18n="about.values.turnaround.p">Standard turnaround is 7–10 business days from approved artwork. Rush (3–5 days) is available with a small surcharge. We don't quote timelines we can't hit.</p>
         </div>
         <div class="value-card">
           <div class="value-icon">&#127919;</div>
           <h3 data-i18n="about.values.qc.h">Quality control</h3>
-          <p data-i18n="about.values.qc.p">100% in-house production means we catch issues before they reach you. No outsourcing, no middlemen, no surprises.</p>
+          <p data-i18n="about.values.qc.p">100% in-house decoration — we catch issues before they ship. No outsourcing, no middlemen, no surprise vendor reshuffles mid-project.</p>
         </div>
         <div class="value-card">
           <div class="value-icon">&#127912;</div>
           <h3 data-i18n="about.values.design.h">Free design help</h3>
-          <p data-i18n="about.values.design.p">Don't have print-ready artwork? Our design studio helps with cleanups, mockups, and getting your files production-ready at no extra charge.</p>
+          <p data-i18n="about.values.design.p">Don't have print-ready artwork? Our in-studio designers handle cleanups, mockups and brand prep at no extra charge.</p>
         </div>
         <div class="value-card">
           <div class="value-icon">&#128666;</div>
-          <h3 data-i18n="about.values.delivery.h">Flexible delivery</h3>
-          <p data-i18n="about.values.delivery.p">Local pickup in the West Island, delivery across Montreal, or Canada-wide shipping. Free delivery on orders of 25+ units.</p>
+          <h3 data-i18n="about.values.delivery.h">Local pickup + Canada-wide ship</h3>
+          <p data-i18n="about.values.delivery.p">Free pickup at our Sainte-Anne-de-Bellevue studio, courier delivery across the West Island and Montreal, Canpar and Purolator Canada-wide.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="creds-section">
+    <div class="container">
+      <h2 data-i18n="about.creds.h2">Boring details that matter</h2>
+      <p class="creds-sub" data-i18n="about.creds.sub">The legitimacy paperwork that procurement asks about before they cut a PO.</p>
+      <div class="creds-grid">
+        <div class="cred-row">
+          <div class="cred-row__icon">✓</div>
+          <div class="cred-row__body">
+            <strong data-i18n="about.creds.legal.h">Imprimerie Singhs Print</strong>
+            <span data-i18n="about.creds.legal.p">95558110 QUEBEC INC · Quebec-registered NEQ 1181573313 · 81A Sainte Anne St, Sainte-Anne-de-Bellevue, QC H9X 1L9</span>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-row__icon">$</div>
+          <div class="cred-row__body">
+            <strong data-i18n="about.creds.tax.h">GST &amp; QST registered</strong>
+            <span data-i18n="about.creds.tax.p">GST 71581 7169 RT0001 · QST 1233348101 TQ0001 — properly remitted, invoices are PO-ready.</span>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-row__icon">≡</div>
+          <div class="cred-row__body">
+            <strong data-i18n="about.creds.terms.h">Net-30 for approved accounts</strong>
+            <span data-i18n="about.creds.terms.p">50% deposit to start production, balance Net-30 after the first couple of clean orders. Standing programs negotiate from there.</span>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-row__icon">⌘</div>
+          <div class="cred-row__body">
+            <strong data-i18n="about.creds.msa.h">MSA &amp; RFP intake</strong>
+            <span data-i18n="about.creds.msa.p">Procurement-led organizations can sign a Master Service Agreement and submit per-line RFPs through our intake form. We turn them around inside one business day.</span>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-row__icon">✦</div>
+          <div class="cred-row__body">
+            <strong data-i18n="about.creds.bilingual.h">Bilingual EN / FR</strong>
+            <span data-i18n="about.creds.bilingual.p">Quotes, invoices, samples and emails available in both official languages — Bill 96-aligned for Quebec-based clients.</span>
+          </div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-row__icon">⌂</div>
+          <div class="cred-row__body">
+            <strong data-i18n="about.creds.insured.h">Commercially insured</strong>
+            <span data-i18n="about.creds.insured.p">General liability coverage plus product liability on every order. Certificate of insurance available on request.</span>
+          </div>
         </div>
       </div>
     </div>
@@ -226,17 +330,17 @@
   <section class="map-section">
     <div class="container">
       <h2 data-i18n="about.map.h2">Visit our studio</h2>
-      <p data-i18n="about.map.p">Montreal's West Island. Open 7 days a week, 9AM to 9PM. Call first to schedule a visit.</p>
+      <p data-i18n="about.map.p">81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal's West Island. Open 7 days, 9AM to 9PM. Call 514-915-1539 before you come by — production runs all day and we like to set aside time for visitors.</p>
       <div class="map-embed" style="height:400px">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2800!2d-73.9535957!3d45.4034586!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cc9397fbbe3dc3d%3A0x2a725775ff55b35e!2sImprimerie%20Singhs%20Print!5e0!3m2!1sen!2sca!4v1713100000000" width="100%" height="100%" style="border:0;border-radius:16px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2800!2d-73.9535957!3d45.4034586!2m3!1f0!2f0!3f0!3m2!1f0!2i768!4f13.1!3m3!1m2!1s0x4cc9397fbbe3dc3d%3A0x2a725775ff55b35e!2sImprimerie%20Singhs%20Print!5e0!3m2!1sen!2sca!4v1713100000000" width="100%" height="100%" style="border:0;border-radius:16px" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </div>
   </section>
 
   <section class="cta-section">
     <h2 data-i18n="about.cta.h2">Ready to get started?</h2>
-    <p data-i18n="about.cta.p">Tell us what you need and get a quote in hours, not days. First order is 15% off.</p>
-    <a href="quote" class="btn btn-accent" data-i18n="about.cta.btn">Get a Free Quote &rarr;</a>
+    <p data-i18n="about.cta.p">Send us your spec and we'll come back with a firm quote, sample timeline and Net-30 paperwork — usually within the hour during business hours.</p>
+    <a href="quote" class="btn btn-accent" data-sp-track="about_cta_quote" data-i18n="about.cta.btn">Get a Free Quote &rarr;</a>
   </section>
 
   <div id="footer-placeholder"></div>

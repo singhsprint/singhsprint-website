@@ -214,81 +214,135 @@ var SP_LANG = (function() {
     'home.reviews.author.label': { en: 'Google Review',                  fr: 'Avis Google' },
 
     // ===== ABOUT =====
-    'about.hero.h1': { en: 'Your local print shop,<br>built for real deadlines.', fr: 'Votre imprimerie locale,<br>faite pour les vrais délais.' },
+    'about.hero.h1': { en: 'Montreal\'s custom apparel studio,<br>built in Sainte-Anne-de-Bellevue.', fr: 'L\'imprimerie de vêtements personnalisés de Montréal,<br>née à Sainte-Anne-de-Bellevue.' },
     'about.hero.p': {
-      en: 'Singhs Print is a Montreal-based custom apparel studio specializing in DTG, DTF, and embroidery. We help brands, businesses, creators, and teams bring their ideas to life with honest pricing, fast turnaround, and quality you can see and feel.',
-      fr: 'Singhs Print est un studio d\'impression de vêtements personnalisés à Montréal, spécialisé en DTG, DTF et broderie. Nous aidons les marques, entreprises, créateurs et équipes à réaliser leurs idées avec des prix honnêtes, un délai rapide et une qualité visible.'
+      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts — with 1,100+ blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
+      fr: 'Imprimerie Singhs Print est un décorateur de vêtements familial dans l\'Ouest-de-l\'Île de Montréal. DTG, DTF, broderie et sérigraphie pour les organisations étudiantes, les entreprises locales et les comptes corporatifs Net-30 — avec plus de 1 100 styles de vêtements vierges, une soumission en 1 heure pendant les heures d\'ouverture et une vraie réponse humaine à chaque fois.'
     },
+    'about.hero.chip.local':     { en: 'West Island, Montreal',       fr: 'Ouest-de-l\'Île, Montréal' },
+    'about.hero.chip.bilingual': { en: 'EN · FR',                     fr: 'EN · FR' },
+    'about.hero.chip.neq':       { en: 'NEQ 1181573313',              fr: 'NEQ 1181573313' },
+    'about.hero.chip.net30':     { en: 'Net-30 for repeat accounts',  fr: 'Net-30 pour comptes récurrents' },
+
     'about.who.label': { en: 'Who we are', fr: 'Qui sommes-nous' },
-    'about.who.h2': { en: 'A studio that actually cares about your order', fr: 'Un studio qui se soucie vraiment de votre commande' },
+    'about.who.h2': { en: 'A West Island studio that takes your order personally', fr: 'Un studio de l\'Ouest-de-l\'Île qui prend votre commande personnellement' },
     'about.who.p1': {
-      en: 'We started Singhs Print because we were tired of seeing custom apparel done poorly: slow turnarounds, inconsistent quality, and shops that treat small orders like an inconvenience.',
-      fr: 'Nous avons lancé Singhs Print parce qu\'on en avait assez de voir l\'impression personnalisée mal faite : délais lents, qualité incohérente et ateliers qui traitent les petites commandes comme un dérangement.'
+      en: 'Singhs Print was started by a small family team in Sainte-Anne-de-Bellevue because we were tired of seeing custom apparel done sloppily: slow turnarounds, inconsistent quality, and shops that treated small orders like a nuisance.',
+      fr: 'Singhs Print a été lancée par une petite équipe familiale à Sainte-Anne-de-Bellevue parce qu\'on en avait assez de voir l\'impression personnalisée mal faite : délais lents, qualité incohérente et ateliers qui traitaient les petites commandes comme un dérangement.'
     },
     'about.who.p2': {
-      en: 'Every order that comes through our door gets the same attention, whether it\'s 5 tees for a birthday or 500 hoodies for a brand launch. We print everything in-house in Montreal, which means we control the quality from start to finish.',
-      fr: 'Chaque commande reçoit la même attention, que ce soit 5 t-shirts pour un anniversaire ou 500 hoodies pour un lancement de marque. Tout est imprimé sur place à Montréal, ce qui nous permet de contrôler la qualité du début à la fin.'
+      en: 'Every order — whether it\'s 5 t-shirts for a birthday or 500 hoodies for a brand launch — runs through the same sample-and-approve process. Everything is decorated in-house in our Montreal studio so we control quality from artwork prep through final QC. We\'re Quebec-registered (Imprimerie Singhs Print · NEQ 1181573313), GST and QST compliant, and properly insured — important if you\'re a procurement-led organization or just like knowing the people printing your gear aren\'t trading out of a parking lot.',
+      fr: 'Chaque commande — que ce soit 5 t-shirts pour un anniversaire ou 500 hoodies pour un lancement de marque — passe par le même processus d\'échantillon et d\'approbation. Tout est décoré sur place dans notre studio de Montréal pour qu\'on contrôle la qualité de la préparation du fichier au CQ final. Nous sommes immatriculés au Québec (Imprimerie Singhs Print · NEQ 1181573313), conformes à la TPS et à la TVQ, et correctement assurés — important si vous êtes une organisation pilotée par les achats ou si vous aimez simplement savoir que les gens qui impriment vos vêtements ne travaillent pas depuis un stationnement.'
     },
+
+    'about.stats.orders':  { en: 'Orders decorated',                fr: 'Commandes décorées' },
+    'about.stats.rating':  { en: 'Google rating · 21 reviews',      fr: 'Note Google · 21 avis' },
+    'about.stats.blanks':  { en: 'Blank styles in catalog',         fr: 'Styles vierges au catalogue' },
+    'about.stats.quote':   { en: 'Typical quote turnaround',        fr: 'Délai typique de soumission' },
+
     'about.what.label': { en: 'What we do', fr: 'Ce qu\'on fait' },
-    'about.what.h2': { en: 'DTG, DTF & Embroidery under one roof', fr: 'DTG, DTF et broderie sous un même toit' },
+    'about.what.h2': { en: 'DTG, DTF, embroidery & screen — under one roof', fr: 'DTG, DTF, broderie et sérigraphie — sous un même toit' },
     'about.what.p1': {
-      en: 'Having all three printing methods in-house means we can recommend the right approach for your project instead of forcing everything through one method. Cotton tees? DTG. Polyester jerseys? DTF. Corporate polos with your logo? Embroidery.',
-      fr: 'Avoir les trois méthodes d\'impression sur place nous permet de recommander la bonne approche pour votre projet. T-shirts en coton? DTG. Jerseys en polyester? DTF. Polos corporatifs avec votre logo? Broderie.'
+      en: 'Having every method in-house means we recommend the right one for your project instead of forcing everything through one machine. Cotton tees? DTG. Polyester athleisure and dark blends? DTF. Logo embroidery on caps, polos, and jackets? Stitched in-house. High-volume single-color screen runs? Same building.',
+      fr: 'Avoir toutes les méthodes sur place nous permet de recommander la bonne pour votre projet plutôt que de tout forcer à travers une seule machine. T-shirts en coton ? DTG. Athleisure en polyester et mélanges foncés ? DTF. Broderie de logos sur casquettes, polos et vestes ? Cousue sur place. Tirages sérigraphiques mono-couleur en gros volume ? Même bâtiment.'
     },
     'about.what.p2': {
-      en: 'We also have a design studio on-site for cleanups, mockups, and brand assets, so even if your artwork isn\'t print-ready, we\'ll get it there.',
-      fr: 'Nous avons aussi un studio de design sur place pour les retouches, maquettes et actifs de marque. Même si votre visuel n\'est pas prêt pour l\'impression, on s\'en occupe.'
+      en: 'We carry 1,100+ blank styles from S&S Activewear, SanMar, AlphaBroder and Rue Saint-Patrick — every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer — we\'ll decorate yours at the same per-piece rate.',
+      fr: 'Nous offrons plus de 1 100 styles vierges chez S&S Activewear, SanMar, AlphaBroder et Rue Saint-Patrick — toutes les grandes marques de Gildan et Bella+Canvas à Comfort Colors, Champion, Next Level, Independent et American Apparel. Apportez vos propres vêtements si vous préférez — nous décorerons les vôtres au même tarif par pièce.'
     },
+
     'about.clients.label': { en: 'Who we work with', fr: 'Avec qui on travaille' },
-    'about.clients.h2': { en: 'From startups to schools to Saturday markets', fr: 'Des startups aux écoles en passant par les marchés du samedi' },
+    'about.clients.h2': { en: 'From McGill clubs to construction crews to Saturday markets', fr: 'Des clubs McGill aux équipes de construction en passant par les marchés du samedi' },
     'about.clients.p1': {
-      en: 'Our clients include local businesses needing staff uniforms, content creators launching merch, gyms and cafes with branded gear, schools and event organizers, and artists selling at pop-ups.',
-      fr: 'Nos clients incluent des entreprises locales qui ont besoin d\'uniformes, des créateurs de contenu qui lancent du merch, des gyms et cafés avec des vêtements de marque, des écoles et organisateurs d\'événements, et des artistes qui vendent dans des pop-ups.'
+      en: 'Our work goes out to McGill student organizations (sororities, fraternities, sport clubs), Concordia associations, West Island restaurants and gyms, construction and landscaping outfits, Quebec institutions like the Morgan Arboretum, and content creators launching merch drops — Sigma Chi, McGill Pizza, Old Soul, Montreal Pinball, CUSEC, Artwood Construction, Durante Landscapers, CANAUST and dozens more.',
+      fr: 'Notre travail part vers des organisations étudiantes de McGill (sororités, fraternités, clubs sportifs), des associations de Concordia, des restaurants et gyms de l\'Ouest-de-l\'Île, des entreprises de construction et d\'aménagement paysager, des institutions québécoises comme l\'Arboretum Morgan, et des créateurs de contenu qui lancent des drops merch — Sigma Chi, McGill Pizza, Old Soul, Montreal Pinball, CUSEC, Artwood Construction, Durante Landscapers, CANAUST et des dizaines d\'autres.'
     },
     'about.clients.p2': {
-      en: 'Whether you need 1 item or 1,000+, there\'s no minimum and no judgment. We\'ve built our process to be friendly for first-timers and efficient for repeat clients.',
-      fr: 'Que vous ayez besoin de 1 article ou 1 000+, il n\'y a pas de minimum et aucun jugement. Notre processus est convivial pour les nouveaux clients et efficace pour les habitués.'
+      en: 'Minimums are 5 units for DTG/DTF and 12 for embroidery — lower than most decorators in the city. No judgment for first-timers, no extra friction for repeat clients. Standing accounts move onto Net-30 terms after a couple of clean orders, and procurement-led organizations can sign an MSA and submit RFPs through our intake form.',
+      fr: 'Les minimums sont de 5 unités pour DTG/DTF et de 12 pour la broderie — plus bas que la plupart des décorateurs de la ville. Pas de jugement pour les nouveaux clients, pas de friction supplémentaire pour les habitués. Les comptes récurrents passent aux modalités Net-30 après quelques commandes propres, et les organisations pilotées par les achats peuvent signer une entente-cadre et soumettre des appels d\'offres via notre formulaire d\'admission.'
     },
+
     'about.values.h2': { en: 'How we work', fr: 'Comment on travaille' },
+    'about.values.sub': {
+      en: 'Six things we promise on every order — the same way for a sorority tee run as for a 1,000-piece corporate rollout.',
+      fr: 'Six engagements sur chaque commande — autant pour un lot de t-shirts de sororité que pour un déploiement corporatif de 1 000 pièces.'
+    },
     'about.values.transparent.h': { en: 'Transparent pricing', fr: 'Prix transparents' },
     'about.values.transparent.p': {
-      en: 'You get a clear quote upfront with no hidden fees. Bulk discounts and business packages available for recurring orders.',
-      fr: 'Vous recevez une soumission claire sans frais cachés. Rabais de volume et forfaits entreprises pour les commandes recurrentes.'
+      en: 'A firm written quote upfront with no hidden fees. Bulk tiers kick in at 5+ units, Net-30 terms for approved repeat accounts.',
+      fr: 'Une soumission écrite ferme dès le départ, sans frais cachés. Les paliers volume commencent à 5+ unités, Net-30 pour les comptes récurrents approuvés.'
     },
     'about.values.sample.h': { en: 'Sample-first approach', fr: 'Approche échantillon d\'abord' },
     'about.values.sample.p': {
-      en: 'Every order gets a physical sample before full production. You verify colors, placement, and quality before we print a single extra piece.',
-      fr: 'Chaque commande reçoit un échantillon physique avant la production. Vous vérifiez les couleurs, le placement et la qualité avant qu\'on imprime le reste.'
+      en: 'Every order gets a real physical sample before full production. You verify colors, placement and quality before we print a single extra piece.',
+      fr: 'Chaque commande reçoit un véritable échantillon physique avant la production complète. Vous vérifiez les couleurs, le placement et la qualité avant qu\'on imprime une seule pièce supplémentaire.'
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
-      en: 'Most orders ready in 2-4 business days. We don\'t quote timelines we can\'t hit, and rush options are available when you need them.',
-      fr: 'La plupart des commandes prêtes en 2 à 4 jours ouvrables. On ne promet pas de délais qu\'on ne peut pas tenir, et des options urgentes sont disponibles.'
+      en: 'Standard turnaround is 7–10 business days from approved artwork. Rush (3–5 days) is available with a small surcharge. We don\'t quote timelines we can\'t hit.',
+      fr: 'Le délai standard est de 7 à 10 jours ouvrables à partir de l\'approbation du visuel. L\'option urgente (3 à 5 jours) est disponible moyennant un léger supplément. On ne promet pas de délais qu\'on ne peut pas tenir.'
     },
     'about.values.qc.h': { en: 'Quality control', fr: 'Contrôle de qualité' },
     'about.values.qc.p': {
-      en: '100% in-house production means we catch issues before they reach you. No outsourcing, no middlemen, no surprises.',
-      fr: '100% production interne. On détecte les problèmes avant qu\'ils ne vous atteignent. Pas de sous-traitance, pas d\'intermediaires, pas de surprises.'
+      en: '100% in-house decoration — we catch issues before they ship. No outsourcing, no middlemen, no surprise vendor reshuffles mid-project.',
+      fr: 'Décoration 100% à l\'interne — on repère les problèmes avant qu\'ils ne partent. Pas de sous-traitance, pas d\'intermédiaires, pas de fournisseur surprise en cours de projet.'
     },
     'about.values.design.h': { en: 'Free design help', fr: 'Aide au design gratuite' },
     'about.values.design.p': {
-      en: 'Don\'t have print-ready artwork? Our design studio helps with cleanups, mockups, and getting your files production-ready at no extra charge.',
-      fr: 'Votre visuel n\'est pas prêt pour l\'impression? Notre studio de design aide avec les retouches, maquettes et la préparation de vos fichiers sans frais supplémentaires.'
+      en: 'Don\'t have print-ready artwork? Our in-studio designers handle cleanups, mockups and brand prep at no extra charge.',
+      fr: 'Votre visuel n\'est pas prêt pour l\'impression ? Nos designers en studio s\'occupent des retouches, maquettes et préparation de marque sans frais supplémentaires.'
     },
-    'about.values.delivery.h': { en: 'Flexible delivery', fr: 'Livraison flexible' },
+    'about.values.delivery.h': { en: 'Local pickup + Canada-wide ship', fr: 'Ramassage local + expédition pancanadienne' },
     'about.values.delivery.p': {
-      en: 'Local pickup in the West Island, delivery across Montreal, or Canada-wide shipping. Free delivery on orders of 25+ units.',
-      fr: 'Ramassage local dans l\'Ouest-de-l\'Île, livraison à Montréal ou expedition partout au Canada. Livraison gratuite pour les commandes de 25+ unites.'
+      en: 'Free pickup at our Sainte-Anne-de-Bellevue studio, courier delivery across the West Island and Montreal, Canpar and Purolator Canada-wide.',
+      fr: 'Ramassage gratuit à notre studio de Sainte-Anne-de-Bellevue, livraison par messagerie dans l\'Ouest-de-l\'Île et à Montréal, Canpar et Purolator partout au Canada.'
     },
+
+    'about.creds.h2': { en: 'Boring details that matter', fr: 'Détails ennuyants qui comptent' },
+    'about.creds.sub': {
+      en: 'The legitimacy paperwork that procurement asks about before they cut a PO.',
+      fr: 'La paperasse de légitimité que les services d\'achats demandent avant d\'émettre un bon de commande.'
+    },
+    'about.creds.legal.h':     { en: 'Imprimerie Singhs Print',                fr: 'Imprimerie Singhs Print' },
+    'about.creds.legal.p':     {
+      en: '95558110 QUEBEC INC · Quebec-registered NEQ 1181573313 · 81A Sainte Anne St, Sainte-Anne-de-Bellevue, QC H9X 1L9',
+      fr: '95558110 QUÉBEC INC · Immatriculée au Québec NEQ 1181573313 · 81A rue Sainte-Anne, Sainte-Anne-de-Bellevue, QC H9X 1L9'
+    },
+    'about.creds.tax.h':       { en: 'GST & QST registered',                  fr: 'Inscrite à la TPS et à la TVQ' },
+    'about.creds.tax.p':       {
+      en: 'GST 71581 7169 RT0001 · QST 1233348101 TQ0001 — properly remitted, invoices are PO-ready.',
+      fr: 'TPS 71581 7169 RT0001 · TVQ 1233348101 TQ0001 — correctement remises, factures prêtes pour les bons de commande.'
+    },
+    'about.creds.terms.h':     { en: 'Net-30 for approved accounts',          fr: 'Net-30 pour comptes approuvés' },
+    'about.creds.terms.p':     {
+      en: '50% deposit to start production, balance Net-30 after the first couple of clean orders. Standing programs negotiate from there.',
+      fr: 'Acompte de 50 % pour démarrer la production, solde Net-30 après quelques commandes propres. Les programmes récurrents se négocient à partir de là.'
+    },
+    'about.creds.msa.h':       { en: 'MSA & RFP intake',                      fr: 'Entente-cadre et appels d\'offres' },
+    'about.creds.msa.p':       {
+      en: 'Procurement-led organizations can sign a Master Service Agreement and submit per-line RFPs through our intake form. We turn them around inside one business day.',
+      fr: 'Les organisations pilotées par les achats peuvent signer une entente-cadre de service et soumettre des appels d\'offres ligne par ligne via notre formulaire d\'admission. On les retourne en un jour ouvrable.'
+    },
+    'about.creds.bilingual.h': { en: 'Bilingual EN / FR',                     fr: 'Bilingue EN / FR' },
+    'about.creds.bilingual.p': {
+      en: 'Quotes, invoices, samples and emails available in both official languages — Bill 96-aligned for Quebec-based clients.',
+      fr: 'Soumissions, factures, échantillons et courriels disponibles dans les deux langues officielles — conforme à la Loi 96 pour les clients québécois.'
+    },
+    'about.creds.insured.h':   { en: 'Commercially insured',                  fr: 'Assurance commerciale' },
+    'about.creds.insured.p':   {
+      en: 'General liability coverage plus product liability on every order. Certificate of insurance available on request.',
+      fr: 'Assurance responsabilité civile générale plus responsabilité du produit sur chaque commande. Certificat d\'assurance disponible sur demande.'
+    },
+
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: 'Montreal\'s West Island. Open 7 days a week, 9AM to 9PM. Call first to schedule a visit.',
-      fr: 'Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 9h à 21h. Appelez avant pour planifier une visite.'
+      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 9PM. Call 514-915-1539 before you come by — production runs all day and we like to set aside time for visitors.',
+      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours, de 9h à 21h. Appelez au 514-915-1539 avant de passer — la production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
-      en: 'Tell us what you need and get a quote in hours, not days. First order is 15% off.',
-      fr: 'Dites-nous ce qu\'il vous faut et recevez une soumission en heures, pas en jours. 15% de rabais sur la première commande.'
+      en: 'Send us your spec and we\'ll come back with a firm quote, sample timeline and Net-30 paperwork — usually within the hour during business hours.',
+      fr: 'Envoyez-nous votre devis et on revient avec une soumission ferme, un échéancier d\'échantillon et la paperasse Net-30 — généralement en moins d\'une heure pendant les heures d\'ouverture.'
     },
     'about.cta.btn': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
 

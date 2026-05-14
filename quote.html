@@ -768,20 +768,16 @@
               <div style="font-size:.72rem;color:#888;margin-top:10px;line-height:1.5" data-i18n="quote.byo.note">You ship us the garments, we print/embroider. Final number depends on artwork complexity, deadline, and decoration method. Pick a print method below to refresh.</div>
             </div>
 
-            <!-- Blank brand selector (shown when We Supply, options change by garment) -->
-            <div class="form-group" id="blankBrandSection">
-              <label data-i18n="quote.blankbrand">Blank garment brand (optional)</label>
-              <select name="blank_brand" id="blankBrand">
-                <option value="">Select a product first</option>
-              </select>
+            <!-- Blank brand selector retired — the catalog is the canonical
+                 brand-picker, and "Any / Let us recommend" was the only
+                 useful value 95% of the time. Hidden input + an empty
+                 #blankBrandSection wrapper kept around so the existing
+                 show/hide-based-on-mode JS (renderCartList, prefill paths)
+                 doesn't NPE looking them up. Same trick for the legacy
+                 All-Canadian checkbox. -->
+            <div id="blankBrandSection" style="display:none">
+              <select name="blank_brand" id="blankBrand" style="display:none"><option value=""></option></select>
             </div>
-
-            <!-- All-Canadian blanks upsell removed from the quote page:
-                 customers pick a specific blank in the catalog (where the
-                 supplier badge already tells the story). The +$2/unit
-                 surcharge stays in the pricing engine for Rue Saint-
-                 Patrick-supplied SKUs. Hidden input keeps the form
-                 schema stable for any legacy code paths.  -->
             <input type="hidden" id="canadianBlanksCheckbox" name="canadian_blanks" value="">
 
             <!-- Print locations — preset-driven picker (replaces drag-on-canvas).
