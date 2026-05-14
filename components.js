@@ -307,6 +307,75 @@ function loadSchema() {
             { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "School & Sports Team Spirit Wear" } }
           ]
         }
+      },
+      // WebSite entity with SiteLinks SearchAction so Google can render
+      // a sitelinks search box for our brand. The /catalog page is the
+      // canonical search target.
+      {
+        "@type": "WebSite",
+        "@id": "https://www.singhsprint.com/#website",
+        "url": "https://www.singhsprint.com/",
+        "name": "Singhs Print",
+        "publisher": { "@id": "https://www.singhsprint.com/#business" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://www.singhsprint.com/catalog.html?q={search_term_string}" },
+          "query-input": "required name=search_term_string"
+        },
+        "inLanguage": ["en-CA", "fr-CA"]
+      },
+      // FAQPage — surfaces our homepage FAQ in Google's enriched results.
+      // The questions/answers mirror the index.html "Frequently asked"
+      // block (kept short to avoid Search Console "duplicate content"
+      // penalties; full answers live on /guides/).
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.singhsprint.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the minimum order quantity?",
+            "acceptedAnswer": { "@type": "Answer", "text": "We start at 5 units for DTG/DTF and 12 units for embroidery. Below that we still help, but pricing shifts to one-off retail rates." }
+          },
+          {
+            "@type": "Question",
+            "name": "How long does a typical order take?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Standard turnaround is 7–10 business days from approved artwork. Rush (3–5 days) is available with a small surcharge; talk to us before ordering." }
+          },
+          {
+            "@type": "Question",
+            "name": "Do you supply the blanks or can I bring my own?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 1,100+ blank styles from S&S, AlphaBroder, and SanMar, and we also decorate customer-supplied garments at a per-piece print rate." }
+          },
+          {
+            "@type": "Question",
+            "name": "Do you ship across Canada?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Local pickup or delivery in the Montreal/Laval/West Island area is free at our standard volumes; we ship Canada-wide via Canpar and Purolator." }
+          },
+          {
+            "@type": "Question",
+            "name": "What file formats do you need for artwork?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Vector files (.ai, .eps, .pdf, .svg) are best. We also work with high-res PNG at 300 DPI on a transparent background. We'll redraw lower-res art for a one-time fee." }
+          }
+        ]
+      },
+      // ProfessionalService — Google sometimes prefers this richer type
+      // for B2B suppliers; we keep the ClothingStore entity for retail
+      // discoverability and add this as a sibling without overlap.
+      {
+        "@type": "ProfessionalService",
+        "@id": "https://www.singhsprint.com/#b2b",
+        "name": "Singhs Print — B2B Custom Apparel & Procurement",
+        "parentOrganization": { "@id": "https://www.singhsprint.com/#business" },
+        "url": "https://www.singhsprint.com/businesses",
+        "telephone": "+1-514-915-1539",
+        "email": "sales@singhsprint.com",
+        "description": "Net-30 terms, master service agreements, and standing apparel programs for Montreal-area corporate, hospitality, construction, and event clients.",
+        "areaServed": [
+          { "@type": "AdministrativeArea", "name": "Quebec" },
+          { "@type": "Country", "name": "Canada" }
+        ],
+        "paymentAccepted": ["Net 30", "Net 60 (approved accounts)", "Credit card", "EFT", "Wire transfer"]
       }
     ]
   };
@@ -624,9 +693,95 @@ function loadMidPageCTA() {
   anchor.parentNode.insertBefore(card, anchor.nextSibling);
 }
 
+// =====================================================================
+// FUNNEL ANALYTICS
+// ---------------------------------------------------------------------
+// A pluggable tracker that fires PostHog / GTM / Plausible / Vercel
+// events at the key conversion points across the public site. We
+// install nothing by default — `window.spTrack(event, props)` is the
+// single entry-point; if a real tracker library is loaded later we
+// proxy to it. This lets the rest of the codebase commit to event
+// names ("cta_click", "form_step_advance", "form_submit") without
+// being coupled to a specific vendor.
+// =====================================================================
+function loadAnalytics() {
+  if (window.spTrack) return; // already initialised
+  // Event queue so events fired before a real tracker loads aren't lost.
+  window.__spEventQueue = window.__spEventQueue || [];
+  window.spTrack = function(event, props) {
+    if (!event) return;
+    props = props || {};
+    try {
+      // PostHog (window.posthog is created by the official snippet)
+      if (window.posthog && typeof window.posthog.capture === 'function') {
+        window.posthog.capture(event, props);
+      }
+      // GTM / GA4 dataLayer
+      if (window.dataLayer && typeof window.dataLayer.push === 'function') {
+        window.dataLayer.push(Object.assign({ event: event }, props));
+      }
+      // Plausible custom event
+      if (typeof window.plausible === 'function') {
+        window.plausible(event, { props: props });
+      }
+      // Vercel Web Analytics
+      if (window.va && typeof window.va === 'function') {
+        try { window.va('event', { name: event, data: props }); } catch(e){}
+      }
+    } catch(e) {}
+    // Always queue (lets us replay if a tracker mounts later) — capped at 200 to avoid leaks.
+    if (window.__spEventQueue.length < 200) {
+      window.__spEventQueue.push({ t: Date.now(), event: event, props: props });
+    }
+    // Debug hook — set window.SP_TRACK_DEBUG=true to console.log every event
+    if (window.SP_TRACK_DEBUG) console.log('[spTrack]', event, props);
+  };
+
+  // page_view on every load. Carries source page so we can stitch funnels.
+  var pageId = location.pathname.replace(/\/+$/, '') || '/';
+  window.spTrack('page_view', {
+    page: pageId,
+    url: location.href,
+    referrer: document.referrer || null,
+    title: document.title
+  });
+
+  // Auto-instrument: any `data-sp-track="<eventName>"` element fires
+  // that event on click. Lets HTML opt into tracking without writing JS.
+  //   <a data-sp-track="cta_hero_quote">Get a quote →</a>
+  document.addEventListener('click', function(e) {
+    var el = e.target && e.target.closest && e.target.closest('[data-sp-track]');
+    if (!el) return;
+    var evt = el.getAttribute('data-sp-track');
+    var props = {};
+    // Pull data-sp-* attributes (besides data-sp-track) into props for context
+    Array.prototype.slice.call(el.attributes || []).forEach(function(a) {
+      if (a.name && a.name.indexOf('data-sp-') === 0 && a.name !== 'data-sp-track') {
+        props[a.name.replace('data-sp-', '')] = a.value;
+      }
+    });
+    if (el.tagName === 'A' && el.href) props.href = el.href;
+    if (el.textContent) props.label = el.textContent.trim().slice(0, 60);
+    window.spTrack(evt, props);
+  }, { capture: true });
+
+  // Auto-instrument: every form submit on the site fires a generic
+  // form_submit event with the form's id/action. Page-level code can
+  // still call spTrack() directly for richer payloads.
+  document.addEventListener('submit', function(e) {
+    var f = e.target;
+    if (!f || f.tagName !== 'FORM') return;
+    window.spTrack('form_submit', {
+      form_id: f.id || null,
+      form_action: f.getAttribute('action') || null
+    });
+  }, true);
+}
+
 // Auto-run when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   loadSearchConsoleVerification();
+  loadAnalytics();
   loadMobileTrim();
   loadNav();
   loadFooter();

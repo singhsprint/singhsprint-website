@@ -47,8 +47,26 @@
 
     /* Form Card */
     .form-card{background:#fff;border-radius:20px;padding:40px;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,.04)}
-    .form-card h2{font-size:1.4rem;margin-bottom:6px}
+    .form-card h2{font-size:1.4rem;margin-bottom:6px;display:flex;align-items:center;gap:12px}
     .step-desc{color:#888;font-size:.92rem;margin-bottom:28px}
+
+    /* Numbered step chips next to each section H2 — mirrors the
+       RFP form treatment so the user sees "1 / 2 / 3" reinforcement
+       right where their eyes are reading. The pill nav at the top
+       does this too, but the chip in the H2 anchors the user in
+       the current step without needing to glance back up.
+       CSS attr() can only read from the same element, so we set
+       the number on each parent via three specific rules. */
+    .form-section[data-step] > h2::before{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:30px;height:30px;border-radius:50%;
+      background:#1a1a1a;color:#e8ff3c;
+      font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;
+      flex-shrink:0;line-height:1;
+    }
+    .form-section[data-step="1"] > h2::before{content:"1"}
+    .form-section[data-step="2"] > h2::before{content:"2"}
+    .form-section[data-step="3"] > h2::before{content:"3"}
 
     /* Steps bar */
     .steps-bar{display:flex;gap:4px;margin-bottom:32px}
@@ -800,7 +818,7 @@
                 <span><span data-i18n="quote.bulk.label">See bulk pricing for</span> <span id="bulkPricingProductName" data-i18n="quote.bulk.product">your product</span></span>
                 <span style="font-size:.78rem;color:#999;font-weight:500" data-i18n="quote.bulk.expand">tap to expand &or;</span>
               </summary>
-              <div id="bulkPricingTableHost" style="margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+              <div id="bulkPricingTableHost" style="margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;width:100%;box-sizing:border-box"></div>
               <p style="margin-top:10px;font-size:.78rem;color:#888;line-height:1.5"><span data-i18n="quote.bulk.note">Prices are per unit and include standard blank + printing. Bulk pricing kicks in at 5+ units; smaller orders use retail pricing.</span> <span style="display:block;margin-top:2px" data-i18n="quote.bulk.canadianadd">All-Canadian blanks add $2/unit on T-shirts and Long Sleeves.</span></p>
             </details>
 
@@ -1549,13 +1567,23 @@
 
     function bulkTableStyle() {
       return '<style>'
-        + '#bulkPricingTableHost{position:relative}'
-        + '#bulkPricingTableHost table{min-width:480px}'  /* forces horizontal scroll on phones; the host has overflow-x:auto */
-        + '#bulkPricingTableHost td,#bulkPricingTableHost th{padding:7px 10px;border-bottom:1px solid #eee;white-space:nowrap}'
+        + '#bulkPricingTableHost{position:relative;max-width:100%;width:100%;box-sizing:border-box}'
+        + '#bulkPricingTableHost table{width:100%;table-layout:fixed;border-collapse:collapse}'
+        + '#bulkPricingTableHost td,#bulkPricingTableHost th{padding:7px 10px;border-bottom:1px solid #eee}'
         + '#bulkPricingTableHost tr:last-child td{border-bottom:none}'
         + '#bulkPricingTableHost tbody tr:hover{background:#fff}'
-        // Right-edge fade hint so users see "more →"
-        + '@media (max-width:480px){#bulkPricingTableHost::after{content:"";position:sticky;right:0;top:0;bottom:0;width:24px;background:linear-gradient(to left,#fff 0%,rgba(255,255,255,0) 100%);pointer-events:none;display:block}}'
+        // PHONES: shrink padding + font so 5 cols (qty + 4 sides) fit ~360px wide.
+        + '@media (max-width:480px){'
+        +   '#bulkPricingTableHost{overflow:hidden}'
+        +   '#bulkPricingTableHost table{font-size:.72rem !important}'
+        +   '#bulkPricingTableHost th,#bulkPricingTableHost td{padding:6px 4px !important;text-align:center !important}'
+        +   '#bulkPricingTableHost th:first-child,#bulkPricingTableHost td:first-child{text-align:left !important;font-weight:600}'
+        +   '#bulkPricingTableHost thead{font-size:.62rem !important;letter-spacing:.2px !important}'
+        + '}'
+        // VERY NARROW (≤340px) — drop the heading text-transform to save space
+        + '@media (max-width:340px){'
+        +   '#bulkPricingTableHost th,#bulkPricingTableHost td{padding:5px 2px !important;font-size:.68rem !important}'
+        + '}'
         + '</style>';
     }
 
@@ -2427,6 +2455,18 @@
         }
       }
 
+      // Funnel event — the most important measurement we have. Tracking
+      // step advancement lets us see exactly where customers drop off.
+      if (window.spTrack && step !== currentNum) {
+        window.spTrack('quote_step_advance', {
+          from_step: currentNum,
+          to_step: step,
+          direction: step > currentNum ? 'forward' : 'back',
+          service: state.service || null,
+          has_cart: (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0)
+        });
+      }
+
       document.querySelectorAll('.form-section').forEach(function(s) { s.classList.remove('active'); });
       document.querySelector('.form-section[data-step="'+step+'"]').classList.add('active');
 
@@ -2512,6 +2552,18 @@
         status: 'new',
         estimated_value: estValue,
         notes: 'Quote request: ' + product + ' / ' + service + ' / Qty: ' + totalQty + ' / ' + (document.getElementById('details').value || '') + utmSummary
+      });
+
+      // Funnel-tracker submit event — richer than the auto-fired
+      // `form_submit` from components.js because we attach the
+      // estimated value, qty and product.
+      if (window.spTrack) window.spTrack('quote_submit', {
+        product: product || null,
+        service: service || null,
+        total_qty: totalQty,
+        estimated_value: estValue,
+        currency: 'CAD',
+        has_company: !!document.getElementById('company').value
       });
 
       // Fire Meta Pixel Lead event so the ad set can optimize toward this conversion

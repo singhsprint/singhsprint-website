@@ -776,6 +776,7 @@
   // Adds the currently-selected product to the cart with the qty from the
   // slider. Called from each card's "+ Add" button.
   function addToCart(productId, payload) {
+    var qty = Math.max(1, parseInt(payload.qty, 10) || state.qty || 50);
     SinghsCart.add({
       product_id:   productId,
       color_id:     payload.color_id || null,
@@ -787,8 +788,17 @@
       hero_url:     payload.hero_url || '',
       // Modal can override the page-slider qty per-item; fall back to the
       // catalog slider value (state.qty) for whole-card clicks.
-      qty:          Math.max(1, parseInt(payload.qty, 10) || state.qty || 50),
+      qty:          qty,
       sides:        1,
+    });
+    // Funnel analytics — the strongest signal of intent on this page.
+    if (window.spTrack) window.spTrack('catalog_add_to_quote', {
+      product_id: productId,
+      brand: payload.brand || '',
+      style_number: payload.style_number || '',
+      garment_type: payload.garment_type || null,
+      color_name: payload.color_name || '',
+      qty: qty
     });
     showCartToast(payload);
     // Visual confirmation on the card itself
