@@ -553,17 +553,42 @@
     }, 800);
   }
 
+  // Pick the most natural default placement for a freshly-added cart
+  // item. Mirrors the (more elaborate) PLACEMENT_GROUPS_BY_GARMENT map in
+  // quote.html, but we only need the FIRST option per garment here — the
+  // quote page lets the customer add more.
+  function _defaultPlacementForGarment(g) {
+    const M = {
+      hat: 'cap-front',
+      tote: 'bag-front',
+      joggers: 'leg-left-hip',
+      shorts: 'leg-left-hip',
+      scrub_pants: 'leg-left-hip',
+      apron: 'apron-chest',
+      vest: 'center-chest',
+      hivis: 'center-chest',
+      coverall: 'left-chest',
+      chef_coat: 'left-chest',
+      scrub_top: 'left-chest',
+      lab_coat: 'left-chest',
+      polo: 'left-chest',
+      workshirt: 'left-chest',
+      performance_shirt: 'left-chest'
+    };
+    return M[g] || 'center-chest';
+  }
+
   const SinghsCart = {
     key: 'singhsCart_v1',
     read() { try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
     write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); queueCartSync(); },
     add(item) {
       const c = this.read();
-      // Default placements/sides on add so the /quote cart row has a
-      // valid placement assignment from the first paint. The quote
-      // page lets the customer edit per-item from there.
+      // Default placements/sides on add — garment-aware so a cap defaults
+      // to ['cap-front'] not ['center-chest']. The /quote page lets the
+      // customer edit per-item from there.
       if (!Array.isArray(item.placements) || item.placements.length === 0) {
-        item.placements = ['center-chest'];
+        item.placements = [_defaultPlacementForGarment(item.garment_type)];
       }
       item.sides = item.placements.length;
       const dup = c.items.find(x => x.product_id === item.product_id && x.color_id === item.color_id);

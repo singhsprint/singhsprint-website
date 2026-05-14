@@ -1962,6 +1962,7 @@
     // SVG silhouette (which fills ~14%–86% of the canvas horizontally). When
     // we move to real product photos these will need a small retune.
     var placementPresets = {
+      // Shirt-like presets (used by tshirt, hoodie, polo, longsleeve, etc.)
       'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest' },
       'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest' },
       'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front' },
@@ -1970,8 +1971,182 @@
       'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back' },
       'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back' },
       'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve' },
-      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve' }
+      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve' },
+      // Hoodie-specific
+      'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood' },
+      // Cap / hat-specific. cx/cy aren't used for hats (no canvas preview yet)
+      // but the values stay valid so the live-pricing engine + payload
+      // schema treat them like any other preset.
+      'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Cap Front' },
+      'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Left Side Panel' },
+      'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Right Side Panel' },
+      'cap-back':        { loc: 'back',  size: 'small',       cx: 0.50, cy: 0.45, label: 'Back Panel' },
+      'cap-brim':        { loc: 'front', size: 'small',       cx: 0.50, cy: 0.85, label: 'Brim' },
+      // Bag / tote-specific
+      'bag-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Front of Bag' },
+      'bag-back':        { loc: 'back',  size: 'medium',      cx: 0.50, cy: 0.45, label: 'Back of Bag' },
+      'bag-pocket':      { loc: 'front', size: 'small',       cx: 0.50, cy: 0.65, label: 'Front Pocket' },
+      // Pants / shorts / joggers
+      'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Left Hip' },
+      'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Right Hip' },
+      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Back Pocket' },
+      'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Leg Side' },
+      // Apron
+      'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Chest' },
+      'apron-pocket':    { loc: 'front', size: 'small',       cx: 0.50, cy: 0.55, label: 'Pocket' },
+      'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front' }
     };
+
+    // --------------------------------------------------------------
+    // Per-garment placement groups — drives the cart-row picker so a
+    // customer ordering caps doesn't see "Sleeves" and a customer
+    // ordering totes doesn't see "Back Top". Falls back to the shirt
+    // groups for any garment_type we haven't explicitly mapped.
+    // --------------------------------------------------------------
+    var PLACEMENT_GROUPS_BY_GARMENT = {
+      // ---- Shirt-like (the default) ----
+      tshirt: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      longsleeve: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      polo: [
+        // No oversized — polos are usually corporate
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      performance_shirt: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      workshirt: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      hivis: [
+        // Reflective hi-vis — front + back only, no sleeve printing (interferes with safety strips)
+        { label: 'Front',   ids: ['left-chest', 'center-chest'] },
+        { label: 'Back',    ids: ['back-across', 'back-full'] }
+      ],
+
+      // ---- Hoodies / Sweatshirts / Outerwear ----
+      hoodie: [
+        // No "Oversized Front" because the front pouch + zipper break that print
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Hood',    ids: ['hood'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      crewneck: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      sweater: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      cardigan: [
+        { label: 'Front',   ids: ['left-chest'] },  // chest only — cardigan opens down the middle
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      pullover_jacket: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      softshell: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      chore_coat: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      vest: [
+        // No sleeves
+        { label: 'Front', ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',  ids: ['back-top', 'back-across', 'back-full'] }
+      ],
+      coverall: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+        { label: 'Leg',     ids: ['leg-left-hip', 'leg-right-hip'] }
+      ],
+
+      // ---- Hats / caps — totally different placement geography ----
+      hat: [
+        { label: 'Cap', ids: ['cap-front', 'cap-left-side', 'cap-right-side', 'cap-back', 'cap-brim'] }
+      ],
+
+      // ---- Bags / totes ----
+      tote: [
+        { label: 'Bag', ids: ['bag-front', 'bag-back', 'bag-pocket'] }
+      ],
+
+      // ---- Bottoms ----
+      joggers: [
+        { label: 'Front', ids: ['leg-left-hip', 'leg-right-hip'] },
+        { label: 'Back',  ids: ['leg-back-pocket'] },
+        { label: 'Side',  ids: ['leg-side'] }
+      ],
+      shorts: [
+        { label: 'Front', ids: ['leg-left-hip', 'leg-right-hip'] },
+        { label: 'Back',  ids: ['leg-back-pocket'] }
+      ],
+      scrub_pants: [
+        { label: 'Front', ids: ['leg-left-hip'] }
+      ],
+
+      // ---- Medical / hospitality ----
+      chef_coat: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Back',    ids: ['back-top', 'back-across'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      scrub_top: [
+        { label: 'Front', ids: ['left-chest', 'center-chest'] },
+        { label: 'Back',  ids: ['back-across'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+      lab_coat: [
+        { label: 'Front',   ids: ['left-chest', 'center-chest'] },
+        { label: 'Back',    ids: ['back-top', 'back-across'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ],
+
+      // ---- Aprons ----
+      apron: [
+        { label: 'Apron', ids: ['apron-chest', 'apron-full', 'apron-pocket'] }
+      ]
+    };
+
+    function placementGroupsFor(garmentType) {
+      return PLACEMENT_GROUPS_BY_GARMENT[garmentType] || PLACEMENT_GROUPS_BY_GARMENT.tshirt;
+    }
+    // First placement we recommend by default when a customer adds an
+    // item to the cart from the catalog. Keeps each garment's "out-of-
+    // box" placement plausible (logo on cap front, logo on tee chest).
+    function defaultPlacementFor(garmentType) {
+      var groups = placementGroupsFor(garmentType);
+      if (groups && groups.length && groups[0].ids && groups[0].ids.length) {
+        return groups[0].ids[0];
+      }
+      return 'center-chest';
+    }
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state
 
@@ -3248,17 +3423,37 @@
     var SinghsCart = {
       key: 'singhsCart_v1',
       // Default placements derived from the legacy "sides" count, used to
-      // backfill items that predate the per-item placement field. Mirrors
-      // the order a customer typically picks placements in (front first,
-      // then back, then sleeves).
-      _defaultPlacementsForSides: function(n) {
-        var seq = ['center-chest', 'back-across', 'left-sleeve', 'right-sleeve'];
-        return seq.slice(0, Math.max(1, Math.min(n || 1, seq.length)));
+      // backfill items that predate the per-item placement field. The
+      // sequence is garment-aware so a hat with sides=1 migrates to
+      // ['cap-front'], not ['center-chest']. We pick the first preset
+      // from the first group as the natural anchor for that garment.
+      _defaultPlacementsForSides: function(n, garmentType) {
+        var groups;
+        try { groups = placementGroupsFor(garmentType); } catch(e) { groups = null; }
+        if (!groups || !groups.length) {
+          var fallback = ['center-chest', 'back-across', 'left-sleeve', 'right-sleeve'];
+          return fallback.slice(0, Math.max(1, Math.min(n || 1, fallback.length)));
+        }
+        // Walk groups in declaration order and take their first option until
+        // we hit the requested side count.
+        var picks = [];
+        for (var i = 0; i < groups.length && picks.length < (n || 1); i++) {
+          var g = groups[i];
+          if (g.ids && g.ids.length) picks.push(g.ids[0]);
+        }
+        // If still short, top up from the first group's remaining options.
+        var first = groups[0] && groups[0].ids ? groups[0].ids : [];
+        for (var j = 1; j < first.length && picks.length < (n || 1); j++) {
+          if (picks.indexOf(first[j]) < 0) picks.push(first[j]);
+        }
+        return picks.length ? picks : ['center-chest'];
       },
       // Migration on read — ensures every item has a `placements` array.
       // Existing items only had a numeric `sides`; new ones from the catalog
-      // come with placements=['center-chest'] (see cart-add path below) but
-      // we also defend here so the form never sees a half-shaped item.
+      // come with placements pre-set (see cart-add in catalog.html) but we
+      // also defend here so the form never sees a half-shaped item. The
+      // migration is also garment-aware so old carts containing hats get
+      // a Cap-Front default instead of an invalid Center-Chest.
       read: function() {
         var c;
         try { c = JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ c = {items:[]}; }
@@ -3266,7 +3461,7 @@
           var self = this;
           c.items.forEach(function(it) {
             if (!Array.isArray(it.placements) || it.placements.length === 0) {
-              it.placements = self._defaultPlacementsForSides(it.sides || 1);
+              it.placements = self._defaultPlacementsForSides(it.sides || 1, it.garment_type);
             }
             it.sides = it.placements.length;  // canonical: sides === placements.length
           });
@@ -3305,7 +3500,9 @@
       return (placementPresets[id] && placementPresets[id].label) || id;
     }
     // Render the chip strip + (if open) the inline picker, for one cart row.
-    function renderCartPlacementWidget(idx, placements) {
+    // `garmentType` filters the picker options so caps don't see "Sleeves"
+    // and totes don't see "Back Top".
+    function renderCartPlacementWidget(idx, placements, garmentType) {
       var picked = placements || [];
       var pickerOpen = (_cartPickerOpenIdx === idx);
       var chipsHtml = picked.map(function(p) {
@@ -3315,26 +3512,24 @@
       }).join('');
       var addLabel = picked.length === 0 ? '+ Pick a placement' : '+ Add placement';
       var addBtn = '<button type="button" class="ci-chip ci-chip--add" onclick="cartTogglePicker(' + idx + ')">' + addLabel + '</button>';
-      var picker = pickerOpen ? renderCartPlacementPicker(idx, picked) : '';
+      var picker = pickerOpen ? renderCartPlacementPicker(idx, picked, garmentType) : '';
       return '<div class="ci-placements">' +
              '  <span class="ci-placements__label">Placements</span>' +
              chipsHtml + addBtn +
              picker +
              '</div>';
     }
-    // Render the expandable picker. Groups the preset options by location.
-    function renderCartPlacementPicker(idx, picked) {
-      var groups = [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
-      ];
+    // Render the expandable picker. Groups the preset options by where
+    // they sit on THIS garment type — caps get Cap-only options, totes
+    // get Bag-only options, shirts get the full Front/Back/Sleeves set.
+    function renderCartPlacementPicker(idx, picked, garmentType) {
+      var groups = placementGroupsFor(garmentType);
       var pickedSet = {};
       picked.forEach(function(p){ pickedSet[p] = true; });
       var html = '';
       groups.forEach(function(g) {
         html += '<div class="ci-picker__group">';
-        html += '  <div class="ci-picker__group-label">' + g.label + '</div>';
+        html += '  <div class="ci-picker__group-label">' + escapeAttr(g.label) + '</div>';
         html += '  <div class="ci-picker__opts">';
         g.ids.forEach(function(id) {
           var sel = pickedSet[id] ? ' is-selected' : '';
@@ -3506,7 +3701,7 @@
       var lblRemove = _t('quote.cart.item.remove') || 'Remove';
       host.innerHTML = items.map(function(it, idx) {
         var label = (it.color_name || '').replace(/_\d+$/, '');
-        var placementsHtml = renderCartPlacementWidget(idx, it.placements || []);
+        var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
         var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
         return '' +
           '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap">' +
