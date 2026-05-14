@@ -206,6 +206,44 @@
     .placement-upload-list:empty{display:none}
     .placement-upload-list__hint{font-size:.8rem;color:#888;padding:8px 14px;background:#fafafa;border-radius:10px;border:1px dashed #ddd;text-align:center}
 
+    /* ===== Per-cart-item placement chip picker =====
+       Each cart row gets its own placement assignment so a multi-item
+       order (e.g. "10 hoodies with logo on back, 5 hats with logo on
+       front") doesn't ambiguously share the global placement list.
+       The widget is a compact chip strip + an inline picker that
+       expands below the row when the customer taps "Edit placements".
+    */
+    .ci-placements{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;width:100%}
+    .ci-placements__label{font-size:.7rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+    .ci-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:50px;background:#1a1a1a;color:#e8ff3c;font-size:.74rem;font-weight:600;line-height:1.2}
+    .ci-chip__remove{background:transparent;border:none;color:#e8ff3c;cursor:pointer;font-size:.86rem;padding:0;line-height:1;opacity:.7}
+    .ci-chip__remove:hover{opacity:1}
+    .ci-chip--add{background:#fff;color:#1a1a1a;border:1.5px dashed #d0cdc0;cursor:pointer;font-family:inherit;padding:5px 12px;transition:all .12s}
+    .ci-chip--add:hover{border-color:#1a1a1a;background:#fafaf6}
+    .ci-picker{display:none;flex-basis:100%;margin-top:10px;padding:14px;border:1.5px solid #e8e6df;border-radius:12px;background:#fafaf6}
+    .ci-picker.open{display:block}
+    .ci-picker__group{margin-bottom:12px}
+    .ci-picker__group:last-child{margin-bottom:0}
+    .ci-picker__group-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:6px}
+    .ci-picker__opts{display:flex;flex-wrap:wrap;gap:6px}
+    .ci-picker__opt{padding:7px 12px;border-radius:8px;background:#fff;border:1.5px solid #e8e6df;font-size:.78rem;cursor:pointer;font-family:inherit;color:#1a1a1a;transition:all .12s}
+    .ci-picker__opt:hover{border-color:#1a1a1a}
+    .ci-picker__opt.is-selected{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
+    .ci-picker__close{font-size:.74rem;color:#888;background:transparent;border:none;font-family:inherit;cursor:pointer;margin-top:6px;text-decoration:underline}
+
+    /* Per-item upload list — one zone per selected placement, inside
+       each cart row instead of the global placementUploadList. */
+    .ci-uploads{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:10px}
+    .ci-uploads:empty{display:none}
+    .ci-upload{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1.5px dashed #d0cdc0;border-radius:10px;background:#fff;cursor:pointer;font-size:.78rem}
+    .ci-upload:hover{border-color:#1a1a1a;background:#fafaf6}
+    .ci-upload.has-file{border-style:solid;border-color:#1a1a1a;background:#fafaf6}
+    .ci-upload__icon{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+    .ci-upload__copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+    .ci-upload__copy strong{font-size:.8rem;color:#1a1a1a;font-weight:600}
+    .ci-upload__copy span{font-size:.7rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ci-upload__remove{background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.72rem;padding:4px 6px}
+
     /* Location bar under mockup — multi-select toggle */
     .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
     .loc-btn{padding:7px 14px;border-radius:50px;font-size:.72rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s;white-space:nowrap}
@@ -383,6 +421,84 @@
       .quote-hero{padding:14px 0 6px !important}
       .quote-hero h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
       .quote-hero .sub{font-size:.86rem !important;line-height:1.5;margin-bottom:0 !important}
+
+      /* ===== Empty-state catalog CTA — compact phone layout =====
+         The card defaults to flex-row + a 350-char body paragraph,
+         which wraps to ~485px tall on phones — dwarfing the rest
+         of Step 1. On mobile we:
+           1. Stack the card vertically (column)
+           2. Hide the long descriptor paragraph (the headline already
+              says what the card is)
+           3. Shrink padding + emoji circle
+           4. Make the "Browse catalog →" button full-width
+         The page also renders a legacy 9-tile product grid below,
+         which on phones reads as a competing primary CTA. We hide
+         that grid entirely on mobile when the empty-state is showing
+         and surface a small "or pick a generic type" disclosure
+         instead — kept available via an inline link for the small
+         fraction who can't find their blank in the catalog. */
+      #catalogPickEmpty{
+        flex-direction:column !important;
+        text-align:center !important;
+        gap:10px !important;
+        padding:18px 16px !important;
+        margin-bottom:14px !important;
+      }
+      #catalogPickEmpty > div:first-child{
+        width:44px !important;height:44px !important;font-size:1.1rem !important;
+      }
+      #catalogPickEmpty > div:nth-child(2) > span{
+        display:none !important; /* hide the verbose descriptor on mobile */
+      }
+      #catalogPickEmpty > div:nth-child(2) > strong{
+        font-size:1rem !important;line-height:1.3 !important;
+      }
+      #catalogPickEmpty > a{
+        width:100% !important;
+        text-align:center !important;
+        padding:13px 18px !important;
+        font-size:.92rem !important;
+      }
+      /* Legacy 9-tile grid: collapse to a one-line disclosure on mobile
+         when the empty-state card is visible. Customers who really
+         want to skip the catalog can still tap the type tiles via
+         the expand toggle. */
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup{
+        margin-top:4px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup > label,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup > label{
+        font-size:.74rem !important;color:#999 !important;font-weight:600 !important;
+        text-transform:uppercase !important;letter-spacing:.05em !important;
+        margin-bottom:8px !important;
+      }
+      /* Tighter product-grid tiles so 9 of them don't dominate the
+         viewport — keep the option visible but visually de-emphasised. */
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-grid,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-grid{
+        gap:6px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option{
+        padding:10px 6px !important;border-width:1px !important;border-radius:10px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .icon,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .icon{
+        height:34px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .icon svg,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .icon svg{
+        width:30px !important;height:30px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .name,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .name{
+        font-size:.78rem !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .from,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .from{
+        font-size:.68rem !important;
+      }
     }
     @media(max-width:360px){
       .placement-preset-grid{grid-template-columns:1fr}
@@ -3131,15 +3247,173 @@
 
     var SinghsCart = {
       key: 'singhsCart_v1',
-      read: function(){ try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
+      // Default placements derived from the legacy "sides" count, used to
+      // backfill items that predate the per-item placement field. Mirrors
+      // the order a customer typically picks placements in (front first,
+      // then back, then sleeves).
+      _defaultPlacementsForSides: function(n) {
+        var seq = ['center-chest', 'back-across', 'left-sleeve', 'right-sleeve'];
+        return seq.slice(0, Math.max(1, Math.min(n || 1, seq.length)));
+      },
+      // Migration on read — ensures every item has a `placements` array.
+      // Existing items only had a numeric `sides`; new ones from the catalog
+      // come with placements=['center-chest'] (see cart-add path below) but
+      // we also defend here so the form never sees a half-shaped item.
+      read: function() {
+        var c;
+        try { c = JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ c = {items:[]}; }
+        if (Array.isArray(c.items)) {
+          var self = this;
+          c.items.forEach(function(it) {
+            if (!Array.isArray(it.placements) || it.placements.length === 0) {
+              it.placements = self._defaultPlacementsForSides(it.sides || 1);
+            }
+            it.sides = it.placements.length;  // canonical: sides === placements.length
+          });
+        }
+        return c;
+      },
       write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); _queueCartSync(); },
       writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} _queueCartSync(); },
       remove: function(i){ var c = this.read(); c.items.splice(i,1); this.write(c); },
-      update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.write(c); },
-      updateSilent: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); this.writeSilent(c); },
+      update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); if (Array.isArray(c.items[i].placements)) c.items[i].sides = c.items[i].placements.length; this.write(c); },
+      updateSilent: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); if (Array.isArray(c.items[i].placements)) c.items[i].sides = c.items[i].placements.length; this.writeSilent(c); },
       clear:  function(){ this.write({items:[]}); },
       count:  function(){ return this.read().items.length; },
     };
+
+    // =====================================================================
+    // PER-CART-ITEM PLACEMENT WIDGET
+    // ---------------------------------------------------------------------
+    // Each cart row owns its own list of placements (where the print goes
+    // on THAT specific blank). Previously placement was global, which left
+    // mixed-cart orders ambiguous — "Logo on back" when the cart had both
+    // T-shirts and caps meant the rep had to email back asking "which back?"
+    // This widget renders a chip strip per row + an inline picker, and
+    // stores selections in item.placements (string[]). Sides count auto-
+    // syncs to placements.length so existing pricing API stays unchanged.
+    // =====================================================================
+    var _cartPickerOpenIdx = null;  // which row's picker is currently expanded
+
+    // Cart-item upload state. Keyed by `<itemIdx>_<presetId>` so the file
+    // map survives placement toggles + re-renders. The form-submit path
+    // pulls these into FormData with names design_<idx>_<presetId>.
+    var cartItemFiles = {};
+
+    // ----- Helpers --------------------------------------------------------
+    function _placementLabel(id) {
+      return (placementPresets[id] && placementPresets[id].label) || id;
+    }
+    // Render the chip strip + (if open) the inline picker, for one cart row.
+    function renderCartPlacementWidget(idx, placements) {
+      var picked = placements || [];
+      var pickerOpen = (_cartPickerOpenIdx === idx);
+      var chipsHtml = picked.map(function(p) {
+        return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) +
+               '<button type="button" class="ci-chip__remove" aria-label="Remove ' + escapeAttr(_placementLabel(p)) +
+               '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button></span>';
+      }).join('');
+      var addLabel = picked.length === 0 ? '+ Pick a placement' : '+ Add placement';
+      var addBtn = '<button type="button" class="ci-chip ci-chip--add" onclick="cartTogglePicker(' + idx + ')">' + addLabel + '</button>';
+      var picker = pickerOpen ? renderCartPlacementPicker(idx, picked) : '';
+      return '<div class="ci-placements">' +
+             '  <span class="ci-placements__label">Placements</span>' +
+             chipsHtml + addBtn +
+             picker +
+             '</div>';
+    }
+    // Render the expandable picker. Groups the preset options by location.
+    function renderCartPlacementPicker(idx, picked) {
+      var groups = [
+        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      ];
+      var pickedSet = {};
+      picked.forEach(function(p){ pickedSet[p] = true; });
+      var html = '';
+      groups.forEach(function(g) {
+        html += '<div class="ci-picker__group">';
+        html += '  <div class="ci-picker__group-label">' + g.label + '</div>';
+        html += '  <div class="ci-picker__opts">';
+        g.ids.forEach(function(id) {
+          var sel = pickedSet[id] ? ' is-selected' : '';
+          html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + '</button>';
+        });
+        html += '  </div>';
+        html += '</div>';
+      });
+      html += '<button type="button" class="ci-picker__close" onclick="cartTogglePicker(' + idx + ')">Done</button>';
+      return '<div class="ci-picker open">' + html + '</div>';
+    }
+    // Render the per-placement upload zones for one cart row.
+    function renderCartItemUploads(idx, placements) {
+      if (!Array.isArray(placements) || placements.length === 0) return '';
+      var inner = placements.map(function(p) {
+        var fileKey = idx + '_' + p;
+        var f = cartItemFiles[fileKey];
+        var has = !!f;
+        var sub = has ? (f.name + ' (' + Math.round(f.size/1024) + ' KB)') : 'PNG, JPG, PDF, AI, PSD, SVG — up to 10MB';
+        var fileInputId = 'design_' + idx + '_' + p;
+        return '<label class="ci-upload ' + (has?'has-file':'') + '" for="' + fileInputId + '">' +
+               '  <span class="ci-upload__icon">' + (has?'✓':'⇧') + '</span>' +
+               '  <div class="ci-upload__copy">' +
+               '    <strong>' + (has?'Design for ':'Upload design for ') + escapeAttr(_placementLabel(p)) + '</strong>' +
+               '    <span>' + escapeAttr(sub) + '</span>' +
+               '  </div>' +
+               (has ? '<button type="button" class="ci-upload__remove" onclick="event.preventDefault();event.stopPropagation();cartClearItemFile(' + idx + ',\'' + p + '\')">Remove</button>' : '') +
+               '  <input type="file" id="' + fileInputId + '" name="' + fileInputId + '"' +
+               '    accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg" style="display:none"' +
+               '    onchange="cartAttachItemFile(' + idx + ',\'' + p + '\',this.files && this.files[0])"/>' +
+               '</label>';
+      }).join('');
+      return '<div class="ci-uploads">' + inner + '</div>';
+    }
+
+    // ----- Mutations ------------------------------------------------------
+    function cartTogglePicker(idx) {
+      _cartPickerOpenIdx = (_cartPickerOpenIdx === idx) ? null : idx;
+      renderCartList();
+    }
+    function cartAddPlacement(idx, presetId) {
+      var c = SinghsCart.read();
+      var it = c.items[idx]; if (!it) return;
+      it.placements = Array.isArray(it.placements) ? it.placements.slice() : [];
+      var i = it.placements.indexOf(presetId);
+      if (i >= 0) it.placements.splice(i, 1);          // toggle off
+      else        it.placements.push(presetId);        // toggle on
+      if (it.placements.length === 0) it.placements = ['center-chest']; // never zero
+      it.sides = it.placements.length;
+      SinghsCart.update(idx, { placements: it.placements });
+      if (window.spTrack) window.spTrack('cart_item_placement_change', { idx: idx, placements: it.placements });
+    }
+    function cartRemovePlacement(idx, presetId) {
+      var c = SinghsCart.read();
+      var it = c.items[idx]; if (!it) return;
+      var next = (it.placements || []).filter(function(p){ return p !== presetId; });
+      if (next.length === 0) return;                   // refuse to leave zero
+      SinghsCart.update(idx, { placements: next });
+    }
+    function cartAttachItemFile(idx, presetId, file) {
+      if (!file) return;
+      cartItemFiles[idx + '_' + presetId] = file;
+      renderCartList();
+    }
+    function cartClearItemFile(idx, presetId) {
+      delete cartItemFiles[idx + '_' + presetId];
+      var inp = document.getElementById('design_' + idx + '_' + presetId);
+      if (inp) inp.value = '';
+      renderCartList();
+    }
+
+    // Small HTML-attr escape — also used by the upload label.
+    if (typeof escapeAttr !== 'function') {
+      window.escapeAttr = function(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+          return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+        });
+      };
+    }
 
     // Re-sync whenever the visitor types their email/name/phone so the
     // recovery mail has a destination even if they never submit.
@@ -3197,6 +3471,9 @@
           });
           // dropZoneWrapper stays permanently hidden — per-placement uploads
           // in Step 1 are the only upload path. (Old fallback removed.)
+          // Re-show the GLOBAL placement section for the legacy single-
+          // product flow (we hide it in cart mode below).
+          document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = ''; });
         }
         // Clear the right-panel cart total too
         var strip = document.getElementById('livePriceStrip');
@@ -3217,16 +3494,22 @@
         if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
       });
       var dz = document.getElementById('dropZoneWrapper'); if (dz) dz.style.display = 'none';
+      // Hide the GLOBAL placement section + its upload list — placements are
+      // now per-cart-item. The global picker stays available for the legacy
+      // single-product (non-cart) path; we re-show it in the cart-empty
+      // branch above.
+      document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = 'none'; });
 
       var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       var lblColor  = _t('quote.cart.item.color')  || 'Color:';
       var lblQty    = _t('quote.cart.item.qty')    || 'Qty';
-      var lblSides  = _t('quote.cart.item.sides')  || 'Sides';
       var lblRemove = _t('quote.cart.item.remove') || 'Remove';
       host.innerHTML = items.map(function(it, idx) {
         var label = (it.color_name || '').replace(/_\d+$/, '');
+        var placementsHtml = renderCartPlacementWidget(idx, it.placements || []);
+        var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
         return '' +
-          '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:center;flex-wrap:wrap">' +
+          '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap">' +
           '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
           '    <img id="ci-img-' + idx + '" src="' + imgUrl(it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
           '  </div>' +
@@ -3243,16 +3526,10 @@
           '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblQty +
           '      <input type="number" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
           '    </label>' +
-          '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblSides +
-          '      <select onchange="onCartItemChange(' + idx + ', {sides: parseInt(this.value)})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;background:#fff">' +
-          '        <option value="1"' + (it.sides==1?' selected':'') + '>1</option>' +
-          '        <option value="2"' + (it.sides==2?' selected':'') + '>2</option>' +
-          '        <option value="3"' + (it.sides==3?' selected':'') + '>3</option>' +
-          '        <option value="4"' + (it.sides==4?' selected':'') + '>4</option>' +
-          '      </select>' +
-          '    </label>' +
           '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
           '  </div>' +
+          placementsHtml +
+          uploadsHtml +
           '</div>';
       }).join('');
 
@@ -3723,9 +4000,12 @@
           hidden.value = JSON.stringify(items);
           form.appendChild(hidden);
           var summary = items.map(function(it, i) {
+            var placementLabels = Array.isArray(it.placements) && it.placements.length
+              ? it.placements.map(function(p){ return (placementPresets[p] && placementPresets[p].label) || p; }).join(', ')
+              : ((it.sides||1) + ' side' + ((it.sides||1)>1?'s':''));
             return (i+1) + '. ' + (it.brand||'') + ' ' + (it.style_number||'') + ' — ' +
                    (it.name||'') + ' (' + (it.color_name||'').replace(/_\d+$/,'') + ') × ' +
-                   (it.qty||'?') + ' units, ' + (it.sides||1) + ' side' + ((it.sides||1)>1?'s':'');
+                   (it.qty||'?') + ' units, placements: ' + placementLabels;
           }).join('\n');
           var summaryHidden = document.createElement('input');
           summaryHidden.type = 'hidden';

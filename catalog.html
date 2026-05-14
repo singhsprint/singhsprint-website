@@ -559,6 +559,13 @@
     write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); queueCartSync(); },
     add(item) {
       const c = this.read();
+      // Default placements/sides on add so the /quote cart row has a
+      // valid placement assignment from the first paint. The quote
+      // page lets the customer edit per-item from there.
+      if (!Array.isArray(item.placements) || item.placements.length === 0) {
+        item.placements = ['center-chest'];
+      }
+      item.sides = item.placements.length;
       const dup = c.items.find(x => x.product_id === item.product_id && x.color_id === item.color_id);
       if (dup) dup.qty = (dup.qty || 0) + (item.qty || 0);
       else c.items.push(item);
