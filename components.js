@@ -350,6 +350,26 @@ function loadMobileTrim() {
     +   'input[type="text"],input[type="email"],input[type="tel"],input[type="number"],input[type="date"],select,textarea{font-size:16px !important}'  // iOS won't zoom on focus
     // Sticky bottom bars respect notched phone home-indicator
     +   '.sticky-cta,.cart-bar,#cartBar{padding-bottom:calc(12px + env(safe-area-inset-bottom)) !important}'
+    // Live-price strip on the quote page floats at the bottom of the
+    // viewport on mobile so the customer always sees their current
+    // per-unit + total while filling out the form. Pattern source:
+    // Stripe Checkout floor, Shopify cart drawer.
+    +   '#livePriceStrip[style*="display: block"],#livePriceStrip[style*="display:block"]{'
+    +     'position:fixed !important;left:12px !important;right:12px !important;bottom:0 !important;'
+    +     'margin:0 !important;z-index:990;'
+    +     'padding:12px 14px calc(12px + env(safe-area-inset-bottom)) !important;'
+    +     'border-radius:14px 14px 0 0 !important;'
+    +     'box-shadow:0 -8px 24px rgba(0,0,0,.18) !important;'
+    +     'max-height:30vh;overflow:hidden;'
+    +   '}'
+    // When strip is sticky at the bottom, pad the form so the last
+    // button isn't trapped under the strip.
+    +   '.form-section,.form-card{padding-bottom:calc(120px + env(safe-area-inset-bottom)) !important}'
+    // Tighten the strip's internal text on phones.
+    +   '#livePriceStrip > div[style*="font-size:.7rem"]{margin-bottom:2px !important}'
+    +   '#livePriceUnit{font-size:1.2rem !important}'
+    +   '#livePriceTotal{font-size:1.4rem !important}'
+    +   '#livePriceStrip [style*="margin-top:10px"]{display:none !important}'  // hide the long disclaimer
     // Hero — universal trim for any page with a hero block
     +   '.hero{padding:24px 0 36px !important}'
     +   '.hero .subhead{margin-bottom:18px !important}'

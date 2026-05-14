@@ -332,6 +332,38 @@
       .proof-stats{grid-template-columns:1fr 1fr;gap:14px 10px}
       .proof-stat strong{font-size:1.05rem}
     }
+
+    /* ============================================================
+       MOBILE TRIM (≤480px) — drop 3 sections that duplicate signals
+       already present in the inline hero proof, products carousel,
+       services carousel, reviews and FAQ. Desktop stays untouched.
+
+         • .proof-bar     — covered by .hero-proof inline strip
+         • .blank-brands  — covered by reviews + portfolio brand cues
+         • .why-us        — 6 reasons already absorbed by services
+                            + reviews + FAQ (no new info)
+         • last 2 FAQ items — visible via "See all questions →"
+
+       Trims ~2,800 px of scroll on phones. Architecture mirrors
+       Apple/Stripe/Allbirds mobile: hero → browse → method →
+       process → testimonials → questions → final CTA.
+    ============================================================ */
+    @media(max-width:480px){
+      .proof-bar,
+      .blank-brands,
+      .why-us{display:none !important}
+      /* FAQ trim: hide items 6 + 7 by default; "See all" reveals them. */
+      .faq-list .faq-item:nth-child(n+6){display:none}
+      .faq-list.faq-list--expanded .faq-item{display:block}
+      /* "See all questions →" link injected by JS below */
+      .faq-seeall{
+        display:block;margin:18px auto 0;background:transparent;border:none;
+        color:#1a1a1a;font-weight:600;font-size:.92rem;cursor:pointer;
+        font-family:inherit;text-decoration:underline;text-underline-offset:3px;
+        padding:8px 12px;
+      }
+      .faq-list--expanded + .faq-seeall{display:none}
+    }
   </style>
 </head>
 <body>
@@ -534,7 +566,7 @@
   </section>
 
   <!-- ===== BLANK BRANDS ===== -->
-  <section style="padding:40px 0;border-top:1px solid #eee;border-bottom:1px solid #eee">
+  <section class="blank-brands" style="padding:40px 0;border-top:1px solid #eee;border-bottom:1px solid #eee">
     <div class="container text-center">
       <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px" data-i18n="home.brands.label">We print on premium blanks from top suppliers</p>
       <div class="brands-row" aria-label="Premium blank suppliers we print on">
@@ -670,7 +702,7 @@
   </section>
 
   <!-- ===== WHY US ===== -->
-  <section class="section">
+  <section class="section why-us">
     <div class="container">
       <div class="text-center">
         <span class="label">Why Singhs Print</span>
@@ -700,6 +732,9 @@
         <div class="faq-item"><button class="faq-q" data-i18n="home.faq.q6">Can I see a sample first?</button><div class="faq-a"><p data-i18n="home.faq.a6">Absolutely. We produce a real physical sample so you can verify colors, placement, and quality before the full run. This is standard with every order.</p></div></div>
         <div class="faq-item"><button class="faq-q" data-i18n="home.faq.q7">Do you offer a satisfaction guarantee?</button><div class="faq-a"><p data-i18n="home.faq.a7">Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.</p></div></div>
       </div>
+      <!-- "See all questions" — only visible on mobile (via CSS), only
+           shown when the list is in its collapsed state. -->
+      <button type="button" class="faq-seeall" onclick="(function(b){var l=document.querySelector('.faq-list');l.classList.toggle('faq-list--expanded');b.style.display='none'})(this)" data-i18n="home.faq.seeall">See all questions →</button>
     </div>
   </section>
 

@@ -143,6 +143,7 @@ var SP_LANG = (function() {
     'home.faq.a6': { en: 'Absolutely. We produce a real physical sample so you can verify colors, placement, and quality before the full run. This is standard with every order.', fr: 'Absolument. On produit un véritable échantillon physique pour que vous puissiez vérifier couleurs, placement et qualité avant la commande complète. C\'est inclus avec chaque commande.' },
     'home.faq.q7': { en: 'Do you offer a satisfaction guarantee?', fr: 'Offrez-vous une garantie de satisfaction ?' },
     'home.faq.a7': { en: 'Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.', fr: 'Oui. S\'il y a un problème de qualité d\'impression ou un défaut de vêtement, on réimprime ou on remplace l\'article sans frais.' },
+    'home.faq.seeall': { en: 'See all questions →', fr: 'Voir toutes les questions →' },
     // Lead capture popup
     'home.popup.h3':     { en: 'Get 15% off your first order', fr: 'Obtenez 15 % de rabais sur votre première commande' },
     'home.popup.p':      { en: "Drop your email and we'll send you a quote with your discount applied. No spam, just your quote.", fr: 'Laissez votre courriel et on vous envoie une soumission avec votre rabais appliqué. Pas de spam, juste votre soumission.' },
