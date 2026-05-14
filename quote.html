@@ -784,10 +784,17 @@
                  schema stable for any legacy code paths.  -->
             <input type="hidden" id="canadianBlanksCheckbox" name="canadian_blanks" value="">
 
-            <!-- Print locations — preset-driven picker (replaces drag-on-canvas) -->
+            <!-- Print locations — preset-driven picker (replaces drag-on-canvas).
+                 The 3 .placement-group blocks below are the SHIRT layout (initial
+                 paint / SEO friendly). On JS load, renderGlobalPlacementGroups()
+                 rebuilds them based on the currently selected garment type so a
+                 customer picking "Hat / Cap" sees Cap Front / Side Panels / Back,
+                 not Left Chest / Sleeves. The static HTML stays as a no-JS
+                 fallback. -->
             <div class="placement-section">
               <label><span data-i18n="quote.placement.title">Where do you want the design?</span> <span class="placement-count-badge" id="locCountBadge" data-i18n="quote.placement.badge.one">1 location</span></label>
 
+              <div id="placementGroupsHost">
               <!-- FRONT presets -->
               <div class="placement-group">
                 <div class="placement-group-label" data-i18n="quote.placement.group.front">Front</div>
@@ -862,6 +869,8 @@
                   </div>
                 </div>
               </div>
+
+              </div><!-- /#placementGroupsHost -->
 
               <!-- Hidden checkboxes — still drive the canvas tabs + pricing; toggled programmatically by togglePlacementPreset -->
               <div class="loc-check-grid" style="display:none" aria-hidden="true">
@@ -1481,6 +1490,10 @@
       updateGarmentShape();
       updateBlankOptions();
       renderBulkPricingTable();
+      // Rebuild the global placement section so the picker shows
+      // placements that actually exist on this garment (no Sleeves on
+      // a hat, no Center Chest on a tote, etc.).
+      renderGlobalPlacementGroups(state.garment);
     }
 
     // ===== COLOR =====
@@ -1961,40 +1974,73 @@
     // cx/cy = canvas fractions where the print-area box centres. Tuned for the
     // SVG silhouette (which fills ~14%–86% of the canvas horizontally). When
     // we move to real product photos these will need a small retune.
+    // Reusable silhouette paths. The print-area rect is drawn separately
+    // per preset so we get crisp positioning. viewBox is 42x50 across all
+    // silhouettes for consistency in the picker grid.
+    var _SHIRT_FRONT_PATH = 'M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z';
+    var _SHIRT_BACK_PATH  = 'M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 L9 5 Z';
+    var _HOODIE_PATH      = 'M9 7 L4 9 L1 16 L4 19 L8 14 L8 45 L34 45 L34 14 L38 19 L41 16 L38 9 L33 7 C32 10 28 12 21 12 C14 12 10 10 9 7 Z M14 7 Q14 0 21 0 Q28 0 28 7 Z';
+    var _CAP_PATH         = 'M5 28 Q5 12 21 12 Q37 12 37 28 L41 28 Q41 32 38 32 L4 32 Q1 32 1 28 Z';
+    var _BAG_PATH         = 'M8 16 L34 16 L34 46 L8 46 Z M14 16 Q14 8 17 8 L19 8 Q22 8 22 16 M20 16 Q20 8 23 8 L25 8 Q28 8 28 16';
+    var _PANTS_PATH       = 'M11 5 L31 5 L31 11 L28 47 L23 47 L21 24 L21 24 L19 47 L14 47 L11 11 Z';
+    var _APRON_PATH       = 'M14 5 L28 5 L30 11 L33 14 L33 45 L9 45 L9 14 L12 11 Z';
+
+    // Helper — assemble the inline SVG for a preset card from its
+    // silhouette family + a print-area rectangle. Keeping the rect
+    // hardcoded per preset is intentional: tuned positions read better
+    // than computing-from-cx/cy because the silhouette paths aren't
+    // perfectly rectangular.
+    function _presetSvg(silhouette, rect) {
+      if (!silhouette || !rect) return '';
+      var paths = {
+        'shirt-front': _SHIRT_FRONT_PATH,
+        'shirt-back':  _SHIRT_BACK_PATH,
+        'hoodie':      _HOODIE_PATH,
+        'cap':         _CAP_PATH,
+        'bag':         _BAG_PATH,
+        'pants':       _PANTS_PATH,
+        'apron':       _APRON_PATH
+      };
+      var p = paths[silhouette];
+      if (!p) return '';
+      return '<svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+             '<path d="' + p + '"/>' +
+             '<rect x="' + rect.x + '" y="' + rect.y + '" width="' + rect.w + '" height="' + rect.h + '" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/>' +
+             '</svg>';
+    }
+
     var placementPresets = {
       // Shirt-like presets (used by tshirt, hoodie, polo, longsleeve, etc.)
-      'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest' },
-      'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest' },
-      'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front' },
-      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front' },
-      'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back' },
-      'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back' },
-      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back' },
-      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve' },
-      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve' },
+      'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest',        desc: '~3-4" — logo / pocket', sil:'shirt-front', rect:{x:11,y:14,w:6, h:5}  },
+      'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest',      desc: '~7" mid-chest',         sil:'shirt-front', rect:{x:14,y:17,w:14,h:10} },
+      'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',        desc: '~11" chest panel',      sil:'shirt-front', rect:{x:11,y:14,w:20,h:18} },
+      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~14" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
+      'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back',          desc: 'Under collar, ~5"',     sil:'shirt-back',  rect:{x:15,y:10,w:12,h:5}  },
+      'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back',       desc: '~12" upper back',       sil:'shirt-back',  rect:{x:11,y:15,w:20,h:16} },
+      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~14" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
+      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
+      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
       // Hoodie-specific
-      'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood' },
-      // Cap / hat-specific. cx/cy aren't used for hats (no canvas preview yet)
-      // but the values stay valid so the live-pricing engine + payload
-      // schema treat them like any other preset.
-      'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Cap Front' },
-      'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Left Side Panel' },
-      'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Right Side Panel' },
-      'cap-back':        { loc: 'back',  size: 'small',       cx: 0.50, cy: 0.45, label: 'Back Panel' },
-      'cap-brim':        { loc: 'front', size: 'small',       cx: 0.50, cy: 0.85, label: 'Brim' },
+      'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood',              desc: 'On the hood itself',    sil:'hoodie',      rect:{x:17,y:1, w:8, h:4}  },
+      // Cap / hat-specific
+      'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Cap Front',        desc: 'Front panel, ~3"',     sil:'cap', rect:{x:16,y:18,w:10,h:7} },
+      'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Left Side Panel',  desc: 'Side hit, ~2"',        sil:'cap', rect:{x:6, y:22,w:6, h:5} },
+      'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Right Side Panel', desc: 'Side hit, ~2"',        sil:'cap', rect:{x:30,y:22,w:6, h:5} },
+      'cap-back':        { loc: 'back',  size: 'small',       cx: 0.50, cy: 0.45, label: 'Back Panel',       desc: 'Behind closure',       sil:'cap', rect:{x:18,y:25,w:6, h:4} },
+      'cap-brim':        { loc: 'front', size: 'small',       cx: 0.50, cy: 0.85, label: 'Brim',             desc: 'Underside / top edge', sil:'cap', rect:{x:16,y:29,w:10,h:3} },
       // Bag / tote-specific
-      'bag-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Front of Bag' },
-      'bag-back':        { loc: 'back',  size: 'medium',      cx: 0.50, cy: 0.45, label: 'Back of Bag' },
-      'bag-pocket':      { loc: 'front', size: 'small',       cx: 0.50, cy: 0.65, label: 'Front Pocket' },
+      'bag-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Front of Bag',  desc: 'Main panel print',     sil:'bag', rect:{x:13,y:22,w:16,h:14} },
+      'bag-back':        { loc: 'back',  size: 'medium',      cx: 0.50, cy: 0.45, label: 'Back of Bag',   desc: 'Reverse panel',        sil:'bag', rect:{x:13,y:22,w:16,h:14} },
+      'bag-pocket':      { loc: 'front', size: 'small',       cx: 0.50, cy: 0.65, label: 'Front Pocket',  desc: 'Small logo, ~3"',      sil:'bag', rect:{x:17,y:35,w:8, h:6}  },
       // Pants / shorts / joggers
-      'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Left Hip' },
-      'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Right Hip' },
-      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Back Pocket' },
-      'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Leg Side' },
+      'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Left Hip',      desc: 'Small logo at hip',    sil:'pants', rect:{x:13,y:9, w:6, h:4} },
+      'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Right Hip',     desc: 'Small logo at hip',    sil:'pants', rect:{x:23,y:9, w:6, h:4} },
+      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Back Pocket',   desc: 'Back-pocket logo',     sil:'pants', rect:{x:14,y:14,w:6, h:4} },
+      'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Leg Side',      desc: 'Vertical stripe',      sil:'pants', rect:{x:13,y:18,w:5, h:18} },
       // Apron
-      'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Chest' },
-      'apron-pocket':    { loc: 'front', size: 'small',       cx: 0.50, cy: 0.55, label: 'Pocket' },
-      'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front' }
+      'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Chest',         desc: 'Upper bib area',       sil:'apron', rect:{x:14,y:12,w:14,h:8}  },
+      'apron-pocket':    { loc: 'front', size: 'small',       cx: 0.50, cy: 0.55, label: 'Pocket',        desc: 'On the front pocket',  sil:'apron', rect:{x:16,y:28,w:10,h:6}  },
+      'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',    desc: 'Large front panel',    sil:'apron', rect:{x:12,y:16,w:18,h:22} }
     };
 
     // --------------------------------------------------------------
@@ -2147,6 +2193,103 @@
       }
       return 'center-chest';
     }
+
+    // ===================================================================
+    // GLOBAL PLACEMENT SECTION — dynamic renderer
+    // -------------------------------------------------------------------
+    // Rebuilds the `.placement-group` blocks inside #placementGroupsHost
+    // based on the currently-selected garment type. Wired into both
+    // selectProduct() (when the user picks from the legacy product grid)
+    // and DOMContentLoaded (initial paint).
+    //
+    // When the garment changes, any previously-selected presets that
+    // don't exist on the new garment are cleared, and the first preset
+    // of the new garment is auto-selected so the form is never in a
+    // "no placement" state.
+    // ===================================================================
+    function _buildPresetCardHtml(presetId, isSelected) {
+      var p = placementPresets[presetId];
+      if (!p) return '';
+      var svg = _presetSvg(p.sil, p.rect);
+      var label = p.label || presetId;
+      var desc  = p.desc || '';
+      return '<div class="preset-card' + (isSelected ? ' selected' : '') +
+             '" data-preset="' + presetId + '" onclick="togglePlacementPreset(this)">' +
+             '  <span class="preset-check">&#10003;</span>' +
+             '  ' + svg +
+             '  <span class="preset-label">' + escapeAttr(label) + '</span>' +
+             (desc ? '  <span class="preset-desc">' + escapeAttr(desc) + '</span>' : '') +
+             '</div>';
+    }
+
+    function renderGlobalPlacementGroups(garmentType) {
+      var host = document.getElementById('placementGroupsHost');
+      if (!host) return;
+      var groups = placementGroupsFor(garmentType);
+
+      // Build the new set of valid preset IDs for this garment so we can
+      // prune any stale selections from previous garments. Without this
+      // pruning, a user who picked Center Chest on tshirt then switched
+      // to Hat would have a "phantom" center-chest still active.
+      var validIds = {};
+      groups.forEach(function(g) { (g.ids || []).forEach(function(id) { validIds[id] = true; }); });
+
+      // Remove invalid locations from presetByLocation, but keep at least
+      // one selection so togglePlacementPreset's "never zero" guard
+      // doesn't fight the user later.
+      var remainingLocs = [];
+      Object.keys(presetByLocation).forEach(function(loc) {
+        var pid = presetByLocation[loc];
+        if (validIds[pid]) remainingLocs.push(loc);
+        else delete presetByLocation[loc];
+      });
+      if (remainingLocs.length === 0) {
+        // Auto-pick the first preset of the first group as the new default
+        var firstId = groups[0] && groups[0].ids && groups[0].ids[0];
+        if (firstId) {
+          presetByLocation[placementPresets[firstId].loc] = firstId;
+        }
+      }
+
+      // Render the groups + their cards.
+      var html = '';
+      groups.forEach(function(g) {
+        html += '<div class="placement-group">';
+        html += '  <div class="placement-group-label">' + escapeAttr(g.label) + '</div>';
+        html += '  <div class="placement-preset-grid">';
+        (g.ids || []).forEach(function(id) {
+          var isSel = (presetByLocation[placementPresets[id] && placementPresets[id].loc] === id);
+          html += _buildPresetCardHtml(id, isSel);
+        });
+        html += '  </div>';
+        html += '</div>';
+      });
+      host.innerHTML = html;
+
+      // Sync hidden form fields + summary copy + uploads to the new state.
+      var activePresets = Object.values(presetByLocation);
+      var presetInput = document.getElementById('placementPresetInput');
+      if (presetInput) presetInput.value = activePresets.join(', ');
+      var summaryEl = document.getElementById('placementSummary');
+      if (summaryEl) {
+        var labels = activePresets.map(function(id) {
+          return (placementPresets[id] && placementPresets[id].label) || id;
+        });
+        summaryEl.textContent = labels.length
+          ? labels.join(', ') + (labels.length > 1 ? ' — ' + labels.length + ' prints, billed per location.' : ' selected.')
+          : 'Pick at least one placement.';
+      }
+      if (typeof updateLocationSelection === 'function') updateLocationSelection();
+      if (typeof renderPlacementUploads === 'function')  renderPlacementUploads();
+      if (typeof fetchAndRenderTopTierEstimate === 'function') fetchAndRenderTopTierEstimate();
+    }
+
+    // Run once on DOM ready so the initial paint reflects whatever
+    // garment was selected (defaults to tshirt). Wait for SinghsCart
+    // + state.garment to be initialised.
+    document.addEventListener('DOMContentLoaded', function() {
+      try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
+    });
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state
 

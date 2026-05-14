@@ -589,6 +589,145 @@
     </div>
   </section>
 
+  <!-- ===== INLINE PRICING CALCULATOR =====
+       Placed immediately after the product showcase — this is the moment
+       the visitor's brain switches from "what do they sell?" to "what
+       will mine cost?". Answers it in two clicks without committing to
+       the full quote form. The CTA deep-links to /quote with the garment
+       + qty pre-filled so the catalog lands them on the right product
+       without retyping. Pricing matches the JSON-LD `makesOffer` block
+       in components.js.
+  -->
+  <section class="section sp-calc-section" id="pricing-calculator" style="background:#fafaf6;border-top:1px solid #eee;border-bottom:1px solid #eee;padding-top:48px;padding-bottom:48px">
+    <div class="container">
+      <div class="text-center">
+        <span class="label" data-i18n="home.calc.label">Live estimate</span>
+        <h2 data-i18n="home.calc.h2">How much will yours cost?</h2>
+        <p class="subhead" style="margin:0 auto;max-width:620px" data-i18n="home.calc.sub">Pick a product, drag the slider — get a real per-unit and total. Multi-side printing, embroidery and all-Canadian blanks priced on your formal quote.</p>
+      </div>
+      <div class="sp-calc" data-sp-track="pricing_calculator_visible">
+        <div class="sp-calc__row sp-calc__row--products">
+          <button type="button" class="sp-calc__chip is-active" data-garment="tshirt"  data-sp-track="calc_garment_pick" data-sp-garment="tshirt"><strong data-i18n="home.calc.tshirt">T-shirt</strong><span data-i18n="home.calc.fromtshirt">from $9.95</span></button>
+          <button type="button" class="sp-calc__chip"            data-garment="hoodie"  data-sp-track="calc_garment_pick" data-sp-garment="hoodie"><strong data-i18n="home.calc.hoodie">Hoodie</strong><span data-i18n="home.calc.fromhoodie">from $24.95</span></button>
+          <button type="button" class="sp-calc__chip"            data-garment="longsleeve" data-sp-track="calc_garment_pick" data-sp-garment="longsleeve"><strong data-i18n="home.calc.longsleeve">Long-sleeve</strong><span data-i18n="home.calc.fromls">from $13.95</span></button>
+          <button type="button" class="sp-calc__chip"            data-garment="cap"     data-sp-track="calc_garment_pick" data-sp-garment="cap"><strong data-i18n="home.calc.cap">Cap / hat</strong><span data-i18n="home.calc.fromcap">from $15.95</span></button>
+        </div>
+        <div class="sp-calc__row sp-calc__row--qty">
+          <label for="sp-calc-qty" data-i18n="home.calc.qty">Quantity</label>
+          <input type="range" id="sp-calc-qty" min="5" max="500" value="50" step="1">
+          <output for="sp-calc-qty" id="sp-calc-qty-out">50</output>
+        </div>
+        <div class="sp-calc__row sp-calc__row--ticks">
+          <span>5</span><span>25</span><span>50</span><span>100</span><span>200</span><span>500</span>
+        </div>
+        <div class="sp-calc__result">
+          <div class="sp-calc__result-cell">
+            <span class="sp-calc__label" data-i18n="home.calc.perunit">Per unit</span>
+            <strong id="sp-calc-perunit">$14.95</strong>
+            <span class="sp-calc__hint" data-i18n="home.calc.oneside">1-side print</span>
+          </div>
+          <div class="sp-calc__result-cell">
+            <span class="sp-calc__label" data-i18n="home.calc.total">Estimated total</span>
+            <strong id="sp-calc-total">$747.50</strong>
+            <span class="sp-calc__hint" data-i18n="home.calc.before-taxes">before taxes</span>
+          </div>
+          <a id="sp-calc-cta" href="quote.html" class="btn btn-primary" data-sp-track="calc_cta_quote"><span data-i18n="home.calc.cta">Get the real quote →</span></a>
+        </div>
+        <p class="sp-calc__footnote" data-i18n="home.calc.footnote">Estimates assume blanks supplied by us, 1 print location, mixed sizes XS–XL. 2XL+ adds $3/pc industry-standard. Embroidery, multi-side, and all-Canadian options priced on your formal quote.</p>
+      </div>
+    </div>
+    <style>
+      .sp-calc{max-width:760px;margin:36px auto 0;background:#fff;border:1.5px solid #e8e6df;border-radius:18px;padding:26px 28px;box-shadow:0 6px 26px rgba(0,0,0,.04)}
+      .sp-calc__row{margin-bottom:18px}
+      .sp-calc__row--products{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
+      .sp-calc__chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px 6px;background:#fff;border:1.5px solid #e8e6df;border-radius:12px;cursor:pointer;transition:all .15s;font-family:inherit}
+      .sp-calc__chip strong{font-size:.92rem;color:#1a1a1a;font-weight:700}
+      .sp-calc__chip span{font-size:.72rem;color:#888;font-weight:500}
+      .sp-calc__chip:hover{border-color:#bbb;transform:translateY(-1px)}
+      .sp-calc__chip.is-active{border-color:#1a1a1a;background:#1a1a1a;box-shadow:0 0 0 1.5px #1a1a1a inset}
+      .sp-calc__chip.is-active strong{color:#e8ff3c}
+      .sp-calc__chip.is-active span{color:#cbd02a}
+      .sp-calc__row--qty{display:grid;grid-template-columns:auto 1fr 60px;align-items:center;gap:14px}
+      .sp-calc__row--qty label{font-size:.85rem;font-weight:600;color:#1a1a1a}
+      .sp-calc__row--qty input[type=range]{width:100%;accent-color:#1a1a1a}
+      .sp-calc__row--qty output{font-size:1.1rem;font-weight:700;color:#1a1a1a;text-align:right}
+      .sp-calc__row--ticks{display:flex;justify-content:space-between;font-size:.7rem;color:#999;font-weight:600;margin-top:-8px;padding:0 8px}
+      .sp-calc__result{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;padding:20px 18px;background:#fafaf6;border:1.5px solid #1a1a1a;border-radius:14px;margin-top:8px}
+      .sp-calc__result-cell{display:flex;flex-direction:column;gap:2px}
+      .sp-calc__label{font-size:.72rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase}
+      .sp-calc__result-cell strong{font-family:'Playfair Display',Georgia,serif;font-size:1.7rem;color:#1a1a1a;line-height:1;font-weight:800}
+      .sp-calc__hint{font-size:.72rem;color:#999}
+      #sp-calc-cta{white-space:nowrap}
+      .sp-calc__footnote{font-size:.72rem;color:#888;line-height:1.5;margin-top:14px;text-align:center}
+      @media(max-width:640px){
+        .sp-calc-section{padding-top:28px !important;padding-bottom:28px !important}
+        .sp-calc{padding:20px 18px;margin-top:24px}
+        .sp-calc__row--products{grid-template-columns:repeat(2,1fr)}
+        .sp-calc__result{grid-template-columns:1fr 1fr;padding:14px}
+        .sp-calc__result #sp-calc-cta{grid-column:1/-1;width:100%;margin-top:6px}
+        .sp-calc__result-cell strong{font-size:1.45rem}
+        .sp-calc__row--ticks{display:none}
+      }
+    </style>
+    <script>
+      (function() {
+        // Mirrors the wholesale-aware tiers in the live engine. These
+        // are conservative "first-time customer" numbers — the real
+        // /api/pricing engine on /quote runs the actual matrix per
+        // product. Kept here to keep the homepage standalone (no API
+        // dep) and survive an outage.
+        var TIERS = {
+          tshirt:    [[1,4,29.95],[5,24,24.95],[25,49,18.95],[50,99,14.95],[100,199,11.95],[200,99999,9.95]],
+          hoodie:    [[1,4,49.95],[5,24,42.95],[25,49,34.95],[50,99,29.95],[100,199,26.95],[200,99999,24.95]],
+          longsleeve:[[1,4,36.95],[5,24,29.95],[25,49,22.95],[50,99,18.95],[100,199,15.95],[200,99999,13.95]],
+          cap:       [[1,4,32.95],[5,24,24.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,15.95]]
+        };
+        var state = { garment: 'tshirt', qty: 50 };
+        function findPrice(g, q) {
+          var tiers = TIERS[g] || TIERS.tshirt;
+          for (var i=0;i<tiers.length;i++) if (q>=tiers[i][0] && q<=tiers[i][1]) return tiers[i][2];
+          return tiers[tiers.length-1][2];
+        }
+        function recalc() {
+          var per = findPrice(state.garment, state.qty);
+          var total = per * state.qty;
+          var pEl = document.getElementById('sp-calc-perunit');
+          var tEl = document.getElementById('sp-calc-total');
+          var oEl = document.getElementById('sp-calc-qty-out');
+          var cta = document.getElementById('sp-calc-cta');
+          if (pEl) pEl.textContent = '$' + per.toFixed(2);
+          if (tEl) tEl.textContent = '$' + total.toFixed(2);
+          if (oEl) oEl.textContent = state.qty;
+          if (cta) {
+            // Map calculator garment → /quote product hint so the
+            // form pre-selects the right tile.
+            var qProduct = { tshirt:'tshirt', hoodie:'hoodie', longsleeve:'longsleeve', cap:'hat' }[state.garment] || state.garment;
+            cta.setAttribute('href', 'quote.html?garment=' + qProduct + '&qty=' + state.qty);
+          }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          var chips = document.querySelectorAll('.sp-calc__chip');
+          chips.forEach(function(c) {
+            c.addEventListener('click', function() {
+              chips.forEach(function(x) { x.classList.remove('is-active'); });
+              c.classList.add('is-active');
+              state.garment = c.getAttribute('data-garment');
+              recalc();
+            });
+          });
+          var slider = document.getElementById('sp-calc-qty');
+          if (slider) {
+            slider.addEventListener('input', function() {
+              state.qty = parseInt(slider.value, 10) || 50;
+              recalc();
+            });
+          }
+          recalc();
+        });
+      })();
+    </script>
+  </section>
+
   <!-- ===== BLANK BRANDS ===== -->
   <section class="blank-brands" style="padding:40px 0;border-top:1px solid #eee;border-bottom:1px solid #eee">
     <div class="container text-center">
@@ -723,143 +862,6 @@
         <div class="process-step fade-up"><div class="step-num">4</div><h3>Pick up or get it shipped</h3><p>Local West Island pickup or Canada-wide shipping. Most orders in 2-4 days.</p></div>
       </div>
     </div>
-  </section>
-
-  <!-- ===== INLINE PRICING CALCULATOR =====
-       Highest-leverage element on the homepage outside the hero — answers
-       "how much will mine cost?" in two clicks without making the visitor
-       commit to the full quote form. Drives qualified clicks straight to
-       /quote with the garment + qty pre-filled in the URL so the catalog
-       lands them on the right product without retyping.
-       Pricing matches the JSON-LD `makesOffer` block in components.js.
-  -->
-  <section class="section sp-calc-section" id="pricing-calculator" style="background:#fff;border-top:1px solid #eee">
-    <div class="container">
-      <div class="text-center">
-        <span class="label" data-i18n="home.calc.label">Live estimate</span>
-        <h2 data-i18n="home.calc.h2">How much will yours cost?</h2>
-        <p class="subhead" style="margin:0 auto;max-width:620px" data-i18n="home.calc.sub">Pick a product, drag the slider — get a real per-unit and total. Multi-side printing, embroidery and all-Canadian blanks priced on your formal quote.</p>
-      </div>
-      <div class="sp-calc" data-sp-track="pricing_calculator_visible">
-        <div class="sp-calc__row sp-calc__row--products">
-          <button type="button" class="sp-calc__chip is-active" data-garment="tshirt"  data-sp-track="calc_garment_pick" data-sp-garment="tshirt"><strong data-i18n="home.calc.tshirt">T-shirt</strong><span data-i18n="home.calc.fromtshirt">from $9.95</span></button>
-          <button type="button" class="sp-calc__chip"            data-garment="hoodie"  data-sp-track="calc_garment_pick" data-sp-garment="hoodie"><strong data-i18n="home.calc.hoodie">Hoodie</strong><span data-i18n="home.calc.fromhoodie">from $24.95</span></button>
-          <button type="button" class="sp-calc__chip"            data-garment="longsleeve" data-sp-track="calc_garment_pick" data-sp-garment="longsleeve"><strong data-i18n="home.calc.longsleeve">Long-sleeve</strong><span data-i18n="home.calc.fromls">from $13.95</span></button>
-          <button type="button" class="sp-calc__chip"            data-garment="cap"     data-sp-track="calc_garment_pick" data-sp-garment="cap"><strong data-i18n="home.calc.cap">Cap / hat</strong><span data-i18n="home.calc.fromcap">from $15.95</span></button>
-        </div>
-        <div class="sp-calc__row sp-calc__row--qty">
-          <label for="sp-calc-qty" data-i18n="home.calc.qty">Quantity</label>
-          <input type="range" id="sp-calc-qty" min="5" max="500" value="50" step="1">
-          <output for="sp-calc-qty" id="sp-calc-qty-out">50</output>
-        </div>
-        <div class="sp-calc__row sp-calc__row--ticks">
-          <span>5</span><span>25</span><span>50</span><span>100</span><span>200</span><span>500</span>
-        </div>
-        <div class="sp-calc__result">
-          <div class="sp-calc__result-cell">
-            <span class="sp-calc__label" data-i18n="home.calc.perunit">Per unit</span>
-            <strong id="sp-calc-perunit">$14.95</strong>
-            <span class="sp-calc__hint" data-i18n="home.calc.oneside">1-side print</span>
-          </div>
-          <div class="sp-calc__result-cell">
-            <span class="sp-calc__label" data-i18n="home.calc.total">Estimated total</span>
-            <strong id="sp-calc-total">$747.50</strong>
-            <span class="sp-calc__hint" data-i18n="home.calc.before-taxes">before taxes</span>
-          </div>
-          <a id="sp-calc-cta" href="quote.html" class="btn btn-primary" data-sp-track="calc_cta_quote"><span data-i18n="home.calc.cta">Get the real quote →</span></a>
-        </div>
-        <p class="sp-calc__footnote" data-i18n="home.calc.footnote">Estimates assume blanks supplied by us, 1 print location, mixed sizes XS–XL. 2XL+ adds $3/pc industry-standard. Embroidery, multi-side, and all-Canadian options priced on your formal quote.</p>
-      </div>
-    </div>
-    <style>
-      .sp-calc{max-width:760px;margin:36px auto 0;background:#fafaf6;border:1.5px solid #e8e6df;border-radius:18px;padding:26px 28px;box-shadow:0 6px 26px rgba(0,0,0,.04)}
-      .sp-calc__row{margin-bottom:18px}
-      .sp-calc__row--products{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
-      .sp-calc__chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px 6px;background:#fff;border:1.5px solid #e8e6df;border-radius:12px;cursor:pointer;transition:all .15s;font-family:inherit}
-      .sp-calc__chip strong{font-size:.92rem;color:#1a1a1a;font-weight:700}
-      .sp-calc__chip span{font-size:.72rem;color:#888;font-weight:500}
-      .sp-calc__chip:hover{border-color:#bbb;transform:translateY(-1px)}
-      .sp-calc__chip.is-active{border-color:#1a1a1a;background:#1a1a1a;box-shadow:0 0 0 1.5px #1a1a1a inset}
-      .sp-calc__chip.is-active strong{color:#e8ff3c}
-      .sp-calc__chip.is-active span{color:#cbd02a}
-      .sp-calc__row--qty{display:grid;grid-template-columns:auto 1fr 60px;align-items:center;gap:14px}
-      .sp-calc__row--qty label{font-size:.85rem;font-weight:600;color:#1a1a1a}
-      .sp-calc__row--qty input[type=range]{width:100%;accent-color:#1a1a1a}
-      .sp-calc__row--qty output{font-size:1.1rem;font-weight:700;color:#1a1a1a;text-align:right}
-      .sp-calc__row--ticks{display:flex;justify-content:space-between;font-size:.7rem;color:#999;font-weight:600;margin-top:-8px;padding:0 8px}
-      .sp-calc__result{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;padding:20px 18px;background:#fff;border:1.5px solid #1a1a1a;border-radius:14px;margin-top:8px}
-      .sp-calc__result-cell{display:flex;flex-direction:column;gap:2px}
-      .sp-calc__label{font-size:.72rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase}
-      .sp-calc__result-cell strong{font-family:'Playfair Display',Georgia,serif;font-size:1.7rem;color:#1a1a1a;line-height:1;font-weight:800}
-      .sp-calc__hint{font-size:.72rem;color:#999}
-      #sp-calc-cta{white-space:nowrap}
-      .sp-calc__footnote{font-size:.72rem;color:#888;line-height:1.5;margin-top:14px;text-align:center}
-      @media(max-width:640px){
-        .sp-calc{padding:20px 18px;margin-top:24px}
-        .sp-calc__row--products{grid-template-columns:repeat(2,1fr)}
-        .sp-calc__result{grid-template-columns:1fr 1fr;padding:14px}
-        .sp-calc__result #sp-calc-cta{grid-column:1/-1;width:100%;margin-top:6px}
-        .sp-calc__result-cell strong{font-size:1.45rem}
-        .sp-calc__row--ticks{display:none}
-      }
-    </style>
-    <script>
-      (function() {
-        // Mirrors the wholesale-aware tiers in the live engine. These
-        // are conservative "first-time customer" numbers — the real
-        // /api/pricing engine on /quote runs the actual matrix per
-        // product. Kept here to keep the homepage standalone (no API
-        // dep) and survive an outage.
-        var TIERS = {
-          tshirt:    [[1,4,29.95],[5,24,24.95],[25,49,18.95],[50,99,14.95],[100,199,11.95],[200,99999,9.95]],
-          hoodie:    [[1,4,49.95],[5,24,42.95],[25,49,34.95],[50,99,29.95],[100,199,26.95],[200,99999,24.95]],
-          longsleeve:[[1,4,36.95],[5,24,29.95],[25,49,22.95],[50,99,18.95],[100,199,15.95],[200,99999,13.95]],
-          cap:       [[1,4,32.95],[5,24,24.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,15.95]]
-        };
-        var state = { garment: 'tshirt', qty: 50 };
-        function findPrice(g, q) {
-          var tiers = TIERS[g] || TIERS.tshirt;
-          for (var i=0;i<tiers.length;i++) if (q>=tiers[i][0] && q<=tiers[i][1]) return tiers[i][2];
-          return tiers[tiers.length-1][2];
-        }
-        function recalc() {
-          var per = findPrice(state.garment, state.qty);
-          var total = per * state.qty;
-          var pEl = document.getElementById('sp-calc-perunit');
-          var tEl = document.getElementById('sp-calc-total');
-          var oEl = document.getElementById('sp-calc-qty-out');
-          var cta = document.getElementById('sp-calc-cta');
-          if (pEl) pEl.textContent = '$' + per.toFixed(2);
-          if (tEl) tEl.textContent = '$' + total.toFixed(2);
-          if (oEl) oEl.textContent = state.qty;
-          if (cta) {
-            // Map calculator garment → /quote product hint so the
-            // form pre-selects the right tile.
-            var qProduct = { tshirt:'tshirt', hoodie:'hoodie', longsleeve:'longsleeve', cap:'hat' }[state.garment] || state.garment;
-            cta.setAttribute('href', 'quote.html?garment=' + qProduct + '&qty=' + state.qty);
-          }
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-          var chips = document.querySelectorAll('.sp-calc__chip');
-          chips.forEach(function(c) {
-            c.addEventListener('click', function() {
-              chips.forEach(function(x) { x.classList.remove('is-active'); });
-              c.classList.add('is-active');
-              state.garment = c.getAttribute('data-garment');
-              recalc();
-            });
-          });
-          var slider = document.getElementById('sp-calc-qty');
-          if (slider) {
-            slider.addEventListener('input', function() {
-              state.qty = parseInt(slider.value, 10) || 50;
-              recalc();
-            });
-          }
-          recalc();
-        });
-      })();
-    </script>
   </section>
 
   <!-- ===== WHY US ===== -->
