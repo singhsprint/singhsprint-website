@@ -1,0 +1,9 @@
+# Singhs Print — robots.txt
+User-agent: *
+Allow: /
+
+# Don't crawl internal CRM or admin paths
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.singhsprint.com/sitemap.xml

@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Singhs Print · Impression de vêtements personnalisés · FR</title>
+  <meta name="description" content="Parcourez 1 100+ vêtements vierges chez S&S Activewear, SanMar et Rue Saint-Patrick. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Catalog API + image proxy live on the CRM domain. Preconnect so the
+       browser warms TLS/DNS before the JS fires its first fetch. Cuts
+       ~200-300ms off first paint on cold connections. -->
+  <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
+  <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
+
+  <style>
+    :root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+
+    /* Hero */
+    .cat-hero{max-width:1200px;margin:0 auto;padding:48px 24px 28px}
+    .cat-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.4rem;font-weight:700;line-height:1.1;margin-bottom:8px}
+    .cat-hero p{color:var(--muted);font-size:1rem;max-width:600px}
+    .cat-hero .meta{display:flex;align-items:center;gap:14px;margin-top:14px;font-size:.82rem;color:var(--soft)}
+    .cat-hero .meta strong{color:var(--ink);font-weight:600}
+
+    /* Search + filter row */
+    .cat-toolbar{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:10px;margin-bottom:16px}
+    .cat-search{flex:1;position:relative}
+    .cat-search input{width:100%;padding:14px 14px 14px 44px;border:1.5px solid var(--line);border-radius:14px;font-size:.95rem;font-family:inherit;background:#fff;transition:border-color .15s}
+    .cat-search input:focus{outline:none;border-color:var(--ink)}
+    .cat-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--soft)}
+    .cat-filter-btn{padding:14px 22px;background:var(--ink);color:#fff;border:none;border-radius:14px;font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .15s}
+    .cat-filter-btn:hover{transform:translateY(-1px)}
+    .cat-filter-btn .pill{background:var(--hi);color:var(--ink);padding:2px 7px;border-radius:50px;font-size:.72rem;font-weight:700}
+
+    /* Chip row */
+    .cat-chips{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;min-height:32px}
+    .chip{font-size:.8rem;font-weight:500;padding:6px 12px;border-radius:50px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+    .chip.active{background:var(--ink);color:var(--hi);font-weight:600}
+    .chip.active::after{content:'×';font-size:.95rem;margin-left:1px;opacity:.7}
+    .chip.passive{background:#fff;border:1px solid var(--line);color:var(--muted)}
+    .chip.passive:hover{border-color:var(--ink);color:var(--ink)}
+    .chip.passive::before{content:'+';margin-right:2px;color:var(--ink);font-weight:700}
+
+    /* Result count + sort */
+    .cat-meta-row{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:.85rem;color:var(--muted)}
+    .cat-meta-row strong{color:var(--ink);font-weight:600}
+    .cat-sort{cursor:pointer;display:flex;align-items:center;gap:4px}
+    .cat-sort strong{font-weight:600}
+
+    /* Grid */
+    .cat-grid{max-width:1200px;margin:0 auto 64px;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    @media (max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:540px){.cat-grid{grid-template-columns:1fr;gap:14px;padding:0 16px}}
+    @media (max-width:540px){
+      .cat-hero{padding:28px 16px 16px}
+      .cat-hero h1{font-size:clamp(1.5rem,6vw,2rem)}
+      .cat-hero p{font-size:.88rem;line-height:1.5}
+      .cat-hero .meta{flex-wrap:wrap;gap:6px 10px;font-size:.74rem}
+      .cat-toolbar{flex-direction:column;gap:8px;padding:0 16px}
+      .cat-filter-btn{width:100%;justify-content:center;padding:12px 18px}
+      .cat-search input{padding:12px 14px 12px 42px;font-size:16px}
+      .cat-chips{padding:0 16px;gap:6px;margin-bottom:10px}
+      .chip{font-size:.76rem;padding:5px 10px}
+      /* Compact cards on phones — less whitespace, more shelf */
+      .card{border-radius:12px}
+      .card .photo{aspect-ratio:1}
+      .card .body{padding:10px 12px}
+      .card .name{font-size:.92rem;line-height:1.2;margin-bottom:4px}
+      .card .brand-row{font-size:.68rem;margin-bottom:2px}
+      .card .price{font-size:.82rem;margin-bottom:6px}
+      .card .swatches{gap:3px;max-height:44px}
+      .card .swatch{width:14px;height:14px;border-width:1px}
+      .card .card-cta{padding:7px 10px;margin-top:6px}
+      .card .card-cta__main{font-size:.78rem}
+      .card .card-cta__sub{font-size:.62rem}
+    }
+    @media (max-width:380px){
+      .filter-panel{width:100%}
+    }
+
+    .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column}
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:#d0cdc0}
+    .card.selected{border-color:var(--ink);border-width:2px}
+    .card .badge{position:absolute;top:10px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:50px;letter-spacing:.06em;z-index:2;text-transform:uppercase}
+    .card .badge--bestseller{background:var(--hi);color:var(--ink);right:10px}
+    .card .badge--canadian{background:#fff;color:var(--ink);border:1px solid var(--line);right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--csa{background:#1a1a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--oos{background:#a01a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--low{background:#b8780f;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card.card--oos{opacity:.55}
+    .card.card--oos .photo img{filter:grayscale(.7)}
+    .swatch.swatch--oos{opacity:.3;position:relative}
+    .swatch.swatch--oos::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:inherit}
+    .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
+    .card .photo{aspect-ratio:1;background:#f0eee5;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .card .photo img{width:100%;height:100%;object-fit:cover;transition:opacity .25s ease}
+    /* Skeleton cards — shown immediately on first paint so the page
+       doesn't look frozen during the 1.4s initial catalog fetch. */
+    .skel{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .skel__photo{aspect-ratio:1;background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite}
+    .skel__body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .skel__line{height:10px;border-radius:6px;background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite}
+    .skel__line--short{width:42%}
+    .skel__line--medium{width:78%}
+    .skel__line--swatches{height:18px;border-radius:50px}
+    @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    /* Card render-fade: cards added by the lazy renderer pop in smoothly. */
+    .card{opacity:1;transition:opacity .22s ease}
+    .card--booting{opacity:0}
+    .cat-grid--booting{opacity:.96}
+    .card .body{padding:12px 14px}
+    .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+    .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
+    /* overflow:visible so the selected-state ring (box-shadow + scale) on
+       a swatch isn't clipped at the top of the row. max-height clamped to
+       fit roughly 2 rows of 16px swatches plus the selected ring breathing
+       room. The "+N" overflow indicator stays inline at row end. */
+    .card .swatches{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px;max-height:56px;overflow:visible}
+    .card .swatches .more{font-size:.7rem;color:var(--soft);padding:0 4px;align-self:center;white-space:nowrap}
+    .card .swatch{width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s;padding:0;background-clip:padding-box;outline:none}
+    .card .swatch:hover{transform:scale(1.2)}
+    .card .swatch.is-light{border-color:#ddd}
+    .card .swatch.swatch--selected{box-shadow:0 0 0 2px var(--ink);transform:scale(1.15);position:relative}
+    .card .swatch.swatch--selected::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid #fff;pointer-events:none}
+    .card.card--clickable{cursor:pointer}
+    /* Two-line CTA: bold action on top, qty + hint below. Replaced
+       "+ Add to quote · 200" which read as a counter or price; this
+       version makes it unambiguous what 200 means and that it's editable. */
+    .card .card-cta{margin-top:8px;padding:9px 12px;background:var(--ink);color:#fff;border-radius:10px;text-align:center;letter-spacing:.02em;opacity:0;transition:opacity .15s,transform .15s;transform:translateY(2px);display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.15}
+    .card .card-cta__main{font-size:.82rem;font-weight:700;color:var(--hi);letter-spacing:.02em}
+    .card .card-cta__sub{font-size:.66rem;font-weight:500;color:#bbb;letter-spacing:.04em}
+    .card .card-cta__qty{font-weight:600;color:#fff}
+    .card.card--clickable:hover .card-cta,.card.card--clickable:focus-visible .card-cta{opacity:1;transform:translateY(0)}
+    .card.card--just-added{animation:cardPulse .8s ease-out}
+    @keyframes cardPulse{
+      0%{box-shadow:0 0 0 0 rgba(232,255,60,.7)}
+      60%{box-shadow:0 0 0 12px rgba(232,255,60,0)}
+      100%{box-shadow:0 0 0 0 rgba(232,255,60,0)}
+    }
+    @media (hover:none){
+      /* Always show the CTA on touch devices */
+      .card .card-cta{opacity:1;transform:translateY(0)}
+    }
+    .card .more{font-size:.72rem;color:var(--soft);font-weight:600;margin-left:2px}
+    .card .price{font-size:.82rem;color:var(--muted)}
+    .card .price strong{color:var(--ink);font-weight:600}
+    .card .price-meta{color:var(--soft);font-weight:500;white-space:nowrap}
+
+    /* BYO card */
+    .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
+    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#f0eee5;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+    .card-byo strong{font-size:.95rem}
+    .card-byo span{font-size:.78rem;color:var(--muted);line-height:1.4}
+
+    /* Loading / empty */
+    .cat-loading{max-width:1200px;margin:0 auto;padding:20px 24px;text-align:center;color:var(--soft);font-size:.85rem}
+    .cat-empty{max-width:1200px;margin:0 auto;padding:60px 24px;text-align:center;color:var(--muted)}
+    .cat-empty h3{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:6px;color:var(--ink)}
+
+    /* Filter slide-over */
+    /* z-index 2000 puts the filter panel above the sticky navbar
+       (z:1000) and above the catalog cart bar (z:60). Otherwise the
+       nav covers "Refine results" and the X-close on mobile. */
+    .filter-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;box-shadow:-8px 0 24px rgba(0,0,0,.08);transform:translateX(100%);transition:transform .25s ease;z-index:2000;display:flex;flex-direction:column}
+    .filter-panel.open{transform:translateX(0)}
+    .filter-panel header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .filter-panel header h3{font-family:'Playfair Display',serif;font-size:1.2rem}
+    .filter-panel header button{border:none;background:transparent;font-size:1.2rem;cursor:pointer;color:var(--muted)}
+    .filter-panel .scroll{flex:1;overflow-y:auto;padding:18px 22px}
+    .filter-panel footer{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px}
+    .filter-panel footer button{flex:1;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.9rem;font-family:inherit;border:none}
+    .filter-panel footer .clear{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+    .filter-panel footer .apply{background:var(--ink);color:#fff}
+    .filter-group{margin-bottom:22px}
+    .filter-group h4{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:10px}
+    .filter-group label{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:.9rem;cursor:pointer}
+    .filter-group label input{width:16px;height:16px;accent-color:var(--ink)}
+    .filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:1999}
+    .filter-overlay.open{opacity:1;pointer-events:auto}
+
+    /* Product detail modal — "View details" on each card opens this */
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:200}
+    .detail-overlay.open{opacity:1;pointer-events:auto}
+    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:201;pointer-events:none}
+    .detail-modal.open{pointer-events:auto}
+    .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+    .detail-modal.open .detail-modal__inner{transform:scale(1);opacity:1}
+    .detail-modal__head{padding:18px 22px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .detail-modal__body{flex:1;overflow-y:auto;padding:22px}
+    .detail-modal__hero{display:grid;grid-template-columns:240px 1fr;gap:22px;margin-bottom:22px}
+    .detail-modal__hero img{width:100%;border-radius:12px;background:#f4f2eb;aspect-ratio:1/1;object-fit:cover}
+    /* Gallery — main image + thumbnail strip */
+    .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
+    .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
+    .detail-modal__main img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#f4f2eb;transition:transform .25s ease}
+    .detail-modal__main:hover img{transform:scale(1.03)}
+    .detail-modal__zoom-hint{position:absolute;right:10px;bottom:10px;width:28px;height:28px;border-radius:50%;background:rgba(26,26,26,.78);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;pointer-events:none;backdrop-filter:blur(4px);opacity:0;transition:opacity .15s}
+    .detail-modal__main:hover .detail-modal__zoom-hint{opacity:1}
+    .detail-modal__thumbs{display:flex;gap:6px;flex-wrap:wrap}
+    .detail-modal__thumb{flex:0 0 56px;width:56px;height:56px;padding:0;border:1.5px solid #e8e6df;border-radius:8px;background:#fff;cursor:pointer;overflow:hidden;line-height:0;transition:border-color .12s,transform .12s}
+    .detail-modal__thumb:hover{border-color:#bbb;transform:translateY(-1px)}
+    .detail-modal__thumb.is-active{border-color:#1a1a1a;border-width:2px}
+    .detail-modal__thumb img{width:100%;height:100%;object-fit:cover;background:#f4f2eb}
+    .detail-modal__thumb--label{font-size:.62rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;align-self:flex-end;padding:6px 8px}
+    /* Lightbox */
+    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:1500;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+    .img-lightbox.open{display:flex}
+    .img-lightbox__img{max-width:min(1200px,96vw);max-height:92vh;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.5);background:#1a1a1a}
+    .img-lightbox__close{position:absolute;top:18px;right:22px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(8px)}
+    .img-lightbox__close:hover{background:rgba(255,255,255,.22)}
+    @media (max-width:640px){
+      .detail-modal__thumb{flex:0 0 48px;width:48px;height:48px}
+      .img-lightbox{padding:12px}
+      .img-lightbox__close{top:12px;right:12px}
+    }
+    .detail-modal__swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+    .detail-modal__swatch{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:8px 6px;border-radius:10px;transition:background .12s;border:1.5px solid transparent;background:transparent;font-family:inherit}
+    .detail-modal__swatch:hover{background:#f4f2eb}
+    .detail-modal__swatch[aria-selected="true"]{background:#f4f2eb;border-color:#1a1a1a}
+    .detail-modal__swatch--oos{opacity:.45}
+    .detail-modal__swatch-dot{width:38px;height:38px;border-radius:50%;border:1.5px solid #ddd}
+    .detail-modal__swatch-name{font-size:.7rem;color:#1a1a1a;text-align:center;line-height:1.2;word-break:break-word}
+    .detail-modal__close{background:transparent;border:none;font-size:1.3rem;cursor:pointer;color:#888;padding:4px 8px;line-height:1}
+    .detail-modal__close:hover{color:#1a1a1a}
+    .detail-modal__foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
+    .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
+    .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
+    .detail-modal__qty{display:inline-flex;align-items:center;gap:8px}
+    .detail-modal__qty-btn{width:30px;height:30px;border:1.5px solid #d8d5cb;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;color:#1a1a1a;line-height:1;transition:background .12s,border-color .12s;font-family:inherit;padding:0}
+    .detail-modal__qty-btn:hover{background:#f4f2eb;border-color:#1a1a1a}
+    .detail-modal__qty-btn:active{transform:scale(.96)}
+    .detail-modal__qty-input{width:64px;height:30px;text-align:center;border:1.5px solid #d8d5cb;border-radius:8px;font-size:.92rem;font-weight:600;font-family:inherit;background:#fff;color:#1a1a1a;padding:0 4px;-moz-appearance:textfield}
+    .detail-modal__qty-input::-webkit-outer-spin-button,.detail-modal__qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .detail-modal__qty-input:focus{outline:none;border-color:#1a1a1a}
+    .card-details-link{display:inline-block;font-size:.74rem;color:#666;text-decoration:underline;text-decoration-color:#ccc;text-underline-offset:2px;background:none;border:none;padding:2px 0;cursor:pointer;font-family:inherit;margin-top:4px}
+    .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
+    @media (max-width:640px){
+      .detail-modal{padding:0}
+      .detail-modal__inner{max-height:100vh;border-radius:0}
+      .detail-modal__hero{grid-template-columns:1fr}
+      .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+    }
+    /* When the product detail modal is open, the sitewide "Get a Quote"
+       sticky bar (#sp-sticky-cta) covers the modal's qty stepper + Add
+       button. The modal already has its own primary action, so hide
+       the sitewide bar while the modal is open. The body class is the
+       deterministic hook (set in showProductDetail/closeProductDetail);
+       the :has() selectors are belt-and-suspenders for browsers where
+       JS races. */
+    body.sp-detail-modal-open #sp-sticky-cta,
+    body.sp-detail-modal-open .sticky-cta,
+    body.sp-detail-modal-open .sp-sticky-cta,
+    body:has(.detail-modal.open) #sp-sticky-cta,
+    body:has(.detail-modal.open) .sticky-cta,
+    body:has(.detail-modal.open) .sp-sticky-cta{display:none !important}
+    body.sp-detail-modal-open,
+    body:has(.detail-modal.open){padding-bottom:0 !important}
+  </style>
+  <link rel="canonical" href="https://www.singhsprint.com/fr/catalog">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/catalog">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/catalog">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/catalog">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Singhs Print">
+  <meta property="og:url" content="https://www.singhsprint.com/fr/catalog">
+  <meta property="og:title" content="Apparel Catalog — Singhs Print">
+  <meta property="og:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
+  <meta property="og:locale" content="fr_CA">
+  <meta property="og:locale:alternate" content="en_CA">
+  <meta property="og:image" content="https://singhsprint.com/images/product-tshirt-modavie.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Apparel Catalog — Singhs Print">
+  <meta name="twitter:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
+  <meta name="twitter:image" content="https://singhsprint.com/images/product-tshirt-modavie.jpg">
+</head>
+<body>
+
+  <div id="nav-placeholder"></div>
+
+  <section class="cat-hero">
+    <h1  data-i18n="cat.hero.h1">Notre catalogue de vêtements</h1>
+    <p  data-i18n="cat.hero.p">Parcourez <strong id="catCount">1 100+</strong> vêtements de S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d'une minute.</p>
+    <!-- Auto-translation badge — only visible when FR is active. The
+         supplier feeds (S&S Activewear) only provide English copy, so we
+         machine-translate product/color/spec text on the fly. -->
+    <div id="aiTransBadge" style="display:none;margin-top:12px;padding:8px 12px;background:#fef9c3;border:1px solid #f7d77a;border-radius:10px;font-size:.78rem;color:#5b4500;max-width:fit-content;line-height:1.4">
+      <strong>🌐 Traduction automatique active</strong> — les noms de produits et couleurs sont traduits automatiquement depuis l'anglais. Le reste du site est en français professionnel.
+    </div>
+    <div class="meta">
+      <span  data-i18n="cat.hero.meta1"><strong>Stock et prix</strong> mis à jour chaque jour</span>
+      <span>·</span>
+      <span  data-i18n="cat.hero.meta2">Délai habituel de <strong>5 à 10 jours</strong></span>
+      <span>·</span>
+      <span  data-i18n="cat.hero.meta3">Intégrations SanMar et fournisseurs canadiens bientôt disponibles</span>
+    </div>
+  </section>
+
+  <div class="cat-toolbar">
+    <div class="cat-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by brand, style number, fabric…" data-i18n-placeholder="cat.search.placeholder" autocomplete="off"/>
+    </div>
+    <button class="cat-filter-btn" onclick="openFilterPanel()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="2" fill="white"/><circle cx="16" cy="12" r="2" fill="white"/><circle cx="8" cy="18" r="2" fill="white"/></svg>
+      <span  data-i18n="cat.btn.filters">Filtres</span>
+      <span class="pill" id="filterCount" style="display:none">0</span>
+    </button>
+  </div>
+
+  <div class="cat-chips" id="chipRow"></div>
+
+  <div class="cat-meta-row">
+    <div><strong id="resultCount">—</strong> <span  data-i18n="cat.results.products">produits</span></div>
+    <div class="cat-sort">
+      <span  data-i18n="cat.sort.label">Trier :</span>
+      <select id="sortSelect" onchange="setSort(this.value)" style="font-family:inherit;font-weight:600;border:none;background:transparent;cursor:pointer;font-size:.95rem;color:var(--ink);padding:0">
+        <option value="bestseller"  data-i18n="cat.sort.bestseller">Populaires</option>
+        <option value="price_asc"  data-i18n="cat.sort.price_asc">Prix ↑ (bas → haut)</option>
+        <option value="price_desc"  data-i18n="cat.sort.price_desc">Prix ↓ (haut → bas)</option>
+        <option value="name_asc"  data-i18n="cat.sort.name_asc">Nom A → Z</option>
+        <option value="brand_asc"  data-i18n="cat.sort.brand_asc">Marque A → Z</option>
+      </select>
+    </div>
+  </div>
+  <!-- Compact qty selector. Slim row that fits with the existing toolbar.
+       Slider snaps to canonical pricing tiers (5, 10, 25, 50, 100, 200, 500).
+       Customer can also tap a tick or type a custom number. The whole bar
+       collapses to two rows on mobile so the slider stays touch-friendly. -->
+  <style>
+    .qty-bar{max-width:1200px;margin:-4px auto 18px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .qty-bar__label{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);flex-shrink:0}
+    .qty-bar__label strong{color:var(--ink);font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
+    .qty-bar__slider-wrap{flex:1;min-width:200px;position:relative;padding:2px 0 18px}
+    .qty-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:50px;background:linear-gradient(to right,var(--ink) var(--qty-pct,80%),#e8e6df var(--qty-pct,80%));outline:none;margin:0;cursor:pointer}
+    .qty-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+    .qty-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+    .qty-ticks{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;font-size:.66rem;color:var(--soft);font-weight:500;pointer-events:none}
+    .qty-ticks span{cursor:pointer;pointer-events:auto;transition:color .15s;padding:2px 4px;margin:0 -4px}
+    .qty-ticks span:hover,.qty-ticks span.active{color:var(--ink);font-weight:700}
+    .qty-input{width:60px;padding:5px 8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;font-size:.85rem;font-family:inherit;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+    .qty-input:focus{outline:none;border-color:var(--ink)}
+    .qty-bar__custom{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);flex-shrink:0}
+    @media (max-width:640px) {
+      .qty-bar{flex-direction:column;align-items:stretch;gap:8px}
+      .qty-bar__label{justify-content:space-between}
+      .qty-bar__slider-wrap{min-width:0}
+    }
+  </style>
+  <div id="qtyPricingBar" class="qty-bar">
+    <div class="qty-bar__label">
+      <span  data-i18n="cat.qty.label">Prix pour</span> <strong><span id="qtyReadout">200</span> <span  data-i18n="cat.qty.units">unités</span></strong>
+      <span style="font-size:.72rem;color:var(--soft);font-weight:500"  data-i18n="cat.qty.oneside">· 1 côté imprimé</span>
+    </div>
+    <div class="qty-bar__slider-wrap">
+      <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
+      <div class="qty-ticks">
+        <span data-step="0" onclick="setQty(5)">5</span>
+        <span data-step="1" onclick="setQty(10)">10</span>
+        <span data-step="2" onclick="setQty(25)">25</span>
+        <span data-step="3" onclick="setQty(50)">50</span>
+        <span data-step="4" onclick="setQty(100)">100</span>
+        <span data-step="5" class="active" onclick="setQty(200)">200</span>
+        <span data-step="6" onclick="setQty(500)">500+</span>
+      </div>
+    </div>
+    <label class="qty-bar__custom">
+      <span  data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+    </label>
+  </div>
+
+  <div class="cat-grid" id="catGrid">
+    <!-- Skeleton placeholders shown immediately on first paint so the
+         page doesn't look frozen for the ~1.4s the catalog API takes
+         to come back. JS replaces these the moment products arrive. -->
+    <script>
+      (function () {
+        var grid = document.currentScript.parentNode;
+        // Don't show skeletons on filter changes — only on the very first
+        // paint, when the grid is empty.
+        if (grid.children.length > 1) return;
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < 12; i++) {
+          var s = document.createElement('div');
+          s.className = 'skel';
+          s.innerHTML =
+            '<div class="skel__photo"></div>' +
+            '<div class="skel__body">' +
+              '<div class="skel__line skel__line--short"></div>' +
+              '<div class="skel__line skel__line--medium"></div>' +
+              '<div class="skel__line skel__line--swatches"></div>' +
+              '<div class="skel__line skel__line--short"></div>' +
+            '</div>';
+          frag.appendChild(s);
+        }
+        grid.appendChild(frag);
+      })();
+    </script>
+  </div>
+  <div class="cat-loading" id="catLoading" style="display:none"  data-i18n="cat.loading">Chargement…</div>
+  <div class="cat-empty" id="catEmpty" style="display:none"><h3  data-i18n="cat.empty.h3">Aucun résultat</h3><p  data-i18n="cat.empty.p">Essayez de retirer un filtre ou utilisez l'option « Apportez le vôtre ».</p></div>
+
+  <!-- Floating cart bar — appears whenever the customer has 1+ items
+       queued for their quote. Stays sticky at the bottom of the viewport
+       so they can keep browsing the catalog and add more without losing
+       track of what they've already picked. -->
+  <style>
+    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px)}
+    .cart-bar.open{display:flex}
+    .cart-bar__count{background:var(--hi);color:var(--ink);font-weight:700;border-radius:50px;padding:3px 9px;font-size:.78rem;font-variant-numeric:tabular-nums}
+    .cart-bar__label{font-size:.86rem}
+    .cart-bar__label strong{font-weight:600}
+    .cart-bar__cta{background:var(--hi);color:var(--ink);border:none;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:50px;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .cart-bar__cta:hover{filter:brightness(.95)}
+    .cart-toast{position:fixed;top:84px;right:18px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-size:.85rem;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:70;transform:translateY(-12px);opacity:0;transition:transform .25s,opacity .25s;pointer-events:none}
+    .cart-toast.show{transform:translateY(0);opacity:1}
+    .cart-toast strong{color:var(--hi)}
+    /* Add-to-quote button on each product card */
+    .card .add-cart{position:absolute;bottom:10px;right:10px;background:var(--ink);color:var(--hi);border:none;border-radius:50px;padding:6px 12px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;z-index:3;opacity:0;transition:opacity .15s,transform .15s,filter .15s}
+    .card:hover .add-cart,.add-cart:focus{opacity:1}
+    .add-cart:hover{filter:brightness(1.15);transform:translateY(-1px)}
+    .add-cart.added{background:var(--hi);color:var(--ink);opacity:1}
+    @media (hover:none){
+      /* On touch devices, always show the add button (no hover). */
+      .card .add-cart{opacity:1}
+    }
+  </style>
+  <div id="cartBar" class="cart-bar">
+    <span class="cart-bar__count" id="cartCount">0</span>
+    <span class="cart-bar__label"><strong id="cartUnits">0</strong> <span  data-i18n="cat.cart.units">unités dans votre soumission</span></span>
+    <button type="button" class="cart-bar__cta" onclick="goToQuote()"  data-i18n="cat.cart.cta">Continuer vers la soumission →</button>
+  </div>
+  <div id="cartToast" class="cart-toast" aria-live="polite"></div>
+
+  <!-- Filter slide-over -->
+  <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
+
+  <!-- Product detail modal — opened by "View details" on each card -->
+  <div class="detail-overlay" id="detailOverlay" onclick="closeProductDetail()"></div>
+  <div class="detail-modal" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+    <div class="detail-modal__inner">
+      <div class="detail-modal__head">
+        <div style="min-width:0">
+          <div id="detailModalBrand" style="font-size:.7rem;letter-spacing:.06em;color:#888;text-transform:uppercase;font-weight:700"></div>
+          <div id="detailModalTitle" style="font-size:1.15rem;font-weight:700;margin-top:2px;line-height:1.25"></div>
+        </div>
+        <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Close">✕</button>
+      </div>
+      <div class="detail-modal__body">
+        <div class="detail-modal__hero">
+          <!-- Gallery — main image + thumbnail strip. The thumbs are
+               populated per-color in paintDetailHero() based on which
+               mockup_*_url fields S&S returned for that color. The main
+               image is clickable to open the lightbox. -->
+          <div class="detail-modal__gallery">
+            <button type="button" class="detail-modal__main" id="detailModalMainBtn" aria-label="View larger image">
+              <img id="detailModalImg" src="" alt="" />
+              <span class="detail-modal__zoom-hint" aria-hidden="true">⤢</span>
+            </button>
+            <div class="detail-modal__thumbs" id="detailModalThumbs"></div>
+          </div>
+          <div>
+            <div id="detailModalPrice" style="font-size:1.1rem;font-weight:600;margin-bottom:8px"></div>
+            <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5"></div>
+            <div id="detailModalSelectedColor" style="font-size:.82rem;color:#1a1a1a;margin-top:12px;font-weight:600"></div>
+            <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;margin-top:4px"></div>
+          </div>
+        </div>
+        <!-- Tech specs — parsed from the S&S product description. -->
+        <div id="detailModalSpecsWrap" style="margin-bottom:22px;display:none">
+          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"  data-i18n="cat.detail.specs">Spécifications techniques</div>
+          <ul id="detailModalSpecs" class="detail-modal__specs"></ul>
+          <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
+        </div>
+        <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
+        <div class="detail-modal__swatches" id="detailModalSwatches"></div>
+      </div>
+      <div class="detail-modal__foot">
+        <div class="detail-modal__qty">
+          <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700"  data-i18n="cat.detail.qty">Qté</span>
+          <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
+          <input type="number" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
+          <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
+        </div>
+        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span  data-i18n="cat.card.add-to-quote">+ Ajouter à la soumission</span> · <span id="detailModalAddQty">25</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image lightbox — full-viewport overlay that pops open when the
+       main image in the detail modal is clicked. Click outside the image
+       or press ESC to close. Sits above the detail modal (z-index 1500). -->
+  <div class="img-lightbox" id="imgLightbox" role="dialog" aria-modal="true" aria-label="Enlarged product image" onclick="closeImgLightbox(event)">
+    <button type="button" class="img-lightbox__close" aria-label="Close" onclick="closeImgLightbox(event,true)">✕</button>
+    <img class="img-lightbox__img" id="imgLightboxImg" src="" alt="" />
+  </div>
+  <aside class="filter-panel" id="filterPanel" aria-hidden="true">
+    <header>
+      <h3  data-i18n="cat.filter.refine">Affiner les résultats</h3>
+      <button onclick="closeFilterPanel()" aria-label="Close">×</button>
+    </header>
+    <div class="scroll" id="filterBody">
+      <!-- Filter groups injected by JS once /api/catalog/facets returns -->
+    </div>
+    <footer>
+      <button class="clear" onclick="clearAllFilters()"  data-i18n="cat.filter.clear">Tout effacer</button>
+      <button class="apply" onclick="applyFilters()"  data-i18n="cat.filter.apply">Appliquer</button>
+    </footer>
+  </aside>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="components.js"></script>
+  <script>
+  // =========================================================================
+  // Catalog state
+  // =========================================================================
+  // =========================================================================
+  // Cart — shared with quote.html via sessionStorage. Items live for the
+  // browser session (cleared on tab close). Multi-item quotes use this;
+  // single-product ?product= URLs still work the old way for backwards
+  // compatibility — the cart just stays empty.
+  // =========================================================================
+  // Cart abandonment recovery: a stable cart_id lives in localStorage so
+  // the same browser keeps the same row across tab closes. After every
+  // SinghsCart mutation we debounce-sync to /api/carts/upsert. If a
+  // visitor enters their email on /quote and doesn't submit, the daily
+  // sweeper emails them a recovery link.
+  function getCartId() {
+    var k = 'singhsCartId_v1';
+    var existing = null;
+    try { existing = localStorage.getItem(k); } catch(e){}
+    if (existing && /^[a-zA-Z0-9_-]{8,64}$/.test(existing)) return existing;
+    var id = '';
+    try {
+      if (window.crypto && crypto.randomUUID) id = crypto.randomUUID().replace(/-/g, '');
+    } catch(e){}
+    if (!id) id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    try { localStorage.setItem(k, id); } catch(e){}
+    return id;
+  }
+  let SINGHS_CART_ID = getCartId();
+
+  // Recovery-email link handling: when the URL has ?cart=<id>, hydrate
+  // sessionStorage from /api/carts/<id> + adopt that cart_id as ours so
+  // subsequent syncs target the same row. The query string is stripped
+  // afterwards so reloads / bookmarks don't keep re-triggering it.
+  (function hydrateFromRecoveryLink() {
+    try {
+      const params = new URLSearchParams(location.search);
+      const recoverId = params.get('cart');
+      if (!recoverId || !/^[a-zA-Z0-9_-]{8,64}$/.test(recoverId)) return;
+      // Don't re-hydrate if we already restored this cart.
+      if (sessionStorage.getItem('singhsCartHydrated') === recoverId) return;
+      fetch('https://singhsprint-crm.vercel.app/api/carts/' + encodeURIComponent(recoverId))
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (d && Array.isArray(d.items) && d.items.length > 0) {
+            sessionStorage.setItem('singhsCart_v1', JSON.stringify({ items: d.items }));
+            sessionStorage.setItem('singhsCartHydrated', recoverId);
+            localStorage.setItem('singhsCartId_v1', recoverId);
+            SINGHS_CART_ID = recoverId;
+            // Strip ?cart=... so reloads don't re-fire this path.
+            params.delete('cart');
+            const q = params.toString();
+            history.replaceState({}, '', location.pathname + (q ? '?' + q : '') + location.hash);
+            renderCartBar();
+            // Subtle toast so they know their cart came back.
+            showCartToast({ brand: '✓ Cart restored', style_number: '— ' + d.items.length + ' item' + (d.items.length === 1 ? '' : 's') });
+          }
+        })
+        .catch(function(){});
+    } catch(e) {}
+  })();
+  let _cartSyncTimer = null;
+  function queueCartSync() {
+    if (_cartSyncTimer) clearTimeout(_cartSyncTimer);
+    _cartSyncTimer = setTimeout(function () {
+      try {
+        var c = JSON.parse(sessionStorage.getItem('singhsCart_v1') || '{"items":[]}');
+        fetch('https://singhsprint-crm.vercel.app/api/carts/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart_id: SINGHS_CART_ID, items: c.items || [], source_url: location.href }),
+          keepalive: true,
+        }).catch(function(){});
+      } catch(e){}
+    }, 800);
+  }
+
+  // Pick the most natural default placement for a freshly-added cart
+  // item. Mirrors the (more elaborate) PLACEMENT_GROUPS_BY_GARMENT map in
+  // quote.html, but we only need the FIRST option per garment here — the
+  // quote page lets the customer add more.
+  function _defaultPlacementForGarment(g) {
+    const M = {
+      hat: 'cap-front',
+      tote: 'bag-front',
+      joggers: 'leg-left-hip',
+      shorts: 'leg-left-hip',
+      scrub_pants: 'leg-left-hip',
+      apron: 'apron-chest',
+      vest: 'center-chest',
+      hivis: 'center-chest',
+      coverall: 'left-chest',
+      chef_coat: 'left-chest',
+      scrub_top: 'left-chest',
+      lab_coat: 'left-chest',
+      polo: 'left-chest',
+      workshirt: 'left-chest',
+      performance_shirt: 'left-chest'
+    };
+    return M[g] || 'center-chest';
+  }
+
+  const SinghsCart = {
+    key: 'singhsCart_v1',
+    read() { try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
+    write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); queueCartSync(); },
+    add(item) {
+      const c = this.read();
+      // Default placements/sides on add — garment-aware so a cap defaults
+      // to ['cap-front'] not ['center-chest']. The /quote page lets the
+      // customer edit per-item from there.
+      if (!Array.isArray(item.placements) || item.placements.length === 0) {
+        item.placements = [_defaultPlacementForGarment(item.garment_type)];
+      }
+      item.sides = item.placements.length;
+      const dup = c.items.find(x => x.product_id === item.product_id && x.color_id === item.color_id);
+      if (dup) dup.qty = (dup.qty || 0) + (item.qty || 0);
+      else c.items.push(item);
+      this.write(c);
+    },
+    count() { return this.read().items.length; },
+    totalUnits() { return this.read().items.reduce((s, i) => s + (Number(i.qty) || 0), 0); },
+  };
+
+  function renderCartBar() {
+    const bar = document.getElementById('cartBar');
+    if (!bar) return;
+    const n = SinghsCart.count();
+    if (n === 0) { bar.classList.remove('open'); return; }
+    bar.classList.add('open');
+    document.getElementById('cartCount').textContent = n;
+    document.getElementById('cartUnits').textContent = SinghsCart.totalUnits();
+  }
+
+  function showCartToast(item) {
+    const t = document.getElementById('cartToast');
+    if (!t) return;
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    t.innerHTML = '<strong>' + (_t('cat.toast.added') || '✓ Added to quote') + '</strong> · ' + (item.brand || '') + ' ' + (item.style_number || '');
+    t.classList.add('show');
+    clearTimeout(showCartToast._tid);
+    showCartToast._tid = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+  }
+
+  function goToQuote() { window.location.href = '/quote'; }
+
+  // =====================================================================
+  // Product detail modal — opened by the "View details ↗" link on each
+  // card. Shows the full color grid (sized swatches + names), per-color
+  // sizes_in_stock, weight, garment type, and lets the customer add to
+  // cart in their picked color without leaving the catalog view.
+  // =====================================================================
+  let _detailProduct = null;
+  let _detailColorIdx = 0;
+  let _detailGalleryIdx = 0;  // 0=front, 1=back, 2=side (only views with a URL render)
+  // S&S sends product descriptions as a single HTML <ul>. Parse into clean
+  // text bullets so we can render them in our own style (no foreign HTML
+  // injection, no <ul>-inside-modal weirdness, no &amp; / &nbsp; artifacts).
+  function parseSpecBullets(descHtml) {
+    if (!descHtml || typeof descHtml !== 'string') return [];
+    const tmp = document.createElement('div');
+    tmp.innerHTML = descHtml;
+    const lis = tmp.querySelectorAll('li');
+    return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
+  }
+  function openProductDetail(p, initialColorIdx) {
+    _detailProduct = p;
+    _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
+      ? initialColorIdx : 0;
+    _detailGalleryIdx = 0;  // always start gallery on front view when opening a new product
+    document.getElementById('detailModalBrand').textContent = (p.brand || '').toUpperCase() + ' · ' + (p.style_number || '');
+    document.getElementById('detailModalTitle').textContent = p.name || '';
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    document.getElementById('detailModalPrice').innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
+      ? (_t('cat.card.from') || 'From') + ' <strong>$' + p.price_from.toFixed(2) + '</strong> ' + (_t('cat.card.perunit') || '/unit') + ' · <span style="color:#888;font-weight:500">' + (_t('cat.card.oneside') || '1-side print') + '</span>'
+      : '<strong>' + (_t('cat.card.quote-on-request') || 'Quote on request') + '</strong>';
+    const metaBits = [];
+    if (p.weight_oz)     metaBits.push(p.weight_oz + ' oz');
+    if (p.fabric)        metaBits.push(p.fabric);
+    if (p.gender)        metaBits.push(p.gender);
+    if (p.garment_type)  metaBits.push(p.garment_type);
+    if (p.colors)        metaBits.push(p.colors.length + ' color' + (p.colors.length === 1 ? '' : 's'));
+    document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
+    document.getElementById('detailModalCount').textContent = (p.colors || []).length;
+
+    // Tech specs — render up to 4 bullets collapsed, "Show more" reveals the rest.
+    const specs = parseSpecBullets(p.description);
+    const specsWrap = document.getElementById('detailModalSpecsWrap');
+    const specsList = document.getElementById('detailModalSpecs');
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (specs.length === 0) {
+      specsWrap.style.display = 'none';
+    } else {
+      specsWrap.style.display = 'block';
+      const PREVIEW = 4;
+      specsList.innerHTML = specs.map((s, i) =>
+        `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
+      ).join('');
+      if (specs.length > PREVIEW) {
+        specsToggle.style.display = 'inline-block';
+        var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+        specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
+        specsToggle.dataset.expanded = '0';
+      } else {
+        specsToggle.style.display = 'none';
+      }
+    }
+
+    // Seed the qty stepper from the catalog page's current slider value.
+    const qtyInput = document.getElementById('detailModalQtyInput');
+    qtyInput.value = state.qty || 25;
+    syncDetailAddBtn();
+
+    // Full color grid with names underneath.
+    const host = document.getElementById('detailModalSwatches');
+    host.innerHTML = (p.colors || []).map((c, i) => {
+      const hex = c.hex_code || '#ccc';
+      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+      const cleanName = (c.color_name || '').replace(/_\d+$/, '');
+      const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
+      return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${i === 0 ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
+        <span class="detail-modal__swatch-dot" style="background:${hex}"></span>
+        <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
+      </button>`;
+    }).join('');
+    host.querySelectorAll('.detail-modal__swatch').forEach(s => {
+      s.addEventListener('click', () => {
+        _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
+        _detailGalleryIdx = 0; // reset to front view when color changes — new color may not have the previous view
+        host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
+        s.setAttribute('aria-selected', 'true');
+        paintDetailHero();
+      });
+    });
+    paintDetailHero();
+    document.getElementById('detailOverlay').classList.add('open');
+    document.getElementById('detailModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // JS fallback for the CSS :has() rule that hides the sitewide sticky
+    // CTA bar. Older Safari/Android don't yet support :has() — this body
+    // class gives us a deterministic hook for the same CSS rule.
+    document.body.classList.add('sp-detail-modal-open');
+    // If FR is active, machine-translate the dynamic strings (title,
+    // selected color, color names in the grid, spec bullets).
+    maybeTranslateDetailModal();
+  }
+
+  // Build the list of available image views for THIS color. S&S gives us
+  // up to 3 mockups (front, back, side) per color but coverage varies —
+  // some hats only have a front shot, some tees have all three. We
+  // filter to whatever's actually populated so the thumb strip doesn't
+  // surface dead placeholders.
+  function _galleryViewsForColor(c, fallback) {
+    const out = [];
+    if (c && c.mockup_front_url) out.push({ key: 'front', label: 'Front', url: imgUrl(c.mockup_front_url) });
+    if (c && c.mockup_back_url)  out.push({ key: 'back',  label: 'Back',  url: imgUrl(c.mockup_back_url) });
+    if (c && c.mockup_side_url)  out.push({ key: 'side',  label: 'Side',  url: imgUrl(c.mockup_side_url) });
+    if (out.length === 0 && fallback) out.push({ key: 'hero', label: 'Front', url: imgUrl(fallback) });
+    return out;
+  }
+
+  function paintDetailHero() {
+    const p = _detailProduct; if (!p) return;
+    const c = (p.colors || [])[_detailColorIdx] || {};
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+
+    // Compute available views for this color + clamp the gallery index.
+    const views = _galleryViewsForColor(c, p.hero_image_url);
+    if (_detailGalleryIdx >= views.length) _detailGalleryIdx = 0;
+    const currentView = views[_detailGalleryIdx] || { url: '', label: 'Front' };
+
+    // Main image
+    const mainImg = document.getElementById('detailModalImg');
+    if (mainImg) {
+      mainImg.src = currentView.url;
+      mainImg.alt = (p.brand || '') + ' ' + (p.style_number || '') + ' — ' + ((c.color_name || '').replace(/_\d+$/, '')) + ' (' + currentView.label + ')';
+    }
+    // Main image click → open lightbox with the current full-size view
+    const mainBtn = document.getElementById('detailModalMainBtn');
+    if (mainBtn) {
+      mainBtn.onclick = function(ev) {
+        ev.preventDefault();
+        openImgLightbox(currentView.url);
+      };
+    }
+
+    // Thumbnail strip — one button per available view. Hidden entirely
+    // when there's only one image so the UI doesn't show a single useless
+    // thumb (most caps land here).
+    const thumbsHost = document.getElementById('detailModalThumbs');
+    if (thumbsHost) {
+      if (views.length <= 1) {
+        thumbsHost.innerHTML = '';
+      } else {
+        thumbsHost.innerHTML = views.map(function(v, i) {
+          const active = (i === _detailGalleryIdx) ? ' is-active' : '';
+          return '<button type="button" class="detail-modal__thumb' + active + '" data-gi="' + i + '" aria-label="' + v.label + '">' +
+                 '<img src="' + v.url + '" alt="' + v.label + '" loading="lazy"/></button>';
+        }).join('');
+        thumbsHost.querySelectorAll('.detail-modal__thumb').forEach(function(b) {
+          b.addEventListener('click', function() {
+            _detailGalleryIdx = parseInt(b.dataset.gi, 10) || 0;
+            paintDetailHero();
+          });
+        });
+      }
+    }
+
+    document.getElementById('detailModalSelectedColor').textContent = (_t('cat.detail.color') || 'Color:') + ' ' + ((c.color_name || '').replace(/_\d+$/, '') || '—');
+    const sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
+    document.getElementById('detailModalSelectedSizes').textContent = sizes.length
+      ? (_t('cat.detail.sizes') || 'Sizes in stock:') + ' ' + sizes.join(', ')
+      : (_t('cat.detail.sizes') || 'Sizes in stock:') + ' ' + (_t('cat.detail.contactus') || 'contact us');
+  }
+
+  function closeProductDetail() {
+    document.getElementById('detailOverlay').classList.remove('open');
+    document.getElementById('detailModal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.body.classList.remove('sp-detail-modal-open');
+  }
+
+  // ---------------------------------------------------------------------
+  // Image lightbox — full-viewport zoom on the detail modal's main image
+  // ---------------------------------------------------------------------
+  function openImgLightbox(url) {
+    if (!url) return;
+    const lb  = document.getElementById('imgLightbox');
+    const img = document.getElementById('imgLightboxImg');
+    if (!lb || !img) return;
+    img.src = url;
+    lb.classList.add('open');
+    // Don't double-lock body scroll — the detail modal already did it,
+    // we just stack the lightbox above it. If the lightbox is opened
+    // standalone (no modal open), still lock scroll.
+    if (!document.body.classList.contains('sp-detail-modal-open')) {
+      document.body.style.overflow = 'hidden';
+    }
+    if (window.spTrack) window.spTrack('catalog_lightbox_open', { src: url });
+  }
+  function closeImgLightbox(ev, force) {
+    // Only close on backdrop click or explicit close button — not on
+    // the image itself (so a wandering click inside the image area
+    // doesn't fight the user's zoom).
+    if (!force && ev && ev.target && ev.target.tagName === 'IMG') return;
+    const lb = document.getElementById('imgLightbox');
+    if (!lb) return;
+    lb.classList.remove('open');
+    if (!document.body.classList.contains('sp-detail-modal-open')) {
+      document.body.style.overflow = '';
+    }
+  }
+  // ESC closes the lightbox first, then the modal. Reuses the existing
+  // body-class hook so we don't conflict with the modal's own ESC path.
+  document.addEventListener('keydown', function(ev) {
+    if (ev.key !== 'Escape') return;
+    const lb = document.getElementById('imgLightbox');
+    if (lb && lb.classList.contains('open')) {
+      closeImgLightbox(ev, true);
+      ev.stopPropagation();
+    }
+  });
+
+  // Sync the Add-button label to the qty input. Does NOT clamp the
+  // input value during typing — that prevented users from erasing the
+  // "1" to type their own number. Clamping happens only on blur and
+  // when the customer actually hits "Add to quote".
+  function syncDetailAddBtn() {
+    const inp = document.getElementById('detailModalQtyInput');
+    if (!inp) return;
+    const raw = inp.value;
+    const n = parseInt(raw, 10);
+    // Label shows the typed value (or blank if mid-edit / invalid).
+    const label = document.getElementById('detailModalAddQty');
+    if (label) label.textContent = (raw === '' || isNaN(n)) ? '' : String(n);
+  }
+  // Final clamp — called on blur and on Add click.
+  function clampDetailQty() {
+    const inp = document.getElementById('detailModalQtyInput');
+    if (!inp) return 1;
+    let n = parseInt(inp.value, 10);
+    if (!n || n < 1) n = 1;
+    if (n > 10000) n = 10000;
+    inp.value = n;
+    syncDetailAddBtn();
+    return n;
+  }
+
+  // Wire the modal's Add button, qty stepper, specs toggle, Esc-to-close.
+  document.addEventListener('DOMContentLoaded', () => {
+    // Qty stepper
+    const qtyInp   = document.getElementById('detailModalQtyInput');
+    const qtyMinus = document.getElementById('detailModalQtyMinus');
+    const qtyPlus  = document.getElementById('detailModalQtyPlus');
+    if (qtyMinus) qtyMinus.addEventListener('click', () => {
+      qtyInp.value = Math.max(1, (parseInt(qtyInp.value, 10) || 1) - 1);
+      syncDetailAddBtn();
+    });
+    if (qtyPlus) qtyPlus.addEventListener('click', () => {
+      qtyInp.value = Math.min(10000, (parseInt(qtyInp.value, 10) || 0) + 1);
+      syncDetailAddBtn();
+    });
+    // While typing: don't clamp. Just update the label.
+    if (qtyInp) qtyInp.addEventListener('input', syncDetailAddBtn);
+    // On blur / leave: NOW clamp.
+    if (qtyInp) qtyInp.addEventListener('blur',  clampDetailQty);
+    // Select-all on focus so a tap-then-type replaces "1" cleanly.
+    if (qtyInp) qtyInp.addEventListener('focus', (e) => e.target.select());
+
+    // Specs "Show more / Show fewer" toggle
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (specsToggle) specsToggle.addEventListener('click', () => {
+      const expanded = specsToggle.dataset.expanded === '1';
+      document.querySelectorAll('#detailModalSpecs li[data-extra="1"]').forEach(li => {
+        li.style.display = expanded ? 'none' : '';
+      });
+      specsToggle.dataset.expanded = expanded ? '0' : '1';
+      const allCount = document.querySelectorAll('#detailModalSpecs li').length;
+      var _ts2 = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      specsToggle.textContent = expanded
+        ? (_ts2('cat.detail.showall') || 'Show all') + ' ' + allCount + ' ' + (_ts2('cat.detail.specs-suffix') || 'specs ▾')
+        : (_ts2('cat.detail.showfewer') || 'Show fewer specs ▴');
+    });
+
+    // Add → cart, using the modal's own qty (not the page slider).
+    const addBtn = document.getElementById('detailModalAddBtn');
+    if (addBtn) addBtn.addEventListener('click', () => {
+      const p = _detailProduct; if (!p) return;
+      const c = (p.colors || [])[_detailColorIdx] || {};
+      const n = Math.max(1, parseInt(qtyInp.value, 10) || 1);
+      addToCart(p.product_id, {
+        color_id:     c.color_id || null,
+        color_name:   (c.color_name || ''),
+        brand:        p.brand || '',
+        style_number: p.style_number || '',
+        name:         p.name || '',
+        garment_type: p.garment_type || null,
+        hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
+        qty:          n,
+      });
+      closeProductDetail();
+      showCartToast({ brand: p.brand, style_number: p.style_number });
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && document.getElementById('detailModal').classList.contains('open')) {
+        closeProductDetail();
+      }
+    });
+  });
+
+  // Adds the currently-selected product to the cart with the qty from the
+  // slider. Called from each card's "+ Add" button.
+  function addToCart(productId, payload) {
+    var qty = Math.max(1, parseInt(payload.qty, 10) || state.qty || 50);
+    SinghsCart.add({
+      product_id:   productId,
+      color_id:     payload.color_id || null,
+      color_name:   payload.color_name || '',
+      brand:        payload.brand || '',
+      style_number: payload.style_number || '',
+      name:         payload.name || '',
+      garment_type: payload.garment_type || null,
+      hero_url:     payload.hero_url || '',
+      // Modal can override the page-slider qty per-item; fall back to the
+      // catalog slider value (state.qty) for whole-card clicks.
+      qty:          qty,
+      sides:        1,
+    });
+    // Funnel analytics — the strongest signal of intent on this page.
+    if (window.spTrack) window.spTrack('catalog_add_to_quote', {
+      product_id: productId,
+      brand: payload.brand || '',
+      style_number: payload.style_number || '',
+      garment_type: payload.garment_type || null,
+      color_name: payload.color_name || '',
+      qty: qty
+    });
+    showCartToast(payload);
+    // Visual confirmation on the card itself
+    const btn = document.querySelector('button[data-add-id="' + productId + '"]');
+    if (btn) {
+      var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      btn.classList.add('added');
+      btn.textContent = _t('cat.toast.added') || '✓ Added';
+      setTimeout(function(){ btn.classList.remove('added'); btn.textContent = _t('cat.card.add-to-quote') || '+ Add to quote'; }, 1400);
+    }
+  }
+
+  const state = {
+    filters: {                       // active filter state — drives /api/catalog query
+      type: getQueryParam('type') || null,
+      brand: [],
+      canadian: false,
+      csa: false,
+      q: '',
+      inStockOnly: true              // default ON — hide fully OOS items
+    },
+    sort:    getQueryParam('sort') || 'bestseller',
+    // Qty used to compute every card's "From $X". Default 200 = top tier
+    // (matches the old behaviour). The URL can override via ?qty=50 so
+    // links from other pages can pre-select a tier.
+    qty:     Math.max(1, Math.min(10000, parseInt(getQueryParam('qty') || '200', 10) || 200)),
+    products: [],
+    page: 0,
+    loading: false,
+    done: false
+  };
+
+  // =========================================================================
+  // Qty control — slider snaps to canonical pricing tiers; the number input
+  // lets the customer override to any qty in between. Both write into
+  // state.qty and refetch the catalog (debounced).
+  // =========================================================================
+  const QTY_TIERS = [5, 10, 25, 50, 100, 200, 500];   // index = slider step
+  let _qtyDebounce = null;
+
+  // Map an arbitrary qty to the closest slider step (so the thumb stays in
+  // a sensible position even after a custom number entry).
+  function qtyToStep(q) {
+    let bestIdx = 0, bestDist = Infinity;
+    QTY_TIERS.forEach((t, i) => {
+      const d = Math.abs(t - q);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    return bestIdx;
+  }
+
+  function onQtySliderChanged(stepStr) {
+    const step = parseInt(stepStr, 10);
+    setQty(QTY_TIERS[step] || 200);
+  }
+  function onQtyInputChanged(val) {
+    const n = parseInt(val, 10);
+    if (!Number.isFinite(n) || n < 1) return;
+    setQty(Math.min(10000, n));
+  }
+  function setQty(n) {
+    state.qty = n;
+    // Sync UI: slider position, readout, number input, tick highlight.
+    const step = qtyToStep(n);
+    const slider = document.getElementById('qtySlider');
+    if (slider) {
+      slider.value = step;
+      slider.style.setProperty('--qty-pct', ((step / (QTY_TIERS.length - 1)) * 100) + '%');
+    }
+    const readout = document.getElementById('qtyReadout');
+    if (readout) readout.textContent = n >= 500 ? '500+' : String(n);
+    const input = document.getElementById('qtyInput');
+    if (input && document.activeElement !== input) input.value = n;
+    document.querySelectorAll('.qty-ticks span').forEach(s => s.classList.toggle('active', parseInt(s.dataset.step,10) === step));
+    // Reflect in URL so deep links carry the qty
+    const url = new URL(location.href);
+    if (n === 200) url.searchParams.delete('qty'); else url.searchParams.set('qty', String(n));
+    history.replaceState(null, '', url.toString());
+    // Visual loading state — fade prices so the customer sees something
+    // happens immediately, even if the API takes a beat. Cards stay legible
+    // but the per-unit text greys out until fresh prices arrive.
+    document.querySelectorAll('.card .price').forEach(p => p.style.opacity = '.4');
+    // Debounced refetch (100ms — fast enough to feel instant but coalesces
+    // rapid slider drags into a single request)
+    if (_qtyDebounce) clearTimeout(_qtyDebounce);
+    _qtyDebounce = setTimeout(() => resetAndFetch(), 100);
+  }
+
+  // Garment types we surface in the filter panel + chips, with friendly labels
+  // matching the seed in pricing_configs. Keep in sync if a new garment_type
+  // ever ships in the CRM.
+  const GARMENT_TYPES = [
+    ['tshirt','T-shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
+    ['longsleeve','Long sleeves'], ['polo','Polos'], ['performance_shirt','Performance / fishing'],
+    ['workshirt','Work shirts'], ['hat','Hats / caps'], ['tote','Totes / bags'],
+    ['joggers','Joggers'], ['shorts','Shorts'], ['hivis','Hi-vis safety'],
+    ['vest','Vests'], ['coverall','Coveralls'], ['chore_coat','Chore / insulated'],
+    ['softshell','Softshells'], ['pullover_jacket','Pullover jackets'],
+    ['cardigan','Cardigans'], ['sweater','Sweaters'], ['chef_coat','Chef coats'],
+    ['scrub_top','Scrub tops'], ['scrub_pants','Scrub pants'], ['lab_coat','Lab coats'],
+    ['apron','Aprons'], ['other','Other / workwear'],
+  ];
+
+  // Catalog API endpoint — singhsprint-crm Vercel project
+  const CATALOG_API = 'https://singhsprint-crm.vercel.app/api/catalog';
+  const IMAGE_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+
+  // S&S Activewear started 403'ing direct hotlinks from external pages, so
+  // every supplier image is routed through our /api/image-proxy endpoint
+  // (server-side fetch with auth + 24h edge cache). Local /images/* URLs and
+  // anything already on singhsprint.com is passed through untouched.
+  function imgUrl(raw) {
+    if (!raw) return '/images/product-tshirt-white.jpg';
+    if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
+    if (raw.indexOf('ssactivewear.com') >= 0) {
+      return IMAGE_PROXY + '?url=' + encodeURIComponent(raw);
+    }
+    return raw;
+  }
+
+  function getQueryParam(name) {
+    const m = new URLSearchParams(location.search).get(name);
+    return m || null;
+  }
+
+  // =========================================================================
+  // Fetch
+  // =========================================================================
+  async function fetchPage() {
+    if (state.loading || state.done) return;
+    state.loading = true;
+    document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
+
+    // The catalog API now returns one row per product (post-v2 view). We
+    // pull the full filtered set in a single call — there are ~1,100 styles
+    // total, so 'pagination' is really just 'show all'. Filters narrow the
+    // set on the server.
+    const params = new URLSearchParams();
+    if (state.filters.type)        params.set('type', state.filters.type);
+    if (state.filters.q)           params.set('q', state.filters.q);
+    if (state.filters.canadian)    params.set('canadian', '1');
+    if (state.filters.csa)         params.set('csa', '1');
+    state.filters.brand.forEach(b => params.append('brand', b));
+    params.set('limit', '1500');
+    // Drive the "From $X" cards by the customer-chosen qty (default 200).
+    if (state.qty && state.qty !== 200) params.set('qty', String(state.qty));
+
+    try {
+      const res = await fetch(`${CATALOG_API}?${params.toString()}`);
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      const fresh = data.products || [];
+      state.products = fresh;
+      state.done = true;             // single-shot fetch
+      render();
+    } catch (e) {
+      // Empty-state fallback — until the S&S sync runs, render a curated mock so
+      // the page isn't broken in front of customers.
+      if (state.products.length === 0) {
+        state.products = mockProducts();
+        state.done = true;
+        render();
+      }
+      console.warn('catalog fetch failed:', e);
+    } finally {
+      state.loading = false;
+      document.getElementById('catLoading').style.display = 'none';
+    }
+  }
+
+  // =========================================================================
+  // Render
+  // =========================================================================
+  // Number of cards to inject synchronously on first paint. Above the
+  // fold + a little buffer so the user sees a full grid immediately
+  // instead of skeletons → flash → real cards. Remainder is rendered
+  // in idle chunks below (requestIdleCallback) so the main thread isn't
+  // pegged for 200 ms while 200 cards build their swatch grids.
+  const INITIAL_RENDER = 24;
+  const CHUNK_SIZE     = 12;
+
+  // Emit an ItemList of Product JSON-LD entries for the currently visible
+  // catalog. Google indexes JS-injected JSON-LD reliably and this is the
+  // cheapest way to surface 1,100 individual blanks as searchable Product
+  // entities without spinning up a separate URL per SKU. Re-injected on
+  // every render so filter/sort changes refresh the structured data too.
+  function emitCatalogJsonLd(visible) {
+    try {
+      var prev = document.getElementById('catalog-itemlist-jsonld');
+      if (prev) prev.remove();
+      if (!Array.isArray(visible) || visible.length === 0) return;
+      // Cap the entity count so the page doesn't bloat for huge result sets.
+      // Google only really uses the first ~100 anyway.
+      var slice = visible.slice(0, 100);
+      var BASE = 'https://www.singhsprint.com';
+      var list = slice.map(function(p, i) {
+        var heroColor = (p.colors || [])[0] || {};
+        var heroImg = imgUrl(heroColor.mockup_front_url || p.hero_image_url || '');
+        var prod = {
+          '@type': 'Product',
+          'name': ((p.brand || '') + ' ' + (p.style_number || '') + ' — ' + (p.name || '')).replace(/\s+/g, ' ').trim(),
+          'brand': { '@type': 'Brand', 'name': p.brand || '' },
+          'sku': p.style_number || p.product_id,
+          'mpn': p.style_number || undefined,
+          'image': heroImg ? [heroImg] : undefined,
+          'description': (p.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500) || ((p.brand || '') + ' ' + (p.name || '') + ' decorated by Singhs Print Montreal — DTG, DTF, embroidery or screen.'),
+          'category': p.garment_type || 'Custom Apparel',
+          'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || ''),
+          'offers': (typeof p.price_from === 'number' && p.price_from > 0) ? {
+            '@type': 'Offer',
+            'priceCurrency': 'CAD',
+            'price': p.price_from.toFixed(2),
+            'availability': (p.in_stock === false) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+            'priceValidUntil': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+            'seller': { '@id': BASE + '/#business' },
+            'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || '')
+          } : undefined
+        };
+        // Strip undefined keys so the JSON stays clean.
+        Object.keys(prod).forEach(function(k){ if (prod[k] === undefined) delete prod[k]; });
+        return { '@type': 'ListItem', 'position': i + 1, 'item': prod };
+      });
+      var payload = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        '@id': BASE + '/catalog.html#itemlist',
+        'name': 'Singhs Print blank apparel catalog',
+        'itemListOrder': 'https://schema.org/ItemListOrderAscending',
+        'numberOfItems': slice.length,
+        'itemListElement': list
+      };
+      var s = document.createElement('script');
+      s.type = 'application/ld+json';
+      s.id = 'catalog-itemlist-jsonld';
+      s.textContent = JSON.stringify(payload);
+      document.head.appendChild(s);
+    } catch (e) { /* never break the page over a schema emit */ }
+  }
+
+  function render() {
+    const grid = document.getElementById('catGrid');
+    const empty = document.getElementById('catEmpty');
+    grid.innerHTML = '';
+
+    if (state.products.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    let visible = state.filters.inStockOnly
+      ? state.products.filter(p => p.in_stock !== false)
+      : state.products.slice();
+    visible = sortProducts(visible, state.sort);
+    emitCatalogJsonLd(visible);
+
+    // First chunk: synchronous. The first 6 images get fetchpriority=high
+    // so the browser starts pulling them before the rest of the JS runs.
+    const head = visible.slice(0, INITIAL_RENDER);
+    head.forEach((p, i) => grid.appendChild(productCard(p, { eager: i < 6 })));
+
+    // "Bring your own" card sits at the end; append now if all products fit
+    // in the head chunk, otherwise wait until lazy render finishes.
+    if (visible.length <= INITIAL_RENDER) {
+      grid.appendChild(byoCard());
+    }
+
+    document.getElementById('resultCount').textContent = visible.length.toLocaleString();
+    renderChips();
+    if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
+    maybeTranslateCatalog();
+
+    // Lazy-render the remainder in idle chunks so the first paint stays
+    // snappy. Each chunk yields to the main thread, keeping scroll
+    // smooth even on slower devices.
+    if (visible.length > INITIAL_RENDER) {
+      lazyRenderRemainder(grid, visible.slice(INITIAL_RENDER));
+    }
+  }
+
+  function lazyRenderRemainder(grid, rest) {
+    let i = 0;
+    const ric = window.requestIdleCallback || function (cb) { return setTimeout(cb, 16); };
+    function pump() {
+      ric(function () {
+        const end = Math.min(i + CHUNK_SIZE, rest.length);
+        for (; i < end; i++) {
+          grid.appendChild(productCard(rest[i], { eager: false }));
+        }
+        if (i < rest.length) {
+          pump();
+        } else {
+          // Append the "Bring your own" card once the full grid is in place.
+          grid.appendChild(byoCard());
+          // Re-apply lang + AI translate to the freshly-rendered cards.
+          if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
+          maybeTranslateCatalog();
+        }
+      });
+    }
+    pump();
+  }
+
+  // ===== AI translate overlay for dynamic catalog content =====
+  // Translates product names + color names on cards (and inside the
+  // detail modal) when SP_LANG is 'fr'. Static UI strings still go
+  // through lang.js. We use data-orig-en attributes so flipping back
+  // to EN is instant — no network.
+  function isAITranslateActive() {
+    return typeof SP_LANG !== 'undefined' && SP_LANG.getLang && SP_LANG.getLang() === 'fr';
+  }
+  function maybeTranslateCatalog() {
+    var grid = document.getElementById('catGrid');
+    var badge = document.getElementById('aiTransBadge');
+    if (!window.AITranslate || !grid) return;
+    if (!isAITranslateActive()) {
+      window.AITranslate.restoreContainer(grid);
+      if (badge) badge.style.display = 'none';
+      return;
+    }
+    if (badge) badge.style.display = 'block';
+    // Translate product names + currently-selected color labels on each card.
+    window.AITranslate.translateContainer(grid,
+      ['.card .name', '.card .selected-color-name'], 'fr', 6);
+  }
+  function maybeTranslateDetailModal() {
+    var modal = document.getElementById('detailModal');
+    if (!window.AITranslate || !modal) return;
+    if (!isAITranslateActive()) {
+      window.AITranslate.restoreContainer(modal);
+      return;
+    }
+    window.AITranslate.translateContainer(modal,
+      ['#detailModalTitle', '.detail-modal__swatch-name',
+       '#detailModalSelectedColor', '#detailModalSpecs li'],
+      'fr', 6);
+  }
+  // Re-translate whenever the language toggles.
+  document.addEventListener('sp-lang-change', function () {
+    maybeTranslateCatalog();
+    maybeTranslateDetailModal();
+  });
+
+  function productCard(p, opts) {
+    // Card is now a clickable surface (not an anchor). Whole-card click =
+    // "add to cart with the currently-selected color". Swatches inside it
+    // act as a color picker for THIS card — clicking one selects the color
+    // without adding to the cart. A small "Details" link in the corner
+    // still allows the legacy single-product flow.
+    //
+    // opts.eager = first row cards get fetchpriority="high" + loading="eager"
+    // so the LCP image starts coming down before the rest of the JS runs.
+    opts = opts || {};
+    const card = document.createElement('div');
+    card.className = 'card card--clickable';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    if (p.in_stock === false) card.classList.add('card--oos');
+
+    // Track the selected color INDEX per card (default: first in-stock).
+    const firstInStockIdx = (p.colors || []).findIndex(c => Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0);
+    card._selectedColorIdx = firstInStockIdx >= 0 ? firstInStockIdx : 0;
+
+    let badge = '';
+    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos"  data-i18n="cat.card.oos">En rupture</div>`;
+    else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2)
+                                                                         badge = `<div class="badge badge--low"  data-i18n="cat.card.low">Stock faible</div>`;
+    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller"  data-i18n="cat.card.bestseller">★ Populaire</div>`;
+    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian"  data-i18n="cat.card.canadian">🇨🇦 Canadien</div>`;
+    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa"  data-i18n="cat.card.csa">CSA hi-vis</div>`;
+
+    // Catalog cards display up to 24 swatches in a 2-row wrap (16px × 2 rows
+    // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
+    // colorways like Gildan 18500 (75 colors) still get accurate signal —
+    // before this we capped at 8 and a 75-color blank showed "8 + 67".
+    const SWATCH_LIMIT = 24;
+    const renderSwatches = () => {
+      return (p.colors || []).slice(0, SWATCH_LIMIT).map((c, i) => {
+        const hex = c.hex_code || '#ccc';
+        const light = isLight(hex);
+        const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+        const oosCls = hasStock ? '' : 'swatch--oos';
+        const selected = i === card._selectedColorIdx ? 'swatch--selected' : '';
+        const cleanName = (c.color_name || '').replace(/_\d+$/, '');
+        return `<button type="button" class="swatch ${light ? 'is-light' : ''} ${oosCls} ${selected}" style="background:${hex}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}" data-idx="${i}" aria-label="${cleanName}"></button>`;
+      }).join('');
+    };
+    const extra = p.colors.length > SWATCH_LIMIT ? `<span class="more">+${p.colors.length - SWATCH_LIMIT}</span>` : '';
+
+    const repaintCard = () => {
+      const c = (p.colors || [])[card._selectedColorIdx] || {};
+      const photoUrl = imgUrl(c.mockup_front_url || p.hero_image_url);
+      const img = card.querySelector('.photo img');
+      if (img) img.src = photoUrl;
+      const colorLabel = card.querySelector('.selected-color-name');
+      if (colorLabel) colorLabel.textContent = (c.color_name || '').replace(/_\d+$/, '');
+      // Update swatch selection state
+      card.querySelectorAll('.swatch').forEach((s, i) => {
+        s.classList.toggle('swatch--selected', i === card._selectedColorIdx);
+      });
+    };
+
+    const heroColor = (p.colors || [])[card._selectedColorIdx] || {};
+    const photoUrl = imgUrl(heroColor.mockup_front_url || p.hero_image_url);
+
+    card.innerHTML = `
+      ${badge}
+      <div class="photo"><img src="${photoUrl}" alt="${p.brand} ${p.style_number}" loading="${opts.eager ? 'eager' : 'lazy'}" decoding="async"${opts.eager ? ' fetchpriority="high"' : ''}/></div>
+      <div class="body">
+        <div class="brand-row">${(p.brand || '').toUpperCase()} · ${p.style_number || ''}</div>
+        <div class="name">${p.name}</div>
+        <div class="swatches">${renderSwatches()}${extra}</div>
+        <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span  data-i18n="cat.card.from">À partir de</span> <strong>$${p.price_from.toFixed(2)}</strong><span  data-i18n="cat.card.perunit">/unité</span> · <span class="price-meta"  data-i18n="cat.card.oneside">Impression 1 côté</span>` : `<strong  data-i18n="cat.card.quote-on-request">Sur demande</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="card-cta">
+          <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
+          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span  data-i18n="cat.card.units-at-tier">unités · qté ajustable ensuite</span></span>
+        </div>
+      </div>
+    `;
+
+    // Swatch clicks pick a color, don't trigger the whole-card add.
+    card.querySelectorAll('.swatch').forEach(s => {
+      s.addEventListener('click', (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        const idx = parseInt(s.dataset.idx, 10);
+        if (Number.isFinite(idx)) {
+          card._selectedColorIdx = idx;
+          repaintCard();
+        }
+      });
+    });
+
+    // "View details ↗" opens the full-product modal — and crucially stops
+    // propagation so clicking it doesn't also fire the whole-card add.
+    const detailsBtn = card.querySelector('.card-details-link');
+    if (detailsBtn) {
+      detailsBtn.addEventListener('click', (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        openProductDetail(p);
+      });
+    }
+
+    // Whole-card click → open the detail modal (where the customer can
+    // browse front/back/side mockups, zoom them, switch colors, and add
+    // to quote). Used to add-to-quote on click, but that hid the rest of
+    // the product's images behind a second click — now everyone goes
+    // through the detail view as the canonical product surface.
+    const openDetail = (ev) => {
+      ev.preventDefault();
+      openProductDetail(p, card._selectedColorIdx);
+    };
+    card.addEventListener('click', openDetail);
+    card.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') openDetail(ev);
+    });
+
+    return card;
+  }
+
+  function byoCard() {
+    const a = document.createElement('a');
+    a.className = 'card card-byo';
+    a.href = '/quote.html?source=byo';
+    a.innerHTML = `
+      <div class="add">+</div>
+      <strong  data-i18n="cat.byo.title">Apportez votre propre vêtement</strong>
+      <span  data-i18n="cat.byo.sub">Vous avez un SKU ou un dossier technique ? Envoyez-le-nous — on le source et on vous fait une soumission.</span>
+    `;
+    return a;
+  }
+
+  function isLight(hex) {
+    if (!hex) return false;
+    const h = hex.replace('#','');
+    const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+    return (r*299 + g*587 + b*114) / 1000 > 200;
+  }
+
+  // =========================================================================
+  // Sort
+  // =========================================================================
+  function sortProducts(list, mode) {
+    const arr = list.slice();
+    switch (mode) {
+      case 'price_asc':  return arr.sort((a, b) => (a.price_from ?? 9e9) - (b.price_from ?? 9e9));
+      case 'price_desc': return arr.sort((a, b) => (b.price_from ?? -1)   - (a.price_from ?? -1));
+      case 'name_asc':   return arr.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      case 'brand_asc':  return arr.sort((a, b) => (a.brand || '').localeCompare(b.brand || '') || (a.style_number || '').localeCompare(b.style_number || ''));
+      case 'bestseller':
+      default:
+        // Heuristic: in-stock first, then by color_count desc (more options =
+        // popular SKU), then alphabetical.
+        return arr.sort((a, b) => {
+          const sa = a.in_stock === false ? 1 : 0;
+          const sb = b.in_stock === false ? 1 : 0;
+          if (sa !== sb) return sa - sb;
+          const ca = a.color_count || 0, cb = b.color_count || 0;
+          if (ca !== cb) return cb - ca;
+          return (a.brand || '').localeCompare(b.brand || '');
+        });
+    }
+  }
+  function setSort(mode) { state.sort = mode; render(); }
+
+  // =========================================================================
+  // Filter panel — populated from the products already loaded so we don't need
+  // a separate facets API. Brand list, garment-type list, and Canadian/CSA
+  // toggles all live here. Apply re-runs render() (or refetches if needed).
+  // =========================================================================
+  function renderFilterPanel() {
+    const body = document.getElementById('filterBody');
+    if (!body) return;
+
+    // Build brand list from the currently-loaded products. We always show
+    // every brand we know about, with a count next to it so the customer
+    // can gauge depth.
+    const brandCounts = {};
+    state.products.forEach(p => {
+      if (!p.brand) return;
+      brandCounts[p.brand] = (brandCounts[p.brand] || 0) + 1;
+    });
+    const brands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 30);
+
+    const typeCounts = {};
+    state.products.forEach(p => {
+      if (!p.garment_type) return;
+      typeCounts[p.garment_type] = (typeCounts[p.garment_type] || 0) + 1;
+    });
+
+    body.innerHTML = `
+      <div style="padding:18px 22px">
+        <div class="filter-group" style="margin-bottom:22px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Garment type</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${GARMENT_TYPES.filter(([gt]) => typeCounts[gt]).map(([gt, label]) => `
+              <button type="button" data-type="${gt}" class="fp-chip ${state.filters.type === gt ? 'active' : ''}"
+                onclick="toggleType('${gt}')"
+                style="font-size:.82rem;padding:6px 12px;border-radius:50px;border:1px solid ${state.filters.type === gt ? 'var(--ink)' : 'var(--line)'};background:${state.filters.type === gt ? 'var(--ink)' : '#fff'};color:${state.filters.type === gt ? '#fff' : 'var(--muted)'};cursor:pointer;font-family:inherit">
+                ${label} <span style="opacity:.6">${typeCounts[gt]}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="filter-group" style="margin-bottom:22px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Brand</div>
+          <div style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
+            ${brands.map(([b, n]) => `
+              <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer">
+                <input type="checkbox" ${state.filters.brand.includes(b) ? 'checked' : ''}
+                  onchange="toggleBrand('${b.replace(/'/g, "\\'")}', this.checked)"/>
+                <span>${b}</span>
+                <span style="margin-left:auto;color:var(--muted);font-size:.78rem">${n}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="filter-group" style="margin-bottom:22px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Special</div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:8px">
+            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; render()"/>
+            <span>In stock only</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:8px">
+            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked"/>
+            <span>🇨🇦 Canadian-made blanks</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer">
+            <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked"/>
+            <span>CSA / Hi-vis certified</span>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleType(gt)             { state.filters.type = (state.filters.type === gt) ? null : gt; }
+  function toggleBrand(brand, on) {
+    state.filters.brand = on
+      ? Array.from(new Set([...state.filters.brand, brand]))
+      : state.filters.brand.filter(b => b !== brand);
+  }
+
+  // =========================================================================
+  // Chips (top of page)
+  // =========================================================================
+  function renderChips() {
+    const row = document.getElementById('chipRow');
+    row.innerHTML = '';
+    const types = ['tshirt','hoodie','crewneck','polo','longsleeve','hat','tote','joggers','hivis'];
+    const labels = { tshirt:'T-Shirts', hoodie:'Hoodies', crewneck:'Crewnecks', polo:'Polos', longsleeve:'Long Sleeves', hat:'Hats / Caps', tote:'Tote Bags', joggers:'Joggers', hivis:'Hi-Vis Vests' };
+
+    // Active type chip
+    if (state.filters.type) {
+      row.appendChild(makeChip(labels[state.filters.type], 'active', () => { state.filters.type = null; resetAndFetch(); }));
+    }
+    if (state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'active', () => { state.filters.canadian = false; resetAndFetch(); }));
+    if (state.filters.csa)      row.appendChild(makeChip('CSA / Hi-Vis',    'active', () => { state.filters.csa = false; resetAndFetch(); }));
+    state.filters.brand.forEach(b => {
+      row.appendChild(makeChip(b, 'active', () => {
+        state.filters.brand = state.filters.brand.filter(x => x !== b); resetAndFetch();
+      }));
+    });
+
+    // Suggested next chips
+    types.filter(t => t !== state.filters.type).slice(0, 4).forEach(t => {
+      row.appendChild(makeChip(labels[t], 'passive', () => { state.filters.type = t; resetAndFetch(); }));
+    });
+    if (!state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'passive', () => { state.filters.canadian = true; resetAndFetch(); }));
+    if (!state.filters.csa)      row.appendChild(makeChip('Hi-Vis / CSA',     'passive', () => { state.filters.csa = true; resetAndFetch(); }));
+
+    // Stock toggle. When ON (default), out-of-stock items are hidden — chip
+    // is visible so customers can show them if they want to confirm a SKU
+    // exists at all (we'll just quote for re-supply on the back end).
+    if (state.filters.inStockOnly) {
+      row.appendChild(makeChip('In stock only', 'active', () => {
+        state.filters.inStockOnly = false; render();
+      }));
+    } else {
+      row.appendChild(makeChip('Show out of stock', 'passive', () => {
+        state.filters.inStockOnly = true; render();
+      }));
+    }
+  }
+
+  function makeChip(label, klass, onClick) {
+    const c = document.createElement('span');
+    c.className = `chip ${klass}`;
+    c.textContent = label;
+    c.onclick = onClick;
+    return c;
+  }
+
+  function resetAndFetch() {
+    state.products = []; state.page = 0; state.done = false;
+    fetchPage();
+  }
+
+  // =========================================================================
+  // Filter panel + search
+  // =========================================================================
+  function openFilterPanel()  {
+    renderFilterPanel();   // build the panel UI from current state + loaded products
+    document.getElementById('filterPanel').classList.add('open');
+    document.getElementById('filterOverlay').classList.add('open');
+  }
+  function closeFilterPanel() { document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
+  function clearAllFilters()  {
+    state.filters = { type:null, brand:[], canadian:false, csa:false, q:'', inStockOnly:true };
+    document.getElementById('searchInput').value='';
+    closeFilterPanel();
+    resetAndFetch();
+  }
+  function applyFilters()     {
+    closeFilterPanel();
+    // Refresh the chip row + filter pill, then re-fetch with the new filters
+    const activeCount =
+      (state.filters.type ? 1 : 0) +
+      state.filters.brand.length +
+      (state.filters.canadian ? 1 : 0) +
+      (state.filters.csa ? 1 : 0);
+    const pill = document.getElementById('filterCount');
+    if (pill) {
+      pill.textContent = activeCount;
+      pill.style.display = activeCount ? 'inline-block' : 'none';
+    }
+    resetAndFetch();
+  }
+
+  document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
+    state.filters.q = e.target.value.trim();
+    resetAndFetch();
+  }, 250));
+
+  function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), ms); }; }
+
+  // Infinite scroll
+  window.addEventListener('scroll', function() {
+    if (state.loading || state.done) return;
+    if (window.scrollY + window.innerHeight > document.body.offsetHeight - 600) fetchPage();
+  });
+
+  // =========================================================================
+  // Mock data — used until S&S sync populates the catalog. Curated to look
+  // right next to real data when it lands.
+  // =========================================================================
+  function mockProducts() {
+    return [
+      { product_id:'demo-bc3001', brand:'Bella+Canvas', style_number:'3001', name:'Unisex Jersey Short Sleeve Tee', weight_oz:4.2, price_from:9.95, bestseller:true,
+        hero_image_url:'/images/product-tshirt-black.jpg',
+        colors:[
+          {color_id:'c-black',  color_name:'Black',    hex_code:'#111111', mockup_front_url:'/images/product-tshirt-black.jpg'},
+          {color_id:'c-navy',   color_name:'Navy',     hex_code:'#1B365D'},
+          {color_id:'c-white',  color_name:'White',    hex_code:'#ffffff', mockup_front_url:'/images/product-tshirt-white.jpg'},
+          {color_id:'c-red',    color_name:'Red',      hex_code:'#8B2D27'},
+          {color_id:'c-olive',  color_name:'Olive',    hex_code:'#5b6e3f'},
+          {color_id:'c-tan',    color_name:'Tan',      hex_code:'#c2b66f'}
+        ]},
+      { product_id:'demo-as5026', brand:'AS Colour', style_number:'5026', name:'Staple Tee — Premium Cotton', weight_oz:6.5, price_from:13.95, is_canadian_made:false,
+        hero_image_url:'/images/product-tshirt-studio.jpg',
+        colors:[
+          {color_id:'c-as-black', color_name:'Black', hex_code:'#111111'},
+          {color_id:'c-as-white', color_name:'White', hex_code:'#ffffff'},
+          {color_id:'c-as-grey',  color_name:'Grey',  hex_code:'#666666'},
+          {color_id:'c-as-camel', color_name:'Camel', hex_code:'#d8a36b'}
+        ]},
+      { product_id:'demo-g500', brand:'Gildan', style_number:'G500', name:'Heavy Cotton Adult T-Shirt', weight_oz:5.3, price_from:6.95,
+        hero_image_url:'/images/product-tshirt-modavie.jpg',
+        colors:[
+          {color_id:'c-g-black', color_name:'Black',      hex_code:'#111111'},
+          {color_id:'c-g-white', color_name:'White',      hex_code:'#ffffff'},
+          {color_id:'c-g-navy',  color_name:'Navy',       hex_code:'#1B365D'},
+          {color_id:'c-g-red',   color_name:'Red',        hex_code:'#8B2D27'},
+          {color_id:'c-g-green', color_name:'Forest',     hex_code:'#2c4d2f'},
+          {color_id:'c-g-grey',  color_name:'Sport Grey', hex_code:'#a8a8a8'}
+        ]},
+      { product_id:'demo-cc1717', brand:'Comfort Colors', style_number:'1717', name:'Garment-Dyed Heavyweight Tee', weight_oz:6.1, price_from:14.95,
+        hero_image_url:'/images/product-tshirt-heart.jpg',
+        colors:[
+          {color_id:'c-cc-ivory', color_name:'Ivory',     hex_code:'#d4c69c'},
+          {color_id:'c-cc-sage',  color_name:'Sage',      hex_code:'#a8c099'},
+          {color_id:'c-cc-camel', color_name:'Camel',     hex_code:'#d8a36b'},
+          {color_id:'c-cc-mauve', color_name:'Mauve',     hex_code:'#9b8eaf'}
+        ]},
+      { product_id:'demo-bc3719', brand:'Bella+Canvas', style_number:'3719', name:'Unisex Sponge Fleece Pullover Hoodie', weight_oz:8.0, price_from:29.95,
+        hero_image_url:'/images/product-hoodie-concordia.jpg',
+        colors:[
+          {color_id:'c-bch-black',   color_name:'Black',          hex_code:'#111111'},
+          {color_id:'c-bch-heather', color_name:'Heather Forest', hex_code:'#3a4a3a'},
+          {color_id:'c-bch-navy',    color_name:'Navy',           hex_code:'#1B365D'},
+          {color_id:'c-bch-cream',   color_name:'Cream',          hex_code:'#f4eddb'}
+        ]},
+      { product_id:'demo-fl-csa', brand:'Forcefield', style_number:'FF-403', name:'Class 2 Hi-Vis Safety Vest (CSA Z96)', price_from:14.95, has_csa_cert:true,
+        hero_image_url:'/images/product-tshirt-white.jpg',
+        colors:[
+          {color_id:'c-hv-yellow', color_name:'Lime Yellow', hex_code:'#dfff00'},
+          {color_id:'c-hv-orange', color_name:'Hi-Vis Orange', hex_code:'#ff6a00'}
+        ]}
+    ];
+  }
+
+  // =========================================================================
+  // Init
+  // =========================================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialise the qty slider from state.qty (may have been seeded from ?qty=…)
+    setQty(state.qty);
+    // Show the floating cart bar if items were added in a previous tab visit.
+    renderCartBar();
+    fetchPage();
+  });
+  </script>
+
+  <script src="lang.js" defer></script>
+  <script src="ai-translate.js" defer></script>
+</body>
+</html>

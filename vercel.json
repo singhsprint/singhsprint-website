@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [{ "src": "**/*", "use": "@vercel/static" }],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/index.html",            "destination": "/",                "permanent": true },
+    { "source": "/industries/:slug.html", "destination": "/industries/:slug", "permanent": true },
+    { "source": "/guides/:slug.html",     "destination": "/guides/:slug",     "permanent": true },
+    { "source": "/businesses/:slug.html", "destination": "/businesses/:slug", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/order/:token",          "destination": "/order.html" }
+  ]
+}

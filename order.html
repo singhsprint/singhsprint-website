@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order tracking · Singhs Print</title>
+  <meta name="description" content="Track the status of your custom apparel order from Singhs Print.">
+  <link rel="canonical" href="https://singhsprint.com/order">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/order">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/order">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/order">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="robots" content="noindex,follow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:760px;margin:0 auto;padding:60px 24px 80px}
+    .hero{margin-bottom:32px}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:8px}
+    .hero p{color:#666;font-size:1rem;max-width:520px}
+    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:28px 24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}
+    /* Status timeline */
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0 8px}
+    .step{position:relative;padding-top:24px}
+    .step::before{content:"";position:absolute;top:8px;left:0;right:0;height:2px;background:#e0ddd1;border-radius:2px}
+    .step.done::before{background:#1a1a1a}
+    .step.active::before{background:linear-gradient(90deg,#1a1a1a 0%,#1a1a1a 50%,#e0ddd1 50%,#e0ddd1 100%)}
+    .step .label{margin-bottom:2px}
+    .step .stage{font-size:.86rem;color:#888;font-weight:600}
+    .step.done .stage,.step.active .stage{color:#1a1a1a}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:50px;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .pill--new{background:#e8ff3c;color:#1a1a1a}
+    .pill--review{background:#fde68a;color:#5b4500}
+    .pill--contacted{background:#cdeefd;color:#0c4a6e}
+    .pill--converted{background:#c7d2fe;color:#312e81}
+    .pill--closed{background:#e5e7eb;color:#374151}
+    .pill--unknown{background:#f4f2eb;color:#666}
+    /* Cart */
+    .cart-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #f0eee5;font-size:.92rem;align-items:center}
+    .cart-row:first-of-type{border-top:none}
+    .cart-row__meta{color:#888;font-size:.78rem}
+    .cart-row__qty{color:#1a1a1a;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:.86rem}
+    /* States */
+    .loading,.error,.empty{text-align:center;color:#666;padding:48px 24px}
+    .error{color:#a01a1a}
+    .ts{color:#888;font-size:.78rem;margin-top:2px}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.92rem}
+    .row .key{color:#888}
+    .row .val{color:#1a1a1a;font-weight:600;text-align:right}
+    .help{margin-top:24px;font-size:.86rem;color:#666;text-align:center}
+    .help strong{color:#1a1a1a}
+    .help a{color:#1a1a1a;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+    .skeleton{background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:pulse 1.4s ease-in-out infinite;border-radius:6px;color:transparent !important}
+    @keyframes pulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="wrap">
+  <a href="/" class="back-link">← <span data-i18n="order.back">Back to homepage</span></a>
+
+  <div class="hero">
+    <h1 data-i18n="order.h1">Order tracking</h1>
+    <p data-i18n="order.sub" id="orderSub">Enter your tracking link or check below for the latest status.</p>
+  </div>
+
+  <div id="orderRoot">
+    <div class="card loading" data-i18n="order.loading">Looking up your order…</div>
+  </div>
+
+  <p class="help">
+    <span data-i18n="order.help">Questions?</span>
+    <strong><a href="mailto:sales@singhsprint.com">sales@singhsprint.com</a></strong>
+    <span data-i18n="order.help.or">or</span>
+    <strong><a href="tel:5149151539">514-915-1539</a></strong>
+  </p>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="components.js"></script>
+<script src="lang.js" defer></script>
+
+<script>
+  // Pull the token from the path (/order/abc123) or ?token= query.
+  function getToken() {
+    var path = location.pathname.replace(/\/$/, '');
+    var m = path.match(/\/order\/([^/?#]+)$/i);
+    if (m) return decodeURIComponent(m[1]);
+    var q = new URLSearchParams(location.search).get('token');
+    return q ? q.trim() : null;
+  }
+
+  function tFR(en) {
+    if (typeof SP_LANG !== 'undefined' && SP_LANG.getLang() === 'fr') {
+      // Tiny built-in fallback for the few status labels we render.
+      var dict = {
+        'New': 'Nouvelle', 'In review': 'En révision', 'Contacted': 'Contactée',
+        'Converted to order': 'Convertie en commande', 'Closed': 'Fermée',
+        'Quote builder': 'Soumission', 'Bring-your-own': 'Apportez le vôtre',
+        'RFP': 'Appel d\'offres', 'Pricing PDF': 'PDF de prix',
+        'Inkwear partnership': 'Partenariat Inkwear'
+      };
+      return dict[en] || en;
+    }
+    return en;
+  }
+
+  var KIND_LABEL = {
+    quote: 'Quote builder', byo: 'Bring-your-own', rfp: 'RFP',
+    pricing_pdf: 'Pricing PDF', inkwear: 'Inkwear partnership', other: 'Other'
+  };
+  var STATUS_LABEL = {
+    new: 'New', in_review: 'In review', contacted: 'Contacted',
+    converted: 'Converted to order', closed: 'Closed', spam: 'Closed'
+  };
+  var STATUS_PILL = {
+    new: 'new', in_review: 'review', contacted: 'contacted',
+    converted: 'converted', closed: 'closed', spam: 'closed'
+  };
+  // Step ordering for the visual timeline.
+  var STEPS = ['Received', 'In review', 'Contacted', 'Quoted'];
+
+  function statusStepIndex(status) {
+    if (status === 'new') return 0;
+    if (status === 'in_review') return 1;
+    if (status === 'contacted') return 2;
+    if (status === 'converted') return 3;
+    return 0;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try {
+      var d = new Date(iso);
+      return d.toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return iso; }
+  }
+  function fmtMoney(n) {
+    if (n == null) return '—';
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(n);
+  }
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function render(data) {
+    var root = document.getElementById('orderRoot');
+    if (!data) {
+      root.innerHTML = '<div class="card error">' + esc(tFR("We couldn't find an order with that link. Check it's complete, or email sales@singhsprint.com.")) + '</div>';
+      return;
+    }
+    var stepIdx = statusStepIndex(data.status);
+    var pillCls = 'pill--' + (STATUS_PILL[data.status] || 'unknown');
+    var statusText = STATUS_LABEL[data.status] || data.status;
+    var html = '';
+
+    // Top status card
+    html += '<div class="card">';
+    html +=   '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">';
+    html +=     '<div>';
+    html +=       '<div class="label">' + esc(tFR(KIND_LABEL[data.kind] || data.kind)) + '</div>';
+    html +=       '<div style="font-size:1.15rem;font-weight:700;line-height:1.3">' + esc(data.contact_name || data.email_masked || tFR('Your request')) + '</div>';
+    html +=       (data.email_masked ? '<div class="ts">' + esc(data.email_masked) + '</div>' : '');
+    html +=     '</div>';
+    html +=     '<span class="pill ' + pillCls + '">' + esc(tFR(statusText)) + '</span>';
+    html +=   '</div>';
+    // Timeline
+    html +=   '<div class="steps">';
+    STEPS.forEach(function (s, i) {
+      var cls = 'step';
+      if (i < stepIdx) cls += ' done';
+      else if (i === stepIdx) cls += ' active';
+      html += '<div class="' + cls + '"><div class="stage">' + esc(tFR(s)) + '</div></div>';
+    });
+    html +=   '</div>';
+    html += '</div>';
+
+    // Summary
+    html += '<div class="card">';
+    html +=   '<div class="label" data-i18n="order.summary">Summary</div>';
+    html +=   '<div class="row"><span class="key" data-i18n="order.submitted">Submitted</span><span class="val">' + esc(fmtDate(data.created_at)) + '</span></div>';
+    if (data.updated_at && data.updated_at !== data.created_at) {
+      html += '<div class="row"><span class="key" data-i18n="order.lastupdate">Last update</span><span class="val">' + esc(fmtDate(data.updated_at)) + '</span></div>';
+    }
+    if (data.total_qty) {
+      html += '<div class="row"><span class="key" data-i18n="order.qty">Quantity</span><span class="val">' + data.total_qty + ' ' + esc(tFR('units')) + (data.num_sides ? ' · ' + data.num_sides + ' side' + (data.num_sides > 1 ? 's' : '') : '') + '</span></div>';
+    }
+    if (data.estimated_total) {
+      html += '<div class="row"><span class="key" data-i18n="order.estimate">Initial estimate</span><span class="val">' + esc(fmtMoney(data.estimated_total)) + '</span></div>';
+    }
+    html += '</div>';
+
+    // Cart
+    if (Array.isArray(data.cart_items) && data.cart_items.length > 0) {
+      html += '<div class="card">';
+      html +=   '<div class="label" data-i18n="order.items">Items</div>';
+      data.cart_items.forEach(function (it) {
+        html += '<div class="cart-row">';
+        html +=   '<div style="min-width:0">';
+        html +=     '<div>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + ' <span style="color:#888">— ' + esc(it.name || '') + '</span></div>';
+        html +=     '<div class="cart-row__meta">' + esc(it.color_name || '—') + '</div>';
+        html +=   '</div>';
+        html +=   '<div class="cart-row__qty">' + (it.qty || '?') + ' × ' + (it.sides || 1) + ' ' + esc(tFR('side')) + ((it.sides || 1) > 1 ? 's' : '') + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    root.innerHTML = html;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var token = getToken();
+    if (!token) {
+      document.getElementById('orderRoot').innerHTML =
+        '<div class="card empty">' + esc(tFR("Your tracking link came in the confirmation email. Open the link from that email, or check your inbox for a message from Singhs Print.")) + '</div>';
+      return;
+    }
+    fetch('https://singhsprint-crm.vercel.app/api/order-status?token=' + encodeURIComponent(token))
+      .then(function (r) {
+        if (r.status === 404) return { _notFound: true };
+        if (!r.ok) throw new Error('http ' + r.status);
+        return r.json();
+      })
+      .then(function (d) {
+        if (!d || d._notFound) return render(null);
+        render(d);
+      })
+      .catch(function () { render(null); });
+  });
+</script>
+
+</body>
+</html>
