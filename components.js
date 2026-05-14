@@ -464,11 +464,13 @@ function loadMobileTrim() {
     +   '.hero{padding:24px 0 36px !important}'
     +   '.hero .subhead{margin-bottom:18px !important}'
     +   '.hero-buttons{margin-bottom:16px !important}'
-    // Trust-bar duplicates the proof-bar — both communicate "real
-    // customers trust us" on a viewport where attention is precious.
-    // Keep the proof-bar's hard numbers, hide the client-name strip
-    // on phones. Brand names still surface in the reviews + portfolio.
-    +   '.trust-bar{display:none !important}'
+    // Trust-bar used to hide on mobile because it duplicated the 6-name
+    // static strip with the proof-bar. Now it's an 18-name kinetic ticker
+    // that does something the proof-bar can't — surfaces actual client
+    // names auto-scrolling. Strong social signal on a viewport where
+    // attention is precious, so it stays. Just tighten the vertical
+    // padding so it doesn't push too much above the fold.
+    +   '.trust-bar{padding:18px 0 !important}'
     // ---------- iOS-style scroll-snap carousels ----------
     // 8 product cards × 2-col grid = ~1,400px of scroll. As a
     // horizontal carousel it's ~340px and reads as native (App Store

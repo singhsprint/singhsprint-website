@@ -118,12 +118,42 @@
     .proof-stat strong{font-size:1.5rem;font-weight:800;font-family:'Playfair Display',serif;display:block}
     .proof-stat span{font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 
-    /* ===== TRUST LOGOS ===== */
+    /* ===== TRUST LOGOS — auto-scrolling ticker =====
+       18 client names won't fit cleanly on one line. Mirrors the brands
+       marquee pattern: two identical tracks inside .trust-logos__inner,
+       animation translates the wrapper -50% (one track-width) so the
+       second copy lands where the first started — seamless loop.
+       Edge fades, pause-on-hover, reduced-motion fallback included. */
     .trust-bar{padding:32px 0;border-bottom:1px solid #eee}
     .trust-bar p{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px;text-align:center}
-    .trust-logos{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap}
-    .trust-logo-text{font-weight:700;font-size:.95rem;color:#ccc;white-space:nowrap;transition:color .3s}
+    .trust-logos{
+      display:flex;overflow:hidden;margin:0 -24px;padding:0;
+      mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
+      position:relative;
+    }
+    .trust-logos__inner{
+      display:flex;width:max-content;flex-wrap:nowrap;align-items:center;
+      animation:trust-marquee 48s linear infinite;
+    }
+    .trust-logos__track{display:flex;flex-shrink:0;align-items:center}
+    .trust-logo-text{font-weight:700;font-size:.95rem;color:#ccc;white-space:nowrap;transition:color .3s;padding:6px 24px;flex-shrink:0}
     .trust-logo-text:hover{color:#555}
+    .trust-logos:hover .trust-logos__inner{animation-play-state:paused}
+    @media (max-width:540px){
+      .trust-logos{margin:0 -18px}
+      .trust-logos__inner{animation-duration:36s}
+      .trust-logo-text{font-size:.82rem;padding:6px 18px}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .trust-logos{mask-image:none;-webkit-mask-image:none}
+      .trust-logos__inner{animation:none !important;flex-wrap:wrap;justify-content:center}
+      .trust-logos__track[aria-hidden="true"]{display:none}
+    }
+    @keyframes trust-marquee{
+      from{transform:translateX(0)}
+      to  {transform:translateX(-50%)}
+    }
 
     /* ===== PRODUCT BROWSE ===== */
     .products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px}
@@ -468,13 +498,52 @@
   <section class="trust-bar">
     <div class="container">
       <p data-i18n="home.trust">Trusted by brands &amp; businesses across the West Island &amp; Montreal</p>
-      <div class="trust-logos">
-        <span class="trust-logo-text">McGill Sororities</span>
-        <span class="trust-logo-text">CUSEC 2024</span>
-        <span class="trust-logo-text">Old Soul</span>
-        <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
-        <span class="trust-logo-text">Montreal Pinball</span>
-        <span class="trust-logo-text">McGill Pizza</span>
+      <div class="trust-logos" aria-label="Brands and businesses Singhs Print has served">
+        <!-- Two identical tracks. .trust-logos__inner is 2x natural
+             content width and animates -50%, so when the loop resets the
+             second track is exactly where the first started. -->
+        <div class="trust-logos__inner">
+          <div class="trust-logos__track">
+            <span class="trust-logo-text">McGill Sororities</span>
+            <span class="trust-logo-text">CUSEC 2024</span>
+            <span class="trust-logo-text">Old Soul</span>
+            <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
+            <span class="trust-logo-text">Montreal Pinball</span>
+            <span class="trust-logo-text">McGill Pizza</span>
+            <span class="trust-logo-text">Concordia SSA</span>
+            <span class="trust-logo-text">Artwood Construction</span>
+            <span class="trust-logo-text">Antsy</span>
+            <span class="trust-logo-text">McGill Boxing Club</span>
+            <span class="trust-logo-text">McGill Run Club</span>
+            <span class="trust-logo-text">Nyota Parker</span>
+            <span class="trust-logo-text">Morgan Arboretum</span>
+            <span class="trust-logo-text">Durante Landscapers</span>
+            <span class="trust-logo-text">McGill Animal Sciences</span>
+            <span class="trust-logo-text">Sigma Chi Fraternity</span>
+            <span class="trust-logo-text">Icey Vibes</span>
+            <span class="trust-logo-text">CANAUST</span>
+          </div>
+          <div class="trust-logos__track" aria-hidden="true">
+            <span class="trust-logo-text">McGill Sororities</span>
+            <span class="trust-logo-text">CUSEC 2024</span>
+            <span class="trust-logo-text">Old Soul</span>
+            <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
+            <span class="trust-logo-text">Montreal Pinball</span>
+            <span class="trust-logo-text">McGill Pizza</span>
+            <span class="trust-logo-text">Concordia SSA</span>
+            <span class="trust-logo-text">Artwood Construction</span>
+            <span class="trust-logo-text">Antsy</span>
+            <span class="trust-logo-text">McGill Boxing Club</span>
+            <span class="trust-logo-text">McGill Run Club</span>
+            <span class="trust-logo-text">Nyota Parker</span>
+            <span class="trust-logo-text">Morgan Arboretum</span>
+            <span class="trust-logo-text">Durante Landscapers</span>
+            <span class="trust-logo-text">McGill Animal Sciences</span>
+            <span class="trust-logo-text">Sigma Chi Fraternity</span>
+            <span class="trust-logo-text">Icey Vibes</span>
+            <span class="trust-logo-text">CANAUST</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
