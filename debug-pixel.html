@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <!-- noindex: this page must never hit Google. It's only for dev/QA. -->
+  <meta name="robots" content="noindex,nofollow">
+
+  <!-- ===== Meta Pixel + CAPI (same setup as production pages) ===== -->
+  <script src="pixel-config.js"></script>
+  <script>
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', window.SP_PIXEL_ID);
+  </script>
+  <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1198620955711122&ev=PageView&noscript=1"/></noscript>
+  <script src="pixel.js"></script>
+  <!-- ===== End Meta Pixel ===== -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Debug | Singhs Print (internal)</title>
+  <style>
+    body{font:15px/1.5 -apple-system,Inter,sans-serif;max-width:780px;margin:40px auto;padding:0 24px;color:#1a1a1a}
+    h1{font-size:1.6rem;margin-bottom:6px}
+    .lede{color:#555;margin-bottom:24px}
+    button{background:#1a1a1a;color:#fff;border:0;padding:12px 20px;border-radius:8px;font-weight:600;margin:6px 6px 6px 0;cursor:pointer}
+    button.ghost{background:#fff;color:#1a1a1a;border:1.5px solid #ddd}
+    pre{background:#f5f5f5;padding:14px;border-radius:8px;white-space:pre-wrap;word-break:break-all;font-size:13px;max-height:320px;overflow:auto}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0}
+    code{background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:.9em}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#e8ff3c;font-weight:600;font-size:.8rem;letter-spacing:1px}
+    h2{font-size:1.1rem;margin-top:32px}
+  </style>
+</head>
+<body>
+  <span class="pill">NOINDEX</span>
+  <h1>Meta Pixel + CAPI Debug</h1>
+  <p class="lede">
+    This page auto-fires <code>PageView</code> on load (via <code>pixel.js</code>).
+    Use the buttons below to fire additional events. Each event uses a shared
+    <code>event_id</code> on both client Pixel AND server CAPI — which is how
+    Meta knows to dedupe.
+  </p>
+
+  <div class="row">
+    <button onclick="fireViewContent()">Fire ViewContent</button>
+    <button onclick="fireLead()" class="ghost">Fire Lead (hashed test PII)</button>
+    <button onclick="firePageViewAgain()" class="ghost">Fire another PageView</button>
+  </div>
+
+  <h2>Most recent event_id (shared between Pixel + CAPI)</h2>
+  <pre id="lastEventId">—</pre>
+
+  <h2>CAPI server response</h2>
+  <pre id="capiResp">Click a button above…</pre>
+
+  <h2>What to check in Meta Events Manager</h2>
+  <ol>
+    <li>Open <strong>Events Manager → your Pixel → Test events</strong> tab.</li>
+    <li>Enter your current page URL (e.g., <code>https://singhsprint.com/debug-pixel.html</code>) and click Open Website.</li>
+    <li>Fire events using the buttons above.</li>
+    <li>Each event should appear <strong>once</strong> with a <em>"Received from"</em> badge showing <strong>Browser + Server</strong>. That's successful dedupe.</li>
+    <li>If you see two separate rows (one Browser, one Server) for the same event, the <code>event_id</code>s don't match — something is wrong with the pairing.</li>
+  </ol>
+
+  <script>
+    // -------- Helpers that call SP_PIXEL.track() AND also hit the CAPI
+    //          proxy synchronously (via fetch, not sendBeacon) so we can
+    //          display the server response on this page for debugging. ---
+
+    function setLast(eventId) {
+      document.getElementById('lastEventId').textContent = eventId;
+    }
+
+    async function fireAndShow(eventName, customData, userData) {
+      document.getElementById('capiResp').textContent = 'Sending…';
+
+      // Fire the client Pixel via SP_PIXEL.track (same as production path).
+      // SP_PIXEL.track also kicks off a sendBeacon to CAPI, but that's fire-and-
+      // forget. For the debug UI we ALSO do an explicit fetch so we can show
+      // the Graph API response below.
+      var eventId = SP_PIXEL.track(eventName, customData, userData);
+      setLast(eventId);
+
+      try {
+        var resp = await fetch(window.SP_CAPI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_name: eventName,
+            event_id: eventId + '-debug', // distinct id so debug call doesn't collide with the sendBeacon one
+            event_time: Math.floor(Date.now() / 1000),
+            event_source_url: window.location.href,
+            action_source: 'website',
+            user_data: userData || {},
+            custom_data: customData || {}
+          })
+        });
+        var text = await resp.text();
+        document.getElementById('capiResp').textContent =
+          'HTTP ' + resp.status + '\n\n' + text;
+      } catch (err) {
+        document.getElementById('capiResp').textContent = 'Fetch failed: ' + err.message;
+      }
+    }
+
+    function fireViewContent() {
+      fireAndShow('ViewContent', {
+        content_name:    'Debug ViewContent',
+        content_ids:     ['debug-sku-001'],
+        content_type:    'product',
+        value:           25.00,
+        currency:        'CAD'
+      });
+    }
+
+    function fireLead() {
+      // RAW PII — hashed server-side by /api/meta-capi.
+      fireAndShow('Lead', { content_name: 'Debug Lead' }, {
+        em: 'debug+test@singhsprint.com',
+        ph: '+15149151539',
+        fn: 'Test',
+        ln: 'Lead',
+        country: 'ca'
+      });
+    }
+
+    function firePageViewAgain() {
+      fireAndShow('PageView');
+    }
+
+    // Show the event_id that auto-PageView used, so we can verify it shows
+    // up de-duplicated in Events Manager without clicking anything.
+    // pixel.js pushes to dataLayer before calling fbq/CAPI, so we can read it.
+    setTimeout(function () {
+      if (window.dataLayer && window.dataLayer.length) {
+        var last = window.dataLayer[window.dataLayer.length - 1];
+        if (last && last.event_id) setLast(last.event_id + '  (auto PageView)');
+      }
+    }, 300);
+  </script>
+</body>
+</html>
