@@ -63,9 +63,8 @@ function entry(loc, prio, freq, opts = {}) {
 
 (async () => {
   const productPaths = await listProductSlugs();
-  // Product pages: no FR mirror today (template is EN-only) — flag them
-  // so the entry generator omits the FR alternate.
-  const productEntries = productPaths.map(p => [p, 0.7, 'weekly', { frExists: false }]);
+  // Product pages NOW have FR siblings at /fr/p/<slug>/ (bilingual generator).
+  const productEntries = productPaths.map(p => [p, 0.7, 'weekly', { frExists: true }]);
   const corePagesWithFr = CORE.map(([loc, prio, freq]) => [loc, prio, freq, { frExists: true }]);
 
   const urls = [];
@@ -73,8 +72,10 @@ function entry(loc, prio, freq, opts = {}) {
   for (const [loc, prio, freq, opts] of corePagesWithFr) urls.push(entry(loc, prio, freq, opts));
   // FR core mirrors (loc points at /fr/, alternates declared the same way)
   for (const [loc, prio, freq, opts] of corePagesWithFr) urls.push(entry(loc, prio, freq, { ...opts, isFr: true }));
-  // EN-only product pages
+  // EN product pages (with FR alternates)
   for (const [loc, prio, freq, opts] of productEntries) urls.push(entry(loc, prio, freq, opts));
+  // FR product pages
+  for (const [loc, prio, freq, opts] of productEntries) urls.push(entry(loc, prio, freq, { ...opts, isFr: true }));
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset

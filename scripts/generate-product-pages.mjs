@@ -121,19 +121,119 @@ function resolvedPrice(p) {
   return floorFor(p);
 }
 
-function buildPage(p) {
+// All boilerplate strings the page template needs. Keep these in lock-step
+// when you add new copy — every key must have an `en` and `fr` value.
+const I18N = {
+  // <head> + meta
+  titleSuffix:     { en: 'Custom Printing in Montreal · Singhs Print',
+                     fr: 'Impression personnalisée à Montréal · Singhs Print' },
+  metaPrefix:      { en: 'Custom printed',                fr: 'Impression personnalisée sur' },
+  metaCore:        { en: 'in Montreal. DTG, DTF, embroidery and screen printing from',
+                     fr: 'à Montréal. DTG, DTF, broderie et sérigraphie à partir de' },
+  metaPerUnit:     { en: '/unit',                         fr: '/unité' },
+  metaTail:        { en: 'Sainte-Anne-de-Bellevue studio, Net-30 for repeat accounts. Get a quote in 1 hour.',
+                     fr: 'Studio à Sainte-Anne-de-Bellevue, Net-30 pour comptes récurrents. Soumission en 1 heure.' },
+  ogTitleSuffix:   { en: '· Singhs Print Montreal',       fr: '· Singhs Print Montréal' },
+
+  // Crumbs
+  home:            { en: 'Home',     fr: 'Accueil' },
+  catalog:         { en: 'Catalog',  fr: 'Catalogue' },
+
+  // Hero
+  styleLabel:      { en: 'Style',          fr: 'Modèle' },
+  oz:              { en: 'oz',             fr: 'oz' },
+  coloursAvail:    { en: 'colours available', fr: 'couleurs disponibles' },
+  from:            { en: 'From',           fr: 'À partir de' },
+  perUnit:         { en: '/unit',          fr: '/unité' },
+  hintEngine:      { en: 'Decorated, 1-side print, at 250+ qty. Smaller orders priced on your quote.',
+                     fr: 'Décoré, impression 1 côté, à 250+ unités. Les petites commandes sont chiffrées dans votre soumission.' },
+  hintFloor:       { en: 'Starting tier for this garment category, decorated 1-side at 250+ qty. We&rsquo;ll send your exact per-unit price with the quote.',
+                     fr: 'Palier de départ pour cette catégorie, décoré 1 côté à 250+ unités. Le prix unitaire exact arrive avec votre soumission.' },
+  ctaQuote:        { en: 'Get a quote →', fr: 'Demander une soumission →' },
+  ctaInCatalog:    { en: 'See in catalog', fr: 'Voir dans le catalogue' },
+  coloursAria:     { en: 'Available colours', fr: 'Couleurs disponibles' },
+  moreColours:     { en: 'more',           fr: 'de plus' },
+
+  // Fact bar
+  fbFabricWeight:  { en: 'Fabric weight',  fr: 'Poids du tissu' },
+  fbMaterial:      { en: 'Material',       fr: 'Matériau' },
+  fbColours:       { en: 'Colours',        fr: 'Couleurs' },
+  fbAvailability:  { en: 'Availability',   fr: 'Disponibilité' },
+  outOfStock:      { en: 'Out of stock',   fr: 'En rupture' },
+  inStock:         { en: 'In stock',       fr: 'En stock' },
+  none:            { en: '—',              fr: '—' },
+
+  // Body sections
+  bodyH2Title:     { en: 'Custom printing on the',
+                     fr: 'Impression personnalisée sur le' },
+  bodyH2Suffix:    { en: 'in Montreal',    fr: 'à Montréal' },
+  bodyP1Lead:      { en: 'The',            fr: 'Le' },
+  bodyP1Mid:       { en: 'is one of the most-decorated styles out of our Sainte-Anne-de-Bellevue studio. We decorate it across all four of our methods:',
+                     fr: 'est l\'un des modèles les plus décorés à notre studio de Sainte-Anne-de-Bellevue. Nous le décorons avec nos quatre méthodes :' },
+  bodyP1Dtg:       { en: 'for soft-hand full-colour prints on cotton,',
+                     fr: 'pour des impressions souples en couleurs sur coton,' },
+  bodyP1Dtf:       { en: 'for vibrant prints on poly blends and dark fabrics,',
+                     fr: 'pour des impressions éclatantes sur polyesters et tissus foncés,' },
+  bodyP1Emb:       { en: 'for logos and corporate identity, and',
+                     fr: 'pour les logos et l\'identité corporative, et' },
+  bodyP1Screen:    { en: 'for high-volume single-colour runs.',
+                     fr: 'pour les tirages mono-couleur en gros volume.' },
+  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 12 units for embroidery. Standard turnaround is 7–10 business days from approved artwork; rush options (3–5 days) are available with a small surcharge. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
+                     fr: 'Minimums : 5 unités pour DTG/DTF, 12 unités pour la broderie. Délai standard : 7 à 10 jours ouvrables à partir de l\'approbation du visuel ; options urgentes (3 à 5 jours) moyennant un léger supplément. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
+
+  specsH2:         { en: 'Specifications', fr: 'Spécifications' },
+  specBrand:       { en: 'Brand:',         fr: 'Marque :' },
+  specStyle:       { en: 'Style number:',  fr: 'Numéro de modèle :' },
+  specFabric:      { en: 'Fabric:',        fr: 'Tissu :' },
+  specFabricNA:    { en: 'Fabric: see product description', fr: 'Tissu : voir la description du produit' },
+  specWeight:      { en: 'Weight:',        fr: 'Poids :' },
+  specWeightNA:    { en: 'Weight: see product description', fr: 'Poids : voir la description du produit' },
+  specColours:     { en: 'Colours available:', fr: 'Couleurs disponibles :' },
+  specSizes:       { en: 'Sizes typically available: XS–4XL depending on colour (2XL+ adds $3/pc per industry standard)',
+                     fr: 'Tailles habituellement disponibles : XS à 4XL selon la couleur (2XL et plus : supplément de 3 $/pièce, norme de l\'industrie)' },
+
+  whoH2:           { en: 'Who orders this blank?', fr: 'Qui commande ce vêtement vierge ?' },
+  whoP:            { en: 'Mostly West Island businesses, McGill student organisations, charity-run organisers, and corporate procurement teams running staff-uniform programs. Net-30 terms are available for approved repeat accounts.',
+                     fr: 'Surtout des entreprises de l\'Ouest-de-l\'Île, des organisations étudiantes de McGill, des organisateurs de courses caritatives et des équipes d\'approvisionnement corporatives qui gèrent des programmes d\'uniformes. Modalités Net-30 disponibles pour les comptes récurrents approuvés.' },
+
+  quoteH2:         { en: 'Get your quote', fr: 'Obtenez votre soumission' },
+  quoteP:          { en: 'Pick a decoration method, send us your artwork (or use our free design help) and we\'ll come back with a firm quote, sample timeline and Net-30 paperwork, usually within the hour during business hours (9 AM to 9 PM, 7 days a week).',
+                     fr: 'Choisissez une méthode de décoration, envoyez votre visuel (ou utilisez notre service de design gratuit) et on revient avec une soumission ferme, un échéancier d\'échantillon et la paperasse Net-30, généralement en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h, 7 jours sur 7).' },
+
+  // Footer CTA
+  ctaSecH2Prefix:  { en: 'Get a quote for', fr: 'Demandez une soumission pour' },
+  ctaSecP:         { en: 'Firm pricing, real timeline, no commitment until you approve the sample.',
+                     fr: 'Prix ferme, échéancier réel, aucun engagement avant l\'approbation de l\'échantillon.' },
+  ctaSecBtn:       { en: 'Start your quote →', fr: 'Commencer ma soumission →' },
+
+  // Alt text + breadcrumb item name in JSON-LD
+  altPrefix:       { en: 'for custom printing in Montreal',
+                     fr: 'pour impression personnalisée à Montréal' },
+};
+
+// Pick a string by language with EN fallback if a key is missing.
+function t(key, lang) {
+  const entry = I18N[key];
+  if (!entry) return '';
+  return entry[lang] != null ? entry[lang] : entry.en;
+}
+
+function buildPage(p, lang = 'en') {
   const brand = (p.brand || '').trim();
   const style = (p.style_number || '').trim();
   const name  = (p.name || '').trim();
   const slug  = slugify(brand + '-' + style);
-  const url   = `${SITE}/p/${slug}/`;
+  const urlPath = (lang === 'fr' ? '/fr/p/' : '/p/') + slug + '/';
+  const url   = SITE + urlPath;
+  const urlEn = SITE + '/p/' + slug + '/';
+  const urlFr = SITE + '/fr/p/' + slug + '/';
   const heroColor = (p.colors || []).find(c => Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length) || (p.colors || [])[0] || {};
   const hero  = imgUrl(heroColor.mockup_front_url || p.hero_image_url || '');
 
   const priceFrom = resolvedPrice(p);
   const usingFloor = !(typeof p.price_from === 'number' && p.price_from > 0);
-  const title = `${brand} ${style} ${name} — Custom Printing in Montreal · Singhs Print`;
-  const meta  = `Custom printed ${brand} ${style} ${name} in Montreal. DTG, DTF, embroidery and screen printing from $${priceFrom.toFixed(2)}/unit. Sainte-Anne-de-Bellevue studio, Net-30 for repeat accounts. Get a quote in 1 hour.`;
+  const title = `${brand} ${style} ${name} — ${t('titleSuffix', lang)}`;
+  const meta  = `${t('metaPrefix', lang)} ${brand} ${style} ${name} ${t('metaCore', lang)} $${priceFrom.toFixed(2)}${t('metaPerUnit', lang)}. ${t('metaTail', lang)}`;
 
   // Variant offers per color — drives "Available in N colours" rich-result variants
   const colors = (p.colors || []).slice(0, 24);
@@ -161,14 +261,15 @@ function buildPage(p) {
         'image': [hero],
         'category': p.garment_type || 'Custom Apparel',
         'url': url,
+        'inLanguage': lang === 'fr' ? 'fr-CA' : 'en-CA',
         'offers': offers,
         'isRelatedTo': { '@id': SITE + '/#business' }
       },
       {
         '@type': 'BreadcrumbList',
         'itemListElement': [
-          { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': SITE + '/' },
-          { '@type': 'ListItem', 'position': 2, 'name': 'Catalog', 'item': SITE + '/catalog' },
+          { '@type': 'ListItem', 'position': 1, 'name': t('home', lang),    'item': SITE + (lang === 'fr' ? '/fr/' : '/') },
+          { '@type': 'ListItem', 'position': 2, 'name': t('catalog', lang), 'item': SITE + (lang === 'fr' ? '/fr/catalog' : '/catalog') },
           { '@type': 'ListItem', 'position': 3, 'name': `${brand} ${style}`, 'item': url }
         ]
       }
@@ -176,7 +277,7 @@ function buildPage(p) {
   };
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang === 'fr' ? 'fr' : 'en'}">
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -185,20 +286,20 @@ function buildPage(p) {
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(meta)}">
   <link rel="canonical" href="${url}">
-  <link rel="alternate" hreflang="en" href="${url}">
-  <link rel="alternate" hreflang="fr" href="${url.replace(SITE, SITE + '/fr')}">
-  <link rel="alternate" hreflang="x-default" href="${url}">
+  <link rel="alternate" hreflang="en" href="${urlEn}">
+  <link rel="alternate" hreflang="fr" href="${urlFr}">
+  <link rel="alternate" hreflang="x-default" href="${urlEn}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
   <meta property="og:type" content="product">
-  <meta property="og:title" content="${escapeHtml(brand + ' ' + style + ' · Singhs Print Montreal')}">
+  <meta property="og:title" content="${escapeHtml(brand + ' ' + style + ' ' + t('ogTitleSuffix', lang))}">
   <meta property="og:description" content="${escapeHtml(meta)}">
   <meta property="og:url" content="${url}">
   <meta property="og:image" content="${hero}">
   <meta property="og:site_name" content="Singhs Print">
-  <meta property="og:locale" content="en_CA">
-  <meta property="og:locale:alternate" content="fr_CA">
+  <meta property="og:locale" content="${lang === 'fr' ? 'fr_CA' : 'en_CA'}">
+  <meta property="og:locale:alternate" content="${lang === 'fr' ? 'en_CA' : 'fr_CA'}">
   <meta name="theme-color" content="#1a1a1a">
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
   <style>
@@ -259,64 +360,62 @@ function buildPage(p) {
   <div id="nav-placeholder"></div>
 
   <nav class="crumbs" aria-label="Breadcrumb"><div class="container">
-    <a href="/">Home</a> · <a href="/catalog">Catalog</a> · ${escapeHtml(brand + ' ' + style)}
+    <a href="${lang === 'fr' ? '/fr/' : '/'}">${t('home', lang)}</a> · <a href="${lang === 'fr' ? '/fr/catalog' : '/catalog'}">${t('catalog', lang)}</a> · ${escapeHtml(brand + ' ' + style)}
   </div></nav>
 
   <section class="product-hero"><div class="container"><div class="product-hero__grid">
-    <div class="product-hero__photo"><img src="${escapeHtml(hero)}" alt="${escapeHtml(brand + ' ' + style + ' ' + name + ' for custom printing in Montreal')}" loading="eager" fetchpriority="high"></div>
+    <div class="product-hero__photo"><img src="${escapeHtml(hero)}" alt="${escapeHtml(brand + ' ' + style + ' ' + name + ' ' + t('altPrefix', lang))}" loading="eager" fetchpriority="high"></div>
     <div>
-      <div class="product-hero__brand">${escapeHtml(brand)} · Style ${escapeHtml(style)}</div>
+      <div class="product-hero__brand">${escapeHtml(brand)} · ${t('styleLabel', lang)} ${escapeHtml(style)}</div>
       <h1>${escapeHtml(name)}</h1>
-      <div class="product-hero__meta">${[p.weight_oz ? p.weight_oz + ' oz' : '', p.fabric || '', p.gender || '', (p.colors || []).length + ' colours available'].filter(Boolean).join(' · ')}</div>
-      <div class="product-hero__price">From <strong>$${priceFrom.toFixed(2)}</strong> /unit</div>
-      <div class="product-hero__hint">${usingFloor
-        ? 'Starting tier for this garment category, decorated 1-side at 250+ qty. We&rsquo;ll send your exact per-unit price with the quote.'
-        : 'Decorated, 1-side print, at 250+ qty. Smaller orders priced on your quote.'}</div>
+      <div class="product-hero__meta">${[p.weight_oz ? p.weight_oz + ' ' + t('oz', lang) : '', p.fabric || '', p.gender || '', (p.colors || []).length + ' ' + t('coloursAvail', lang)].filter(Boolean).join(' · ')}</div>
+      <div class="product-hero__price">${t('from', lang)} <strong>$${priceFrom.toFixed(2)}</strong> ${t('perUnit', lang)}</div>
+      <div class="product-hero__hint">${usingFloor ? t('hintFloor', lang) : t('hintEngine', lang)}</div>
       <div class="product-hero__ctas">
-        <a class="btn btn-primary" href="/quote.html?product=${encodeURIComponent(p.product_id || '')}">Get a quote →</a>
-        <a class="btn btn-outline" href="/catalog#p=${encodeURIComponent(p.product_id || '')}">See in catalog</a>
+        <a class="btn btn-primary" href="${lang === 'fr' ? '/fr/quote' : '/quote.html'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaQuote', lang)}</a>
+        <a class="btn btn-outline" href="${lang === 'fr' ? '/fr/catalog' : '/catalog'}#p=${encodeURIComponent(p.product_id || '')}">${t('ctaInCatalog', lang)}</a>
       </div>
-      ${colors.length ? `<div class="colorbar" aria-label="Available colours">
+      ${colors.length ? `<div class="colorbar" aria-label="${t('coloursAria', lang)}">
         ${colors.slice(0, 12).map(c => `<span class="colorbar__dot" style="background:${escapeHtml(c.hex_code || '#ccc')}" title="${escapeHtml((c.color_name || '').replace(/_\d+$/, ''))}"></span>`).join('')}
-        ${colors.length > 12 ? `<span class="colorbar__more">+${colors.length - 12} more</span>` : ''}
+        ${colors.length > 12 ? `<span class="colorbar__more">+${colors.length - 12} ${t('moreColours', lang)}</span>` : ''}
       </div>` : ''}
     </div>
   </div></div></section>
 
   <section class="factbar"><div class="container"><div class="factbar__grid">
-    <div class="factbar__cell"><strong>${escapeHtml(p.weight_oz ? p.weight_oz + ' oz' : '—')}</strong><span>Fabric weight</span></div>
-    <div class="factbar__cell"><strong>${escapeHtml(p.fabric || '—')}</strong><span>Material</span></div>
-    <div class="factbar__cell"><strong>${(p.colors || []).length}</strong><span>Colours</span></div>
-    <div class="factbar__cell"><strong>${p.in_stock === false ? 'Out of stock' : 'In stock'}</strong><span>Availability</span></div>
+    <div class="factbar__cell"><strong>${escapeHtml(p.weight_oz ? p.weight_oz + ' ' + t('oz', lang) : t('none', lang))}</strong><span>${t('fbFabricWeight', lang)}</span></div>
+    <div class="factbar__cell"><strong>${escapeHtml(p.fabric || t('none', lang))}</strong><span>${t('fbMaterial', lang)}</span></div>
+    <div class="factbar__cell"><strong>${(p.colors || []).length}</strong><span>${t('fbColours', lang)}</span></div>
+    <div class="factbar__cell"><strong>${p.in_stock === false ? t('outOfStock', lang) : t('inStock', lang)}</strong><span>${t('fbAvailability', lang)}</span></div>
   </div></div></section>
 
   <section class="copy-section"><div class="container">
-    <h2>Custom printing on the ${escapeHtml(brand + ' ' + style)} in Montreal</h2>
-    <p>The ${escapeHtml(brand + ' ' + style)} is one of the most-decorated styles out of our Sainte-Anne-de-Bellevue studio. We decorate it across all four of our methods: <strong>DTG</strong> for soft-hand full-colour prints on cotton, <strong>DTF</strong> for vibrant prints on poly blends and dark fabrics, <strong>embroidery</strong> for logos and corporate identity, and <strong>screen printing</strong> for high-volume single-colour runs.</p>
-    <p>Minimum order on this blank is 5 units for DTG/DTF, 12 units for embroidery. Standard turnaround is 7–10 business days from approved artwork; rush options (3–5 days) are available with a small surcharge. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.</p>
+    <h2>${t('bodyH2Title', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyH2Suffix', lang)}</h2>
+    <p>${t('bodyP1Lead', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyP1Mid', lang)} <strong>DTG</strong> ${t('bodyP1Dtg', lang)} <strong>DTF</strong> ${t('bodyP1Dtf', lang)} <strong>${lang === 'fr' ? 'broderie' : 'embroidery'}</strong> ${t('bodyP1Emb', lang)} <strong>${lang === 'fr' ? 'sérigraphie' : 'screen printing'}</strong> ${t('bodyP1Screen', lang)}</p>
+    <p>${t('bodyP2', lang)}</p>
 
-    <h2 style="margin-top:36px">Specifications</h2>
+    <h2 style="margin-top:36px">${t('specsH2', lang)}</h2>
     <ul>
-      <li>Brand: ${escapeHtml(brand)}</li>
-      <li>Style number: ${escapeHtml(style)}</li>
-      <li>${p.fabric ? 'Fabric: ' + escapeHtml(p.fabric) : 'Fabric: see product description'}</li>
-      <li>${p.weight_oz ? 'Weight: ' + p.weight_oz + ' oz/yd²' : 'Weight: see product description'}</li>
-      <li>Colours available: ${(p.colors || []).length}</li>
-      <li>Sizes typically available: XS–4XL depending on colour (2XL+ adds $3/pc per industry standard)</li>
+      <li>${t('specBrand', lang)} ${escapeHtml(brand)}</li>
+      <li>${t('specStyle', lang)} ${escapeHtml(style)}</li>
+      <li>${p.fabric ? t('specFabric', lang) + ' ' + escapeHtml(p.fabric) : t('specFabricNA', lang)}</li>
+      <li>${p.weight_oz ? t('specWeight', lang) + ' ' + p.weight_oz + ' oz/yd²' : t('specWeightNA', lang)}</li>
+      <li>${t('specColours', lang)} ${(p.colors || []).length}</li>
+      <li>${t('specSizes', lang)}</li>
     </ul>
 
-    <h2 style="margin-top:36px">Who orders this blank?</h2>
-    <p>Mostly West Island businesses, McGill student organisations, charity-run organisers, and corporate procurement teams running staff-uniform programs. Net-30 terms are available for approved repeat accounts.</p>
+    <h2 style="margin-top:36px">${t('whoH2', lang)}</h2>
+    <p>${t('whoP', lang)}</p>
 
-    <h2 style="margin-top:36px">Get your quote</h2>
-    <p>Pick a decoration method, send us your artwork (or use our free design help) and we'll come back with a firm quote, sample timeline and Net-30 paperwork — usually within the hour during business hours (9 AM to 9 PM, 7 days a week).</p>
+    <h2 style="margin-top:36px">${t('quoteH2', lang)}</h2>
+    <p>${t('quoteP', lang)}</p>
   </div></section>
 
   <section class="cta-section">
     <div class="container">
-      <h2>Get a quote for ${escapeHtml(brand + ' ' + style)}</h2>
-      <p>Firm pricing, real timeline, no commitment until you approve the sample.</p>
-      <a class="btn btn-accent" href="/quote.html?product=${encodeURIComponent(p.product_id || '')}">Start your quote →</a>
+      <h2>${t('ctaSecH2Prefix', lang)} ${escapeHtml(brand + ' ' + style)}</h2>
+      <p>${t('ctaSecP', lang)}</p>
+      <a class="btn btn-accent" href="${lang === 'fr' ? '/fr/quote' : '/quote.html'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaSecBtn', lang)}</a>
     </div>
   </section>
 
@@ -346,29 +445,48 @@ async function main() {
   const valid = products.filter(p => p.brand && p.style_number);
   const top = valid.slice(0, TOP_N);
 
+  const FR_OUT_DIR = path.join(ROOT, 'fr', 'p');
   await fs.mkdir(OUT_DIR, { recursive: true });
+  await fs.mkdir(FR_OUT_DIR, { recursive: true });
   const generated = [];
   for (const p of top) {
     const slug = slugify(p.brand + '-' + p.style_number);
     if (!slug) continue;
-    const dir = path.join(OUT_DIR, slug);
-    await fs.mkdir(dir, { recursive: true });
-    const html = buildPage(p);
-    await fs.writeFile(path.join(dir, 'index.html'), html, 'utf8');
+
+    // EN
+    const dirEn = path.join(OUT_DIR, slug);
+    await fs.mkdir(dirEn, { recursive: true });
+    await fs.writeFile(path.join(dirEn, 'index.html'), buildPage(p, 'en'), 'utf8');
+
+    // FR
+    const dirFr = path.join(FR_OUT_DIR, slug);
+    await fs.mkdir(dirFr, { recursive: true });
+    await fs.writeFile(path.join(dirFr, 'index.html'), buildPage(p, 'fr'), 'utf8');
+
     generated.push({ slug, brand: p.brand, style: p.style_number, name: p.name });
-    console.log(`  /p/${slug}/`);
+    console.log(`  /p/${slug}/  +  /fr/p/${slug}/`);
   }
 
-  // Append the generated URLs to a separate sitemap fragment so the user
-  // can paste them into the main sitemap.xml without a build step on the
-  // host. Vercel auto-serves whatever's in the directory.
-  const sitemapFragment = generated.map(g =>
-    `  <url><loc>${SITE}/p/${g.slug}/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`
-  ).join('\n');
+  // Sitemap fragment — both languages, each with hreflang cross-link.
+  const sitemapFragment = generated.map(g => {
+    const en = `${SITE}/p/${g.slug}/`;
+    const fr = `${SITE}/fr/p/${g.slug}/`;
+    return `  <url><loc>${en}</loc><changefreq>weekly</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${en}"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="${fr}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${en}"/>
+  </url>
+  <url><loc>${fr}</loc><changefreq>weekly</changefreq><priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${en}"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="${fr}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${en}"/>
+  </url>`;
+  }).join('\n');
   await fs.writeFile(path.join(OUT_DIR, 'sitemap.xml.fragment'), sitemapFragment, 'utf8');
 
-  console.log(`\ngenerated ${generated.length} product pages → ${OUT_DIR}`);
-  console.log(`paste sitemap.xml.fragment into the main /sitemap.xml`);
+  console.log(`\ngenerated ${generated.length} EN + ${generated.length} FR product pages`);
+  console.log(`  EN: ${OUT_DIR}`);
+  console.log(`  FR: ${FR_OUT_DIR}`);
 }
 
 main().catch(err => {
