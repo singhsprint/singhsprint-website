@@ -225,6 +225,21 @@
       .detail-modal__hero{grid-template-columns:1fr}
       .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
     }
+    /* When the product detail modal is open, the sitewide "Get a Quote"
+       sticky bar (#sp-sticky-cta) covers the modal's qty stepper + Add
+       button. The modal already has its own primary action, so hide
+       the sitewide bar while the modal is open. The body class is the
+       deterministic hook (set in showProductDetail/closeProductDetail);
+       the :has() selectors are belt-and-suspenders for browsers where
+       JS races. */
+    body.sp-detail-modal-open #sp-sticky-cta,
+    body.sp-detail-modal-open .sticky-cta,
+    body.sp-detail-modal-open .sp-sticky-cta,
+    body:has(.detail-modal.open) #sp-sticky-cta,
+    body:has(.detail-modal.open) .sticky-cta,
+    body:has(.detail-modal.open) .sp-sticky-cta{display:none !important}
+    body.sp-detail-modal-open,
+    body:has(.detail-modal.open){padding-bottom:0 !important}
   </style>
   <link rel="canonical" href="https://singhsprint.com/catalog">
   <meta name="theme-color" content="#1a1a1a">
@@ -663,6 +678,10 @@
     document.getElementById('detailOverlay').classList.add('open');
     document.getElementById('detailModal').classList.add('open');
     document.body.style.overflow = 'hidden';
+    // JS fallback for the CSS :has() rule that hides the sitewide sticky
+    // CTA bar. Older Safari/Android don't yet support :has() — this body
+    // class gives us a deterministic hook for the same CSS rule.
+    document.body.classList.add('sp-detail-modal-open');
     // If FR is active, machine-translate the dynamic strings (title,
     // selected color, color names in the grid, spec bullets).
     maybeTranslateDetailModal();
@@ -684,6 +703,7 @@
     document.getElementById('detailOverlay').classList.remove('open');
     document.getElementById('detailModal').classList.remove('open');
     document.body.style.overflow = '';
+    document.body.classList.remove('sp-detail-modal-open');
   }
 
   // Sync the Add-button label to the qty input. Does NOT clamp the
