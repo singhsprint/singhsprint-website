@@ -800,7 +800,7 @@
                 <span><span data-i18n="quote.bulk.label">See bulk pricing for</span> <span id="bulkPricingProductName" data-i18n="quote.bulk.product">your product</span></span>
                 <span style="font-size:.78rem;color:#999;font-weight:500" data-i18n="quote.bulk.expand">tap to expand &or;</span>
               </summary>
-              <div id="bulkPricingTableHost" style="margin-top:14px"></div>
+              <div id="bulkPricingTableHost" style="margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
               <p style="margin-top:10px;font-size:.78rem;color:#888;line-height:1.5"><span data-i18n="quote.bulk.note">Prices are per unit and include standard blank + printing. Bulk pricing kicks in at 5+ units; smaller orders use retail pricing.</span> <span style="display:block;margin-top:2px" data-i18n="quote.bulk.canadianadd">All-Canadian blanks add $2/unit on T-shirts and Long Sleeves.</span></p>
             </details>
 
@@ -1548,7 +1548,15 @@
     }
 
     function bulkTableStyle() {
-      return '<style>#bulkPricingTableHost td,#bulkPricingTableHost th{padding:7px 10px;border-bottom:1px solid #eee}#bulkPricingTableHost tr:last-child td{border-bottom:none}#bulkPricingTableHost tbody tr:hover{background:#fff}</style>';
+      return '<style>'
+        + '#bulkPricingTableHost{position:relative}'
+        + '#bulkPricingTableHost table{min-width:480px}'  /* forces horizontal scroll on phones; the host has overflow-x:auto */
+        + '#bulkPricingTableHost td,#bulkPricingTableHost th{padding:7px 10px;border-bottom:1px solid #eee;white-space:nowrap}'
+        + '#bulkPricingTableHost tr:last-child td{border-bottom:none}'
+        + '#bulkPricingTableHost tbody tr:hover{background:#fff}'
+        // Right-edge fade hint so users see "more →"
+        + '@media (max-width:480px){#bulkPricingTableHost::after{content:"";position:sticky;right:0;top:0;bottom:0;width:24px;background:linear-gradient(to left,#fff 0%,rgba(255,255,255,0) 100%);pointer-events:none;display:block}}'
+        + '</style>';
     }
 
     // ===== VIEW TOGGLE =====

@@ -164,8 +164,12 @@ function loadFooter() {
        // a 2-col grid (Pages | Contact), the long "For Businesses" and
        // "Guides" columns are hidden — they exist in the nav. The brand
        // blurb shrinks. Total footer height drops from ~750px to ~280px.
+       //
+       // margin-top:0 on mobile so the footer meets the cta-section
+       // cleanly — both are dark, so the 40px desktop margin (which
+       // showed body bg between them) looked like a stray white gap.
       + '@media(max-width:560px){'
-      +   '.footer{padding:32px 0 24px !important}'
+      +   '.footer{padding:32px 0 24px !important;margin-top:0 !important}'
       +   '.footer-grid{grid-template-columns:1fr 1fr !important;gap:18px 14px}'
       +   '.footer-brand{grid-column:1 / -1;margin-bottom:6px}'
       +   '.footer-brand p{font-size:.82rem;line-height:1.5;max-width:none}'
@@ -338,6 +342,10 @@ function loadMobileTrim() {
   s.textContent = ''
     // -------- Phones (≤ 480px) --------
     + '@media (max-width:480px){'
+    // Defensive — prevents any oversized child (wide tables, fixed-
+    // width images) from causing the whole page to scroll horizontally.
+    // Pages that need a horizontal scroll do it on a wrapper, not body.
+    +   'html,body{overflow-x:hidden !important;max-width:100vw}'
     +   '.section,section.section{padding:32px 0 !important}'
     // Headings: tighter scale + balance
     +   'h1{font-size:clamp(1.9rem,7vw,2.6rem) !important;line-height:1.15 !important;text-wrap:balance}'
@@ -436,6 +444,186 @@ function loadMobileTrim() {
   document.head.appendChild(s);
 }
 
+// =====================================================================
+// Sitewide sticky "Get a Quote" bar. Injected on every mobile page
+// EXCEPT /quote (already in the flow) and /order/* (post-conversion).
+// Persistent yellow pill at the bottom; respects the iPhone home
+// indicator via env(safe-area-inset-bottom). High-leverage CRO move:
+// previously only the homepage had a sticky CTA; about/portfolio/etc
+// forced the user to scroll 7,000+ px back up to convert.
+// =====================================================================
+function loadStickyCTA() {
+  if (document.getElementById('sp-sticky-cta')) return;
+  var path = (location.pathname || '/').toLowerCase();
+  // Skip if user is already on the quote flow or post-conversion pages.
+  if (path === '/quote' || path === '/quote/' || path.indexOf('/quote/') === 0) return;
+  if (path === '/order' || path === '/order/' || path.indexOf('/order/') === 0) return;
+  // Homepage already has its own .sticky-cta in source; skip to avoid double-up.
+  if (document.querySelector('.sticky-cta')) return;
+
+  // Inject styles once.
+  if (!document.getElementById('sp-sticky-cta-styles')) {
+    var s = document.createElement('style');
+    s.id = 'sp-sticky-cta-styles';
+    s.textContent = ''
+      + '.sp-sticky-cta{display:none}'
+      + '@media (max-width:760px){'
+      +   '.sp-sticky-cta{'
+      +     'display:flex;position:fixed;left:12px;right:12px;bottom:0;z-index:980;'
+      +     'background:#1a1a1a;color:#fff;'
+      +     'border-radius:14px 14px 0 0;'
+      +     'box-shadow:0 -8px 22px rgba(0,0,0,.18);'
+      +     'padding:11px 14px calc(11px + env(safe-area-inset-bottom));'
+      +     'align-items:center;justify-content:space-between;gap:10px;'
+      +     'font-family:inherit;'
+      +   '}'
+      +   '.sp-sticky-cta__label{font-size:.82rem;font-weight:600;color:#fff;line-height:1.2}'
+      +   '.sp-sticky-cta__sub{font-size:.66rem;color:#999;display:block;margin-top:1px;letter-spacing:.02em}'
+      +   '.sp-sticky-cta__btn{'
+      +     'background:#e8ff3c;color:#1a1a1a;text-decoration:none;'
+      +     'padding:9px 16px;border-radius:50px;font-weight:700;font-size:.86rem;'
+      +     'white-space:nowrap;flex-shrink:0;'
+      +   '}'
+      +   '.sp-sticky-cta__btn:hover{background:#d8f02a}'
+      // Push page content above the bar so the footer isn't trapped.
+      // We add this only to <body> AFTER injection (via a class) so
+      // pages where the bar doesn't render don't get a stray gap.
+      +   'body.sp-has-sticky-cta{padding-bottom:calc(68px + env(safe-area-inset-bottom)) !important}'
+      + '}';
+    document.head.appendChild(s);
+  }
+
+  var bar = document.createElement('div');
+  bar.id = 'sp-sticky-cta';
+  bar.className = 'sp-sticky-cta';
+  bar.setAttribute('role', 'complementary');
+  bar.innerHTML = ''
+    + '<div>'
+    +   '<div class="sp-sticky-cta__label" data-i18n="sticky.label">Ready when you are</div>'
+    +   '<div class="sp-sticky-cta__sub" data-i18n="sticky.sub">No minimums · 2–4 day turnaround</div>'
+    + '</div>'
+    + '<a href="/quote" class="sp-sticky-cta__btn" data-i18n="sticky.cta">Get a Quote →</a>';
+  document.body.appendChild(bar);
+  // Add the class to body so the .sp-has-sticky-cta padding rule applies.
+  document.body.classList.add('sp-has-sticky-cta');
+}
+
+// =====================================================================
+// Mid-page CTA — long-form pages otherwise force the reader to scroll
+// 7,000+ px to reach the final CTA. Industry standard is to surface a
+// conversion moment roughly halfway through the article so reading
+// momentum doesn't die. Same data Stripe, Linear, and Notion content
+// teams optimize against.
+//
+// Finds the H2 closest to 50 % of the article content height and
+// injects a brand-styled card after it. Skips: homepage, /catalog,
+// /quote, /order, /businesses/rfp (those already have prominent CTAs).
+// =====================================================================
+function loadMidPageCTA() {
+  if (document.getElementById('sp-mid-cta')) return;
+  var path = (location.pathname || '/').toLowerCase();
+  var triggers = ['/guides/', '/industries/', '/about', '/portfolio'];
+  var match = triggers.some(function (p) { return path.indexOf(p) === 0; });
+  if (!match) return;
+
+  // Inject styles once.
+  if (!document.getElementById('sp-mid-cta-styles')) {
+    var s = document.createElement('style');
+    s.id = 'sp-mid-cta-styles';
+    s.textContent = ''
+      + '.sp-mid-cta{'
+      +   'background:#1a1a1a;color:#fff;border-radius:18px;padding:24px 22px;'
+      +   'margin:32px auto;max-width:680px;'
+      +   'box-shadow:0 6px 20px rgba(0,0,0,.08);'
+      +   'position:relative;overflow:hidden;'
+      + '}'
+      + '.sp-mid-cta::before{'
+      +   'content:"";position:absolute;top:-40px;right:-40px;width:140px;height:140px;'
+      +   'background:radial-gradient(circle,rgba(232,255,60,.18) 0%,transparent 70%);'
+      +   'pointer-events:none;'
+      + '}'
+      + '.sp-mid-cta__eyebrow{'
+      +   'display:inline-block;background:#e8ff3c;color:#1a1a1a;'
+      +   'font-size:.65rem;font-weight:700;letter-spacing:.08em;'
+      +   'text-transform:uppercase;padding:4px 10px;border-radius:50px;'
+      +   'margin-bottom:12px;'
+      + '}'
+      + '.sp-mid-cta__title{'
+      +   'font-family:"Playfair Display",Georgia,serif;font-weight:800;'
+      +   'font-size:1.4rem;line-height:1.2;margin:0 0 8px;color:#fff;'
+      + '}'
+      + '.sp-mid-cta__copy{font-size:.92rem;color:#bbb;line-height:1.55;margin:0 0 16px}'
+      + '.sp-mid-cta__row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}'
+      + '.sp-mid-cta__btn{'
+      +   'background:#e8ff3c;color:#1a1a1a;text-decoration:none;'
+      +   'padding:11px 20px;border-radius:50px;font-weight:700;font-size:.92rem;'
+      +   'display:inline-flex;align-items:center;gap:6px;'
+      + '}'
+      + '.sp-mid-cta__btn:hover{background:#d8f02a}'
+      + '.sp-mid-cta__alt{color:#aaa;text-decoration:none;font-size:.86rem;font-weight:500}'
+      + '.sp-mid-cta__alt:hover{color:#fff}'
+      + '@media (max-width:480px){'
+      +   '.sp-mid-cta{margin:24px 0;padding:20px 18px;border-radius:14px}'
+      +   '.sp-mid-cta__title{font-size:1.2rem}'
+      +   '.sp-mid-cta__copy{font-size:.88rem}'
+      +   '.sp-mid-cta__btn{width:100%;justify-content:center}'
+      +   '.sp-mid-cta__alt{width:100%;text-align:center;padding-top:4px}'
+      + '}';
+    document.head.appendChild(s);
+  }
+
+  // Find the article container — prefer .article-content, .content,
+  // or fall back to <main>, then <body>. Article H2s are the anchor
+  // points; we drop the card after the one closest to 50% scroll.
+  var article = document.querySelector('.article-content, article, main')
+              || document.querySelector('.section') || document.body;
+  if (!article) return;
+  var h2s = article.querySelectorAll('h2');
+  if (h2s.length < 2) return;  // need >=2 sections to have a midpoint
+
+  var articleTop = article.getBoundingClientRect().top + window.scrollY;
+  var articleEnd = articleTop + article.scrollHeight;
+  var midpoint   = articleTop + (article.scrollHeight / 2);
+
+  // Pick the H2 whose position is closest to (but not past) midpoint.
+  var bestH2 = h2s[0];
+  var bestDelta = Infinity;
+  Array.prototype.forEach.call(h2s, function (h) {
+    var y = h.getBoundingClientRect().top + window.scrollY;
+    if (y < midpoint) {
+      var d = midpoint - y;
+      if (d < bestDelta) { bestDelta = d; bestH2 = h; }
+    }
+  });
+  // Don't put the CTA after the LAST H2 — that's too close to the
+  // page's existing final CTA. Aim for ~50 % depth.
+  if (bestH2 === h2s[h2s.length - 1]) bestH2 = h2s[Math.max(0, h2s.length - 2)];
+
+  // Build + insert. The card sits after the H2's section block, not
+  // the H2 itself — we find the next section-level container or end-
+  // of-paragraphs to slot in cleanly.
+  var anchor = bestH2;
+  // Walk forward 2-3 paragraphs so the CTA doesn't sit immediately under the heading.
+  for (var i = 0; i < 3 && anchor.nextElementSibling; i++) {
+    var next = anchor.nextElementSibling;
+    if (!next || next.tagName === 'H2') break;
+    anchor = next;
+  }
+
+  var card = document.createElement('div');
+  card.id = 'sp-mid-cta';
+  card.className = 'sp-mid-cta';
+  card.innerHTML = ''
+    + '<span class="sp-mid-cta__eyebrow" data-i18n="midcta.eyebrow">Quick check</span>'
+    + '<h3 class="sp-mid-cta__title" data-i18n="midcta.title">Got a project like this in mind?</h3>'
+    + '<p class="sp-mid-cta__copy" data-i18n="midcta.copy">Send us the details and we\'ll come back with a quote, sample timeline, and price within the hour.</p>'
+    + '<div class="sp-mid-cta__row">'
+    +   '<a href="/quote" class="sp-mid-cta__btn" data-i18n="midcta.btn">Get a free quote →</a>'
+    +   '<a href="tel:5149151539" class="sp-mid-cta__alt" data-i18n="midcta.alt">or call 514-915-1539</a>'
+    + '</div>';
+  anchor.parentNode.insertBefore(card, anchor.nextSibling);
+}
+
 // Auto-run when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   loadSearchConsoleVerification();
@@ -443,4 +631,6 @@ document.addEventListener('DOMContentLoaded', function() {
   loadNav();
   loadFooter();
   loadSchema();
+  loadStickyCTA();
+  loadMidPageCTA();
 });

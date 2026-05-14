@@ -81,7 +81,78 @@
     }
     @media(max-width:480px){
       .layout{padding:0 16px;gap:20px;margin-bottom:48px}
-      .form-card{padding:22px 16px;border-radius:14px}
+      .form-card{padding:0 !important;background:transparent !important;border:none !important;box-shadow:none !important}
+
+      /* ===== MICRO-STEPS — 14 fields → 3 visual cards =====
+         Customer hits "Company → Order → Terms" as discrete steps
+         instead of a single wall of fields. Each .section-title
+         becomes a step-card header with numbered chip and lives
+         inside its own white card with shadow. The cards visually
+         separate so it doesn't read as "scroll through 14 fields"
+         but as "complete 3 short forms."
+         Pattern source: Stripe Atlas, Typeform, Linear Connect.
+      ===================================================== */
+      #rfpForm{display:block}
+
+      /* Inject step chips before each section-title via ::before */
+      #rfpForm .section-title{
+        display:flex;align-items:center;gap:10px;
+        font-family:'Playfair Display',Georgia,serif;
+        font-size:1.15rem;line-height:1.2;
+        color:#1a1a1a !important;
+        text-transform:none !important;letter-spacing:0 !important;
+        font-weight:800;
+        margin:0 !important;padding:20px 18px 12px !important;
+        border-top:none !important;
+        background:#fff;border-radius:16px 16px 0 0;
+        border:1px solid #e8e6df;border-bottom:none;
+      }
+      #rfpForm .section-title::before{
+        content:attr(data-step);
+        display:inline-flex;align-items:center;justify-content:center;
+        width:28px;height:28px;border-radius:50%;
+        background:#1a1a1a;color:#e8ff3c;
+        font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;
+        flex-shrink:0;
+      }
+
+      /* Every form-row that follows a section-title until the next
+         section-title is wrapped visually by a continuous white card.
+         CSS can't truly group siblings, so we paint each .form-row
+         to look like part of the same card via background + side
+         borders, with rounded corners on first/last via :has().    */
+      #rfpForm .form-row,
+      #rfpForm .field,
+      #rfpForm .form-group,
+      #rfpForm .stack{
+        background:#fff;
+        border:1px solid #e8e6df;border-top:none;
+        padding:14px 18px !important;
+        margin:0 !important;
+      }
+      /* Field directly before a section-title gets a soft separator */
+      #rfpForm .section-title + .form-row,
+      #rfpForm .section-title + .field,
+      #rfpForm .section-title + .form-group{
+        padding-top:6px !important;
+      }
+      /* Round the bottom of the last field of each section */
+      #rfpForm .section-title{margin-top:18px !important}
+      #rfpForm .section-title:first-of-type{margin-top:0 !important}
+
+      /* Submit row stays full-width */
+      #rfpForm .submit-row,
+      #rfpForm button[type="submit"]{
+        margin-top:18px !important;width:100% !important;
+        padding:14px 20px !important;font-size:1rem !important;
+      }
+
+      /* Labels + inputs comfortable */
+      #rfpForm label{font-size:.8rem;color:#666;font-weight:600;margin-bottom:4px}
+      #rfpForm input,#rfpForm select,#rfpForm textarea{
+        font-size:16px !important;padding:11px 12px !important;
+        border-radius:10px !important;
+      }
     }
   </style>
   <script src="../components.js"></script>
@@ -101,7 +172,7 @@
   <div class="form-card">
     <form id="rfpForm">
 
-      <div class="section-title" data-i18n="rfp.sect.company">Company</div>
+      <div class="section-title" data-step="1" data-i18n="rfp.sect.company">Company</div>
       <div class="form-row">
         <div class="form-group">
           <label for="company"><span data-i18n="rfp.label.company">Company / organization</span> <span class="req">*</span></label>
@@ -156,7 +227,7 @@
         </div>
       </div>
 
-      <div class="section-title" data-i18n="rfp.sect.order">The order</div>
+      <div class="section-title" data-step="2" data-i18n="rfp.sect.order">The order</div>
 
       <div class="form-group">
         <label><span data-i18n="rfp.label.volume">Annual unit volume</span> <span class="req">*</span></label>
@@ -191,7 +262,7 @@
         <p class="hint" data-i18n="rfp.hint.turnaround">Standard turnaround is 7&ndash;14 business days from sample approval. Faster possible with rush surcharge.</p>
       </div>
 
-      <div class="section-title" data-i18n="rfp.sect.terms">Terms &amp; compliance</div>
+      <div class="section-title" data-step="3" data-i18n="rfp.sect.terms">Terms &amp; compliance</div>
 
       <div class="form-group">
         <label data-i18n="rfp.label.terms">Preferred payment terms</label>

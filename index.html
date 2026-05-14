@@ -263,7 +263,12 @@
       .section{padding:60px 0}
       .hero{padding:40px 0 60px}
       .hero-grid{grid-template-columns:1fr;gap:32px}
-      .hero-visual{order:-1;max-width:400px;margin:0 auto}
+      /* Mobile: text+CTA first, video second. Was order:-1 which
+         pushed the 520px video above the fold and forced the primary
+         CTA below 891px scroll. Now CTA lands at ~470px scroll —
+         visible above the fold on any iPhone since the iPhone SE. */
+      .hero-visual{order:2;max-width:400px;margin:0 auto}
+      .hero-content{order:1}
       .hero-stats{gap:20px}
       .proof-stats{gap:24px}
       .products-grid{grid-template-columns:repeat(2,1fr)}
@@ -281,6 +286,18 @@
       .nav-links.active{display:flex;flex-direction:column;position:absolute;top:72px;left:0;right:0;background:#fff;padding:24px;border-bottom:1px solid #eee;gap:16px}
     }
     @media(max-width:480px){
+      /* Hero fold optimization — get the primary CTA visible without
+         scrolling. Source-order is hero-content then hero-visual; on
+         mobile the `order:` reverse already happened above, so this
+         just tightens the content side. */
+      .hero{padding:20px 0 28px !important}
+      .hero-badge{font-size:.7rem !important;padding:5px 11px !important;margin-bottom:10px !important}
+      .hero-content h1{margin-bottom:10px !important}
+      .hero-content .subhead{margin-bottom:14px !important;font-size:.92rem !important;line-height:1.5}
+      .hero-buttons{margin-bottom:10px !important}
+      .hero-proof{margin-bottom:14px !important;font-size:.78rem !important}
+      /* Make the video shorter on mobile so it doesn't dominate after the CTA */
+      .hero-photo{max-width:340px;margin:0 auto}
       .products-grid{grid-template-columns:1fr 1fr;gap:12px}
       .process-grid{grid-template-columns:1fr}
       .footer-grid{grid-template-columns:1fr}

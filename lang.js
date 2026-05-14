@@ -154,6 +154,16 @@ var SP_LANG = (function() {
     // Sticky mobile CTA
     'home.sticky.label': { en: '15% off first order', fr: '15 % de rabais sur la 1ʳᵉ commande' },
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },
+    // Sitewide sticky CTA (injected by components.js on every page except /quote and /order)
+    'sticky.label': { en: 'Ready when you are', fr: 'On est prêts' },
+    'sticky.sub':   { en: 'No minimums · 2–4 day turnaround', fr: 'Aucun minimum · délai 2 à 4 jours' },
+    'sticky.cta':   { en: 'Get a Quote →', fr: 'Soumission →' },
+    // Mid-page CTA injected by components.js on long-form pages
+    'midcta.eyebrow': { en: 'Quick check',                                       fr: 'Petite question' },
+    'midcta.title':   { en: 'Got a project like this in mind?',                  fr: 'Vous avez un projet similaire en tête ?' },
+    'midcta.copy':    { en: "Send us the details and we'll come back with a quote, sample timeline, and price within the hour.", fr: 'Envoyez-nous les détails — soumission, échéancier d\'échantillon et prix dans l\'heure.' },
+    'midcta.btn':     { en: 'Get a free quote →',                                fr: 'Soumission gratuite →' },
+    'midcta.alt':     { en: 'or call 514-915-1539',                              fr: 'ou appelez le 514-915-1539' },
     // Product category cards
     'home.badge.popular':    { en: 'Popular',     fr: 'Populaire' },
     'home.badge.bestseller': { en: 'Best Seller', fr: 'Best-seller' },

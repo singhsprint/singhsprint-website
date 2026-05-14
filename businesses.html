@@ -155,6 +155,30 @@
       .pricing-pdf-card h3{font-size:1.2rem !important;line-height:1.25}
       .pricing-pdf-card p{font-size:.92rem !important;line-height:1.55}
     }
+    /* ============================================================
+       MOBILE TRIM (≤480px) — businesses page was 9,776 px on phones
+       with 9 sections. Mirrored the homepage trim pattern:
+         • Hide .biz-why (6 reasons — already covered by hero CTAs,
+           creds-strip, and the FAQ on /quote)
+         • Hide .statement (one-liner that repeats the hero promise)
+         • Compact pricing tabs (horizontal scroll)
+         • Tighter segments + process grids
+       Target: ~5,500 px total scroll.
+    ============================================================ */
+    @media(max-width:480px){
+      .biz-why,.biz-statement{display:none !important}
+      .biz-hero{padding:24px 0 28px !important}
+      .creds-strip > .container > div{flex-direction:column;align-items:flex-start;gap:8px !important;font-size:.82rem}
+      .pricing-section{padding:32px 0 !important}
+      .pricing-tabs{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+      .pricing-tabs button{flex-shrink:0;font-size:.84rem;padding:8px 14px}
+      .process-grid{grid-template-columns:1fr !important;gap:14px}
+      .biz-cta{padding:36px 0 !important}
+      .biz-cta h2{font-size:clamp(1.5rem,5.5vw,2rem) !important;line-height:1.2}
+      .biz-cta .subhead{font-size:.92rem !important}
+      .biz-cta .cta-buttons{flex-direction:column;align-items:stretch;gap:10px}
+      .biz-cta .cta-buttons .btn{width:100%;justify-content:center}
+    }
   </style>
   <link rel="canonical" href="https://singhsprint.com/businesses">
   <meta name="theme-color" content="#1a1a1a">
@@ -267,7 +291,7 @@
   </section>
 
   <!-- WHY BUSINESSES CHOOSE US -->
-  <section class="section" style="background:#f8f7f4">
+  <section class="section biz-why" style="background:#f8f7f4">
     <div class="container">
       <div class="text-center">
         <span class="label" data-i18n="biz.why.label">Why Businesses Choose Us</span>
@@ -309,7 +333,7 @@
   </section>
 
   <!-- STATEMENT -->
-  <section class="statement">
+  <section class="statement biz-statement">
     <div class="container">
       <h2 data-i18n="biz.statement.h2">The bigger the order, the better the price. No hidden fees, ever.</h2>
       <p data-i18n="biz.statement.p">All prices include printing. What you see is what you pay.</p>

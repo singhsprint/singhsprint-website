@@ -686,15 +686,29 @@
     document.body.style.overflow = '';
   }
 
-  // Keep the Add button label in sync with the qty stepper input.
+  // Sync the Add-button label to the qty input. Does NOT clamp the
+  // input value during typing — that prevented users from erasing the
+  // "1" to type their own number. Clamping happens only on blur and
+  // when the customer actually hits "Add to quote".
   function syncDetailAddBtn() {
     const inp = document.getElementById('detailModalQtyInput');
+    if (!inp) return;
+    const raw = inp.value;
+    const n = parseInt(raw, 10);
+    // Label shows the typed value (or blank if mid-edit / invalid).
+    const label = document.getElementById('detailModalAddQty');
+    if (label) label.textContent = (raw === '' || isNaN(n)) ? '' : String(n);
+  }
+  // Final clamp — called on blur and on Add click.
+  function clampDetailQty() {
+    const inp = document.getElementById('detailModalQtyInput');
+    if (!inp) return 1;
     let n = parseInt(inp.value, 10);
     if (!n || n < 1) n = 1;
     if (n > 10000) n = 10000;
     inp.value = n;
-    const label = document.getElementById('detailModalAddQty');
-    if (label) label.textContent = n;
+    syncDetailAddBtn();
+    return n;
   }
 
   // Wire the modal's Add button, qty stepper, specs toggle, Esc-to-close.
@@ -711,7 +725,12 @@
       qtyInp.value = Math.min(10000, (parseInt(qtyInp.value, 10) || 0) + 1);
       syncDetailAddBtn();
     });
+    // While typing: don't clamp. Just update the label.
     if (qtyInp) qtyInp.addEventListener('input', syncDetailAddBtn);
+    // On blur / leave: NOW clamp.
+    if (qtyInp) qtyInp.addEventListener('blur',  clampDetailQty);
+    // Select-all on focus so a tap-then-type replaces "1" cleanly.
+    if (qtyInp) qtyInp.addEventListener('focus', (e) => e.target.select());
 
     // Specs "Show more / Show fewer" toggle
     const specsToggle = document.getElementById('detailModalSpecsToggle');
