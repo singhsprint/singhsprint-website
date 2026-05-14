@@ -160,34 +160,40 @@
     .review-author{font-size:.85rem;color:#888}
     .review-author strong{color:#fff;display:block}
 
-    /* ===== BRANDS ===== */
-    /* Desktop: ignore the marquee scaffolding — just wrap into a flex
-       grid like before. The two .brands-row__track wrappers display
-       inline; flex-wrap handles the rest. */
-    .brands-row{display:flex;justify-content:center;flex-wrap:wrap;margin-top:40px;align-items:center}
-    .brands-row__track{display:contents}
-    .brand-name{font-size:1.1rem;font-weight:700;color:#ccc;letter-spacing:1px;text-transform:uppercase;padding:0 24px}
-    /* Mobile: convert the 9-name wall into a horizontal auto-scrolling
-       marquee. Edges fade out so it flows; respects reduced-motion. */
+    /* ===== BRANDS — auto-scrolling ticker on all viewports =====
+       The strip is a single flex .brands-row__inner that contains TWO
+       identical .brands-row__track children laid out side-by-side. The
+       inner container is 2x the natural width and translates from 0 to
+       -50% (which is exactly one track-width), so the second track is
+       always at the position the first track started — perfect seamless
+       loop with no visible jump.
+       Edges fade via mask-image so the names flow in/out gently. */
+    .brands-row{
+      display:flex;overflow:hidden;margin:32px -24px 0;padding:0;
+      mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
+      position:relative
+    }
+    .brands-row__inner{
+      display:flex;width:max-content;flex-wrap:nowrap;align-items:center;
+      animation:brands-marquee 36s linear infinite;
+    }
+    .brands-row__track{display:flex;flex-shrink:0;align-items:center}
+    .brand-name{font-size:1.05rem;font-weight:700;color:#cccccc;letter-spacing:1px;text-transform:uppercase;padding:6px 28px;flex-shrink:0;white-space:nowrap}
+    /* Pause on hover so visitors who want to read a specific name can */
+    .brands-row:hover .brands-row__inner{animation-play-state:paused}
+    /* Mobile — tighter type + faster cycle so the strip stays kinetic */
     @media (max-width:540px){
-      .brands-row{
-        display:flex;flex-wrap:nowrap;overflow:hidden;margin:14px -18px 0;padding:0;
-        mask-image:linear-gradient(to right,transparent 0%,#000 8%,#000 92%,transparent 100%);
-        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 8%,#000 92%,transparent 100%);
-        position:relative;justify-content:flex-start
-      }
-      .brands-row__track{
-        display:flex;gap:0;padding:6px 0;
-        animation:brands-marquee 28s linear infinite;
-        flex-shrink:0;align-items:center;width:max-content
-      }
-      .brand-name{font-size:.84rem;letter-spacing:1.2px;flex-shrink:0;color:#bbb;padding:0 18px}
-      /* The supplier note repeats what the strip already implies — and the
-         "Bring your own garments" hint is in the catalog. Hide on mobile. */
+      .brands-row{margin:14px -18px 0}
+      .brands-row__inner{animation-duration:24s}
+      .brand-name{font-size:.86rem;letter-spacing:1.2px;color:#bbb;padding:6px 18px}
       .brands-note{display:none}
     }
+    /* Respect reduced-motion: fall back to a centred wrap (1 copy only) */
     @media (prefers-reduced-motion: reduce){
-      .brands-row__track{animation:none !important}
+      .brands-row{mask-image:none;-webkit-mask-image:none;justify-content:center}
+      .brands-row__inner{animation:none !important;flex-wrap:wrap;justify-content:center}
+      .brands-row__track[aria-hidden="true"]{display:none}
     }
     @keyframes brands-marquee{
       from{transform:translateX(0)}
@@ -733,31 +739,34 @@
     <div class="container text-center">
       <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px" data-i18n="home.brands.label">We print on premium blanks from top suppliers</p>
       <div class="brands-row" aria-label="Premium blank suppliers we print on">
-        <!-- Track is duplicated so the marquee animation loops seamlessly
-             on mobile. Desktop ignores the wrapper and just renders all
-             names in the flex-wrap parent. aria-hidden on the second
-             copy so screen readers don't repeat the list. -->
-        <div class="brands-row__track">
-          <span class="brand-name">Gildan</span>
-          <span class="brand-name">Bella+Canvas</span>
-          <span class="brand-name">Comfort Colors</span>
-          <span class="brand-name">Champion</span>
-          <span class="brand-name">Next Level</span>
-          <span class="brand-name">Independent</span>
-          <span class="brand-name">American Apparel</span>
-          <span class="brand-name">Hanes</span>
-          <span class="brand-name">Rue Saint-Patrick</span>
-        </div>
-        <div class="brands-row__track" aria-hidden="true">
-          <span class="brand-name">Gildan</span>
-          <span class="brand-name">Bella+Canvas</span>
-          <span class="brand-name">Comfort Colors</span>
-          <span class="brand-name">Champion</span>
-          <span class="brand-name">Next Level</span>
-          <span class="brand-name">Independent</span>
-          <span class="brand-name">American Apparel</span>
-          <span class="brand-name">Hanes</span>
-          <span class="brand-name">Rue Saint-Patrick</span>
+        <!-- Two identical tracks inside .brands-row__inner. The inner
+             element animates -50% (one full track-width) so when the
+             loop resets to 0 the second track is exactly where the
+             first started — seamless. aria-hidden on the second copy
+             so screen readers don't repeat the list. -->
+        <div class="brands-row__inner">
+          <div class="brands-row__track">
+            <span class="brand-name">Gildan</span>
+            <span class="brand-name">Bella+Canvas</span>
+            <span class="brand-name">Comfort Colors</span>
+            <span class="brand-name">Champion</span>
+            <span class="brand-name">Next Level</span>
+            <span class="brand-name">Independent</span>
+            <span class="brand-name">American Apparel</span>
+            <span class="brand-name">Hanes</span>
+            <span class="brand-name">Rue Saint-Patrick</span>
+          </div>
+          <div class="brands-row__track" aria-hidden="true">
+            <span class="brand-name">Gildan</span>
+            <span class="brand-name">Bella+Canvas</span>
+            <span class="brand-name">Comfort Colors</span>
+            <span class="brand-name">Champion</span>
+            <span class="brand-name">Next Level</span>
+            <span class="brand-name">Independent</span>
+            <span class="brand-name">American Apparel</span>
+            <span class="brand-name">Hanes</span>
+            <span class="brand-name">Rue Saint-Patrick</span>
+          </div>
         </div>
       </div>
       <p class="brands-note" style="font-size:.8rem;color:#aaa;margin-top:16px" data-i18n="home.brands.note">Sourced from S&amp;S Activewear, SanMar &amp; Rue Saint-Patrick. Bring your own garments too.</p>
