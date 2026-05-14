@@ -84,7 +84,17 @@
     .hero h1{margin-bottom:16px}
     .hero h1 .accent{color:#555}
     .hero .subhead{margin-bottom:28px}
-    .hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+    .hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+    /* De-emphasized secondary CTA — reads as a text link with a subtle
+       underline. Keeps the choice available without competing with the
+       primary yellow button. Pattern source: Stripe, Apple hero. */
+    .btn-ghost{background:transparent !important;border:none !important;padding:11px 6px !important;color:#1a1a1a !important;font-weight:600;text-decoration:underline;text-decoration-color:#bbb;text-underline-offset:4px;box-shadow:none !important}
+    .btn-ghost:hover{text-decoration-color:#1a1a1a;background:transparent !important}
+    /* Inline social-proof line — three signals separated by ·. Tight
+       text, no card, no border — sits like a caption under the CTAs. */
+    .hero-proof{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.85rem;color:#666;margin-bottom:24px;line-height:1.4}
+    .hero-proof strong{color:#1a1a1a;font-weight:700}
+    .hero-proof .dot-sep{color:#ccc}
     .hero-stats{display:flex;gap:32px;padding-top:24px;border-top:1px solid #e0e0e0}
     .stat strong{display:block;font-size:1.4rem;font-weight:800;font-family:'Playfair Display',serif}
     .stat span{font-size:.8rem;color:#777}
@@ -151,8 +161,38 @@
     .review-author strong{color:#fff;display:block}
 
     /* ===== BRANDS ===== */
-    .brands-row{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;margin-top:40px;align-items:center}
-    .brand-name{font-size:1.1rem;font-weight:700;color:#ccc;letter-spacing:1px;text-transform:uppercase}
+    /* Desktop: ignore the marquee scaffolding — just wrap into a flex
+       grid like before. The two .brands-row__track wrappers display
+       inline; flex-wrap handles the rest. */
+    .brands-row{display:flex;justify-content:center;flex-wrap:wrap;margin-top:40px;align-items:center}
+    .brands-row__track{display:contents}
+    .brand-name{font-size:1.1rem;font-weight:700;color:#ccc;letter-spacing:1px;text-transform:uppercase;padding:0 24px}
+    /* Mobile: convert the 9-name wall into a horizontal auto-scrolling
+       marquee. Edges fade out so it flows; respects reduced-motion. */
+    @media (max-width:540px){
+      .brands-row{
+        display:flex;flex-wrap:nowrap;overflow:hidden;margin:14px -18px 0;padding:0;
+        mask-image:linear-gradient(to right,transparent 0%,#000 8%,#000 92%,transparent 100%);
+        -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 8%,#000 92%,transparent 100%);
+        position:relative;justify-content:flex-start
+      }
+      .brands-row__track{
+        display:flex;gap:0;padding:6px 0;
+        animation:brands-marquee 28s linear infinite;
+        flex-shrink:0;align-items:center;width:max-content
+      }
+      .brand-name{font-size:.84rem;letter-spacing:1.2px;flex-shrink:0;color:#bbb;padding:0 18px}
+      /* The supplier note repeats what the strip already implies — and the
+         "Bring your own garments" hint is in the catalog. Hide on mobile. */
+      .brands-note{display:none}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .brands-row__track{animation:none !important}
+    }
+    @keyframes brands-marquee{
+      from{transform:translateX(0)}
+      to  {transform:translateX(-50%)}
+    }
 
     /* ===== PROCESS ===== */
     .process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin-top:48px}
@@ -308,11 +348,19 @@
           <p class="subhead" data-i18n="home.hero.sub">DTG, DTF &amp; Embroidery done in-house in Montreal's West Island. No minimums, 2&ndash;4 day turnaround, and a real sample before every run. 15% off your first order.</p>
           <div class="hero-buttons">
             <a href="quote" class="btn btn-accent" data-i18n="home.hero.cta1">Get a Free Quote &rarr;</a>
-            <a href="portfolio" class="btn btn-outline" data-i18n="home.hero.cta2">See Our Work</a>
+            <a href="portfolio" class="btn btn-ghost btn-outline" data-i18n="home.hero.cta2">See Our Work</a>
           </div>
-          <!-- Hero stats removed — duplicated the proof bar below.
-               Mobile feedback was "overwhelming"; one consolidated stats
-               row (the proof bar) is plenty. -->
+          <!-- Inline social proof: one tight line of three signals,
+               replaces both the old hero-stats and gives users at-a-
+               glance trust without scrolling to the proof bar.
+               Pattern source: Stripe, Allbirds, Linear hero. -->
+          <div class="hero-proof" aria-label="Social proof">
+            <span><strong>100+</strong> <span data-i18n="home.heroproof.orders">orders</span></span>
+            <span class="dot-sep" aria-hidden="true">·</span>
+            <span><strong>5.0★</strong> <span data-i18n="home.heroproof.rating">(21 reviews)</span></span>
+            <span class="dot-sep" aria-hidden="true">·</span>
+            <span data-i18n="home.heroproof.local">West Island, Montreal</span>
+          </div>
 
         </div>
         <div class="hero-visual">
@@ -489,18 +537,35 @@
   <section style="padding:40px 0;border-top:1px solid #eee;border-bottom:1px solid #eee">
     <div class="container text-center">
       <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px" data-i18n="home.brands.label">We print on premium blanks from top suppliers</p>
-      <div class="brands-row">
-        <span class="brand-name">Gildan</span>
-        <span class="brand-name">Bella+Canvas</span>
-        <span class="brand-name">Comfort Colors</span>
-        <span class="brand-name">Champion</span>
-        <span class="brand-name">Next Level</span>
-        <span class="brand-name">Independent</span>
-        <span class="brand-name">American Apparel</span>
-        <span class="brand-name">Hanes</span>
-        <span class="brand-name">Rue Saint-Patrick</span>
+      <div class="brands-row" aria-label="Premium blank suppliers we print on">
+        <!-- Track is duplicated so the marquee animation loops seamlessly
+             on mobile. Desktop ignores the wrapper and just renders all
+             names in the flex-wrap parent. aria-hidden on the second
+             copy so screen readers don't repeat the list. -->
+        <div class="brands-row__track">
+          <span class="brand-name">Gildan</span>
+          <span class="brand-name">Bella+Canvas</span>
+          <span class="brand-name">Comfort Colors</span>
+          <span class="brand-name">Champion</span>
+          <span class="brand-name">Next Level</span>
+          <span class="brand-name">Independent</span>
+          <span class="brand-name">American Apparel</span>
+          <span class="brand-name">Hanes</span>
+          <span class="brand-name">Rue Saint-Patrick</span>
+        </div>
+        <div class="brands-row__track" aria-hidden="true">
+          <span class="brand-name">Gildan</span>
+          <span class="brand-name">Bella+Canvas</span>
+          <span class="brand-name">Comfort Colors</span>
+          <span class="brand-name">Champion</span>
+          <span class="brand-name">Next Level</span>
+          <span class="brand-name">Independent</span>
+          <span class="brand-name">American Apparel</span>
+          <span class="brand-name">Hanes</span>
+          <span class="brand-name">Rue Saint-Patrick</span>
+        </div>
       </div>
-      <p style="font-size:.8rem;color:#aaa;margin-top:16px" data-i18n="home.brands.note">Sourced from S&amp;S Activewear, SanMar &amp; Rue Saint-Patrick. Bring your own garments too.</p>
+      <p class="brands-note" style="font-size:.8rem;color:#aaa;margin-top:16px" data-i18n="home.brands.note">Sourced from S&amp;S Activewear, SanMar &amp; Rue Saint-Patrick. Bring your own garments too.</p>
     </div>
   </section>
 

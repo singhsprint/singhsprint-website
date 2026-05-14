@@ -327,8 +327,8 @@ function loadMobileTrim() {
     + '@media (max-width:480px){'
     +   '.section,section.section{padding:32px 0 !important}'
     // Headings: tighter scale + balance
-    +   'h1{font-size:clamp(1.7rem,6.5vw,2.4rem) !important;line-height:1.18 !important;text-wrap:balance}'
-    +   'h2{font-size:clamp(1.4rem,5vw,1.9rem) !important;line-height:1.2 !important;text-wrap:balance}'
+    +   'h1{font-size:clamp(1.9rem,7vw,2.6rem) !important;line-height:1.15 !important;text-wrap:balance}'
+    +   'h2{font-size:clamp(1.45rem,5.2vw,1.95rem) !important;line-height:1.2 !important;text-wrap:balance}'
     +   'h3{font-size:clamp(1.05rem,4vw,1.25rem) !important;line-height:1.25 !important}'
     +   '.label,.eyebrow{font-size:.66rem !important;letter-spacing:.08em !important}'
     +   '.subhead{font-size:.95rem !important;line-height:1.55 !important;max-width:none !important}'
@@ -354,6 +354,42 @@ function loadMobileTrim() {
     +   '.hero{padding:24px 0 36px !important}'
     +   '.hero .subhead{margin-bottom:18px !important}'
     +   '.hero-buttons{margin-bottom:16px !important}'
+    // Trust-bar duplicates the proof-bar — both communicate "real
+    // customers trust us" on a viewport where attention is precious.
+    // Keep the proof-bar's hard numbers, hide the client-name strip
+    // on phones. Brand names still surface in the reviews + portfolio.
+    +   '.trust-bar{display:none !important}'
+    // ---------- iOS-style scroll-snap carousels ----------
+    // 8 product cards × 2-col grid = ~1,400px of scroll. As a
+    // horizontal carousel it's ~340px and reads as native (App Store
+    // / Apple Music pattern). Same treatment for the 3 service cards
+    // and 6 why-us cards. Each card is sized to leave a peek of the
+    // next so users instantly recognize it as swipeable.
+    +   '.products-grid,.services-grid,.why-grid{'
+    +     'display:flex !important;'
+    +     'overflow-x:auto;overflow-y:visible;'
+    +     'scroll-snap-type:x mandatory;'
+    +     '-webkit-overflow-scrolling:touch;'
+    +     'scroll-padding:0 18px;'
+    +     'gap:12px !important;'
+    +     'padding:6px 18px 14px !important;'
+    +     'margin:0 -18px !important;'
+    +     'scrollbar-width:none;'
+    +     'grid-template-columns:none !important;'
+    +   '}'
+    +   '.products-grid::-webkit-scrollbar,.services-grid::-webkit-scrollbar,.why-grid::-webkit-scrollbar{display:none}'
+    +   '.products-grid > *,.services-grid > *,.why-grid > *{'
+    +     'flex:0 0 78%;'
+    +     'scroll-snap-align:center;'
+    +     'scroll-snap-stop:always;'
+    +     'min-width:0;'
+    +   '}'
+    +   '.services-grid > *,.why-grid > *{flex:0 0 82% !important}'
+    // Faint right-edge mask hints at "more off-screen"
+    +   '.products-grid,.services-grid,.why-grid{'
+    +     '-webkit-mask-image:linear-gradient(to right,#000 92%,transparent 100%);'
+    +             'mask-image:linear-gradient(to right,#000 92%,transparent 100%);'
+    +   '}'
     + '}'
     // -------- Tiny screens (≤ 360px) — go a step further --------
     + '@media (max-width:360px){'

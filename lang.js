@@ -57,7 +57,11 @@ var SP_LANG = (function() {
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
-    'home.hero.guarantee': { en: 'Quality Guarantee: Love it or we reprint it.', fr: 'Garantie qualité : Satisfait ou on réimprimé.' },
+    'home.hero.guarantee': { en: 'Quality Guarantee: Love it or we reprint it.', fr: 'Garantie qualité : Satisfait ou on réimprime.' },
+    // Inline hero social-proof line (replaces old hero-stats block)
+    'home.heroproof.orders': { en: 'orders',         fr: 'commandes' },
+    'home.heroproof.rating': { en: '(21 reviews)',   fr: '(21 avis)' },
+    'home.heroproof.local':  { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'home.stats.orders': { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.stats.turnaround': { en: 'Day Avg Turnaround', fr: 'Jours délai moyen' },
     'home.stats.rating': { en: 'Google Rating', fr: 'Note Google' },
