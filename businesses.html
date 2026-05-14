@@ -601,9 +601,14 @@
     });
 
     // ===== QUANTITY SLIDER — highlights the active table's tier row, shows per-unit estimate =====
+    // Tier labels MUST match the strings rendered in each table's first
+    // column verbatim — the highlight logic does an exact-string match
+    // against the cell's textContent. Previously this function returned
+    // "200+" and "100-199" but the tables actually read "250+" and
+    // "100-249", so the top two tiers never lit up.
     function tierForQty(qty) {
-      if (qty >= 200) return '200+';
-      if (qty >= 100) return '100-199';
+      if (qty >= 250) return '250+';
+      if (qty >= 100) return '100-249';
       if (qty >= 50)  return '50-99';
       if (qty >= 25)  return '25-49';
       if (qty >= 10)  return '10-24';
