@@ -377,7 +377,7 @@
             <div id="qtyEstimate" style="font-size:.88rem;color:#1a1a1a;font-weight:600;margin-top:2px">~ $697.50 at $13.95/unit (1-side)</div>
           </div>
         </div>
-        <input type="range" id="qtySlider" min="5" max="500" step="5" value="50" style="width:100%;accent-color:#1a1a1a;cursor:pointer" />
+        <input type="range" id="qtySlider" min="0" max="100" step="1" value="25" aria-valuemin="5" aria-valuemax="500" aria-valuenow="50" style="width:100%;accent-color:#1a1a1a;cursor:pointer" />
         <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.75rem;color:#aaa">
           <span>5</span><span>50</span><span>100</span><span>200</span><span>500+</span>
         </div>
@@ -600,8 +600,30 @@
       return '5-9';
     }
 
+    // Slider domain is 0..100 (positional). Labels (5/50/100/200/500+) sit
+    // at 0/25/50/75/100% of the bar, so we map position -> quantity via
+    // piecewise-linear interpolation. Thumb always matches the label range.
+    var QTY_STOPS = [
+      { pos: 0,   qty: 5   },
+      { pos: 25,  qty: 50  },
+      { pos: 50,  qty: 100 },
+      { pos: 75,  qty: 200 },
+      { pos: 100, qty: 500 }
+    ];
+    function qtyPosToQty(pos) {
+      for (var i = 0; i < QTY_STOPS.length - 1; i++) {
+        var a = QTY_STOPS[i], b = QTY_STOPS[i+1];
+        if (pos >= a.pos && pos <= b.pos) {
+          var t = (pos - a.pos) / (b.pos - a.pos);
+          return Math.max(1, Math.round(a.qty + (b.qty - a.qty) * t));
+        }
+      }
+      return QTY_STOPS[QTY_STOPS.length-1].qty;
+    }
     function updateQtyHighlight() {
-      var qty = parseInt(document.getElementById('qtySlider').value, 10) || 50;
+      var slider = document.getElementById('qtySlider');
+      var qty = qtyPosToQty(parseInt(slider.value, 10) || 0);
+      slider.setAttribute('aria-valuenow', String(qty));
       var tierLabel = tierForQty(qty);
       var activeTable = document.querySelector('.pricing-table-wrap.active');
       if (!activeTable) return;
