@@ -442,7 +442,9 @@
     <div class="container">
       <div class="hero-grid">
         <div class="hero-content">
-          <div class="hero-badge"  data-i18n="home.badge">Ouvert 7 jours | Ouest-de-l'Île, Montréal</div>
+          <!-- Dot lives OUTSIDE the data-i18n span so lang.js's
+               `el.innerHTML = val` doesn't wipe it on language flip. -->
+          <div class="hero-badge"><span class="dot"></span> <span data-i18n="home.badge">Ouvert 7 jours | Ouest-de-l'Île, Montréal</span></div>
           <h1 data-i18n="home.hero.h1">West Island's<br>custom apparel<br>printing <span class="accent">studio.</span></h1>
           <p class="subhead"  data-i18n="home.hero.sub">DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 7 à 10 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus.</p>
           <div class="hero-buttons">
