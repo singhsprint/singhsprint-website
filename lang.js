@@ -11,8 +11,8 @@ var SP_LANG = (function() {
   var translations = {
     // ===== NAV / PROMO =====
     'promo': {
-      en: '15% OFF your first order. No code needed.',
-      fr: '15% DE RABAIS sur votre première commande. Aucun code requis.'
+      en: '$20 OFF your first order of $100+. No code needed.',
+      fr: '20 $ DE RABAIS sur votre première commande de 100 $ et plus. Aucun code requis.'
     },
     'promo.link': { en: 'Get your quote', fr: 'Obtenir votre soumission' },
     'nav.products': { en: 'Products', fr: 'Produits' },
@@ -52,8 +52,8 @@ var SP_LANG = (function() {
     'home.hero.h1a': { en: "West Island's", fr: "L'Ouest-de-l'Île," },
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
-      en: 'DTG, DTF & Embroidery for brands, businesses, and creators. No minimums. 2-4 day turnaround. Everything printed in-house.',
-      fr: 'DTG, DTF et broderie pour marques, entreprises et créateurs. Aucun minimum. Délai de 2 à 4 jours. Tout imprimé sur place.'
+      en: "DTG, DTF & Embroidery done in-house in Montreal's West Island. Low minimums, 7&ndash;10 day turnaround with rush options, and a real sample before every run. $20 off your first order of $100+.",
+      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 7 à 10 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
@@ -100,8 +100,8 @@ var SP_LANG = (function() {
     },
     'home.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'home.cta.p': {
-      en: 'Get a quote in hours, not days. First order is 15% off.',
-      fr: 'Obtenez une soumission en heures, pas en jours. 15% de rabais sur la première commande.'
+      en: 'Get a quote in hours, not days. $20 off your first order of $100+.',
+      fr: 'Obtenez une soumission en heures, pas en jours. 20 $ de rabais sur votre première commande de 100 $ et plus.'
     },
     'home.cta.btn': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.cta.call': { en: 'Call 514-915-1539', fr: 'Appelez le 514-915-1539' },
@@ -145,14 +145,14 @@ var SP_LANG = (function() {
     'home.faq.a7': { en: 'Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.', fr: 'Oui. S\'il y a un problème de qualité d\'impression ou un défaut de vêtement, on réimprime ou on remplace l\'article sans frais.' },
     'home.faq.seeall': { en: 'See all questions →', fr: 'Voir toutes les questions →' },
     // Lead capture popup
-    'home.popup.h3':     { en: 'Get 15% off your first order', fr: 'Obtenez 15 % de rabais sur votre première commande' },
+    'home.popup.h3':     { en: 'Get $20 off your first order of $100+', fr: 'Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus' },
     'home.popup.p':      { en: "Drop your email and we'll send you a quote with your discount applied. No spam, just your quote.", fr: 'Laissez votre courriel et on vous envoie une soumission avec votre rabais appliqué. Pas de spam, juste votre soumission.' },
     'home.popup.name':   { en: 'Your name', fr: 'Votre nom' },
     'home.popup.email':  { en: 'Your email', fr: 'Votre courriel' },
     'home.popup.submit': { en: 'Send me my discount →', fr: 'Envoyez-moi mon rabais →' },
     'home.popup.skip':   { en: "No thanks, I'll pay full price", fr: 'Non merci, je paie le plein prix' },
     // Sticky mobile CTA
-    'home.sticky.label': { en: '15% off first order', fr: '15 % de rabais sur la 1ʳᵉ commande' },
+    'home.sticky.label': { en: '$20 off first order ($100+)', fr: '20 $ de rabais (1ʳᵉ commande, 100 $+)' },
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },
     // Sitewide sticky CTA (injected by components.js on every page except /quote and /order)
     'sticky.label': { en: 'Ready when you are', fr: 'On est prêts' },
@@ -830,7 +830,7 @@ var SP_LANG = (function() {
     'quote.sidebar.next.p2': { en: 'Once approved, we print a real sample before your full order.', fr: 'Une fois approuvée, on imprime un échantillon physique avant la commande complète.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
     'quote.sidebar.talk.hours': { en: 'Open 7 days, 9AM – 9PM', fr: 'Ouvert 7 jours, 9 h à 21 h' },
-    'quote.sidebar.promo.h': { en: '15% off your first order', fr: '15 % de rabais sur votre première commande' },
+    'quote.sidebar.promo.h': { en: '$20 off your first order of $100+', fr: '20 $ de rabais sur votre première commande de 100 $ et plus' },
     'quote.sidebar.promo.p': { en: 'Automatically applied to all new customers. No code needed.', fr: 'Appliqué automatiquement à tous les nouveaux clients. Aucun code requis.' },
     'quote.alert.product': { en: 'Please select a product from the catalog.', fr: 'Veuillez sélectionner un produit du catalogue.' },
     'quote.alert.method': { en: 'Please select a printing method.', fr: 'Veuillez sélectionner une méthode d\'impression.' },

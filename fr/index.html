@@ -441,7 +441,7 @@
         <div class="hero-content">
           <div class="hero-badge"  data-i18n="home.badge">Ouvert 7 jours | Ouest-de-l'Île, Montréal</div>
           <h1 data-i18n="home.hero.h1">West Island's<br>custom apparel<br>printing <span class="accent">studio.</span></h1>
-          <p class="subhead"  data-i18n="home.hero.sub">DTG, DTF et broderie pour marques, entreprises et créateurs. Aucun minimum. Délai de 2 à 4 jours. Tout imprimé sur place.</p>
+          <p class="subhead"  data-i18n="home.hero.sub">DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 7 à 10 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus.</p>
           <div class="hero-buttons">
             <a href="quote" class="btn btn-accent"  data-i18n="home.hero.cta1">Soumission gratuite</a>
             <a href="portfolio" class="btn btn-ghost btn-outline"  data-i18n="home.hero.cta2">Voir nos réalisations</a>
@@ -984,7 +984,7 @@
   <section class="cta-section">
     <div class="container">
       <h2  data-i18n="home.cta.h2">Prêt à commencer ?</h2>
-      <p class="subhead"  data-i18n="home.cta.p">Obtenez une soumission en heures, pas en jours. 15% de rabais sur la première commande.</p>
+      <p class="subhead"  data-i18n="home.cta.p">Obtenez une soumission en heures, pas en jours. 20 $ de rabais sur votre première commande de 100 $ et plus.</p>
       <div class="cta-buttons">
         <a href="quote" class="btn btn-accent"  data-i18n="home.cta.btn">Soumission gratuite</a>
         <a href="tel:5149151539" class="btn btn-white"  data-i18n="home.cta.call">Appelez le 514-915-1539</a>
@@ -998,11 +998,11 @@
   <div class="popup-overlay" id="popup">
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
-      <h3  data-i18n="home.popup.h3">Obtenez 15 % de rabais sur votre première commande</h3>
+      <h3  data-i18n="home.popup.h3" data-promo="popup-h3">Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus</h3>
       <p  data-i18n="home.popup.p">Laissez votre courriel et on vous envoie une soumission avec votre rabais appliqué. Pas de spam, juste votre soumission.</p>
       <form onsubmit="submitPopup(event)">
         <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
-        <input type="hidden" name="subject" value="New 15% Off Lead - Singhs Print">
+        <input type="hidden" name="subject" value="New $20 Off Lead - Singhs Print">
         <input type="hidden" name="from_name" value="Singhs Print Website">
         <input type="text" name="name" placeholder="Your name" data-i18n-placeholder="home.popup.name" required>
         <input type="email" name="email" placeholder="Your email" data-i18n-placeholder="home.popup.email" required>
@@ -1014,7 +1014,7 @@
 
   <!-- ===== STICKY MOBILE CTA ===== -->
   <div class="sticky-cta">
-    <span  data-i18n="home.sticky.label">15 % de rabais sur la 1ʳᵉ commande</span>
+    <span  data-i18n="home.sticky.label" data-promo="sticky">20 $ de rabais (1ʳᵉ commande, 100 $+)</span>
     <a href="quote" class="btn btn-accent"  data-i18n="home.sticky.cta">Soumission →</a>
   </div>
 
@@ -1053,7 +1053,7 @@
       var nameVal = form.querySelector('input[name="name"]').value;
       var emailVal = form.querySelector('input[name="email"]').value;
 
-      // Push to CRM as a lead with 15% discount tag
+      // Push to CRM as a lead with $20-off discount tag
       fetch(SUPABASE_URL + '/rest/v1/leads', {
         method: 'POST',
         headers: {
@@ -1067,7 +1067,7 @@
           email: emailVal,
           source: 'website',
           status: 'new',
-          notes: '15% discount signup'
+          notes: '$20 off ($100+) discount signup'
         })
       }).catch(function(){});
 

@@ -1,6 +1,19 @@
 // Shared nav and footer for all Singhs Print pages
 // Edit these once, changes apply everywhere.
 
+// Inject /promo.js once per page so [data-promo] elements get the live copy
+// from the CRM (https://singhsprint-crm.vercel.app/api/promo). Putting this
+// here means every page that loads components.js automatically picks up the
+// CRM-managed promo without having to edit each HTML file.
+function loadPromoLoader() {
+  if (document.getElementById('sp-promo-script')) return;
+  var s = document.createElement('script');
+  s.id = 'sp-promo-script';
+  s.src = '/promo.js';
+  s.defer = true;
+  document.head.appendChild(s);
+}
+
 function loadNav() {
   var el = document.getElementById('nav-placeholder');
   if (!el) return;
@@ -66,7 +79,7 @@ function loadNav() {
 
   // Promo bar: campaign-aware — visitors arriving from the jealous-meme ad
   // see the price/timeline they were promised; everyone else sees the
-  // default 15% off message.
+  // default $20-off-on-$100+ message.
   var promoHTML;
   try {
     var params = new URLSearchParams(window.location.search);
@@ -84,13 +97,13 @@ function loadNav() {
     } else {
       promoHTML = ''
         + '<div class="promo-bar">'
-        + '  <span data-i18n="promo">15% OFF your first order. No code needed.</span> <a href="/quote" data-i18n="promo.link">Get your quote</a>'
+        + '  <span data-i18n="promo" data-promo="short">$20 OFF your first order of $100+. No code needed.</span> <a href="/quote" data-i18n="promo.link">Get your quote</a>'
         + '</div>';
     }
   } catch (err) {
     promoHTML = ''
       + '<div class="promo-bar">'
-      + '  <span data-i18n="promo">15% OFF your first order. No code needed.</span> <a href="/quote" data-i18n="promo.link">Get your quote</a>'
+      + '  <span data-i18n="promo" data-promo="short">$20 OFF your first order of $100+. No code needed.</span> <a href="/quote" data-i18n="promo.link">Get your quote</a>'
       + '</div>';
   }
 
@@ -785,6 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadSearchConsoleVerification();
   loadAnalytics();
   loadMobileTrim();
+  loadPromoLoader();
   loadNav();
   loadFooter();
   loadSchema();
