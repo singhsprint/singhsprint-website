@@ -2302,14 +2302,23 @@
     document.addEventListener('DOMContentLoaded', function() {
       try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
 
-      // Promo handoff from the homepage popup: when /quote?promo=… is in
-      // the URL, surface the "discount applied" banner above the form and
-      // tag the hidden subject + a hidden field so the lead lands in the
-      // CRM with the promo slug attached. Same banner is harmless if the
-      // visitor lands on /quote directly with no promo — it stays hidden.
+      // Promo handoff from the homepage popup. Two layers:
+      //   1. URL ?promo=…           — fresh arrival from the popup CTA
+      //   2. sessionStorage         — survives catalog round-trips that
+      //                               drop the URL param (e.g. visitor
+      //                               clicks "Browse catalog" then picks
+      //                               an item which redirects them back
+      //                               to /quote?product=…&color=…)
+      // Same banner is harmless if the visitor never came through the
+      // popup — it stays hidden.
       try {
-        var promoSlug = new URLSearchParams(window.location.search).get('promo');
+        var urlPromo = new URLSearchParams(window.location.search).get('promo');
+        var stashedPromo = null;
+        try { stashedPromo = sessionStorage.getItem('sp_promo_slug'); } catch(_) {}
+        var promoSlug = urlPromo || stashedPromo;
         if (promoSlug) {
+          // Cache for the rest of the session so navigation can't strip it.
+          try { sessionStorage.setItem('sp_promo_slug', promoSlug); } catch(_) {}
           var banner = document.getElementById('promoApplied');
           if (banner) banner.style.display = 'flex';
           // Stamp the lead so the sales rep sees which offer drove this quote.
@@ -2319,12 +2328,25 @@
             inp.type = 'hidden'; inp.name = 'promo_slug'; inp.value = promoSlug;
             form.appendChild(inp);
           }
-          // Track conversion of the popup → quote handoff.
-          if (typeof window.spTrack === 'function') {
-            window.spTrack('promo_handoff', { promo_slug: promoSlug });
+          // Track conversion of the popup → quote handoff (only fires
+          // once per session per slug to keep analytics clean).
+          if (typeof window.spTrack === 'function' && !sessionStorage.getItem('sp_promo_tracked_' + promoSlug)) {
+            window.spTrack('promo_handoff', { promo_slug: promoSlug, via: urlPromo ? 'url' : 'session' });
+            try { sessionStorage.setItem('sp_promo_tracked_' + promoSlug, '1'); } catch(_) {}
           }
         }
       } catch (e) { /* never block the quote builder for a banner */ }
+
+      // Prefill name + email from the popup capture so the customer
+      // doesn't have to retype what they just gave us.
+      try {
+        var leadName  = sessionStorage.getItem('sp_lead_name');
+        var leadEmail = sessionStorage.getItem('sp_lead_email');
+        var nameInp   = document.querySelector('input[name="name"]');
+        var emailInp  = document.querySelector('input[name="email"]');
+        if (leadName  && nameInp  && !nameInp.value)  nameInp.value  = leadName;
+        if (leadEmail && emailInp && !emailInp.value) emailInp.value = leadEmail;
+      } catch (_) {}
     });
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state

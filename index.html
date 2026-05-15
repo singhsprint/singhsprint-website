@@ -1001,20 +1001,25 @@
 
   <div id="footer-placeholder"></div>
 
-  <!-- ===== OFFER POPUP =====
-       Was a lead-capture form (name + email → Web3Forms). Removed because
-       (a) Web3Forms started failing for the popup endpoint, (b) the quote
-       builder is the real conversion tool — emailing a discount code adds a
-       round-trip the customer doesn't need. The popup is now a one-click
-       handoff to /quote with ?promo= so the quote page can confirm the
-       discount is applied without the visitor doing anything. -->
+  <!-- ===== OFFER POPUP (hybrid capture) =====
+       Captures name + email so the CRM has a lead record even if the
+       visitor never finishes the quote — but submits in one click and
+       carries the values into the quote form so the customer doesn't
+       retype anything. The submit POSTs directly to the CRM's
+       /api/inbound (kind='other', popup_capture=true), not Web3Forms.
+       "Maybe later" is the zero-friction escape that just goes to /quote
+       with the promo still applied. -->
   <div class="popup-overlay" id="popup">
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
       <h3 data-i18n="home.popup.h3" data-promo="popup-h3">Get $20 off your first order of $100+</h3>
-      <p data-i18n="home.popup.p">Your $20 off is applied automatically when you start your quote. No code, no email signup, no waiting.</p>
-      <a href="/quote?promo=first-order-20-off-100" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_start_quote">Start my quote &rarr;</a>
-      <button class="skip" onclick="closePopup()" data-i18n="home.popup.skip">Maybe later</button>
+      <p data-i18n="home.popup.p">Drop your name and email to lock in your $20 off — we'll carry it (and you) straight into the quote builder. No spam, no code, no wait.</p>
+      <form id="popupForm" class="popup-form" onsubmit="submitPopup(event)" novalidate>
+        <input type="text"  name="name"  placeholder="Your name" data-i18n-placeholder="home.popup.name" required maxlength="120" autocomplete="name">
+        <input type="email" name="email" placeholder="you@example.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">
+        <button type="submit" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Start my quote &rarr;</button>
+      </form>
+      <button class="skip" onclick="skipPopup()" data-i18n="home.popup.skip">Maybe later</button>
     </div>
   </div>
 
@@ -1044,17 +1049,76 @@
     },{threshold:.1});
     document.querySelectorAll('.fade-up').forEach(function(el){obs.observe(el)});
 
-    // Offer popup — no form anymore; just shows the offer and a single CTA
-    // that takes the visitor straight to the quote builder. Dismissed
-    // popups stay closed for the rest of the session.
+    // ===== Offer popup =====
+    // Captures name + email, POSTs to the CRM, stashes for the quote form,
+    // then redirects to /quote with the promo slug attached.
+    var SP_PROMO_SLUG    = 'first-order-20-off-100';
+    var SP_INBOUND_API   = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var SP_POPUP_DELAY_MS = 8000;
+
     function closePopup(){
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
     }
+    // "Maybe later" — still attach the promo via sessionStorage so a
+    // visitor who eventually clicks the hero CTA still gets the banner.
+    function skipPopup(){
+      try { sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG); } catch(_) {}
+      closePopup();
+    }
+    function submitPopup(e){
+      e.preventDefault();
+      var form  = e.target;
+      var name  = (form.querySelector('input[name="name"]') || {}).value || '';
+      var email = (form.querySelector('input[name="email"]') || {}).value || '';
+      name = name.trim(); email = email.trim();
+      // Minimal email shape check — HTML5 type="email" already does most of it.
+      if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        form.reportValidity && form.reportValidity();
+        return;
+      }
+      // 1) Stash for the quote form to prefill + persist across catalog navigation.
+      try {
+        sessionStorage.setItem('sp_lead_name',  name);
+        sessionStorage.setItem('sp_lead_email', email);
+        sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG);
+      } catch(_) {}
+      // 2) Fire-and-forget POST so the rep sees the lead even if the
+      //    visitor bounces before completing the quote. keepalive so the
+      //    pending request survives the navigation.
+      try {
+        fetch(SP_INBOUND_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kind:         'other',
+            contact_name: name,
+            email:        email,
+            notes:        'Popup capture — visitor opted into the $20-off offer.',
+            cart_items:   [],
+            size_breakdown: {},
+            meta: {
+              popup_capture: true,
+              promo_slug:    SP_PROMO_SLUG,
+              source:        'homepage_offer_popup'
+            },
+            source_url: location.href
+          }),
+          keepalive: true
+        }).catch(function(){});
+      } catch(_) {}
+      // 3) Analytics breadcrumb.
+      if (typeof window.spTrack === 'function') {
+        window.spTrack('popup_submit', { promo_slug: SP_PROMO_SLUG });
+      }
+      sessionStorage.setItem('popupClosed','1');
+      // 4) Hand off to the quote builder.
+      window.location.href = '/quote?promo=' + encodeURIComponent(SP_PROMO_SLUG);
+    }
     if(!sessionStorage.getItem('popupClosed')){
       setTimeout(function(){
         document.getElementById('popup').classList.add('show');
-      },8000);
+      }, SP_POPUP_DELAY_MS);
     }
   </script>
 

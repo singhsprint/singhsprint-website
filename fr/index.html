@@ -999,14 +999,18 @@
 
   <div id="footer-placeholder"></div>
 
-  <!-- ===== OFFER POPUP — no email capture, one click to /quote ===== -->
+  <!-- ===== OFFER POPUP (hybrid capture) — see EN comment in index.html ===== -->
   <div class="popup-overlay" id="popup">
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
       <h3  data-i18n="home.popup.h3" data-promo="popup-h3">Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus</h3>
-      <p  data-i18n="home.popup.p">Votre rabais de 20 $ s'applique automatiquement dès que vous démarrez votre soumission. Aucun code, aucune inscription, aucune attente.</p>
-      <a href="/fr/quote?promo=first-order-20-off-100" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_start_quote">Démarrer ma soumission &rarr;</a>
-      <button class="skip" onclick="closePopup()"  data-i18n="home.popup.skip">Plus tard</button>
+      <p  data-i18n="home.popup.p">Laissez votre nom et votre courriel pour réserver votre rabais de 20 $ — on le transporte (et vous aussi) dans le formulaire de soumission. Pas de spam, pas de code, aucune attente.</p>
+      <form id="popupForm" class="popup-form" onsubmit="submitPopup(event)" novalidate>
+        <input type="text"  name="name"  placeholder="Votre nom" data-i18n-placeholder="home.popup.name" required maxlength="120" autocomplete="name">
+        <input type="email" name="email" placeholder="vous@exemple.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">
+        <button type="submit" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Démarrer ma soumission &rarr;</button>
+      </form>
+      <button class="skip" onclick="skipPopup()"  data-i18n="home.popup.skip">Plus tard</button>
     </div>
   </div>
 
@@ -1036,15 +1040,65 @@
     },{threshold:.1});
     document.querySelectorAll('.fade-up').forEach(function(el){obs.observe(el)});
 
-    // Offer popup — no form, one click to /quote.
+    // Popup — voir index.html (EN) pour la version commentée.
+    var SP_PROMO_SLUG     = 'first-order-20-off-100';
+    var SP_INBOUND_API    = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var SP_POPUP_DELAY_MS = 8000;
+
     function closePopup(){
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
     }
+    function skipPopup(){
+      try { sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG); } catch(_) {}
+      closePopup();
+    }
+    function submitPopup(e){
+      e.preventDefault();
+      var form  = e.target;
+      var name  = (form.querySelector('input[name="name"]') || {}).value || '';
+      var email = (form.querySelector('input[name="email"]') || {}).value || '';
+      name = name.trim(); email = email.trim();
+      if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        form.reportValidity && form.reportValidity();
+        return;
+      }
+      try {
+        sessionStorage.setItem('sp_lead_name',  name);
+        sessionStorage.setItem('sp_lead_email', email);
+        sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG);
+      } catch(_) {}
+      try {
+        fetch(SP_INBOUND_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kind:         'other',
+            contact_name: name,
+            email:        email,
+            notes:        'Popup capture (FR) — visitor opted into the $20-off offer.',
+            cart_items:   [],
+            size_breakdown: {},
+            meta: {
+              popup_capture: true,
+              promo_slug:    SP_PROMO_SLUG,
+              source:        'homepage_offer_popup_fr'
+            },
+            source_url: location.href
+          }),
+          keepalive: true
+        }).catch(function(){});
+      } catch(_) {}
+      if (typeof window.spTrack === 'function') {
+        window.spTrack('popup_submit', { promo_slug: SP_PROMO_SLUG, lang: 'fr' });
+      }
+      sessionStorage.setItem('popupClosed','1');
+      window.location.href = '/fr/quote?promo=' + encodeURIComponent(SP_PROMO_SLUG);
+    }
     if(!sessionStorage.getItem('popupClosed')){
       setTimeout(function(){
         document.getElementById('popup').classList.add('show');
-      },8000);
+      }, SP_POPUP_DELAY_MS);
     }
   </script>
 

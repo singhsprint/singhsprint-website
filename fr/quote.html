@@ -2301,10 +2301,14 @@
     document.addEventListener('DOMContentLoaded', function() {
       try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
 
-      // Promo handoff from the homepage popup (FR mirror).
+      // Promo handoff from the homepage popup (FR mirror) — URL + sessionStorage.
       try {
-        var promoSlug = new URLSearchParams(window.location.search).get('promo');
+        var urlPromo = new URLSearchParams(window.location.search).get('promo');
+        var stashedPromo = null;
+        try { stashedPromo = sessionStorage.getItem('sp_promo_slug'); } catch(_) {}
+        var promoSlug = urlPromo || stashedPromo;
         if (promoSlug) {
+          try { sessionStorage.setItem('sp_promo_slug', promoSlug); } catch(_) {}
           var banner = document.getElementById('promoApplied');
           if (banner) banner.style.display = 'flex';
           var form = document.getElementById('quoteForm');
@@ -2313,11 +2317,22 @@
             inp.type = 'hidden'; inp.name = 'promo_slug'; inp.value = promoSlug;
             form.appendChild(inp);
           }
-          if (typeof window.spTrack === 'function') {
-            window.spTrack('promo_handoff', { promo_slug: promoSlug });
+          if (typeof window.spTrack === 'function' && !sessionStorage.getItem('sp_promo_tracked_' + promoSlug)) {
+            window.spTrack('promo_handoff', { promo_slug: promoSlug, via: urlPromo ? 'url' : 'session', lang: 'fr' });
+            try { sessionStorage.setItem('sp_promo_tracked_' + promoSlug, '1'); } catch(_) {}
           }
         }
       } catch (e) {}
+
+      // Prefill from popup capture.
+      try {
+        var leadName  = sessionStorage.getItem('sp_lead_name');
+        var leadEmail = sessionStorage.getItem('sp_lead_email');
+        var nameInp   = document.querySelector('input[name="name"]');
+        var emailInp  = document.querySelector('input[name="email"]');
+        if (leadName  && nameInp  && !nameInp.value)  nameInp.value  = leadName;
+        if (leadEmail && emailInp && !emailInp.value) emailInp.value = leadEmail;
+      } catch (_) {}
     });
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state
