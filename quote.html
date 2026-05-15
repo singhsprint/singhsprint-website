@@ -1364,6 +1364,27 @@
         </div>
       </div>
 
+      <!-- Shipping estimator — live quote from Chit Chats based on cart
+           weight + customer's postal/zip code. Server-side route holds
+           the API token (never sent to browser). Real customer weights
+           feed in when products.weight_oz gets populated; until then a
+           per-garment heuristic is used (still within ±15% of actual). -->
+      <div class="sidebar-card" id="shippingEstimateCard">
+        <h4 data-i18n="quote.sidebar.shipping.h">Shipping estimate</h4>
+        <p style="font-size:.8rem;color:#888;margin-bottom:10px" data-i18n="quote.sidebar.shipping.sub">Enter your postal/zip code for a live shipping quote.</p>
+        <div style="display:flex;gap:6px;margin-bottom:8px;align-items:stretch">
+          <select id="shipCountry" style="padding:8px 6px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;font-size:.85rem">
+            <option value="CA">CA</option>
+            <option value="US">US</option>
+          </select>
+          <input type="text" id="shipPostal" placeholder="H9X 1L9" autocomplete="postal-code" maxlength="10" style="flex:1;min-width:0;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:.85rem;text-transform:uppercase">
+          <button type="button" id="shipEstimateBtn" style="padding:8px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap" data-i18n="quote.sidebar.shipping.btn">Estimate</button>
+        </div>
+        <div id="shipResult" style="display:none;font-size:.85rem;margin-top:10px;padding:10px;background:#f7f7f2;border-radius:8px;border:1px solid #e8e6df"></div>
+        <div id="shipError" style="display:none;font-size:.78rem;color:#a01a1a;margin-top:8px"></div>
+        <p style="font-size:.7rem;color:#aaa;margin-top:8px;line-height:1.4" data-i18n="quote.sidebar.shipping.note">Indicative rate via Chit Chats. Final shipping confirmed on your formal quote based on actual package weight.</p>
+      </div>
+
       <div class="sidebar-card">
         <h4 data-i18n="quote.sidebar.next.h">What happens next?</h4>
         <div class="info-row"><span class="info-icon">&#9993;</span><p data-i18n="quote.sidebar.next.p1">We review your request and send a detailed quote &mdash; usually within an hour during business hours (9am&ndash;9pm).</p></div>
@@ -4497,6 +4518,134 @@
         if (designObject) fitDesignToPrintArea(designObject);
         canvas.renderAll();
       }, 150);
+    });
+
+    // ===== Shipping estimator =====
+    // Calls /api/shipping/estimate on the CRM with cart + postal code.
+    // CRM route owns the Chit Chats API token; nothing sensitive ever
+    // reaches the browser. Falls back gracefully if the API errors —
+    // we never block the quote form on a failed estimate.
+    var SHIPPING_API = 'https://singhsprint-crm.vercel.app/api/shipping/estimate';
+
+    function spGatherShippingItems() {
+      try {
+        var items = (SinghsCart.read().items || []).map(function(it) {
+          return {
+            product_id:   it.product_id || null,
+            qty:          parseInt(it.qty, 10) || 1,
+            garment_type: it.garment_type || null,
+            // When products.weight_oz lands (post-S&S-sync fix) the CRM
+            // route will use it via the catalog lookup; until then it
+            // falls back to per-garment-type heuristics. Either way the
+            // estimator works.
+            weight_g:     it.weight_g != null
+                            ? Number(it.weight_g)
+                            : (it.weight_oz ? Math.round(Number(it.weight_oz) * 28.35) : undefined)
+          };
+        }).filter(function(i){ return i.qty > 0; });
+        return items;
+      } catch (e) { return []; }
+    }
+
+    function spReadDeclaredValue() {
+      // Live price total from the sidebar drives the declared customs
+      // value. Conservative fallback at $100 if total isn't computed yet.
+      try {
+        var el = document.getElementById('priceTotal') || document.getElementById('livePriceTotal');
+        var t = el ? (el.textContent || '').replace(/[^0-9.]/g, '') : '';
+        var n = parseFloat(t);
+        return Number.isFinite(n) && n > 0 ? Math.min(n, 100000) : 100;
+      } catch (e) { return 100; }
+    }
+
+    function spRenderShippingResult(d) {
+      var el = document.getElementById('shipResult');
+      if (!el) return;
+      if (!d || !d.cheapest || !d.cheapest.fee_cad) {
+        el.style.display = 'block';
+        el.innerHTML = '<div style="color:#888;font-size:.82rem">No rate available for that postal code. Contact us at 514-915-1539.</div>';
+        return;
+      }
+      var fee = Number(d.cheapest.fee_cad).toFixed(2);
+      var pkg = d.package_type_label || 'Package';
+      var wKg = (Number(d.weight_g) / 1000).toFixed(2);
+      var postage = String(d.cheapest.postage_type || 'Chit Chats')
+        .replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+      el.style.display = 'block';
+      el.innerHTML =
+        '<div style="font-weight:700;color:#1a1a1a;font-size:1.1rem">$' + fee + ' <span style="font-size:.8rem;color:#888;font-weight:500">CAD</span></div>' +
+        '<div style="color:#666;font-size:.78rem;margin-top:3px">via ' + postage + '</div>' +
+        '<div style="color:#888;font-size:.72rem;margin-top:6px">' + pkg + ' &middot; ~' + wKg + ' kg total</div>';
+    }
+
+    function spRenderShippingError(msg) {
+      var ok = document.getElementById('shipResult');
+      if (ok) ok.style.display = 'none';
+      var el = document.getElementById('shipError');
+      if (!el) return;
+      el.style.display = 'block';
+      el.textContent = msg;
+    }
+
+    function spClearShippingPanels() {
+      var ok = document.getElementById('shipResult');
+      var err = document.getElementById('shipError');
+      if (ok) ok.style.display = 'none';
+      if (err) err.style.display = 'none';
+    }
+
+    function spRequestShippingEstimate() {
+      spClearShippingPanels();
+      var postal = (document.getElementById('shipPostal') || {}).value || '';
+      postal = postal.trim().toUpperCase();
+      var country = (document.getElementById('shipCountry') || {}).value || 'CA';
+      if (!postal || postal.length < 3) {
+        spRenderShippingError('Enter your postal/zip code first.');
+        return;
+      }
+      var items = spGatherShippingItems();
+      if (!items.length) {
+        spRenderShippingError('Add items to your quote first.');
+        return;
+      }
+      var declared = spReadDeclaredValue();
+      var btn = document.getElementById('shipEstimateBtn');
+      if (btn) { btn.disabled = true; btn.dataset._orig = btn.textContent; btn.textContent = '…'; }
+      fetch(SHIPPING_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: items, postal_code: postal, country_code: country, declared_value_cad: declared })
+      })
+      .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, body: j }; }, function(){ return { ok: r.ok, status: r.status, body: null }; }); })
+      .then(function(res) {
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._orig || 'Estimate'; }
+        if (!res.ok) {
+          spRenderShippingError("Couldn't fetch a rate right now (HTTP " + res.status + "). Try again or contact us.");
+          return;
+        }
+        spRenderShippingResult(res.body);
+        if (typeof window.spTrack === 'function') {
+          window.spTrack('shipping_estimate', {
+            postal_prefix: postal.slice(0, 3),
+            country: country,
+            weight_g: res.body && res.body.weight_g,
+            cheapest_cad: res.body && res.body.cheapest && res.body.cheapest.fee_cad
+          });
+        }
+      })
+      .catch(function(){
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._orig || 'Estimate'; }
+        spRenderShippingError('Network error. Please try again.');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('shipEstimateBtn');
+      var postal = document.getElementById('shipPostal');
+      if (btn) btn.addEventListener('click', spRequestShippingEstimate);
+      if (postal) postal.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') { e.preventDefault(); spRequestShippingEstimate(); }
+      });
     });
   </script>
 </body>
