@@ -73,8 +73,8 @@ def render_page(products, lang):
         "rabais sur votre première commande de 100 $ et plus."
     )
     canonical = (
-        "https://www.singhsprint.com/catalog/all/" if lang == 'en'
-        else "https://www.singhsprint.com/fr/catalog/all/"
+        "https://www.singhsprint.com/catalog/all" if lang == 'en'
+        else "https://www.singhsprint.com/fr/catalog/all"
     )
     title = (
         "Complete Product Catalog — 1,000+ Custom Apparel Blanks · Singh's Print"
@@ -122,9 +122,9 @@ def render_page(products, lang):
   <title>{title}</title>
   <meta name="description" content="{html.escape(meta)}">
   <link rel="canonical" href="{canonical}">
-  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/catalog/all/">
-  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/catalog/all/">
-  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/catalog/all/">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/catalog/all">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/catalog/all">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/catalog/all">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <meta name="robots" content="index, follow">
   <meta property="og:type" content="website">

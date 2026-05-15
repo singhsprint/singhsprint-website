@@ -20343,6 +20343,6 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/the-game-gb452e/"/>
   </url>
 
-<url><loc>https://www.singhsprint.com/catalog/all/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://www.singhsprint.com/fr/catalog/all/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.singhsprint.com/catalog/all</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.singhsprint.com/fr/catalog/all</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
