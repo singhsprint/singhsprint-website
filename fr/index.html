@@ -697,12 +697,14 @@
           <button type="button" class="sp-calc__chip"            data-garment="cap"     data-sp-track="calc_garment_pick" data-sp-garment="cap"><strong data-i18n="home.calc.cap">Cap / hat</strong><span data-i18n="home.calc.fromcap">from $15.95</span></button>
         </div>
         <div class="sp-calc__row sp-calc__row--qty">
-          <label for="sp-calc-qty" data-i18n="home.calc.qty">Quantity</label>
+          <div class="sp-calc__qty-head">
+            <label for="sp-calc-qty" data-i18n="home.calc.qty">Quantity</label>
+            <output for="sp-calc-qty" id="sp-calc-qty-out">50</output>
+          </div>
           <input type="range" id="sp-calc-qty" min="0" max="100" value="40" step="1" aria-valuemin="5" aria-valuemax="500" aria-valuenow="50">
-          <output for="sp-calc-qty" id="sp-calc-qty-out">50</output>
-        </div>
-        <div class="sp-calc__row sp-calc__row--ticks">
-          <span>5</span><span>25</span><span>50</span><span>100</span><span>200</span><span>500</span>
+          <div class="sp-calc__row--ticks">
+            <span>5</span><span>25</span><span>50</span><span>100</span><span>200</span><span>500</span>
+          </div>
         </div>
         <div class="sp-calc__result">
           <div class="sp-calc__result-cell">
@@ -731,11 +733,16 @@
       .sp-calc__chip.is-active{border-color:#1a1a1a;background:#1a1a1a;box-shadow:0 0 0 1.5px #1a1a1a inset}
       .sp-calc__chip.is-active strong{color:#e8ff3c}
       .sp-calc__chip.is-active span{color:#cbd02a}
-      .sp-calc__row--qty{display:grid;grid-template-columns:auto 1fr 60px;align-items:center;gap:14px}
-      .sp-calc__row--qty label{font-size:.85rem;font-weight:600;color:#1a1a1a}
-      .sp-calc__row--qty input[type=range]{width:100%;accent-color:#1a1a1a}
-      .sp-calc__row--qty output{font-size:1.1rem;font-weight:700;color:#1a1a1a;text-align:right}
-      .sp-calc__row--ticks{display:flex;justify-content:space-between;font-size:.7rem;color:#999;font-weight:600;margin-top:-8px;padding:0 8px}
+      .sp-calc__row--qty{display:block}
+      .sp-calc__qty-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+      .sp-calc__qty-head label{font-size:.85rem;font-weight:600;color:#1a1a1a}
+      .sp-calc__qty-head output{font-size:1.2rem;font-weight:800;color:#1a1a1a;font-family:'Playfair Display',Georgia,serif}
+      .sp-calc__row--qty input[type=range]{width:100%;accent-color:#1a1a1a;display:block;margin:0}
+      /* Ticks sit BELOW the slider at the same width.
+         padding:0 10px compensates for the native range-thumb half-width,
+         so each tick lines up under the thumb-CENTER when slider hits that
+         value — the actual aligning trick that fixes the visual bug. */
+      .sp-calc__row--ticks{display:flex;justify-content:space-between;font-size:.7rem;color:#999;font-weight:600;margin-top:6px;padding:0 10px}
       .sp-calc__result{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;padding:20px 18px;background:#fafaf6;border:1.5px solid #1a1a1a;border-radius:14px;margin-top:8px}
       .sp-calc__result-cell{display:flex;flex-direction:column;gap:2px}
       .sp-calc__label{font-size:.72rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase}
