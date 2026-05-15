@@ -146,11 +146,14 @@ var SP_LANG = (function() {
     'home.faq.seeall': { en: 'See all questions →', fr: 'Voir toutes les questions →' },
     // Lead capture popup
     'home.popup.h3':     { en: 'Get $20 off your first order of $100+', fr: 'Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus' },
-    'home.popup.p':      { en: "Drop your email and we'll send you a quote with your discount applied. No spam, just your quote.", fr: 'Laissez votre courriel et on vous envoie une soumission avec votre rabais appliqué. Pas de spam, juste votre soumission.' },
+    'home.popup.p':      { en: 'Your $20 off is applied automatically when you start your quote. No code, no email signup, no waiting.', fr: "Votre rabais de 20 $ s'applique automatiquement dès que vous démarrez votre soumission. Aucun code, aucune inscription, aucune attente." },
+    'home.popup.cta':    { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
+    'home.popup.skip':   { en: 'Maybe later', fr: 'Plus tard' },
+    // Unused after slice "popup → quote builder", kept so older cached pages
+    // don't blank out the placeholder text if they reference these keys.
     'home.popup.name':   { en: 'Your name', fr: 'Votre nom' },
     'home.popup.email':  { en: 'Your email', fr: 'Votre courriel' },
-    'home.popup.submit': { en: 'Send me my discount →', fr: 'Envoyez-moi mon rabais →' },
-    'home.popup.skip':   { en: "No thanks, I'll pay full price", fr: 'Non merci, je paie le plein prix' },
+    'home.popup.submit': { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
     // Sticky mobile CTA
     'home.sticky.label': { en: '$20 off first order ($100+)', fr: '20 $ de rabais (1ʳᵉ commande, 100 $+)' },
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },

@@ -286,6 +286,9 @@
     .popup p{color:#666;font-size:.95rem;margin-bottom:24px}
     .popup input{width:100%;padding:14px 16px;border:1.5px solid #e0e0e0;border-radius:12px;font-size:1rem;margin-bottom:12px;font-family:inherit}
     .popup input:focus{outline:none;border-color:#1a1a1a}
+    /* Popup CTA — single big button replaces the old name+email+submit form. */
+    .popup-cta{display:block;width:100%;text-align:center;text-decoration:none;padding:16px 24px;font-size:1.02rem;font-weight:700;margin-top:6px}
+    .popup-cta:hover{transform:translateY(-1px)}
     .popup .btn{width:100%;justify-content:center}
     .popup .skip{display:block;margin-top:12px;font-size:.85rem;color:#aaa;cursor:pointer;background:none;border:none}
 
@@ -994,21 +997,14 @@
 
   <div id="footer-placeholder"></div>
 
-  <!-- ===== LEAD CAPTURE POPUP ===== -->
+  <!-- ===== OFFER POPUP — no email capture, one click to /quote ===== -->
   <div class="popup-overlay" id="popup">
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
       <h3  data-i18n="home.popup.h3" data-promo="popup-h3">Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus</h3>
-      <p  data-i18n="home.popup.p">Laissez votre courriel et on vous envoie une soumission avec votre rabais appliqué. Pas de spam, juste votre soumission.</p>
-      <form onsubmit="submitPopup(event)">
-        <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
-        <input type="hidden" name="subject" value="New $20 Off Lead - Singhs Print">
-        <input type="hidden" name="from_name" value="Singhs Print Website">
-        <input type="text" name="name" placeholder="Your name" data-i18n-placeholder="home.popup.name" required>
-        <input type="email" name="email" placeholder="Your email" data-i18n-placeholder="home.popup.email" required>
-        <button type="submit" class="btn btn-accent"  data-i18n="home.popup.submit">Envoyez-moi mon rabais →</button>
-      </form>
-      <button class="skip" onclick="closePopup()"  data-i18n="home.popup.skip">Non merci, je paie le plein prix</button>
+      <p  data-i18n="home.popup.p">Votre rabais de 20 $ s'applique automatiquement dès que vous démarrez votre soumission. Aucun code, aucune inscription, aucune attente.</p>
+      <a href="/fr/quote?promo=first-order-20-off-100" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_start_quote">Démarrer ma soumission &rarr;</a>
+      <button class="skip" onclick="closePopup()"  data-i18n="home.popup.skip">Plus tard</button>
     </div>
   </div>
 
@@ -1038,49 +1034,10 @@
     },{threshold:.1});
     document.querySelectorAll('.fade-up').forEach(function(el){obs.observe(el)});
 
-    // Popup — show after 8 seconds if not dismissed
+    // Offer popup — no form, one click to /quote.
     function closePopup(){
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
-    }
-    // Supabase CRM integration
-    var SUPABASE_URL = 'https://ptrqsjexrbyupexhcjdr.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cnFzamV4cmJ5dXBleGhjamRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODg5NzgsImV4cCI6MjA5MTc2NDk3OH0.aqYJAXmmCEjtHU97UDTLZZlWwoS9ERldFzxTvunZEgA';
-
-    function submitPopup(e){
-      e.preventDefault();
-      var form = e.target;
-      var nameVal = form.querySelector('input[name="name"]').value;
-      var emailVal = form.querySelector('input[name="email"]').value;
-
-      // Push to CRM as a lead with $20-off discount tag
-      fetch(SUPABASE_URL + '/rest/v1/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          contact_name: nameVal,
-          email: emailVal,
-          source: 'website',
-          status: 'new',
-          notes: '$20 off ($100+) discount signup'
-        })
-      }).catch(function(){});
-
-      // Send via Web3Forms
-      var formData = new FormData(form);
-      fetch('https://api.web3forms.com/submit', {
-        method: 'POST', body: formData, headers: { 'Accept': 'application/json' }
-      }).then(function(r){
-        if(r.ok){
-          form.innerHTML = '<p style="color:#1a1a1a;font-weight:600;font-size:1.1rem">You\'re in! Check your email for your discount code.</p>';
-          setTimeout(closePopup, 3000);
-        } else { alert('Something went wrong. Email us at sales@singhsprint.com for your discount!'); }
-      }).catch(function(){ alert('Connection error. Email us at sales@singhsprint.com for your discount!'); });
     }
     if(!sessionStorage.getItem('popupClosed')){
       setTimeout(function(){

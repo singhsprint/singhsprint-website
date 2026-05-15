@@ -592,6 +592,19 @@
           <span data-step-label="3" data-i18n="quote.step.label3">3 · Your details</span>
         </div>
 
+        <!-- Promo-applied confirmation banner. Hidden by default; surfaced by
+             the inline script at the bottom of this file when the URL carries
+             ?promo=… (visitors who arrived from the homepage offer popup).
+             Same message as the always-visible sidebar card, but rendered at
+             the top of the form so it feels like the discount "landed". -->
+        <div id="promoApplied" data-promo-applied style="display:none;background:#0f3a25;border:1px solid #1b6a44;border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px;color:#d4f5e3">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e8ff3c;color:#0f3a25;font-weight:800;flex-shrink:0">✓</span>
+          <span style="font-size:.92rem;line-height:1.4">
+            <strong style="color:#e8ff3c" data-promo="sidebar-h">$20 off your first order of $100+</strong>
+            <span style="opacity:.85;display:block;font-size:.84rem" data-promo="sidebar-p" data-i18n="quote.promoApplied.body">Applied to this quote. Visible on your final price after we confirm specs — no code needed.</span>
+          </span>
+        </div>
+
         <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
             <input type="hidden" name="subject" value="New Quote Request - Singhs Print">
@@ -2288,6 +2301,30 @@
     // + state.garment to be initialised.
     document.addEventListener('DOMContentLoaded', function() {
       try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
+
+      // Promo handoff from the homepage popup: when /quote?promo=… is in
+      // the URL, surface the "discount applied" banner above the form and
+      // tag the hidden subject + a hidden field so the lead lands in the
+      // CRM with the promo slug attached. Same banner is harmless if the
+      // visitor lands on /quote directly with no promo — it stays hidden.
+      try {
+        var promoSlug = new URLSearchParams(window.location.search).get('promo');
+        if (promoSlug) {
+          var banner = document.getElementById('promoApplied');
+          if (banner) banner.style.display = 'flex';
+          // Stamp the lead so the sales rep sees which offer drove this quote.
+          var form = document.getElementById('quoteForm');
+          if (form && !form.querySelector('input[name="promo_slug"]')) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'promo_slug'; inp.value = promoSlug;
+            form.appendChild(inp);
+          }
+          // Track conversion of the popup → quote handoff.
+          if (typeof window.spTrack === 'function') {
+            window.spTrack('promo_handoff', { promo_slug: promoSlug });
+          }
+        }
+      } catch (e) { /* never block the quote builder for a banner */ }
     });
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state

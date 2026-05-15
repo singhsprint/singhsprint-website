@@ -593,6 +593,17 @@
           <span data-step-label="3"  data-i18n="quote.step.label3">3 · Vos coordonnées</span>
         </div>
 
+        <!-- Bannière "rabais appliqué" — affichée quand /quote?promo=… arrive
+             depuis le pop-up de l'accueil. Reproduit le message de la carte
+             latérale, mais en haut du formulaire pour confirmer le rabais. -->
+        <div id="promoApplied" data-promo-applied style="display:none;background:#0f3a25;border:1px solid #1b6a44;border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px;color:#d4f5e3">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e8ff3c;color:#0f3a25;font-weight:800;flex-shrink:0">✓</span>
+          <span style="font-size:.92rem;line-height:1.4">
+            <strong style="color:#e8ff3c" data-promo="sidebar-h">20 $ de rabais sur votre première commande de 100 $ et plus</strong>
+            <span style="opacity:.85;display:block;font-size:.84rem" data-promo="sidebar-p" data-i18n="quote.promoApplied.body">Appliqué à cette soumission. Visible sur le prix final dès que nous confirmons les détails — aucun code requis.</span>
+          </span>
+        </div>
+
         <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
             <input type="hidden" name="subject" value="New Quote Request - Singhs Print">
@@ -2289,6 +2300,24 @@
     // + state.garment to be initialised.
     document.addEventListener('DOMContentLoaded', function() {
       try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
+
+      // Promo handoff from the homepage popup (FR mirror).
+      try {
+        var promoSlug = new URLSearchParams(window.location.search).get('promo');
+        if (promoSlug) {
+          var banner = document.getElementById('promoApplied');
+          if (banner) banner.style.display = 'flex';
+          var form = document.getElementById('quoteForm');
+          if (form && !form.querySelector('input[name="promo_slug"]')) {
+            var inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'promo_slug'; inp.value = promoSlug;
+            form.appendChild(inp);
+          }
+          if (typeof window.spTrack === 'function') {
+            window.spTrack('promo_handoff', { promo_slug: promoSlug });
+          }
+        }
+      } catch (e) {}
     });
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };
     var presetByLocation = { front: 'center-chest' }; // default state
