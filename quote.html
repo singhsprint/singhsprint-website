@@ -4405,6 +4405,15 @@
             if (m) estimatedTotal = parseFloat(m[0]) || 0;
           }
           var isBYO = (fd.get('garment_source') || '') === 'BYOG';
+          // Promo slug — set when the visitor arrived from the homepage
+          // offer popup (/quote?promo=…). Pull from URL first, fall back to
+          // the hidden input the page already stamps on DOMContentLoaded.
+          var promoSlug = null;
+          try {
+            promoSlug = new URLSearchParams(window.location.search).get('promo')
+                     || (fd.get('promo_slug') || null);
+          } catch (e) {}
+
           var payload = {
             kind:            isBYO ? 'byo' : 'quote',
             contact_name:    fd.get('name') || null,
@@ -4425,7 +4434,11 @@
               blank_brand:    fd.get('blank_brand') || null,
               canadian_addon: !!fd.get('canadian_blanks'),
               xxl_surcharge_total: sur.surchargeTotal || 0,
-              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; })
+              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; }),
+              // Promo handoff from the homepage offer popup — surfaces on
+              // the CRM inbox as a "$20 off (first order)" pill so the rep
+              // remembers to apply the discount on the formal quote.
+              promo_slug:     promoSlug || null
             },
             source_url: location.href
           };

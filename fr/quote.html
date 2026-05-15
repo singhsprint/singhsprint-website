@@ -4418,7 +4418,8 @@
               blank_brand:    fd.get('blank_brand') || null,
               canadian_addon: !!fd.get('canadian_blanks'),
               xxl_surcharge_total: sur.surchargeTotal || 0,
-              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; })
+              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; }),
+              promo_slug: (function(){ try { return new URLSearchParams(window.location.search).get('promo') || (fd.get('promo_slug') || null); } catch(e){ return null; } })()
             },
             source_url: location.href
           };
