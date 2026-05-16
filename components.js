@@ -1,6 +1,44 @@
 // Shared nav and footer for all Singhs Print pages
 // Edit these once, changes apply everywhere.
 
+// ---------------------------------------------------------------------
+// Google measurement (GA4 + Google Ads) bootstrap.
+// Mirrors the inline Meta Pixel pattern on the HTML pages: pulls IDs from
+// /gtag-config.js so rotation lives in one place. Runs immediately at
+// module load (BEFORE DOMContentLoaded) so we capture the earliest
+// page_view signal. Single entry point — every page that loads
+// components.js automatically gets GA4 + Google Ads conversion tracking
+// without per-file <head> edits.
+//
+// Files involved:
+//   /gtag-config.js  → public IDs (G-… , AW-…)
+//   /gtag.js         → SP_GTAG helper (event() + trackConversion())
+//
+// Skips itself if it's already booted (sp-gtag-config script exists), so
+// safe even if a page also inlines the snippet in <head> for earlier firing.
+// ---------------------------------------------------------------------
+(function loadGoogleMeasurement() {
+  if (document.getElementById('sp-gtag-config')) return;
+  // 1. Load the config first. It sets window.SP_GA4_MEASUREMENT_ID etc.
+  var cfg = document.createElement('script');
+  cfg.id = 'sp-gtag-config';
+  cfg.src = '/gtag-config.js';
+  cfg.onload = function () {
+    if (!window.SP_GA4_MEASUREMENT_ID) return; // config malformed — bail
+    // 2. Pull the gtag CDN. async so it doesn't block parse.
+    var base = document.createElement('script');
+    base.async = true;
+    base.src = 'https://www.googletagmanager.com/gtag/js?id='
+             + encodeURIComponent(window.SP_GA4_MEASUREMENT_ID);
+    document.head.appendChild(base);
+    // 3. Load our SP_GTAG helper (initialises gtag('config') + exposes API).
+    var helper = document.createElement('script');
+    helper.src = '/gtag.js';
+    document.head.appendChild(helper);
+  };
+  document.head.appendChild(cfg);
+})();
+
 // Inject /promo.js once per page so [data-promo] elements get the live copy
 // from the CRM (https://singhsprint-crm.vercel.app/api/promo). Putting this
 // here means every page that loads components.js automatically picks up the

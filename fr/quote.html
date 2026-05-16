@@ -3127,6 +3127,24 @@
         }
       } catch(err) { /* tracking should never break the submit */ }
 
+      // Fire Google Ads conversion + GA4 quote_submit so Google's bidding
+      // algorithm can optimize toward Quote requests. Mirrors the fbq('Lead')
+      // payload — same value/currency so ROAS reports line up between
+      // Meta and Google. SP_GTAG.trackConversion handles the AW-/label
+      // wiring (gtag-config.js) and is a no-op until verification clears.
+      try {
+        if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
+          window.SP_GTAG.trackConversion('quote_submit', {
+            value: estValue,
+            currency: 'CAD',
+            transaction_id: 'quote-' + Date.now(), // dedupe key for Ads
+            product: product || null,
+            service: service || null,
+            num_items: totalQty
+          });
+        }
+      } catch(err) { /* tracking should never break the submit */ }
+
       // Send via Web3Forms
       var formData = new FormData(form);
       var action = form.getAttribute('action');
