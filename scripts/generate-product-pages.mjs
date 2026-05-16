@@ -30,6 +30,68 @@ const IMG_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
 const SITE      = 'https://www.singhsprint.com';
 const TOP_N     = parseInt(process.env.TOP_N || '25', 10);
 
+// ---------------------------------------------------------------------------
+// SEO structured-data constants. Used by every generated Product entity to
+// satisfy Google's "Product snippet" + "Merchant listing" enrichment fields
+// (aggregateRating, review, shippingDetails, hasMerchantReturnPolicy). Edit
+// the values here when the live business policy changes — no per-product
+// overrides are needed because these are brand-level facts.
+// ---------------------------------------------------------------------------
+const STAR_RATING = { ratingValue: '5.0', reviewCount: '21' }; // current Google Reviews
+const REVIEWS = [
+  { name: 'Coodin',      date: '2024-06-01', body: 'Printed tees for my band on extremely short notice. Literally on the same day of our gig at Singhs Arcade. If you want a print shop that actually values their customers and isn’t strictly for profit, this is the place. 10/10' },
+  { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },
+  { name: 'Ori Peer',    date: '2024-03-10', body: 'I love my shirt they supported my vision!!! Best spot in MTL!' }
+];
+// Free Canada-wide shipping (cost is bundled into the per-unit quote). 7-10
+// day in-house production + 1-5 day Chit Chats / Canada Post transit. Adjust
+// if shop ever charges an explicit shipping line item.
+const SHIPPING = { country: 'CA', valueCAD: '0', handlingMin: 7, handlingMax: 10, transitMin: 1, transitMax: 5 };
+// 14-day window covers reprints/replacements for print quality + garment
+// defects — matches the satisfaction guarantee in the homepage FAQ.
+const RETURNS  = { country: 'CA', windowDays: 14 };
+
+function aggregateRatingNode() {
+  return {
+    '@type':       'AggregateRating',
+    'ratingValue': STAR_RATING.ratingValue,
+    'reviewCount': STAR_RATING.reviewCount,
+    'bestRating':  '5',
+    'worstRating': '1'
+  };
+}
+function reviewNodes() {
+  return REVIEWS.map(r => ({
+    '@type':         'Review',
+    'author':        { '@type': 'Person', 'name': r.name },
+    'datePublished': r.date,
+    'reviewRating':  { '@type': 'Rating', 'ratingValue': '5', 'bestRating': '5' },
+    'reviewBody':    r.body
+  }));
+}
+function shippingDetailsNode() {
+  return {
+    '@type': 'OfferShippingDetails',
+    'shippingRate': { '@type': 'MonetaryAmount', 'value': SHIPPING.valueCAD, 'currency': 'CAD' },
+    'shippingDestination': { '@type': 'DefinedRegion', 'addressCountry': SHIPPING.country },
+    'deliveryTime': {
+      '@type': 'ShippingDeliveryTime',
+      'handlingTime': { '@type': 'QuantitativeValue', 'minValue': SHIPPING.handlingMin, 'maxValue': SHIPPING.handlingMax, 'unitCode': 'DAY' },
+      'transitTime':  { '@type': 'QuantitativeValue', 'minValue': SHIPPING.transitMin,  'maxValue': SHIPPING.transitMax,  'unitCode': 'DAY' }
+    }
+  };
+}
+function returnPolicyNode() {
+  return {
+    '@type':                'MerchantReturnPolicy',
+    'applicableCountry':    RETURNS.country,
+    'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    'merchantReturnDays':   RETURNS.windowDays,
+    'returnMethod':         'https://schema.org/ReturnByMail',
+    'returnFees':           'https://schema.org/FreeReturn'
+  };
+}
+
 function imgUrl(raw) {
   if (!raw) return SITE + '/images/product-tshirt-white.jpg';
   if (raw.startsWith('/') || raw.includes('singhsprint.com')) return raw;
@@ -235,7 +297,10 @@ function buildPage(p, lang = 'en') {
   const title = `${brand} ${style} ${name} — ${t('titleSuffix', lang)}`;
   const meta  = `${t('metaPrefix', lang)} ${brand} ${style} ${name} ${t('metaCore', lang)} $${priceFrom.toFixed(2)}${t('metaPerUnit', lang)}. ${t('metaTail', lang)}`;
 
-  // Variant offers per color — drives "Available in N colours" rich-result variants
+  // Variant offers per color — drives "Available in N colours" rich-result variants.
+  // shippingDetails + hasMerchantReturnPolicy are required by Google's Merchant
+  // Listing enrichment; aggregateRating + review unlock the Product-snippet
+  // rich-result with stars.
   const colors = (p.colors || []).slice(0, 24);
   const offers = {
     '@type': 'AggregateOffer',
@@ -244,7 +309,9 @@ function buildPage(p, lang = 'en') {
     'priceCurrency': 'CAD',
     'offerCount': colors.length || 1,
     'availability': p.in_stock === false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
-    'seller': { '@id': SITE + '/#business' }
+    'seller': { '@id': SITE + '/#business' },
+    'shippingDetails':         shippingDetailsNode(),
+    'hasMerchantReturnPolicy': returnPolicyNode()
   };
 
   const jsonLd = {
@@ -263,6 +330,8 @@ function buildPage(p, lang = 'en') {
         'url': url,
         'inLanguage': lang === 'fr' ? 'fr-CA' : 'en-CA',
         'offers': offers,
+        'aggregateRating': aggregateRatingNode(),
+        'review':          reviewNodes(),
         'isRelatedTo': { '@id': SITE + '/#business' }
       },
       {

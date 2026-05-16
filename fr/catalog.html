@@ -1194,7 +1194,7 @@
         const bgToken = (state._bgFetchToken = (state._bgFetchToken || 0) + 1);
         const runBackfill = () => {
           const p2 = new URLSearchParams(params);
-          p2.set('limit', '1500');
+          p2.set('limit', '20000');
           fetch(`${CATALOG_API}?${p2.toString()}`)
             .then(r => r.ok ? r.json() : null)
             .then(d2 => {
@@ -1254,6 +1254,48 @@
       // Google only really uses the first ~100 anyway.
       var slice = visible.slice(0, 100);
       var BASE = 'https://www.singhsprint.com';
+      // Brand-level enrichment reused across every emitted Product entity so
+      // Google's "Product snippet" + "Merchant listing" rich-results validate.
+      // Mirrors the values in scripts/generate-product-pages.mjs — edit both.
+      var SHIPPING_DETAILS = {
+        '@type': 'OfferShippingDetails',
+        'shippingRate':        { '@type': 'MonetaryAmount',  'value': '0', 'currency': 'CAD' },
+        'shippingDestination': { '@type': 'DefinedRegion',   'addressCountry': 'CA' },
+        'deliveryTime': {
+          '@type': 'ShippingDeliveryTime',
+          'handlingTime': { '@type': 'QuantitativeValue', 'minValue': 7, 'maxValue': 10, 'unitCode': 'DAY' },
+          'transitTime':  { '@type': 'QuantitativeValue', 'minValue': 1, 'maxValue': 5,  'unitCode': 'DAY' }
+        }
+      };
+      var RETURN_POLICY = {
+        '@type': 'MerchantReturnPolicy',
+        'applicableCountry':    'CA',
+        'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        'merchantReturnDays':   14,
+        'returnMethod':         'https://schema.org/ReturnByMail',
+        'returnFees':           'https://schema.org/FreeReturn'
+      };
+      var AGGREGATE_RATING = {
+        '@type': 'AggregateRating',
+        'ratingValue': '5.0',
+        'reviewCount': '21',
+        'bestRating':  '5',
+        'worstRating': '1'
+      };
+      var REVIEWS_LIST = [
+        { name: 'Coodin',      date: '2024-06-01', body: 'Printed tees for my band on extremely short notice. Literally on the same day of our gig at Singhs Arcade. If you want a print shop that actually values their customers and isn’t strictly for profit, this is the place. 10/10' },
+        { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },
+        { name: 'Ori Peer',    date: '2024-03-10', body: 'I love my shirt they supported my vision!!! Best spot in MTL!' }
+      ].map(function(r) {
+        return {
+          '@type': 'Review',
+          'author':        { '@type': 'Person', 'name': r.name },
+          'datePublished': r.date,
+          'reviewRating':  { '@type': 'Rating', 'ratingValue': '5', 'bestRating': '5' },
+          'reviewBody':    r.body
+        };
+      });
+
       var list = slice.map(function(p, i) {
         var heroColor = (p.colors || [])[0] || {};
         var heroImg = imgUrl(heroColor.mockup_front_url || p.hero_image_url || '');
@@ -1267,6 +1309,8 @@
           'description': (p.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500) || ((p.brand || '') + ' ' + (p.name || '') + ' decorated by Singhs Print Montreal — DTG, DTF, embroidery or screen.'),
           'category': p.garment_type || 'Custom Apparel',
           'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || ''),
+          'aggregateRating': AGGREGATE_RATING,
+          'review':          REVIEWS_LIST,
           'offers': (typeof p.price_from === 'number' && p.price_from > 0) ? {
             '@type': 'Offer',
             'priceCurrency': 'CAD',
@@ -1274,7 +1318,9 @@
             'availability': (p.in_stock === false) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
             'priceValidUntil': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
             'seller': { '@id': BASE + '/#business' },
-            'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || '')
+            'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || ''),
+            'shippingDetails':         SHIPPING_DETAILS,
+            'hasMerchantReturnPolicy': RETURN_POLICY
           } : undefined
         };
         // Strip undefined keys so the JSON stays clean.
