@@ -107,6 +107,15 @@
        match the source rather than crop. */
     .hero-photo{border-radius:20px;overflow:hidden;background:#e8e8e8;aspect-ratio:3/4;position:relative}
     .hero-photo img,.hero-photo video{width:100%;height:100%;object-fit:cover;display:block}
+    /* Two-video pattern: only one renders per viewport. CSS handles the
+       picker — never use <source media="…"> for this, it's flaky on
+       Safari iOS. */
+    .hero-video--mobile{display:none}
+    .hero-video--desktop{display:block}
+    @media(max-width:768px){
+      .hero-video--mobile{display:block}
+      .hero-video--desktop{display:none}
+    }
     /* Subtle dark gradient overlay at the bottom so the Quality Guarantee
        pill sits on a consistent background regardless of frame brightness. */
     .hero-photo::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(to top,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 100%);pointer-events:none}
@@ -490,16 +499,32 @@
                poster JPG keeps the slot filled during load + acts as
                the LCP element so Lighthouse stays happy. Mobile gets
                a 720×960 variant via <source media>. -->
+          <!-- Two separate <video> elements per viewport. The previous
+               single-video + <source media="…"> pattern is unreliable in
+               Safari iOS (media-attribute on <source> inside <video> is
+               not part of the spec and several WebKit builds either
+               ignore it or apply it inconsistently across reloads).
+               Splitting into two elements with CSS visibility is the
+               robust pattern. Each video has its own matching poster so
+               the still-frame aspect matches the video that swaps in. -->
           <div class="hero-photo">
             <video
-              class="hero-video"
+              class="hero-video hero-video--desktop"
               autoplay muted loop playsinline
               preload="metadata"
-              poster="images/hero-poster.jpg"
+              poster="images/hero-poster-desktop.jpg"
               aria-label="Singhs Print custom apparel in action">
-              <source src="images/hero-loop-mobile.mp4" type="video/mp4" media="(max-width: 768px)">
               <source src="images/hero-loop.mp4" type="video/mp4">
-              <img src="images/hero-poster.jpg" alt="Custom printed apparel from Singhs Print Montreal" loading="eager">
+              <img src="images/hero-poster-desktop.jpg" alt="Custom printed apparel from Singhs Print Montreal" loading="eager">
+            </video>
+            <video
+              class="hero-video hero-video--mobile"
+              autoplay muted loop playsinline
+              preload="metadata"
+              poster="images/hero-poster-mobile.jpg"
+              aria-label="Singhs Print custom apparel in action">
+              <source src="images/hero-loop-mobile.mp4" type="video/mp4">
+              <img src="images/hero-poster-mobile.jpg" alt="Custom printed apparel from Singhs Print Montreal" loading="eager">
             </video>
           </div>
           <div class="hero-guarantee" data-i18n="home.hero.guarantee">
