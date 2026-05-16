@@ -42,12 +42,17 @@
 
     /* Chip row */
     .cat-chips{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;min-height:32px}
-    .chip{font-size:.8rem;font-weight:500;padding:6px 12px;border-radius:50px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
-    .chip.active{background:var(--ink);color:var(--hi);font-weight:600}
-    .chip.active::after{content:'×';font-size:.95rem;margin-left:1px;opacity:.7}
-    .chip.passive{background:#fff;border:1px solid var(--line);color:var(--muted)}
-    .chip.passive:hover{border-color:var(--ink);color:var(--ink)}
-    .chip.passive::before{content:'+';margin-right:2px;color:var(--ink);font-weight:700}
+    /* Chip strip below the search bar — refined: fixed order, no "+" prefix
+       on passive chips, active chip transforms in place rather than jumping
+       to the front of the row. */
+    .chip{font-size:.82rem;font-weight:500;padding:7px 14px;border-radius:50px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid transparent;line-height:1;font-family:inherit}
+    .chip.passive{background:transparent;border-color:var(--line);color:var(--muted)}
+    .chip.passive:hover{border-color:var(--ink);color:var(--ink);background:#fafaf7}
+    .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+    .chip.active:hover{background:#333}
+    .chip.active::after{content:'×';font-size:1rem;margin-left:1px;opacity:.8;line-height:1}
+    .chip.clear{background:transparent;border:none;color:var(--muted);font-size:.78rem;text-decoration:underline;padding:7px 4px;font-weight:500}
+    .chip.clear:hover{color:var(--ink)}
 
     /* Result count + sort */
     .cat-meta-row{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:.85rem;color:var(--muted)}
@@ -1664,52 +1669,80 @@
       typeCounts[p.garment_type] = (typeCounts[p.garment_type] || 0) + 1;
     });
 
+    // Sort types by count desc, then alphabetically — most populous shows
+    // first. Sort brands by count desc too (already does — but capped at
+    // 200 so the search-box filter below has room to shine).
+    const orderedTypes = GARMENT_TYPES
+      .filter(([gt]) => typeCounts[gt])
+      .sort((a, b) => (typeCounts[b[0]] || 0) - (typeCounts[a[0]] || 0));
+    const orderedBrands = Object.entries(brandCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 200);
+
     body.innerHTML = `
       <div style="padding:18px 22px">
-        <div class="filter-group" style="margin-bottom:22px">
-          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Garment type</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${GARMENT_TYPES.filter(([gt]) => typeCounts[gt]).map(([gt, label]) => `
-              <button type="button" data-type="${gt}" class="fp-chip ${state.filters.type === gt ? 'active' : ''}"
+        <div class="filter-group" style="margin-bottom:24px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Garment type</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${orderedTypes.map(([gt, label]) => {
+              const active = state.filters.type === gt;
+              return `
+              <button type="button" data-type="${gt}"
                 onclick="toggleType('${gt}')"
-                style="font-size:.82rem;padding:6px 12px;border-radius:50px;border:1px solid ${state.filters.type === gt ? 'var(--ink)' : 'var(--line)'};background:${state.filters.type === gt ? 'var(--ink)' : '#fff'};color:${state.filters.type === gt ? '#fff' : 'var(--muted)'};cursor:pointer;font-family:inherit">
-                ${label} <span style="opacity:.6">${typeCounts[gt]}</span>
-              </button>
-            `).join('')}
+                style="font-size:.84rem;padding:8px 14px;border-radius:50px;border:1px solid ${active ? 'var(--ink)' : 'var(--line)'};background:${active ? 'var(--ink)' : '#fff'};color:${active ? '#fff' : 'var(--ink)'};cursor:pointer;font-family:inherit;font-weight:${active ? 600 : 500};display:inline-flex;align-items:center;gap:8px;transition:all .15s">
+                <span>${label}</span>
+                <span style="font-size:.74rem;color:${active ? 'rgba(255,255,255,.65)' : 'var(--soft)'};font-weight:500">${typeCounts[gt]}</span>
+              </button>`;
+            }).join('')}
           </div>
         </div>
 
-        <div class="filter-group" style="margin-bottom:22px">
-          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Brand</div>
-          <div style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
-            ${brands.map(([b, n]) => `
-              <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer">
+        <div class="filter-group" style="margin-bottom:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft)">Brand</div>
+            <span style="font-size:.74rem;color:var(--soft)">${orderedBrands.length} total</span>
+          </div>
+          <input type="text" id="brandSearch" placeholder="Search brands…" oninput="filterBrandList(this.value)"
+            style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;margin-bottom:10px;background:#fafaf7"/>
+          <div id="brandList" style="display:flex;flex-direction:column;max-height:300px;overflow-y:auto;border-top:1px solid var(--line)">
+            ${orderedBrands.map(([b, n]) => `
+              <label data-brand-row="${b.toLowerCase()}" style="display:flex;align-items:center;gap:10px;font-size:.88rem;cursor:pointer;padding:8px 2px;border-bottom:1px solid #f0eee7">
                 <input type="checkbox" ${state.filters.brand.includes(b) ? 'checked' : ''}
-                  onchange="toggleBrand('${b.replace(/'/g, "\\'")}', this.checked)"/>
-                <span>${b}</span>
-                <span style="margin-left:auto;color:var(--muted);font-size:.78rem">${n}</span>
+                  onchange="toggleBrand('${b.replace(/'/g, "\\'")}', this.checked)" style="accent-color:var(--ink);width:15px;height:15px"/>
+                <span style="flex:1">${b}</span>
+                <span style="color:var(--soft);font-size:.78rem">${n}</span>
               </label>
             `).join('')}
           </div>
         </div>
 
-        <div class="filter-group" style="margin-bottom:22px">
-          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Special</div>
-          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:8px">
-            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; render()"/>
+        <div class="filter-group" style="margin-bottom:8px">
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Special</div>
+          <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
+            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; render()" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>In stock only</span>
           </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;margin-bottom:8px">
-            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked"/>
+          <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
+            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>🇨🇦 Canadian-made blanks</span>
           </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer">
-            <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked"/>
+          <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0">
+            <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>CSA / Hi-vis certified</span>
           </label>
         </div>
       </div>
     `;
+  }
+
+  // Brand search inside the filter panel — purely client-side; toggles
+  // visibility of the label rows by substring match on lowercased brand name.
+  window.filterBrandList = function (q) {
+    const needle = (q || '').toLowerCase().trim();
+    document.querySelectorAll('[data-brand-row]').forEach(el => {
+      const hit = !needle || el.getAttribute('data-brand-row').includes(needle);
+      el.style.display = hit ? '' : 'none';
+    });
   }
 
   function toggleType(gt)             { state.filters.type = (state.filters.type === gt) ? null : gt; }
@@ -1725,31 +1758,39 @@
   function renderChips() {
     const row = document.getElementById('chipRow');
     row.innerHTML = '';
-    const types = ['tshirt','hoodie','crewneck','polo','longsleeve','hat','tote','joggers','hivis'];
-    const labels = { tshirt:'T-Shirts', hoodie:'Hoodies', crewneck:'Crewnecks', polo:'Polos', longsleeve:'Long Sleeves', hat:'Hats / Caps', tote:'Tote Bags', joggers:'Joggers', hivis:'Hi-Vis Vests' };
-
-    // Active type chip
-    if (state.filters.type) {
-      row.appendChild(makeChip(labels[state.filters.type], 'active', () => { state.filters.type = null; resetAndFetch(); }));
-    }
-    if (state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'active', () => { state.filters.canadian = false; resetAndFetch(); }));
-    if (state.filters.csa)      row.appendChild(makeChip('CSA / Hi-Vis',    'active', () => { state.filters.csa = false; resetAndFetch(); }));
-    state.filters.brand.forEach(b => {
-      row.appendChild(makeChip(b, 'active', () => {
-        state.filters.brand = state.filters.brand.filter(x => x !== b); resetAndFetch();
+    // Type chips sit in a STABLE order. Active state transforms the chip in
+    // place rather than jumping it to the front — way less disorienting.
+    const types = [
+      ['tshirt','T-Shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
+      ['polo','Polos'], ['longsleeve','Long Sleeves'], ['hat','Hats / Caps'],
+      ['tote','Tote Bags'], ['hivis','Hi-Vis']
+    ];
+    types.forEach(([t, label]) => {
+      const isActive = state.filters.type === t;
+      row.appendChild(makeChip(label, isActive ? 'active' : 'passive', () => {
+        state.filters.type = isActive ? null : t;
+        resetAndFetch();
       }));
     });
 
-    // Suggested next chips
-    types.filter(t => t !== state.filters.type).slice(0, 4).forEach(t => {
-      row.appendChild(makeChip(labels[t], 'passive', () => { state.filters.type = t; resetAndFetch(); }));
-    });
-    if (!state.filters.canadian) row.appendChild(makeChip('🇨🇦 Canadian-made', 'passive', () => { state.filters.canadian = true; resetAndFetch(); }));
-    if (!state.filters.csa)      row.appendChild(makeChip('Hi-Vis / CSA',     'passive', () => { state.filters.csa = true; resetAndFetch(); }));
+    // Qualifier toggles — Canadian / Hi-Vis
+    row.appendChild(makeChip('🇨🇦 Canadian-made', state.filters.canadian ? 'active' : 'passive', () => {
+      state.filters.canadian = !state.filters.canadian; resetAndFetch();
+    }));
+    row.appendChild(makeChip('Hi-Vis / CSA', state.filters.csa ? 'active' : 'passive', () => {
+      state.filters.csa = !state.filters.csa; resetAndFetch();
+    }));
 
-    // Stock toggle. When ON (default), out-of-stock items are hidden — chip
-    // is visible so customers can show them if they want to confirm a SKU
-    // exists at all (we'll just quote for re-supply on the back end).
+    // Brand chips when a brand filter is selected from the panel.
+    state.filters.brand.forEach(b => {
+      row.appendChild(makeChip(b, 'active', () => {
+        state.filters.brand = state.filters.brand.filter(x => x !== b);
+        resetAndFetch();
+      }));
+    });
+
+    // Stock toggle — last position, distinct label depending on state so
+    // it reads as a state rather than a filter.
     if (state.filters.inStockOnly) {
       row.appendChild(makeChip('In stock only', 'active', () => {
         state.filters.inStockOnly = false; render();
@@ -1758,6 +1799,17 @@
       row.appendChild(makeChip('Show out of stock', 'passive', () => {
         state.filters.inStockOnly = true; render();
       }));
+    }
+
+    // "Clear filters" link on the right — only when something's active.
+    const anyActive =
+      state.filters.type ||
+      state.filters.canadian ||
+      state.filters.csa ||
+      state.filters.brand.length > 0 ||
+      state.filters.q;
+    if (anyActive) {
+      row.appendChild(makeChip('Clear filters', 'clear', () => clearAllFilters()));
     }
   }
 
