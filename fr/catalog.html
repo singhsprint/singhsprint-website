@@ -773,9 +773,10 @@
     host.innerHTML = (p.colors || []).map((c, i) => {
       // Same fallback as the card swatches — multi-tone colors have no hex
       // but always have a swatch image; show that image as the dot bg.
+      // Route through imgUrl() so S&S URLs go through /api/image-proxy.
       const hex     = c.hex_code;
       const swatch  = c.swatch_image_url;
-      const bg      = (!hex && swatch) ? `url(${swatch}) center/cover #f3f1ea` : (hex || '#ccc');
+      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');
       const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
@@ -1498,7 +1499,10 @@
         const swatch  = c.swatch_image_url;
         const useImg  = !hex && swatch;
         const light   = hex ? isLight(hex) : false;
-        const bg      = useImg ? `url(${swatch}) center/cover #f3f1ea` : (hex || '#ccc');
+        // Route through imgUrl() so S&S URLs (which 403 hotlinking) hit the
+        // image proxy. Otherwise chips fall back to the browser's broken-
+        // image glyph.
+        const bg      = useImg ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
         const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
         const oosCls = hasStock ? '' : 'swatch--oos';
         const selected = i === card._selectedColorIdx ? 'swatch--selected' : '';
