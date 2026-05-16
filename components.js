@@ -1168,6 +1168,167 @@ function loadAnalytics() {
   }, true);
 }
 
+// =====================================================================
+// loadProductModal — sitewide product-detail popup, shared across pages.
+//
+// Triggered on any element that has  data-modal-style="64000"  (or
+// equivalent supplier style number). The element keeps its normal
+// `href` as a fallback for crawlers and no-JS visitors. JS hijacks
+// the click and opens a lightweight modal that fetches the product
+// from /api/catalog?q=<style>, renders image + brand + name + price,
+// and offers two CTAs: "Add to quote" (jumps into the quote builder
+// with the product preloaded) and "Open full catalogue" (the
+// original href the element pointed at).
+//
+// Used on the industry landing pages to surface the canonical Gildan
+// blank (most popular pick) before sending the visitor into the
+// broader catalog. Editable per-card via data attributes:
+//   data-modal-style="64000"    -- supplier style number to fetch
+//   data-modal-fallback="/catalog?type=tshirt"  -- explicit "Open full
+//                                  catalogue" target; defaults to the
+//                                  element's own href if not provided
+// =====================================================================
+function loadProductModal() {
+  if (document.getElementById('sp-product-modal')) return;
+
+  // Inject styles once. Scoped under .sp-pm so they can't bleed.
+  var st = document.createElement('style');
+  st.id = 'sp-product-modal-styles';
+  st.textContent = [
+    '.sp-pm{position:fixed;inset:0;z-index:1300;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,20,20,.55);backdrop-filter:blur(2px)}',
+    '.sp-pm.is-open{display:flex}',
+    '.sp-pm__card{background:#fff;border-radius:18px;max-width:640px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 24px 80px rgba(0,0,0,.25);position:relative;font-family:inherit}',
+    '.sp-pm__close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(0,0,0,.06);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#1a1a1a;font-size:18px;line-height:1}',
+    '.sp-pm__close:hover{background:rgba(0,0,0,.12)}',
+    '.sp-pm__grid{display:grid;grid-template-columns:240px 1fr;gap:22px;padding:24px}',
+    '.sp-pm__img{width:100%;aspect-ratio:1/1;border-radius:12px;background:#f3f1ea;object-fit:cover;display:block}',
+    '.sp-pm__brand{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}',
+    '.sp-pm__name{font-family:Georgia,serif;font-size:1.35rem;line-height:1.2;color:#1a1a1a;margin-bottom:10px}',
+    '.sp-pm__meta{font-size:.86rem;color:#666;margin-bottom:14px;line-height:1.5}',
+    '.sp-pm__price{display:block;font-size:1.2rem;font-weight:700;color:#1a1a1a;margin-bottom:16px}',
+    '.sp-pm__price small{font-size:.74rem;font-weight:400;color:#888;display:block;margin-top:2px}',
+    '.sp-pm__cta{display:flex;flex-direction:column;gap:8px}',
+    '.sp-pm__cta a{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:50px;text-decoration:none;font-size:.88rem;font-weight:600;transition:all .15s}',
+    '.sp-pm__cta a.primary{background:#1a1a1a;color:#fff}',
+    '.sp-pm__cta a.primary:hover{background:#333}',
+    '.sp-pm__cta a.secondary{background:transparent;color:#1a1a1a;border:1.5px solid #e0e0e0}',
+    '.sp-pm__cta a.secondary:hover{border-color:#1a1a1a}',
+    '.sp-pm__skel{padding:80px 24px;text-align:center;color:#888;font-size:.9rem}',
+    '@media(max-width:520px){.sp-pm__grid{grid-template-columns:1fr;gap:14px;padding:18px}.sp-pm__img{max-width:200px;margin:0 auto}}'
+  ].join('');
+  document.head.appendChild(st);
+
+  // Modal shell
+  var modal = document.createElement('div');
+  modal.id = 'sp-product-modal';
+  modal.className = 'sp-pm';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = '<div class="sp-pm__card" role="dialog" aria-modal="true">'
+    + '<button class="sp-pm__close" aria-label="Close" onclick="window.__spCloseProductModal()">×</button>'
+    + '<div id="sp-pm__body" class="sp-pm__skel">Loading…</div>'
+    + '</div>';
+  document.body.appendChild(modal);
+
+  // Click outside the card → close
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) window.__spCloseProductModal();
+  });
+
+  window.__spCloseProductModal = function () {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  var IS_FR = /^\/fr(\/|$)/.test(window.location.pathname);
+  function t(en, fr) { return IS_FR ? fr : en; }
+
+  // Cache to avoid re-fetching the same product if the user opens it twice
+  var cache = {};
+
+  function render(p, fallbackHref) {
+    var body = document.getElementById('sp-pm__body');
+    if (!body) return;
+    if (!p) {
+      body.className = 'sp-pm__skel';
+      body.innerHTML = t("Couldn't load this product right now.", 'Impossible de charger ce produit.');
+      return;
+    }
+    var img = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
+    var name  = p.name || p.style_number || '—';
+    var brand = (p.brand || '').toUpperCase();
+    var style = p.style_number || '';
+    var colors = (p.color_count != null) ? p.color_count : ((p.colors || []).length);
+    var weight = p.weight_oz ? (p.weight_oz + ' oz') : '';
+    var fabric = p.fabric || '';
+    var price  = p.price_from ? ('$' + Number(p.price_from).toFixed(2) + ' /unit') : '';
+    body.className = '';
+    body.innerHTML = ''
+      + '<div class="sp-pm__grid">'
+      + (img ? '<img class="sp-pm__img" src="' + img + '" alt="' + name.replace(/"/g,'&quot;') + '" loading="lazy"/>' : '<div class="sp-pm__img"></div>')
+      + '<div>'
+      +   '<div class="sp-pm__brand">' + brand + (style ? ' &middot; ' + style : '') + '</div>'
+      +   '<h3 class="sp-pm__name">' + name + '</h3>'
+      +   '<div class="sp-pm__meta">'
+      +     (colors ? '<strong>' + colors + '</strong> ' + t('colors', 'couleurs') : '')
+      +     (weight ? ' &middot; ' + weight : '')
+      +     (fabric ? ' &middot; ' + fabric : '')
+      +   '</div>'
+      +   (price ? '<span class="sp-pm__price">' + t('From', 'À partir de') + ' ' + price + '<small>' + t('Includes 1-side print at 50-unit volume', 'Inclut impression 1 côté au volume de 50 unités') + '</small></span>' : '')
+      +   '<div class="sp-pm__cta">'
+      +     '<a class="primary" href="/quote?product=' + encodeURIComponent(p.product_id || style) + '">' + t('Add to quote &rarr;', 'Ajouter à la soumission &rarr;') + '</a>'
+      +     '<a class="secondary" href="' + fallbackHref + '">' + t('View full catalogue', 'Voir tout le catalogue') + '</a>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  }
+
+  window.__spOpenProductModal = function (style, fallbackHref) {
+    if (!style) {
+      // No style mapped — just navigate to the fallback (filter view).
+      if (fallbackHref) window.location.href = fallbackHref;
+      return;
+    }
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var body = document.getElementById('sp-pm__body');
+    body.className = 'sp-pm__skel';
+    body.innerHTML = t('Loading…', 'Chargement…');
+
+    if (cache[style]) {
+      render(cache[style], fallbackHref);
+      return;
+    }
+    fetch('https://singhsprint-crm.vercel.app/api/catalog?q=' + encodeURIComponent(style) + '&limit=4', { cache: 'force-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var list = (d && d.products) ? d.products : [];
+        // Prefer an exact style_number match; otherwise fall back to first hit.
+        var match = list.find(function (p) { return (p.style_number || '').toUpperCase() === style.toUpperCase(); }) || list[0];
+        cache[style] = match;
+        render(match, fallbackHref);
+      })
+      .catch(function () { render(null, fallbackHref); });
+  };
+
+  // Esc closes
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') window.__spCloseProductModal();
+  });
+
+  // Wire up any card on the page that has a data-modal-style attribute.
+  // We delegate at document level so newly-injected cards work too.
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest('[data-modal-style]');
+    if (!card) return;
+    e.preventDefault();
+    var style = card.getAttribute('data-modal-style');
+    var fb    = card.getAttribute('data-modal-fallback') || card.getAttribute('href') || '/catalog';
+    window.__spOpenProductModal(style, fb);
+  }, true);
+}
+
 // Auto-run when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   loadSearchConsoleVerification();
@@ -1179,4 +1340,5 @@ document.addEventListener('DOMContentLoaded', function() {
   loadSchema();
   loadStickyCTA();
   loadMidPageCTA();
+  loadProductModal();
 });
