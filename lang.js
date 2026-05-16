@@ -611,6 +611,11 @@ var SP_LANG = (function() {
     'quote.pricing.small': { en: 'Small Order', fr: 'Petite commande' },
     'quote.pricing.bulk': { en: 'Bulk', fr: 'En gros' },
     'quote.pricing.total': { en: 'Total estimate:', fr: 'Estimation totale :' },
+    // Shipping line under the running total. JS swaps the value to
+    // "FREE — In-store pickup", "FREE — Greater Montreal $500+", or
+    // the selected paid rate once a postal code estimate completes.
+    'quote.pricing.shipping': { en: 'Shipping:', fr: 'Livraison :' },
+    'quote.pricing.shipping.prompt': { en: 'Enter postal code below to get shipping estimate', fr: 'Entrez votre code postal ci-dessous pour une estimation' },
     'quote.pricing.discount': { en: 'Volume discount!', fr: 'Rabais de volume !' },
     'quote.pricing.note': { en: 'Estimated price \u2022 Final quote may vary', fr: 'Prix estime \u2022 La soumission finale peut varier' },
     'quote.pricing.b2bnote': { en: 'Bulk pricing starts at 5+ units', fr: 'Les prix en gros commencent à 5+ unites' },
@@ -833,10 +838,15 @@ var SP_LANG = (function() {
     'quote.reassure.step2': { en: 'We render the mockup &amp; price the order', fr: 'On rend la maquette et on fixe le prix' },
     'quote.reassure.step3': { en: 'You approve — we print &amp; ship', fr: 'Vous approuvez — on imprime et expédie' },
     'quote.reassure.foot': { en: 'Usually back within the hour, 9am–9pm.', fr: 'Habituellement en moins d\'une heure, 9 h à 21 h.' },
-    'quote.sidebar.shipping.h':    { en: 'Shipping estimate', fr: 'Estimation d\u2019expédition' },
+    'quote.sidebar.shipping.h':    { en: 'Shipping', fr: 'Expédition' },
     'quote.sidebar.shipping.sub':  { en: 'Enter your postal/zip code for a live shipping quote.', fr: 'Entrez votre code postal pour une estimation en direct.' },
     'quote.sidebar.shipping.btn':  { en: 'Estimate', fr: 'Estimer' },
-    'quote.sidebar.shipping.note': { en: 'Indicative rate via Chit Chats. Final shipping confirmed on your formal quote based on actual package weight.', fr: 'Tarif indicatif via Chit Chats. L\u2019expédition finale est confirmée sur votre soumission selon le poids réel.' },
+    'quote.sidebar.shipping.note': { en: 'Indicative rate via Chit Chats. Orders $500+ in Greater Montreal ship free. Final shipping confirmed on your formal quote.', fr: 'Tarif indicatif via Chit Chats. Commandes 500 $+ dans la région du Grand Montréal : livraison gratuite. Tarif final confirmé sur votre soumission.' },
+    // Pickup / delivery pill toggle + pickup-mode body copy.
+    'quote.sidebar.fulfill.pickup':   { en: 'In-store pickup', fr: 'Cueillette en magasin' },
+    'quote.sidebar.fulfill.delivery': { en: 'Delivery',        fr: 'Livraison' },
+    'quote.sidebar.pickup.free': { en: 'FREE \u2014 In-store pickup', fr: 'GRATUIT \u2014 Cueillette en magasin' },
+    'quote.sidebar.pickup.note': { en: 'We\u2019ll text or email you when your order is ready for pickup.', fr: 'Nous vous écrirons ou vous appellerons quand votre commande sera prête.' },
     'quote.sidebar.next.h': { en: 'What happens next?', fr: 'Et la suite ?' },
     'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–9pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h).' },
     'quote.sidebar.next.p2': { en: 'Once approved, we print a real sample before your full order.', fr: 'Une fois approuvée, on imprime un échantillon physique avant la commande complète.' },

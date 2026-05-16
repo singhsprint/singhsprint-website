@@ -1346,6 +1346,13 @@
               <span data-i18n="quote.pricing.total">Total estimate:</span>
               <span id="priceTotal">$0.00</span>
             </div>
+            <!-- Shipping line — updates as the customer picks pickup vs delivery
+                 and as the live estimator returns a rate. Pre-estimate copy
+                 nudges the customer to enter their postal code below. -->
+            <div class="price-shipping-row" id="shippingLineRow" style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:.85rem;margin-top:10px;padding-top:10px;border-top:1px dashed #e0e0e0">
+              <span style="color:#555;font-weight:600" data-i18n="quote.pricing.shipping">Shipping:</span>
+              <span id="shippingLineValue" style="color:#888;text-align:right;font-size:.78rem;line-height:1.4" data-i18n="quote.pricing.shipping.prompt">Enter postal code below to get shipping estimate</span>
+            </div>
             <p class="price-note" id="priceDiscountNote" style="display:none"><strong data-i18n="quote.pricing.discount">Volume discount!</strong></p>
             <p class="price-note" id="pricingNote" data-i18n="quote.pricing.note">Estimated price • Final quote may vary</p>
             <p class="price-b2b-note" id="pricingB2bNote" data-i18n="quote.pricing.b2bnote" style="display:none">Bulk pricing starts at 5+ units</p>
@@ -1364,25 +1371,45 @@
         </div>
       </div>
 
-      <!-- Shipping estimator — live quote from Chit Chats based on cart
-           weight + customer's postal/zip code. Server-side route holds
-           the API token (never sent to browser). Real customer weights
-           feed in when products.weight_oz gets populated; until then a
-           per-garment heuristic is used (still within ±15% of actual). -->
+      <!-- Fulfillment + shipping estimator card.
+           Two modes share this card:
+             1. Pickup — free, hides the postal form
+             2. Delivery — shows postal form; on submit calls the CRM's
+                /api/shipping/estimate which holds the Chit Chats token.
+           The selected fulfillment + selected rate both feed the
+           "Shipping:" line under the price total in the mockup panel. -->
       <div class="sidebar-card" id="shippingEstimateCard">
-        <h4 data-i18n="quote.sidebar.shipping.h">Shipping estimate</h4>
-        <p style="font-size:.8rem;color:#888;margin-bottom:10px" data-i18n="quote.sidebar.shipping.sub">Enter your postal/zip code for a live shipping quote.</p>
-        <div style="display:flex;gap:6px;margin-bottom:8px;align-items:stretch">
-          <select id="shipCountry" style="padding:8px 6px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;font-size:.85rem">
-            <option value="CA">CA</option>
-            <option value="US">US</option>
-          </select>
-          <input type="text" id="shipPostal" placeholder="H9X 1L9" autocomplete="postal-code" maxlength="10" style="flex:1;min-width:0;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:.85rem;text-transform:uppercase">
-          <button type="button" id="shipEstimateBtn" style="padding:8px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap" data-i18n="quote.sidebar.shipping.btn">Estimate</button>
+        <h4 data-i18n="quote.sidebar.shipping.h">Shipping</h4>
+        <!-- Pickup / Delivery pill toggle -->
+        <div style="display:flex;gap:4px;margin:6px 0 12px 0;background:#f0efe9;padding:4px;border-radius:10px">
+          <button type="button" id="fulfillPickupBtn" class="fulfill-pill" data-fulfillment="pickup" style="flex:1;padding:9px 8px;border:none;background:transparent;color:#666;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s" data-i18n="quote.sidebar.fulfill.pickup">In-store pickup</button>
+          <button type="button" id="fulfillDeliveryBtn" class="fulfill-pill active" data-fulfillment="delivery" style="flex:1;padding:9px 8px;border:none;background:#1a1a1a;color:#fff;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s" data-i18n="quote.sidebar.fulfill.delivery">Delivery</button>
         </div>
-        <div id="shipResult" style="display:none;font-size:.85rem;margin-top:10px;padding:10px;background:#f7f7f2;border-radius:8px;border:1px solid #e8e6df"></div>
-        <div id="shipError" style="display:none;font-size:.78rem;color:#a01a1a;margin-top:8px"></div>
-        <p style="font-size:.7rem;color:#aaa;margin-top:8px;line-height:1.4" data-i18n="quote.sidebar.shipping.note">Indicative rate via Chit Chats. Final shipping confirmed on your formal quote based on actual package weight.</p>
+
+        <!-- Pickup body — shown when the pickup pill is active -->
+        <div id="fulfillPickupBody" style="display:none">
+          <div style="padding:14px;background:#f7f7f2;border-radius:10px;border:1px solid #e8e6df;font-size:.85rem;line-height:1.5">
+            <div style="font-weight:700;color:#1a1a1a" data-i18n="quote.sidebar.pickup.free">FREE — In-store pickup</div>
+            <div style="color:#555;margin-top:4px">81A Sainte-Anne St<br>Sainte-Anne-de-Bellevue, QC&nbsp;&nbsp;H9X&nbsp;1L9</div>
+            <div style="color:#888;font-size:.75rem;margin-top:8px" data-i18n="quote.sidebar.pickup.note">We'll text or email you when your order is ready for pickup.</div>
+          </div>
+        </div>
+
+        <!-- Delivery body — postal-code form + live rate result -->
+        <div id="fulfillDeliveryBody">
+          <p style="font-size:.8rem;color:#888;margin-bottom:10px" data-i18n="quote.sidebar.shipping.sub">Enter your postal/zip code for a live shipping quote.</p>
+          <div style="display:flex;gap:6px;margin-bottom:8px;align-items:stretch">
+            <select id="shipCountry" style="padding:8px 6px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;font-size:.85rem">
+              <option value="CA">CA</option>
+              <option value="US">US</option>
+            </select>
+            <input type="text" id="shipPostal" placeholder="H9X 1L9" autocomplete="postal-code" maxlength="10" style="flex:1;min-width:0;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:.85rem;text-transform:uppercase">
+            <button type="button" id="shipEstimateBtn" style="padding:8px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap" data-i18n="quote.sidebar.shipping.btn">Estimate</button>
+          </div>
+          <div id="shipResult" style="display:none;font-size:.85rem;margin-top:10px"></div>
+          <div id="shipError" style="display:none;font-size:.78rem;color:#a01a1a;margin-top:8px"></div>
+          <p style="font-size:.7rem;color:#aaa;margin-top:8px;line-height:1.4" data-i18n="quote.sidebar.shipping.note">Indicative rate via Chit Chats. Orders $500+ in Greater Montreal ship free. Final shipping confirmed on your formal quote.</p>
+        </div>
       </div>
 
       <div class="sidebar-card">
@@ -4558,24 +4585,196 @@
       } catch (e) { return 100; }
     }
 
+    // ---------------------------------------------------------------------
+    // Fulfillment state & "Shipping:" breakdown line
+    //
+    // The customer picks pickup vs delivery. The breakdown line under the
+    // running price total reflects the selection. For delivery, we show
+    // either an "enter postal code" prompt, the free-shipping confirmation
+    // (Greater Montreal · $500+), or the selected paid rate (tracked vs
+    // untracked, customer pickable).
+    // ---------------------------------------------------------------------
+    var spFulfillment = 'delivery';           // 'pickup' | 'delivery'
+    var spShippingChoice = null;              // { fee_cad, label, postage_type } | null
+    var spShippingFree = false;               // true when Greater Montreal + $500+
+
+    function spIsFR() {
+      try { return (document.documentElement.lang || '').toLowerCase().indexOf('fr') === 0; }
+      catch (e) { return false; }
+    }
+    function spLabel(en, fr) { return spIsFR() ? fr : en; }
+
+    function spUpdateShippingLine() {
+      var val = document.getElementById('shippingLineValue');
+      if (!val) return;
+      var row = document.getElementById('shippingLineRow');
+      if (row) row.style.display = 'flex';
+      if (spFulfillment === 'pickup') {
+        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.92rem">' +
+          spLabel('FREE', 'GRATUIT') + '</strong> &mdash; ' +
+          spLabel('In-store pickup', 'Cueillette en magasin');
+        val.style.color = '#1a1a1a';
+        return;
+      }
+      // Delivery mode
+      if (spShippingFree) {
+        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.92rem">' +
+          spLabel('FREE', 'GRATUIT') + '</strong> &mdash; ' +
+          spLabel('Greater Montreal order $500+', 'Région Montréal · 500 $ et plus');
+        val.style.color = '#1a1a1a';
+        return;
+      }
+      if (spShippingChoice && spShippingChoice.fee_cad != null) {
+        var fee = Number(spShippingChoice.fee_cad).toFixed(2);
+        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.95rem">$' + fee +
+          '</strong> <span style="color:#888;font-size:.72rem;display:block;margin-top:2px">' +
+          (spShippingChoice.label || '') + '</span>';
+        val.style.color = '#1a1a1a';
+        return;
+      }
+      // Delivery mode, no estimate yet
+      val.textContent = spLabel(
+        'Enter postal code below to get shipping estimate',
+        'Entrez votre code postal ci-dessous pour une estimation'
+      );
+      val.style.color = '#888';
+    }
+
+    function spSetFulfillment(mode) {
+      spFulfillment = (mode === 'pickup') ? 'pickup' : 'delivery';
+      var pBtn = document.getElementById('fulfillPickupBtn');
+      var dBtn = document.getElementById('fulfillDeliveryBtn');
+      var pBody = document.getElementById('fulfillPickupBody');
+      var dBody = document.getElementById('fulfillDeliveryBody');
+      if (pBtn) {
+        pBtn.style.background = spFulfillment === 'pickup' ? '#1a1a1a' : 'transparent';
+        pBtn.style.color = spFulfillment === 'pickup' ? '#fff' : '#666';
+        pBtn.classList.toggle('active', spFulfillment === 'pickup');
+      }
+      if (dBtn) {
+        dBtn.style.background = spFulfillment === 'delivery' ? '#1a1a1a' : 'transparent';
+        dBtn.style.color = spFulfillment === 'delivery' ? '#fff' : '#666';
+        dBtn.classList.toggle('active', spFulfillment === 'delivery');
+      }
+      if (pBody) pBody.style.display = spFulfillment === 'pickup' ? 'block' : 'none';
+      if (dBody) dBody.style.display = spFulfillment === 'delivery' ? 'block' : 'none';
+      spUpdateShippingLine();
+    }
+
     function spRenderShippingResult(d) {
       var el = document.getElementById('shipResult');
       if (!el) return;
-      if (!d || !d.cheapest || !d.cheapest.fee_cad) {
+
+      // Free shipping branch (Greater Montreal + $500+)
+      if (d && d.free_shipping && d.free_shipping.eligible) {
+        spShippingFree = true;
+        spShippingChoice = { fee_cad: 0, label: spLabel('FREE — Greater Montreal', 'GRATUIT — Région Montréal'), postage_type: 'free_local' };
         el.style.display = 'block';
-        el.innerHTML = '<div style="color:#888;font-size:.82rem">No rate available for that postal code. Contact us at 514-915-1539.</div>';
+        el.innerHTML =
+          '<div style="padding:12px;background:#1a1a1a;color:#fff;border-radius:10px">' +
+            '<div style="font-weight:700;font-size:1rem">' + spLabel('FREE shipping unlocked', 'Livraison GRATUITE') + '</div>' +
+            '<div style="font-size:.78rem;opacity:.85;margin-top:4px">' +
+              spLabel('Greater Montreal area · order $500+', 'Région du Grand Montréal · commande de 500 $ et plus') +
+            '</div>' +
+          '</div>';
+        spUpdateShippingLine();
         return;
       }
-      var fee = Number(d.cheapest.fee_cad).toFixed(2);
+
+      // No rates at all
+      if (!d || !d.all_rates || d.all_rates.length === 0) {
+        spShippingFree = false;
+        spShippingChoice = null;
+        el.style.display = 'block';
+        el.innerHTML =
+          '<div style="padding:10px;background:#fff5f5;border:1px solid #f0d9d9;border-radius:8px;color:#888;font-size:.82rem">' +
+            spLabel("No rate available for that postal code. Contact us at 514-915-1539.",
+                    "Aucun tarif disponible pour ce code postal. Appelez-nous au 514-915-1539.") +
+          '</div>';
+        spUpdateShippingLine();
+        return;
+      }
+
+      // Paid rates branch — render tracked vs untracked selectable cards
+      spShippingFree = false;
+      var rates = (d.all_rates || []).slice();
+      // sort cheap first, then identify tracked vs untracked by postage_type
+      rates.sort(function(a, b) { return (a.fee_cad || 0) - (b.fee_cad || 0); });
+      var untracked = null, tracked = null;
+      rates.forEach(function(r) {
+        var isTracked = /track/i.test(r.postage_type || '') || /track/i.test(r.label || '');
+        if (isTracked && !tracked) tracked = r;
+        else if (!isTracked && !untracked) untracked = r;
+      });
+      // fallback when API only returns one rate
+      if (!untracked) untracked = rates[0];
+      if (!tracked && rates.length > 1) tracked = rates[rates.length - 1];
+
       var pkg = d.package_type_label || 'Package';
       var wKg = (Number(d.weight_g) / 1000).toFixed(2);
-      var postage = String(d.cheapest.postage_type || 'Chit Chats')
-        .replace(/_/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+      var nearFree = d && d.free_shipping && d.free_shipping.in_greater_montreal &&
+                     typeof d.free_shipping.current_value_cad === 'number' &&
+                     d.free_shipping.current_value_cad < d.free_shipping.min_value_cad;
+
+      var html = '';
+      if (untracked) html += spRateCardHtml('untracked', untracked, true);
+      if (tracked && tracked !== untracked) html += spRateCardHtml('tracked', tracked, false);
+      html += '<div style="color:#888;font-size:.7rem;margin-top:8px">' + pkg + ' &middot; ~' + wKg + ' kg</div>';
+      if (nearFree) {
+        var diff = (d.free_shipping.min_value_cad - d.free_shipping.current_value_cad).toFixed(2);
+        html += '<div style="margin-top:8px;padding:8px 10px;background:#fff8e8;border:1px solid #f0e3b8;border-radius:8px;color:#7a5b15;font-size:.74rem">' +
+          spLabel('Add $' + diff + ' more for FREE shipping (Greater Montreal).',
+                  'Ajoutez ' + diff + ' $ pour la livraison GRATUITE (Région Montréal).') +
+          '</div>';
+      }
       el.style.display = 'block';
-      el.innerHTML =
-        '<div style="font-weight:700;color:#1a1a1a;font-size:1.1rem">$' + fee + ' <span style="font-size:.8rem;color:#888;font-weight:500">CAD</span></div>' +
-        '<div style="color:#666;font-size:.78rem;margin-top:3px">via ' + postage + '</div>' +
-        '<div style="color:#888;font-size:.72rem;margin-top:6px">' + pkg + ' &middot; ~' + wKg + ' kg total</div>';
+      el.innerHTML = html;
+
+      // Wire radio change events
+      var radios = el.querySelectorAll('input[name="ship-choice"]');
+      Array.prototype.forEach.call(radios, function(r) {
+        r.addEventListener('change', function() {
+          if (!r.checked) return;
+          spShippingChoice = {
+            fee_cad: Number(r.dataset.fee),
+            label: r.dataset.label,
+            postage_type: r.dataset.ptype
+          };
+          // re-style the cards
+          Array.prototype.forEach.call(el.querySelectorAll('.ship-rate-card'), function(c) {
+            var rad = c.querySelector('input[name="ship-choice"]');
+            c.style.borderColor = (rad && rad.checked) ? '#1a1a1a' : '#e0e0e0';
+            c.style.background = (rad && rad.checked) ? '#f7f7f2' : '#fff';
+          });
+          spUpdateShippingLine();
+        });
+      });
+
+      // Default selection: untracked (cheapest)
+      if (untracked) {
+        spShippingChoice = {
+          fee_cad: untracked.fee_cad,
+          label: spLabel('Without tracking · ', 'Sans suivi · ') + (untracked.label || 'Chit Chats Select'),
+          postage_type: untracked.postage_type
+        };
+      }
+      spUpdateShippingLine();
+    }
+
+    function spRateCardHtml(kind, r, checked) {
+      var fee = Number(r.fee_cad || 0).toFixed(2);
+      var titleEn = (kind === 'tracked') ? 'With tracking' : 'Without tracking';
+      var titleFr = (kind === 'tracked') ? 'Avec suivi' : 'Sans suivi';
+      var title = spLabel(titleEn, titleFr);
+      var carrier = (r.label || 'Chit Chats').replace(/[<>]/g, '');
+      var dataLabel = title + ' · ' + carrier;
+      var borderColor = checked ? '#1a1a1a' : '#e0e0e0';
+      var bgColor = checked ? '#f7f7f2' : '#fff';
+      return '<label class="ship-rate-card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:' + bgColor + ';border:1.5px solid ' + borderColor + ';border-radius:9px;cursor:pointer;margin-bottom:6px;transition:all .12s">' +
+        '<input type="radio" name="ship-choice" data-fee="' + r.fee_cad + '" data-label="' + dataLabel + '" data-ptype="' + (r.postage_type || '') + '" ' + (checked ? 'checked' : '') + ' style="margin:0;accent-color:#1a1a1a">' +
+        '<span style="flex:1;font-size:.82rem;color:#1a1a1a"><strong>' + title + '</strong><br><span style="color:#888;font-size:.72rem">' + carrier + '</span></span>' +
+        '<span style="font-size:1rem;font-weight:700;color:#1a1a1a">$' + fee + '</span>' +
+        '</label>';
     }
 
     function spRenderShippingError(msg) {
@@ -4592,6 +4791,11 @@
       var err = document.getElementById('shipError');
       if (ok) ok.style.display = 'none';
       if (err) err.style.display = 'none';
+      // Reset shipping selection so the breakdown line falls back to the
+      // "enter postal code" prompt if the customer hasn't picked yet.
+      spShippingChoice = null;
+      spShippingFree   = false;
+      spUpdateShippingLine();
     }
 
     function spRequestShippingEstimate() {
@@ -4646,6 +4850,13 @@
       if (postal) postal.addEventListener('keydown', function(e){
         if (e.key === 'Enter') { e.preventDefault(); spRequestShippingEstimate(); }
       });
+      // Pickup / Delivery toggle
+      var pBtn = document.getElementById('fulfillPickupBtn');
+      var dBtn = document.getElementById('fulfillDeliveryBtn');
+      if (pBtn) pBtn.addEventListener('click', function() { spSetFulfillment('pickup'); });
+      if (dBtn) dBtn.addEventListener('click', function() { spSetFulfillment('delivery'); });
+      // Default to delivery — shows the postal-code prompt under the price total
+      spSetFulfillment('delivery');
     });
   </script>
 </body>
