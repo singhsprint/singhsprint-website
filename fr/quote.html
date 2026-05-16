@@ -4732,6 +4732,51 @@
       if (pBtn) pBtn.addEventListener('click', function() { spSetFulfillment('pickup'); });
       if (dBtn) dBtn.addEventListener('click', function() { spSetFulfillment('delivery'); });
       spSetFulfillment('delivery');
+
+      // Mobile inline relocation of the shipping estimator — see EN
+      // quote.html for the full rationale comment.
+      var MOBILE_BREAKPOINT = 900;
+      var card = document.getElementById('shippingEstimateCard');
+      var deliverySel = document.getElementById('delivery');
+      var originalParent = card ? card.parentNode : null;
+      var originalNext   = card ? card.nextSibling : null;
+      var mobileHost = null;
+      function isMobile() { return window.innerWidth <= MOBILE_BREAKPOINT; }
+      function relocateForViewport() {
+        if (!card || !deliverySel) return;
+        if (isMobile()) {
+          if (!mobileHost) {
+            var deliveryGroup = deliverySel.closest('.form-group');
+            mobileHost = document.createElement('div');
+            mobileHost.id = 'shippingEstimateMobileHost';
+            mobileHost.style.marginTop = '4px';
+            if (deliveryGroup && deliveryGroup.parentNode) {
+              deliveryGroup.parentNode.insertBefore(mobileHost, deliveryGroup.nextSibling);
+            }
+          }
+          if (card.parentNode !== mobileHost) mobileHost.appendChild(card);
+          syncFromDeliverySelect();
+        } else {
+          if (originalParent && card.parentNode !== originalParent) {
+            originalParent.insertBefore(card, originalNext);
+          }
+          card.classList.remove('is-hidden-mobile');
+        }
+      }
+      function syncFromDeliverySelect() {
+        if (!card || !deliverySel || !isMobile()) return;
+        var v = (deliverySel.value || '').toLowerCase();
+        var hide = !v || /pickup|cueillette/.test(v);
+        card.classList.toggle('is-hidden-mobile', hide);
+        if (!hide) spSetFulfillment('delivery');
+      }
+      if (deliverySel) deliverySel.addEventListener('change', syncFromDeliverySelect);
+      relocateForViewport();
+      var resizeTimer;
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(relocateForViewport, 150);
+      });
     });
 
   </script>

@@ -415,17 +415,22 @@
            in components.js (position:fixed at the bottom of the
            viewport). So the only "thing" in mockup-panel that
            survives on mobile is the floating price bar. */
-      .mockup-panel{position:static !important;order:0 !important;padding:0 !important;background:transparent !important;border:none !important;margin-bottom:0 !important}
-      /* Hide the marketing sidebar cards (next-steps, prefer-to-talk, promo)
-         but keep the shipping estimator — it's a quote-completing function,
-         not marketing, and customers need to see their shipping total on the
-         same screen they're filling out the form on. */
-      .mockup-reassure,.mockup-card,.mockup-faq,.sidebar-card:not(#shippingEstimateCard){display:none !important}
-      /* Promote the shipping estimator inline on phones — full width, sits
-         right under the form (it's the last sidebar-card sibling), with the
-         same comfortable padding the form fields use. */
-      #shippingEstimateCard{display:block !important;background:#fff;border:1px solid #e8e6df;border-radius:14px;padding:18px 16px !important;margin:20px 0 24px !important;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-      #shippingEstimateCard h4{font-size:1rem;margin-bottom:10px}
+      /* Mobile: kill the entire right rail. The shipping estimator gets
+         moved into the form flow via JS (see #shippingEstimateCard
+         relocation block at the bottom of the page script). Everything
+         else in the sidebar is marketing — irrelevant when the user is
+         heads-down filling out the form. Hiding the panel reclaims the
+         large empty block of vertical space below "Next". */
+      .mockup-panel{display:none !important}
+
+      /* Shipping estimator, INLINE inside Step 3 (moved there via JS). It
+         visually flows with the form fields — no card border, no float,
+         no shadow. Just looks like the next question in the sequence. */
+      #shippingEstimateCard{display:block !important;background:transparent !important;border:none !important;border-radius:0 !important;padding:0 !important;margin:0 0 18px !important;box-shadow:none !important}
+      #shippingEstimateCard h4{font-size:.78rem !important;font-weight:600 !important;color:#1a1a1a !important;margin:0 0 8px !important;text-transform:none !important;letter-spacing:0 !important}
+      /* Auto-hide when no delivery preference picked, or when "Local
+         pickup" is selected — body JS toggles a class. */
+      #shippingEstimateCard.is-hidden-mobile{display:none !important}
       /* Hero gap fix — was rendering ~300px tall on phones */
       .quote-hero{padding:14px 0 6px !important}
       .quote-hero h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
@@ -4888,6 +4893,73 @@
       if (dBtn) dBtn.addEventListener('click', function() { spSetFulfillment('delivery'); });
       // Default to delivery — shows the postal-code prompt under the price total
       spSetFulfillment('delivery');
+
+      // ===========================================================
+      // Mobile: relocate the shipping estimator INLINE into Step 3.
+      // ===========================================================
+      // On desktop the estimator lives in the sidebar (right column) and
+      // floats next to the form. On phones the sidebar is hidden via CSS
+      // (.mockup-panel{display:none}), so we surgically move the card
+      // into the form flow — right after the "Delivery preference"
+      // dropdown — so the user sees their shipping options exactly when
+      // they're picking their fulfilment method. Visibility tracks the
+      // dropdown: hidden for "Local pickup", visible otherwise.
+      var MOBILE_BREAKPOINT = 900;
+      var card = document.getElementById('shippingEstimateCard');
+      var deliverySel = document.getElementById('delivery');
+      var originalParent = card ? card.parentNode : null;
+      var originalNext   = card ? card.nextSibling : null;
+      var mobileHost = null;
+
+      function isMobile() { return window.innerWidth <= MOBILE_BREAKPOINT; }
+
+      function relocateForViewport() {
+        if (!card || !deliverySel) return;
+        if (isMobile()) {
+          // Build / find the inline host (a wrapper right after the
+          // delivery <select>'s form-group so the card slots cleanly
+          // into the form's vertical rhythm).
+          if (!mobileHost) {
+            var deliveryGroup = deliverySel.closest('.form-group');
+            mobileHost = document.createElement('div');
+            mobileHost.id = 'shippingEstimateMobileHost';
+            mobileHost.style.marginTop = '4px';
+            if (deliveryGroup && deliveryGroup.parentNode) {
+              deliveryGroup.parentNode.insertBefore(mobileHost, deliveryGroup.nextSibling);
+            }
+          }
+          if (card.parentNode !== mobileHost) mobileHost.appendChild(card);
+          syncFromDeliverySelect();
+        } else {
+          // Back to its original sidebar slot for desktop.
+          if (originalParent && card.parentNode !== originalParent) {
+            originalParent.insertBefore(card, originalNext);
+          }
+          card.classList.remove('is-hidden-mobile');
+        }
+      }
+
+      function syncFromDeliverySelect() {
+        if (!card || !deliverySel || !isMobile()) return;
+        var v = (deliverySel.value || '').toLowerCase();
+        // Hide on "Select..." (empty value) and on local pickup, since
+        // pickup is free and shows no postal form.
+        var hide = !v || /pickup/.test(v);
+        card.classList.toggle('is-hidden-mobile', hide);
+        // If the user picked delivery/shipping, ensure the delivery pill
+        // is the active mode inside the card too.
+        if (!hide) spSetFulfillment('delivery');
+      }
+
+      if (deliverySel) deliverySel.addEventListener('change', syncFromDeliverySelect);
+      relocateForViewport();
+      // Re-evaluate on rotate / resize so a tablet user who flips
+      // orientation gets the right layout.
+      var resizeTimer;
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(relocateForViewport, 150);
+      });
     });
   </script>
 </body>
