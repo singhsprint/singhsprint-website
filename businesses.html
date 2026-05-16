@@ -227,12 +227,30 @@
         <h2 style="font-size:1.6rem;margin-bottom:6px">Dedicated playbook per vertical</h2>
         <p style="color:#666;font-size:.95rem;max-width:560px;margin:0 auto">We&rsquo;ve built specific programs for the industries where reorder discipline and turnaround matter most.</p>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-        <a href="/industries/construction-workwear" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Construction &amp; trades &rarr;</a>
-        <a href="/industries/restaurant-hospitality-uniforms" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Restaurant &amp; hospitality &rarr;</a>
-        <a href="/industries/corporate-tech-swag" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Corporate &amp; tech swag &rarr;</a>
-        <a href="/industries/charity-events-fundraisers" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Charity &amp; events &rarr;</a>
-        <a href="/industries/schools-sports-teams" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Schools &amp; sports &rarr;</a>
+      <style>
+        /* Vertical-program tiles: flat cream cards with a chevron pill on
+           the right. Default state shows a dark pill; hover lifts the
+           card, darkens the border, and flips the pill to the accent
+           yellow with the chevron sliding right. Replaces the inline "→"
+           text arrow which broke the visual rhythm. */
+        .vp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+        .vp-tile{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;background:#f8f7f4;border-radius:14px;border:1px solid #eee;font-weight:600;font-size:.95rem;color:#1a1a1a;text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+        .vp-tile:hover{border-color:#1a1a1a;transform:translateY(-2px);box-shadow:0 10px 22px -10px rgba(0,0,0,.18)}
+        .vp-tile__label{line-height:1.25}
+        .vp-tile__chev{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#1a1a1a;color:#fff;flex-shrink:0;transition:background .18s ease,color .18s ease,transform .18s ease}
+        .vp-tile__chev svg{width:11px;height:11px;display:block}
+        .vp-tile:hover .vp-tile__chev{background:#e8ff3c;color:#1a1a1a;transform:translateX(2px)}
+        @media(max-width:520px){
+          .vp-tile{padding:14px 16px;font-size:.92rem}
+          .vp-tile__chev{width:24px;height:24px}
+        }
+      </style>
+      <div class="vp-grid">
+        <a class="vp-tile" href="/industries/construction-workwear"><span class="vp-tile__label">Construction &amp; trades</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/industries/restaurant-hospitality-uniforms"><span class="vp-tile__label">Restaurant &amp; hospitality</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/industries/corporate-tech-swag"><span class="vp-tile__label">Corporate &amp; tech swag</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/industries/charity-events-fundraisers"><span class="vp-tile__label">Charity &amp; events</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/industries/schools-sports-teams"><span class="vp-tile__label">Schools &amp; sports</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
       </div>
     </div>
   </section>
