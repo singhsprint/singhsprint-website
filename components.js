@@ -121,6 +121,16 @@ function loadNav() {
       '.sp-drawer-foot .row{display:flex;gap:10px;align-items:center;margin-top:14px}',
       '.sp-drawer-foot .row #langToggle{display:inline-block}',
       '.sp-drawer-foot .row .sp-cta{display:inline-flex;flex:1;justify-content:center}',
+      // Mobile-only horizontal category strip — sits between row 1 and
+      // the page content on small screens. Single-tap entry to the six
+      // top categories without needing to open the drawer. Hidden on
+      // desktop (row 2 covers it there).
+      '.sp-mobile-cats{display:none;background:#fff;border-bottom:1px solid #f0eee7;padding:10px 12px 12px 12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}',
+      '.sp-mobile-cats::-webkit-scrollbar{display:none}',
+      '@media(max-width:960px){.sp-mobile-cats{display:flex}}',
+      '.sp-mobile-cat{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:78px;padding:10px 8px;background:#fafaf6;border:1px solid #ece9df;border-radius:12px;text-decoration:none;color:#1a1a1a;font-size:.74rem;font-weight:600;line-height:1.2;scroll-snap-align:start;text-align:center}',
+      '.sp-mobile-cat:active{background:#f0eee7}',
+      '.sp-mobile-cat svg{width:24px;height:24px;flex-shrink:0}',
       '@media(max-width:420px){.promo-bar{padding:8px 14px;font-size:.78rem}}'
     ].join('');
     document.head.appendChild(s);
@@ -243,7 +253,16 @@ function loadNav() {
     close:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg>',
     chevD:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>',
     chevR:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="m9 6 6 6-6 6"/></svg>',
-    phone:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'
+    phone:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    // Garment-category icons for the mobile horizontal strip. Line-art
+    // 24×24, stroke=currentColor so they inherit the card's ink color.
+    tshirt:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6 8 3h8l4 3-3 3-1-1v13H8V8L7 9 4 6z"/></svg>',
+    hoodie:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8 8 5l1 2c.7 1 1.8 1.5 3 1.5s2.3-.5 3-1.5l1-2 4 3-3 4v9H7v-9L4 8z"/><path d="M10 7c0 1 .9 2 2 2s2-1 2-2"/></svg>',
+    polo:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6 8 3l2 2 2 1 2-1 2-2 4 3-3 3-1-1v13H8V8L7 9 4 6z"/><path d="M12 6v4"/></svg>',
+    workwear:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h4l3 4 3-4h4v15H5z"/><path d="M9 10v9M15 10v9"/></svg>',
+    bagicon:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+    hat:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17c0-5 3.5-9 8-9s8 4 8 9"/><path d="M2 17h20"/></svg>',
+    grid:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
   };
 
   var path = window.location.pathname.replace(/\/+$/, '');
@@ -327,6 +346,18 @@ function loadNav() {
     +      row2Edit
     + '  </nav>'
     + '</header>'
+    // Mobile-only horizontal category strip — six one-tap entry points
+    // into the catalog. Tucked under the sticky header so it scrolls
+    // away as the page scrolls. CSS hides this entirely above 960px.
+    + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
+    + '</nav>'
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
     + '  <div class="sp-drawer-head">'
     + '    <button class="sp-drawer-close" aria-label="' + t('Close menu', 'Fermer le menu') + '" onclick="window.__spCloseDrawer()">' + ICON.close + '</button>'
