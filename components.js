@@ -125,18 +125,16 @@ function loadNav() {
       // the page content on small screens. Single-tap entry to the six
       // top categories without needing to open the drawer. Hidden on
       // desktop (row 2 covers it there).
-      // Mobile-only horizontal category strip — original vertical-card
-      // design (image on top, label beneath). Takes ~88 px of vertical
-      // chrome but reads more like a curated set of product entry
-      // points than a tag list. Hero video sits just below the fold on
-      // standard iPhone heights; users can swipe down to see it.
-      '.sp-mobile-cats{display:none;background:#fff;border-bottom:1px solid #f0eee7;padding:10px 12px 12px 12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}',
+      // Compact mobile category strip — horizontal pills with the icon
+      // in a small white circle on the left and the label inline on the
+      // right. Total height ~58 px so the hero video stays close to
+      // above-the-fold on standard iPhone heights.
+      '.sp-mobile-cats{display:none;background:#fff;border-bottom:1px solid #f0eee7;padding:8px 10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}',
       '.sp-mobile-cats::-webkit-scrollbar{display:none}',
       '@media(max-width:960px){.sp-mobile-cats{display:flex}}',
-      '.sp-mobile-cat{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:78px;padding:10px 8px;background:#fafaf6;border:1px solid #ece9df;border-radius:12px;text-decoration:none;color:#1a1a1a;font-size:.74rem;font-weight:600;line-height:1.2;scroll-snap-align:start;text-align:center}',
+      '.sp-mobile-cat{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;background:#fafaf6;border:1px solid #ece9df;border-radius:999px;text-decoration:none;color:#1a1a1a;font-size:.78rem;font-weight:600;line-height:1;scroll-snap-align:start}',
       '.sp-mobile-cat:active{background:#f0eee7}',
-      '.sp-mobile-cat svg{width:24px;height:24px;flex-shrink:0}',
-      '.sp-mobile-cat img{width:44px;height:44px;object-fit:cover;border-radius:8px;background:#f3f1ea;flex-shrink:0}',
+      '.sp-mobile-cat svg{width:22px;height:22px;flex-shrink:0;padding:4px;background:#fff;border-radius:50%;border:1px solid #ece9df;box-sizing:content-box}',
       // Tighter promo bar on phones — was wrapping to two lines on
       // standard iPhone widths and chewing 25-30 px above the fold.
       '@media(max-width:500px){.promo-bar{padding:7px 12px;font-size:.74rem;line-height:1.35}}',
@@ -358,18 +356,16 @@ function loadNav() {
     // Mobile-only horizontal category strip — six one-tap entry points
     // into the catalog plus an "All" entry. Tucked under the sticky
     // header so it scrolls away as the page scrolls. CSS hides this
-    // entirely above 960px. Uses real product photos for the icons —
-    // four local + two proxied through /api/image-proxy from S&S so we
-    // don't 403 on hotlinking. Easy to swap any of these for a curated
-    // asset later.
+    // entirely above 960px. Line-art SVG icons sit in a small white
+    // circle so they match the editorial b/w aesthetic.
     + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt"><img src="/images/product-tshirt-black.jpg" alt="" loading="lazy"/><span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie"><img src="/images/product-hoodie-concordia.jpg" alt="" loading="lazy"/><span>' + t('Hoodies', 'Hoodies') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo"><img src="/images/product-polo.jpg" alt="" loading="lazy"/><span>' + t('Polos', 'Polos') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest"><img src="https://singhsprint-crm.vercel.app/api/image-proxy?url=' + encodeURIComponent('https://www.ssactivewear.com/Images/Style/7685_fm.jpg') + '" alt="" loading="lazy"/><span>' + t('Workwear', 'Travail') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote"><img src="https://singhsprint-crm.vercel.app/api/image-proxy?url=' + encodeURIComponent('https://www.ssactivewear.com/Images/Style/15891_fm.jpg') + '" alt="" loading="lazy"/><span>' + t('Bags', 'Sacs') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat"><img src="/images/product-hat-artwood.jpg" alt="" loading="lazy"/><span>' + t('Hats', 'Chapeaux') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
     + '</nav>'
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
     + '  <div class="sp-drawer-head">'
