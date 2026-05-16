@@ -51,9 +51,19 @@ function loadNav() {
       '.sp-logo{display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0}',
       '.sp-logo img{display:block;height:52px;width:auto}',
       '.sp-spacer{flex:1}',
-      '.sp-search{display:flex;align-items:center;gap:8px;border:1px solid #e6e3d8;border-radius:22px;padding:8px 14px 8px 12px;min-width:240px;color:#999;font-size:.85rem;cursor:text;background:#fff;transition:border-color .15s,color .15s}',
-      '.sp-search:hover{border-color:#1a1a1a;color:#666}',
+      '.sp-search-wrap{position:relative;display:inline-block}',
+      '.sp-search{display:flex;align-items:center;gap:8px;border:1px solid #e6e3d8;border-radius:22px;padding:6px 14px 6px 12px;min-width:280px;color:#1a1a1a;font-size:.85rem;background:#fff;transition:border-color .15s}',
+      '.sp-search:hover,.sp-search:focus-within{border-color:#1a1a1a}',
       '.sp-search svg{width:14px;height:14px;flex-shrink:0;color:#888}',
+      '.sp-search input{border:none;outline:none;background:transparent;font-size:.86rem;flex:1;min-width:0;color:#1a1a1a;font-family:inherit;padding:4px 0}',
+      '.sp-search input::placeholder{color:#999}',
+      '.sp-search-panel{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid #ece9df;border-radius:14px;box-shadow:0 12px 28px rgba(0,0,0,.10);padding:8px;display:none;z-index:60;max-height:480px;overflow-y:auto;min-width:380px}',
+      '.sp-search-panel.is-on{display:block}',
+      '.sp-search-panel .sp-search-empty{padding:14px 12px;color:#999;font-size:.82rem;text-align:center}',
+      '.sp-search-panel .sp-search-result{display:flex;gap:12px;align-items:center;padding:8px 10px;border:1px solid transparent;border-radius:8px;text-decoration:none;color:#1a1a1a}',
+      '.sp-search-panel .sp-search-result:hover{background:#fafaf6}',
+      '.sp-search-panel .sp-search-result+.sp-search-result{margin-top:2px}',
+      '.sp-search-panel .sp-search-result img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#f3f1ea;flex-shrink:0}',
       '.sp-cart{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #e6e3d8;border-radius:50%;color:#1a1a1a;text-decoration:none;background:#fff;transition:border-color .15s}',
       '.sp-cart:hover{border-color:#1a1a1a}',
       '.sp-cart svg{width:16px;height:16px}',
@@ -111,16 +121,6 @@ function loadNav() {
       '.sp-drawer-foot .row{display:flex;gap:10px;align-items:center;margin-top:14px}',
       '.sp-drawer-foot .row #langToggle{display:inline-block}',
       '.sp-drawer-foot .row .sp-cta{display:inline-flex;flex:1;justify-content:center}',
-      '.sp-search-overlay{position:fixed;inset:0;background:rgba(255,255,255,.98);z-index:1200;display:none;padding:80px 20px 20px 20px}',
-      '.sp-search-overlay.is-open{display:block}',
-      '.sp-search-overlay input{width:100%;max-width:640px;margin:0 auto;display:block;font-size:1.25rem;padding:14px 18px;border:1px solid #e6e3d8;border-radius:24px;outline:none;color:#1a1a1a;font-family:inherit}',
-      '.sp-search-overlay input:focus{border-color:#1a1a1a}',
-      '.sp-search-results{max-width:640px;margin:18px auto 0 auto;display:grid;gap:8px}',
-      '.sp-search-result{display:flex;gap:12px;align-items:center;padding:10px;border:1px solid #ece9df;border-radius:10px;text-decoration:none;color:#1a1a1a;background:#fff}',
-      '.sp-search-result:hover{border-color:#1a1a1a}',
-      '.sp-search-result img{width:48px;height:48px;object-fit:cover;border-radius:6px;background:#f3f1ea;flex-shrink:0}',
-      '.sp-search-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border:1px solid #e6e3d8;border-radius:50%;background:#fff;cursor:pointer;color:#1a1a1a;display:inline-flex;align-items:center;justify-content:center}',
-      '.sp-search-close svg{width:18px;height:18px}',
       '@media(max-width:420px){.promo-bar{padding:8px 14px;font-size:.78rem}}'
     ].join('');
     document.head.appendChild(s);
@@ -277,8 +277,12 @@ function loadNav() {
     + '    <button class="sp-burger" aria-label="' + t('Open menu', 'Ouvrir le menu') + '" onclick="window.__spOpenDrawer()">' + ICON.burger + '</button>'
     + '    <a href="' + BASE + '/" class="sp-logo" aria-label="Singh\'s Print"><img src="/images/logo.png" alt="Singh\'s Print"></a>'
     + '    <div class="sp-spacer"></div>'
-    + '    <div class="sp-search" onclick="window.__spOpenSearch()" role="button" tabindex="0" aria-label="' + searchPlaceholder + '">'
-    +        ICON.search + '<span data-i18n="nav.search.placeholder">' + searchPlaceholder + '</span>'
+    + '    <div class="sp-search-wrap" id="sp-search-wrap">'
+    + '      <label class="sp-search" for="sp-search-input">'
+    +          ICON.search
+    + '        <input id="sp-search-input" type="search" autocomplete="off" placeholder="' + searchPlaceholder + '" aria-label="' + searchPlaceholder + '"/>'
+    + '      </label>'
+    + '      <div class="sp-search-panel" id="sp-search-panel" aria-live="polite"></div>'
     + '    </div>'
     + '    <a href="' + BASE + '/quote#cart" class="sp-cart" aria-label="' + t('Cart', 'Panier') + '">' + ICON.bag
     +        '<span class="sp-cart-count" id="sp-cart-count">0</span></a>'
@@ -300,8 +304,12 @@ function loadNav() {
     + '    <div style="width:38px"></div>'
     + '  </div>'
     + '  <div class="sp-drawer-body">'
-    + '    <div class="sp-search" onclick="window.__spOpenSearch()" role="button" tabindex="0">'
-    +        ICON.search + '<span>' + searchPlaceholder + '</span>'
+    + '    <div class="sp-search-wrap" id="sp-search-wrap-mobile" style="width:100%">'
+    + '      <label class="sp-search" for="sp-search-input-mobile" style="width:100%;min-width:0">'
+    +          ICON.search
+    + '        <input id="sp-search-input-mobile" type="search" autocomplete="off" placeholder="' + searchPlaceholder + '" aria-label="' + searchPlaceholder + '"/>'
+    + '      </label>'
+    + '      <div class="sp-search-panel" id="sp-search-panel-mobile" aria-live="polite"></div>'
     + '    </div>'
     + '    <div class="sp-drawer-section">' + t('Shop', 'Magasinez') + '</div>' + drawerCats
     + '    <div class="sp-drawer-section">' + t('More', 'Plus') + '</div>' + drawerEdit
@@ -314,11 +322,6 @@ function loadNav() {
     + '      </div>'
     + '    </div>'
     + '  </div>'
-    + '</div>'
-    + '<div class="sp-search-overlay" id="sp-search-overlay" aria-hidden="true">'
-    + '  <button class="sp-search-close" aria-label="' + t('Close search', 'Fermer la recherche') + '" onclick="window.__spCloseSearch()">' + ICON.close + '</button>'
-    + '  <input type="search" id="sp-search-input" placeholder="' + searchOverlayPlaceholder + '" autocomplete="off"/>'
-    + '  <div class="sp-search-results" id="sp-search-results"></div>'
     + '</div>';
 
   // ----- Cart count binding -----
@@ -352,61 +355,76 @@ function loadNav() {
     d.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   };
-  window.__spOpenSearch = function () {
-    var o = document.getElementById('sp-search-overlay');
-    if (!o) return;
-    o.classList.add('is-open');
-    o.setAttribute('aria-hidden', 'false');
-    var inp = document.getElementById('sp-search-input');
-    if (inp) inp.focus();
-  };
-  window.__spCloseSearch = function () {
-    var o = document.getElementById('sp-search-overlay');
-    if (!o) return;
-    o.classList.remove('is-open');
-    o.setAttribute('aria-hidden', 'true');
-  };
-
-  var input   = document.getElementById('sp-search-input');
-  var results = document.getElementById('sp-search-results');
-  if (input && results) {
+  // ----- Inline search dropdown (no full-screen overlay) -----
+  // We bind both the desktop search field and the in-drawer mobile one to
+  // the same typeahead logic. Each has its own results panel.
+  function wireSearch(inputId, panelId) {
+    var input = document.getElementById(inputId);
+    var panel = document.getElementById(panelId);
+    if (!input || !panel) return;
     var qT = null;
+    function close() { panel.classList.remove('is-on'); }
+    function open()  { panel.classList.add('is-on'); }
+
+    input.addEventListener('focus', function () {
+      if (input.value.trim().length >= 2 && panel.innerHTML) open();
+    });
     input.addEventListener('input', function () {
       var q = input.value.trim();
       clearTimeout(qT);
-      if (q.length < 2) { results.innerHTML = ''; return; }
+      if (q.length < 2) { panel.innerHTML = ''; close(); return; }
+      // Optimistic: show a skeleton hint so the panel feels responsive
+      // even before the API answers.
+      panel.innerHTML = '<div class="sp-search-empty">' + t('Searching…', 'Recherche…') + '</div>';
+      open();
       qT = setTimeout(function () {
         fetch('https://singhsprint-crm.vercel.app/api/catalog?q=' + encodeURIComponent(q) + '&limit=8', { cache: 'no-store' })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (d) {
             var list = (d && d.products) ? d.products : (Array.isArray(d) ? d : []);
-            if (!list.length) { results.innerHTML = ''; return; }
-            results.innerHTML = list.slice(0, 8).map(function (p) {
+            if (!list.length) {
+              panel.innerHTML = '<div class="sp-search-empty">' + t('No products match.', 'Aucun produit.') + '</div>';
+              return;
+            }
+            panel.innerHTML = list.slice(0, 8).map(function (p) {
               var img = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
               return '<a class="sp-search-result" href="' + BASE + '/catalog?q=' + encodeURIComponent(p.style_number || p.name || '') + '">'
-                + (img ? '<img src="' + img + '" alt="" loading="lazy"/>' : '<span style="width:48px;height:48px"></span>')
+                + (img ? '<img src="' + img + '" alt="" loading="lazy"/>' : '<span style="width:44px;height:44px"></span>')
                 + '<span style="flex:1;min-width:0"><strong>' + (p.name || p.style_number || '') + '</strong>'
                 + '<br><span style="color:#888;font-size:.76rem">' + (p.brand || '') + (p.style_number ? ' &middot; ' + p.style_number : '') + '</span></span>'
                 + '</a>';
-            }).join('');
+            }).join('') + '<a class="sp-search-result" style="color:#1a1a1a;font-weight:600;justify-content:center" href="' + BASE + '/catalog?q=' + encodeURIComponent(q) + '">'
+              + t('See all results for ', 'Voir tous les résultats pour ') + '"' + q + '" &rarr;</a>';
           })
-          .catch(function () { /* swallow — typeahead is best-effort */ });
+          .catch(function () {
+            panel.innerHTML = '<div class="sp-search-empty">' + t("Couldn't load — try again.", 'Échec — réessayez.') + '</div>';
+          });
       }, 180);
     });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
+        e.preventDefault();
         var q = input.value.trim();
         if (q.length) window.location.href = BASE + '/catalog?q=' + encodeURIComponent(q);
       } else if (e.key === 'Escape') {
-        window.__spCloseSearch();
+        close();
+        input.blur();
       }
     });
+    // Click outside → close
+    document.addEventListener('click', function (e) {
+      var wrap = panel.parentElement;
+      if (!wrap) return;
+      if (!wrap.contains(e.target)) close();
+    });
   }
+  wireSearch('sp-search-input', 'sp-search-panel');
+  wireSearch('sp-search-input-mobile', 'sp-search-panel-mobile');
 
+  // Esc closes drawer too
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     window.__spCloseDrawer();
-    window.__spCloseSearch();
   });
 }
 

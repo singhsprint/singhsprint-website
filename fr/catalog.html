@@ -1143,18 +1143,15 @@
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
 
-    // The catalog API now returns one row per product (post-v2 view). We
-    // pull the full filtered set in a single call — there are ~1,100 styles
-    // total, so 'pagination' is really just 'show all'. Filters narrow the
-    // set on the server.
+    // Two-phase fetch — voir EN catalog.html pour les détails.
     const params = new URLSearchParams();
     if (state.filters.type)        params.set('type', state.filters.type);
     if (state.filters.q)           params.set('q', state.filters.q);
     if (state.filters.canadian)    params.set('canadian', '1');
     if (state.filters.csa)         params.set('csa', '1');
     state.filters.brand.forEach(b => params.append('brand', b));
-    params.set('limit', '1500');
-    // Drive the "From $X" cards by the customer-chosen qty (default 50).
+    const FIRST_PAGE = 120;
+    params.set('limit', String(FIRST_PAGE));
     if (state.qty && state.qty !== 50) params.set('qty', String(state.qty));
 
     try {
@@ -1163,8 +1160,33 @@
       const data = await res.json();
       const fresh = data.products || [];
       state.products = fresh;
-      state.done = true;             // single-shot fetch
+      state.done = fresh.length < FIRST_PAGE;
       render();
+
+      if (!state.done) {
+        const bgToken = (state._bgFetchToken = (state._bgFetchToken || 0) + 1);
+        const runBackfill = () => {
+          const p2 = new URLSearchParams(params);
+          p2.set('limit', '1500');
+          fetch(`${CATALOG_API}?${p2.toString()}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(d2 => {
+              if (state._bgFetchToken !== bgToken) return;
+              const all = (d2 && d2.products) || [];
+              if (all.length > state.products.length) {
+                state.products = all;
+                state.done = true;
+                render();
+              }
+            })
+            .catch(() => {});
+        };
+        if (typeof requestIdleCallback === 'function') {
+          requestIdleCallback(runBackfill, { timeout: 2000 });
+        } else {
+          setTimeout(runBackfill, 800);
+        }
+      }
     } catch (e) {
       // Empty-state fallback — until the S&S sync runs, render a curated mock so
       // the page isn't broken in front of customers.
