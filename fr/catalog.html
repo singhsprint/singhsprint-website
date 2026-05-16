@@ -239,6 +239,7 @@
     .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
     .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
     .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
+    .detail-modal__specs li[data-flat="1"]::before{display:none}
     .detail-modal__qty{display:inline-flex;align-items:center;gap:8px}
     .detail-modal__qty-btn{width:30px;height:30px;border:1.5px solid #d8d5cb;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;color:#1a1a1a;line-height:1;transition:background .12s,border-color .12s;font-family:inherit;padding:0}
     .detail-modal__qty-btn:hover{background:#f4f2eb;border-color:#1a1a1a}
@@ -733,6 +734,51 @@
     const lis = tmp.querySelectorAll('li');
     return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
   }
+  // See EN catalog for full rationale — bullet → ad-hoc split → paragraph
+  // fallback so suppliers with plain-text descriptions still display.
+  function _adhocSpecLines(text) {
+    if (!text) return [];
+    var cleaned = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!cleaned) return [];
+    if (/\n/.test(text)) {
+      return text.split('\n').map(function(s){ return s.replace(/<[^>]+>/g,' ').trim(); }).filter(Boolean);
+    }
+    var parts = cleaned.split(/(?<=\.)\s+(?=[A-Z])/);
+    if (parts.length >= 2) return parts.map(function(s){ return s.trim(); }).filter(Boolean);
+    return [cleaned];
+  }
+  function renderDetailModalSpecs() {
+    const p = _detailProduct; if (!p) return;
+    let specs = parseSpecBullets(p.description);
+    let kind  = 'bullets';
+    if (specs.length === 0) {
+      specs = _adhocSpecLines(p.description);
+      kind  = specs.length === 1 ? 'paragraph' : 'bullets';
+    }
+    const specsWrap = document.getElementById('detailModalSpecsWrap');
+    const specsList = document.getElementById('detailModalSpecs');
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (!specsWrap || !specsList || !specsToggle) return;
+    if (specs.length === 0) { specsWrap.style.display = 'none'; return; }
+    specsWrap.style.display = 'block';
+    if (kind === 'paragraph') {
+      specsList.innerHTML = '<li style="padding-left:0;color:#444;line-height:1.55" data-flat="1">' + specs[0].replace(/</g, '&lt;') + '</li>';
+      specsToggle.style.display = 'none';
+      return;
+    }
+    const PREVIEW = 4;
+    specsList.innerHTML = specs.map((s, i) =>
+      `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
+    ).join('');
+    if (specs.length > PREVIEW) {
+      specsToggle.style.display = 'inline-block';
+      var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
+      specsToggle.dataset.expanded = '0';
+    } else {
+      specsToggle.style.display = 'none';
+    }
+  }
   function openProductDetail(p, initialColorIdx) {
     _detailProduct = p;
     _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
@@ -756,6 +802,7 @@
           }
           paintDetailHero();
           if (typeof renderDetailModalSwatches === 'function') renderDetailModalSwatches();
+          if (typeof renderDetailModalSpecs    === 'function') renderDetailModalSpecs();
         })
         .catch(function(){ /* keep the slim view */ });
     }
@@ -774,28 +821,7 @@
     document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
     document.getElementById('detailModalCount').textContent = (p.colors || []).length;
 
-    // Tech specs — render up to 4 bullets collapsed, "Show more" reveals the rest.
-    const specs = parseSpecBullets(p.description);
-    const specsWrap = document.getElementById('detailModalSpecsWrap');
-    const specsList = document.getElementById('detailModalSpecs');
-    const specsToggle = document.getElementById('detailModalSpecsToggle');
-    if (specs.length === 0) {
-      specsWrap.style.display = 'none';
-    } else {
-      specsWrap.style.display = 'block';
-      const PREVIEW = 4;
-      specsList.innerHTML = specs.map((s, i) =>
-        `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
-      ).join('');
-      if (specs.length > PREVIEW) {
-        specsToggle.style.display = 'inline-block';
-        var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
-        specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
-        specsToggle.dataset.expanded = '0';
-      } else {
-        specsToggle.style.display = 'none';
-      }
-    }
+    renderDetailModalSpecs();
 
     // Seed the qty stepper from the catalog page's current slider value.
     const qtyInput = document.getElementById('detailModalQtyInput');
@@ -808,8 +834,9 @@
       // Same fallback as the card swatches — multi-tone colors have no hex
       // but always have a swatch image; show that image as the dot bg.
       // Route through imgUrl() so S&S URLs go through /api/image-proxy.
+      // No hex? Try swatch image → mockup front → grey.
       const hex     = c.hex_code;
-      const swatch  = c.swatch_image_url;
+      const swatch  = c.swatch_image_url || c.mockup_front_url;
       const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');

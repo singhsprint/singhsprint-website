@@ -239,6 +239,10 @@
     .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
     .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
     .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
+    /* Paragraph fallback — when the supplier ships a single text blob
+       instead of bullet-structured specs, hide the round bullet dot
+       and let it read as prose. */
+    .detail-modal__specs li[data-flat="1"]::before{display:none}
     .detail-modal__qty{display:inline-flex;align-items:center;gap:8px}
     .detail-modal__qty-btn{width:30px;height:30px;border:1.5px solid #d8d5cb;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;color:#1a1a1a;line-height:1;transition:background .12s,border-color .12s;font-family:inherit;padding:0}
     .detail-modal__qty-btn:hover{background:#f4f2eb;border-color:#1a1a1a}
@@ -774,6 +778,7 @@
           // Re-render whatever the modal exposes from the fatter payload.
           paintDetailHero();
           if (typeof renderDetailModalSwatches === 'function') renderDetailModalSwatches();
+          if (typeof renderDetailModalSpecs    === 'function') renderDetailModalSpecs();
         })
         .catch(function(){ /* keep the slim view */ });
     }
@@ -792,28 +797,11 @@
     document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
     document.getElementById('detailModalCount').textContent = (p.colors || []).length;
 
-    // Tech specs — render up to 4 bullets collapsed, "Show more" reveals the rest.
-    const specs = parseSpecBullets(p.description);
-    const specsWrap = document.getElementById('detailModalSpecsWrap');
-    const specsList = document.getElementById('detailModalSpecs');
-    const specsToggle = document.getElementById('detailModalSpecsToggle');
-    if (specs.length === 0) {
-      specsWrap.style.display = 'none';
-    } else {
-      specsWrap.style.display = 'block';
-      const PREVIEW = 4;
-      specsList.innerHTML = specs.map((s, i) =>
-        `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
-      ).join('');
-      if (specs.length > PREVIEW) {
-        specsToggle.style.display = 'inline-block';
-        var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
-        specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
-        specsToggle.dataset.expanded = '0';
-      } else {
-        specsToggle.style.display = 'none';
-      }
-    }
+    // Tech specs panel — called twice: once with slim Algolia data
+    // (description is plain text, no <li> tags so this hides the panel),
+    // and again after the /api/catalog?product_id=… refetch lands with
+    // the raw HTML description from the supplier.
+    renderDetailModalSpecs();
 
     // Seed the qty stepper from the catalog page's current slider value.
     const qtyInput = document.getElementById('detailModalQtyInput');
@@ -851,6 +839,74 @@
     return out;
   }
 
+  // Render the tech-specs panel from _detailProduct.description. Two
+  // shapes from suppliers:
+  //   1. Structured: <ul><li>5.3 oz/yd²</li><li>Classic fit</li>…</ul>
+  //      → parseSpecBullets() lifts each <li> as a bullet.
+  //   2. Plain text: "5.3 oz./yd² (US), 8.0 oz/L (CA), 100% cotton…"
+  //      → split on sentence-like boundaries to make ad-hoc bullets, OR
+  //      fall back to a single paragraph if nothing splits cleanly. Goal
+  //      is that EVERY product with description text shows something —
+  //      no more invisible specs panel.
+  function _adhocSpecLines(text) {
+    if (!text) return [];
+    var cleaned = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!cleaned) return [];
+    // Try newlines first — some suppliers wedge \n between facts.
+    if (/\n/.test(text)) {
+      return text.split('\n').map(function(s){ return s.replace(/<[^>]+>/g,' ').trim(); }).filter(Boolean);
+    }
+    // Heuristic: split on common bullet separators. We won't blindly
+    // split on every period (would break "5.3 oz"). Look for capital
+    // letter starts after a period+space.
+    var parts = cleaned.split(/(?<=\.)\s+(?=[A-Z])/);
+    if (parts.length >= 2) return parts.map(function(s){ return s.trim(); }).filter(Boolean);
+    // Last resort: one big paragraph.
+    return [cleaned];
+  }
+
+  function renderDetailModalSpecs() {
+    const p = _detailProduct; if (!p) return;
+    let specs = parseSpecBullets(p.description);
+    let kind  = 'bullets';
+    if (specs.length === 0) {
+      specs = _adhocSpecLines(p.description);
+      kind  = specs.length === 1 ? 'paragraph' : 'bullets';
+    }
+    const specsWrap = document.getElementById('detailModalSpecsWrap');
+    const specsList = document.getElementById('detailModalSpecs');
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (!specsWrap || !specsList || !specsToggle) return;
+    if (specs.length === 0) {
+      specsWrap.style.display = 'none';
+      return;
+    }
+    specsWrap.style.display = 'block';
+    if (kind === 'paragraph') {
+      // No bullet structure exists — render as a single muted paragraph.
+      const esc = specs[0].replace(/</g, '&lt;');
+      specsList.innerHTML = '<li style="padding-left:0;color:#444;line-height:1.55" data-flat="1">' + esc + '</li>';
+      specsList.querySelectorAll('li[data-flat="1"]').forEach(li => {
+        // Hide the round bullet for the paragraph case.
+        li.style.setProperty('list-style', 'none');
+      });
+      specsToggle.style.display = 'none';
+      return;
+    }
+    const PREVIEW = 4;
+    specsList.innerHTML = specs.map((s, i) =>
+      `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
+    ).join('');
+    if (specs.length > PREVIEW) {
+      specsToggle.style.display = 'inline-block';
+      var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
+      specsToggle.dataset.expanded = '0';
+    } else {
+      specsToggle.style.display = 'none';
+    }
+  }
+
   // Render (or re-render) the color grid inside the detail modal. Called
   // by openProductDetail with the slim Algolia data, then called again
   // when the full /api/catalog?product_id=… payload arrives so the
@@ -860,10 +916,11 @@
     const host = document.getElementById('detailModalSwatches');
     if (!host) return;
     host.innerHTML = (p.colors || []).map((c, i) => {
-      // Multi-tone colors have no parseable hex; fall back to the swatch
-      // image, route via imgUrl() so S&S URLs hit our /api/image-proxy.
+      // No hex? Try the swatch thumbnail first, then the front mockup
+      // (Blanks.ca colors often have only the latter), then grey as a
+      // last resort. Route via imgUrl() so S&S URLs go through proxy.
       const hex     = c.hex_code;
-      const swatch  = c.swatch_image_url;
+      const swatch  = c.swatch_image_url || c.mockup_front_url;
       const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');
