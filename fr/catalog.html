@@ -105,8 +105,8 @@
     .swatch.swatch--oos{opacity:.3;position:relative}
     .swatch.swatch--oos::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:inherit}
     .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
-    .card .photo{aspect-ratio:1;background:#f0eee5;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
-    .card .photo img{width:100%;height:100%;object-fit:contain;padding:6%;transition:opacity .25s ease}
+    .card .photo{aspect-ratio:1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .card .photo img{width:100%;height:100%;object-fit:contain;padding:4%;transition:opacity .25s ease}
     /* Skeleton cards — shown immediately on first paint so the page
        doesn't look frozen during the 1.4s initial catalog fetch. */
     .skel{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
@@ -161,7 +161,7 @@
 
     /* BYO card */
     .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
-    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#f0eee5;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
     .card-byo strong{font-size:.95rem}
     .card-byo span{font-size:.78rem;color:var(--muted);line-height:1.4}
 
@@ -201,11 +201,11 @@
     .detail-modal__head{padding:18px 22px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:12px}
     .detail-modal__body{flex:1;overflow-y:auto;padding:22px}
     .detail-modal__hero{display:grid;grid-template-columns:240px 1fr;gap:22px;margin-bottom:22px}
-    .detail-modal__hero img{width:100%;border-radius:12px;background:#f4f2eb;aspect-ratio:1/1;object-fit:contain;padding:6%}
+    .detail-modal__hero img{width:100%;border-radius:12px;background:#fff;aspect-ratio:1/1;object-fit:contain;padding:4%}
     /* Gallery — main image + thumbnail strip */
     .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
     .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
-    .detail-modal__main img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;padding:5%;background:#f4f2eb;transition:transform .25s ease}
+    .detail-modal__main img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;padding:4%;background:#fff;transition:transform .25s ease}
     .detail-modal__main:hover img{transform:scale(1.03)}
     .detail-modal__zoom-hint{position:absolute;right:10px;bottom:10px;width:28px;height:28px;border-radius:50%;background:rgba(26,26,26,.78);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;pointer-events:none;backdrop-filter:blur(4px);opacity:0;transition:opacity .15s}
     .detail-modal__main:hover .detail-modal__zoom-hint{opacity:1}
@@ -1211,10 +1211,12 @@
   // every supplier image is routed through our /api/image-proxy endpoint
   // (server-side fetch with auth + 24h edge cache). Local /images/* URLs and
   // anything already on singhsprint.com is passed through untouched.
+  // S&S + Blanks.ca both 403 direct hotlinks now — proxy both.
+  const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca'];
   function imgUrl(raw) {
     if (!raw) return '/images/product-tshirt-white.jpg';
     if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
-    if (raw.indexOf('ssactivewear.com') >= 0) {
+    if (PROXIED_HOSTS.some(h => raw.indexOf(h) >= 0)) {
       return IMAGE_PROXY + '?url=' + encodeURIComponent(raw);
     }
     return raw;

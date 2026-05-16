@@ -1239,7 +1239,7 @@ function loadProductModal() {
     '.sp-pm__close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(0,0,0,.06);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#1a1a1a;font-size:18px;line-height:1}',
     '.sp-pm__close:hover{background:rgba(0,0,0,.12)}',
     '.sp-pm__grid{display:grid;grid-template-columns:240px 1fr;gap:22px;padding:24px}',
-    '.sp-pm__img{width:100%;aspect-ratio:1/1;border-radius:12px;background:#f3f1ea;object-fit:contain;padding:6%;display:block}',
+    '.sp-pm__img{width:100%;aspect-ratio:1/1;border-radius:12px;background:#fff;object-fit:contain;padding:4%;display:block}',
     '.sp-pm__brand{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}',
     '.sp-pm__name{font-family:Georgia,serif;font-size:1.35rem;line-height:1.2;color:#1a1a1a;margin-bottom:10px}',
     '.sp-pm__meta{font-size:.86rem;color:#666;margin-bottom:14px;line-height:1.5}',
