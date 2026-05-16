@@ -416,7 +416,16 @@
            viewport). So the only "thing" in mockup-panel that
            survives on mobile is the floating price bar. */
       .mockup-panel{position:static !important;order:0 !important;padding:0 !important;background:transparent !important;border:none !important;margin-bottom:0 !important}
-      .mockup-reassure,.mockup-card,.mockup-faq,.sidebar-card{display:none !important}
+      /* Hide the marketing sidebar cards (next-steps, prefer-to-talk, promo)
+         but keep the shipping estimator — it's a quote-completing function,
+         not marketing, and customers need to see their shipping total on the
+         same screen they're filling out the form on. */
+      .mockup-reassure,.mockup-card,.mockup-faq,.sidebar-card:not(#shippingEstimateCard){display:none !important}
+      /* Promote the shipping estimator inline on phones — full width, sits
+         right under the form (it's the last sidebar-card sibling), with the
+         same comfortable padding the form fields use. */
+      #shippingEstimateCard{display:block !important;background:#fff;border:1px solid #e8e6df;border-radius:14px;padding:18px 16px !important;margin:20px 0 24px !important;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+      #shippingEstimateCard h4{font-size:1rem;margin-bottom:10px}
       /* Hero gap fix — was rendering ~300px tall on phones */
       .quote-hero{padding:14px 0 6px !important}
       .quote-hero h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
