@@ -131,6 +131,7 @@ function loadNav() {
       '.sp-mobile-cat{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:78px;padding:10px 8px;background:#fafaf6;border:1px solid #ece9df;border-radius:12px;text-decoration:none;color:#1a1a1a;font-size:.74rem;font-weight:600;line-height:1.2;scroll-snap-align:start;text-align:center}',
       '.sp-mobile-cat:active{background:#f0eee7}',
       '.sp-mobile-cat svg{width:24px;height:24px;flex-shrink:0}',
+      '.sp-mobile-cat img{width:44px;height:44px;object-fit:cover;border-radius:8px;background:#f3f1ea;flex-shrink:0}',
       '@media(max-width:420px){.promo-bar{padding:8px 14px;font-size:.78rem}}'
     ].join('');
     document.head.appendChild(s);
@@ -347,16 +348,20 @@ function loadNav() {
     + '  </nav>'
     + '</header>'
     // Mobile-only horizontal category strip — six one-tap entry points
-    // into the catalog. Tucked under the sticky header so it scrolls
-    // away as the page scrolls. CSS hides this entirely above 960px.
+    // into the catalog plus an "All" entry. Tucked under the sticky
+    // header so it scrolls away as the page scrolls. CSS hides this
+    // entirely above 960px. Uses real product photos for the icons —
+    // four local + two proxied through /api/image-proxy from S&S so we
+    // don't 403 on hotlinking. Easy to swap any of these for a curated
+    // asset later.
     + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt"><img src="/images/product-tshirt-black.jpg" alt="" loading="lazy"/><span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie"><img src="/images/product-hoodie-concordia.jpg" alt="" loading="lazy"/><span>' + t('Hoodies', 'Hoodies') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo"><img src="/images/product-polo.jpg" alt="" loading="lazy"/><span>' + t('Polos', 'Polos') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest"><img src="https://singhsprint-crm.vercel.app/api/image-proxy?url=' + encodeURIComponent('https://www.ssactivewear.com/Images/Style/7685_fm.jpg') + '" alt="" loading="lazy"/><span>' + t('Workwear', 'Travail') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote"><img src="https://singhsprint-crm.vercel.app/api/image-proxy?url=' + encodeURIComponent('https://www.ssactivewear.com/Images/Style/15891_fm.jpg') + '" alt="" loading="lazy"/><span>' + t('Bags', 'Sacs') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat"><img src="/images/product-hat-artwood.jpg" alt="" loading="lazy"/><span>' + t('Hats', 'Chapeaux') + '</span></a>'
     + '</nav>'
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
     + '  <div class="sp-drawer-head">'
@@ -487,6 +492,32 @@ function loadNav() {
     if (e.key !== 'Escape') return;
     window.__spCloseDrawer();
   });
+
+  // ----- Catalog prefetch -----
+  // On pages OTHER than the catalog itself, fire a low-priority fetch to
+  // /api/catalog?limit=120 after first paint so when the user clicks
+  // "Catalog" the response is already in the browser cache. Uses
+  // requestIdleCallback so it never blocks anything that matters.
+  // Skipped if the user has slow connection (saveData / 2G).
+  (function prefetchCatalog() {
+    var p = window.location.pathname.toLowerCase();
+    if (p.indexOf('/catalog') === 0 || p.indexOf('/fr/catalog') === 0) return;
+    var c = navigator.connection;
+    if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
+    function run() {
+      try {
+        fetch('https://singhsprint-crm.vercel.app/api/catalog?limit=120', {
+          cache: 'force-cache',
+          priority: 'low'
+        }).catch(function () { /* best-effort */ });
+      } catch (e) {}
+    }
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(run, { timeout: 4000 });
+    } else {
+      setTimeout(run, 2500);
+    }
+  })();
 }
 
 function loadFooter() {
@@ -878,6 +909,10 @@ function loadStickyCTA() {
   // Skip if user is already on the quote flow or post-conversion pages.
   if (path === '/quote' || path === '/quote/' || path.indexOf('/quote/') === 0) return;
   if (path === '/order' || path === '/order/' || path.indexOf('/order/') === 0) return;
+  // /catalog has its own sticky cart bar at the bottom — adding our generic
+  // CTA on top of it causes them to overlap on mobile. Skip on catalog too.
+  if (path === '/catalog' || path === '/catalog/' || path.indexOf('/catalog/') === 0) return;
+  if (path === '/fr/catalog' || path === '/fr/catalog/' || path.indexOf('/fr/catalog/') === 0) return;
   // Homepage already has its own .sticky-cta in source; skip to avoid double-up.
   if (document.querySelector('.sticky-cta')) return;
 
