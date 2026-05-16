@@ -308,6 +308,19 @@
     } catch(e){ window.__SP_EARLY_CATALOG__ = null; }
   })();
   </script>
+
+  <!-- Algolia bridge — see EN catalog.html for the full rationale. -->
+  <script>
+    window.SP_ALGOLIA_CONFIG = {
+      appId:     '56LKULJHAL',
+      searchKey: '12723f9b2a3308fab3d748a6fc3189b7',
+      indexName: 'singhsprint_catalog'
+    };
+    if (/REPLACE_WITH_/.test(window.SP_ALGOLIA_CONFIG.appId + window.SP_ALGOLIA_CONFIG.searchKey)) {
+      window.SP_ALGOLIA_CONFIG = null;
+    }
+  </script>
+  <script src="/catalog-algolia.js" defer></script>
   </head>
 <body>
 
@@ -1172,6 +1185,38 @@
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
 
+    // Algolia path — see catalog.html (EN) for the long-form rationale.
+    if (window.SPCatalog) {
+      try {
+        const isFirstPage = state.page === 0;
+        const r = await window.SPCatalog.search({
+          type:        state.filters.type,
+          brands:      state.filters.brand,
+          canadian:    state.filters.canadian,
+          csa:         state.filters.csa,
+          inStockOnly: state.filters.inStockOnly,
+          q:           state.filters.q,
+          page:        state.page,
+          hitsPerPage: 30,
+        });
+        const fresh = r.products || [];
+        state.products = isFirstPage ? fresh : state.products.concat(fresh);
+        state.page = state.page + 1;
+        state.done = state.page >= (r.totalPages || 1) || fresh.length === 0;
+        state._algoliaFacets = r.facets;
+        state._algoliaTotal  = r.total;
+        render();
+      } catch (e) {
+        console.error('Algolia search failed; falling back to empty state:', e);
+        if (state.page === 0) state.products = [];
+        render();
+      } finally {
+        state.loading = false;
+        document.getElementById('catLoading').style.display = 'none';
+      }
+      return;
+    }
+
     // Two-phase fetch — voir EN catalog.html pour les détails.
     const params = new URLSearchParams();
     if (state.filters.type)        params.set('type', state.filters.type);
@@ -1809,6 +1854,7 @@
 
   function resetAndFetch() {
     state.products = []; state.page = 0; state.done = false;
+    if (window.SPCatalog && window.SPCatalog.clearCache) window.SPCatalog.clearCache();
     fetchPage();
   }
 

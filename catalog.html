@@ -307,6 +307,27 @@
     } catch(e){ window.__SP_EARLY_CATALOG__ = null; }
   })();
   </script>
+
+  <!-- ====================================================================
+       Algolia bridge — feeds /catalog the slim 30-hits-at-a-time search
+       layer that replaces direct /api/catalog scans of 6,400 products.
+       When SP_ALGOLIA_CONFIG is set with valid credentials, fetchPage()
+       routes through window.SPCatalog. Clear the credentials below to
+       force the legacy /api/catalog path back on.
+       ==================================================================== -->
+  <script>
+    window.SP_ALGOLIA_CONFIG = {
+      appId:     '56LKULJHAL',
+      searchKey: '12723f9b2a3308fab3d748a6fc3189b7',
+      indexName: 'singhsprint_catalog'
+    };
+    // Drop the config entirely if the placeholders are still in place, so
+    // we don't fire pointless requests with bogus credentials.
+    if (/REPLACE_WITH_/.test(window.SP_ALGOLIA_CONFIG.appId + window.SP_ALGOLIA_CONFIG.searchKey)) {
+      window.SP_ALGOLIA_CONFIG = null;
+    }
+  </script>
+  <script src="/catalog-algolia.js" defer></script>
   </head>
 <body>
 
@@ -1176,13 +1197,53 @@
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
 
-    // Two-phase fetch so first paint is fast:
+    // ----------------------------------------------------------------------
+    // ALGOLIA PATH — when /catalog-algolia.js has loaded with valid config,
+    // route through Algolia's hosted index. Each request pulls 30 hits
+    // server-side-filtered, so the browser never holds more than a couple
+    // hundred products in memory even on the deepest scroll. The scroll
+    // handler at the bottom of this file already calls fetchPage() on
+    // approach to the bottom, which acts as natural infinite-scroll.
+    // ----------------------------------------------------------------------
+    if (window.SPCatalog) {
+      try {
+        const isFirstPage = state.page === 0;
+        const r = await window.SPCatalog.search({
+          type:        state.filters.type,
+          brands:      state.filters.brand,
+          canadian:    state.filters.canadian,
+          csa:         state.filters.csa,
+          inStockOnly: state.filters.inStockOnly,
+          q:           state.filters.q,
+          page:        state.page,
+          hitsPerPage: 30,
+        });
+        const fresh = r.products || [];
+        state.products = isFirstPage ? fresh : state.products.concat(fresh);
+        state.page = state.page + 1;
+        state.done = state.page >= (r.totalPages || 1) || fresh.length === 0;
+        state._algoliaFacets = r.facets;
+        state._algoliaTotal  = r.total;
+        render();
+      } catch (e) {
+        console.error('Algolia search failed; falling back to empty state:', e);
+        if (state.page === 0) state.products = [];
+        render();
+      } finally {
+        state.loading = false;
+        document.getElementById('catLoading').style.display = 'none';
+      }
+      return;
+    }
+
+    // ----------------------------------------------------------------------
+    // LEGACY PATH — direct /api/catalog two-phase fetch. Kept as a fallback
+    // when /catalog-algolia.js fails to load or window.SP_ALGOLIA_CONFIG is
+    // intentionally cleared.
     //   phase 1 — limit=120 (~520 KB) renders the first ~5 rows quickly
     //   phase 2 — fires in the background after first paint completes,
     //             pulls the full set (limit=20000, paginated server-side) and appends.
-    // Filtered views typically fit within the first 120 anyway (largest
-    // category is polos with 174). If the user filters during phase 2,
-    // the new fetch supersedes — we cancel via _bgFetchToken.
+    // ----------------------------------------------------------------------
     const params = new URLSearchParams();
     if (state.filters.type)        params.set('type', state.filters.type);
     if (state.filters.q)           params.set('q', state.filters.q);
@@ -1843,6 +1904,7 @@
 
   function resetAndFetch() {
     state.products = []; state.page = 0; state.done = false;
+    if (window.SPCatalog && window.SPCatalog.clearCache) window.SPCatalog.clearCache();
     fetchPage();
   }
 
