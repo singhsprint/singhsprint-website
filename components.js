@@ -125,14 +125,21 @@ function loadNav() {
       // the page content on small screens. Single-tap entry to the six
       // top categories without needing to open the drawer. Hidden on
       // desktop (row 2 covers it there).
-      '.sp-mobile-cats{display:none;background:#fff;border-bottom:1px solid #f0eee7;padding:10px 12px 12px 12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}',
+      // Compact mobile category strip — tuned so it costs as little
+      // above-the-fold real estate as possible while still being a
+      // legible one-tap entry into each category. Total height ~58px
+      // (vs ~88px before) so the hero video sits back above the fold.
+      '.sp-mobile-cats{display:none;background:#fff;border-bottom:1px solid #f0eee7;padding:8px 10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}',
       '.sp-mobile-cats::-webkit-scrollbar{display:none}',
       '@media(max-width:960px){.sp-mobile-cats{display:flex}}',
-      '.sp-mobile-cat{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:78px;padding:10px 8px;background:#fafaf6;border:1px solid #ece9df;border-radius:12px;text-decoration:none;color:#1a1a1a;font-size:.74rem;font-weight:600;line-height:1.2;scroll-snap-align:start;text-align:center}',
+      '.sp-mobile-cat{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;background:#fafaf6;border:1px solid #ece9df;border-radius:999px;text-decoration:none;color:#1a1a1a;font-size:.78rem;font-weight:600;line-height:1;scroll-snap-align:start}',
       '.sp-mobile-cat:active{background:#f0eee7}',
-      '.sp-mobile-cat svg{width:24px;height:24px;flex-shrink:0}',
-      '.sp-mobile-cat img{width:44px;height:44px;object-fit:cover;border-radius:8px;background:#f3f1ea;flex-shrink:0}',
-      '@media(max-width:420px){.promo-bar{padding:8px 14px;font-size:.78rem}}'
+      '.sp-mobile-cat svg{width:22px;height:22px;flex-shrink:0;padding:4px;background:#fff;border-radius:50%;border:1px solid #ece9df;box-sizing:content-box}',
+      '.sp-mobile-cat img{width:30px;height:30px;object-fit:cover;border-radius:50%;background:#f3f1ea;flex-shrink:0}',
+      // Tighter promo bar on phones — was wrapping to two lines on
+      // standard iPhone widths and chewing 25-30 px above the fold.
+      '@media(max-width:500px){.promo-bar{padding:7px 12px;font-size:.74rem;line-height:1.35}}',
+      '@media(max-width:380px){.promo-bar{padding:6px 10px;font-size:.7rem}}'
     ].join('');
     document.head.appendChild(s);
   }
