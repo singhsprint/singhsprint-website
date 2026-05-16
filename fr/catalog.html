@@ -766,12 +766,16 @@
     // Full color grid with names underneath.
     const host = document.getElementById('detailModalSwatches');
     host.innerHTML = (p.colors || []).map((c, i) => {
-      const hex = c.hex_code || '#ccc';
+      // Same fallback as the card swatches — multi-tone colors have no hex
+      // but always have a swatch image; show that image as the dot bg.
+      const hex     = c.hex_code;
+      const swatch  = c.swatch_image_url;
+      const bg      = (!hex && swatch) ? `url(${swatch}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');
       const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
       return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${i === 0 ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
-        <span class="detail-modal__swatch-dot" style="background:${hex}"></span>
+        <span class="detail-modal__swatch-dot" style="background:${bg}"></span>
         <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
       </button>`;
     }).join('');
@@ -1480,13 +1484,21 @@
     const SWATCH_LIMIT = 24;
     const renderSwatches = () => {
       return (p.colors || []).slice(0, SWATCH_LIMIT).map((c, i) => {
-        const hex = c.hex_code || '#ccc';
-        const light = isLight(hex);
+        // Multi-tone colorways (e.g. "BLACK/NEON BLUE/BLACK" trucker caps,
+        // most Blanks.ca complex shades) have no parseable hex but ALWAYS
+        // have a swatch_image_url — a small thumbnail of that colorway.
+        // Prefer the image when hex is unknown so the swatch shows the real
+        // tones instead of falling back to a generic grey chip.
+        const hex     = c.hex_code;
+        const swatch  = c.swatch_image_url;
+        const useImg  = !hex && swatch;
+        const light   = hex ? isLight(hex) : false;
+        const bg      = useImg ? `url(${swatch}) center/cover #f3f1ea` : (hex || '#ccc');
         const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
         const oosCls = hasStock ? '' : 'swatch--oos';
         const selected = i === card._selectedColorIdx ? 'swatch--selected' : '';
         const cleanName = (c.color_name || '').replace(/_\d+$/, '');
-        return `<button type="button" class="swatch ${light ? 'is-light' : ''} ${oosCls} ${selected}" style="background:${hex}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}" data-idx="${i}" aria-label="${cleanName}"></button>`;
+        return `<button type="button" class="swatch ${light ? 'is-light' : ''} ${oosCls} ${selected}" style="background:${bg}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}" data-idx="${i}" aria-label="${cleanName}"></button>`;
       }).join('');
     };
     const extra = p.colors.length > SWATCH_LIMIT ? `<span class="more">+${p.colors.length - SWATCH_LIMIT}</span>` : '';
