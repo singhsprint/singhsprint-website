@@ -1653,15 +1653,35 @@
     const body = document.getElementById('filterBody');
     if (!body) return;
 
-    // Build brand list from the currently-loaded products. We always show
-    // every brand we know about, with a count next to it so the customer
-    // can gauge depth.
-    const brandCounts = {};
+    // Build brand list from the currently-loaded products. Suppliers store
+    // the same brand under inconsistent strings: "NIKE", "Nike®", and
+    // "Nike" all appear as separate rows in raw data. We collapse them by
+    // a normalized key (lowercase, strip ®/™/©) and keep the cleanest
+    // display label. The API's ilike search is case-insensitive so a
+    // single "Nike" filter still catches every casing variant in the DB.
+    function normBrand(s) {
+      return (s || '').replace(/[®™©]/g, '').toLowerCase().trim();
+    }
+    function brandLabelScore(s) {
+      let sc = 0;
+      if (/[®™©]/.test(s))            sc -= 3;   // trademark marks: ugly
+      if (s === s.toUpperCase() && s.length > 3) sc -= 2; // ALL CAPS: shouty
+      if (/^[A-Z][a-z]/.test(s))      sc += 2;   // Title Case: clean
+      return sc;
+    }
+    const brandMap = new Map();
     state.products.forEach(p => {
       if (!p.brand) return;
-      brandCounts[p.brand] = (brandCounts[p.brand] || 0) + 1;
+      const k = normBrand(p.brand);
+      if (!k) return;
+      const cur = brandMap.get(k);
+      if (!cur) {
+        brandMap.set(k, { label: p.brand, count: 1 });
+      } else {
+        cur.count++;
+        if (brandLabelScore(p.brand) > brandLabelScore(cur.label)) cur.label = p.brand;
+      }
     });
-    const brands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 30);
 
     const typeCounts = {};
     state.products.forEach(p => {
@@ -1675,9 +1695,10 @@
     const orderedTypes = GARMENT_TYPES
       .filter(([gt]) => typeCounts[gt])
       .sort((a, b) => (typeCounts[b[0]] || 0) - (typeCounts[a[0]] || 0));
-    const orderedBrands = Object.entries(brandCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 200);
+    const orderedBrands = Array.from(brandMap.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 200)
+      .map(b => [b.label, b.count]);
 
     body.innerHTML = `
       <div style="padding:18px 22px">
