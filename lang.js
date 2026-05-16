@@ -646,6 +646,17 @@ var SP_LANG = (function() {
 
     // ===== NAV ADDITIONS =====
     'nav.catalog': { en: 'Catalog', fr: 'Catalogue' },
+    // Category dropdowns on the two-row site header (components.js loadNav).
+    'nav.tshirts':  { en: 'T-Shirts',             fr: 'T-shirts' },
+    'nav.hoodies':  { en: 'Hoodies & Sweatshirts',fr: 'Hoodies et pulls' },
+    'nav.polos':    { en: 'Polos & Apparel',      fr: 'Polos et vêtements' },
+    'nav.workwear': { en: 'Workwear',             fr: 'Vêtements de travail' },
+    'nav.bags':     { en: 'Bags',                 fr: 'Sacs' },
+    'nav.hats':     { en: 'Hats',                 fr: 'Chapeaux' },
+    // Compact label on the mobile collapsed bar — "Quote" instead of "Get a Quote".
+    'nav.quote.short':       { en: 'Quote',                  fr: 'Devis' },
+    // Header search field placeholder.
+    'nav.search.placeholder':{ en: 'Search 1,100+ blanks',   fr: 'Chercher parmi 1 100+ vêtements' },
 
     // ===== SHARED FR-ONLY NOTICE (industries + guides) =====
     'page.fr-notice': {

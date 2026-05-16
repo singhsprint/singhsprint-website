@@ -640,7 +640,7 @@
   const SinghsCart = {
     key: 'singhsCart_v1',
     read() { try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
-    write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); queueCartSync(); },
+    write(c) { try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartBar(); queueCartSync(); try { window.dispatchEvent(new Event('singhsCartChange')); } catch(e){} },
     add(item) {
       const c = this.read();
       // Default placements/sides on add — garment-aware so a cap defaults
