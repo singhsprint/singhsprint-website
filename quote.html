@@ -4710,6 +4710,17 @@
       if (!untracked) untracked = rates[0];
       if (!tracked && rates.length > 1) tracked = rates[rates.length - 1];
 
+      // Counter-intuitive case: for heavy / multi-parcel shipments, Chit
+      // Chats' tracked service (Canada Post Tracked Packet under the hood)
+      // sometimes prices below Select. When "With tracking" is cheaper —
+      // i.e. tracked is a strict upgrade in both cost AND service — drop
+      // the untracked option entirely. Otherwise customers see two cards
+      // where the pricier one looks worse on every axis, which is confusing.
+      if (tracked && untracked && tracked !== untracked &&
+          Number(tracked.fee_cad) < Number(untracked.fee_cad)) {
+        untracked = null;
+      }
+
       var pkg = d.package_type_label || 'Package';
       var wKg = (Number(d.weight_g) / 1000).toFixed(2);
       var nearFree = d && d.free_shipping && d.free_shipping.in_greater_montreal &&
@@ -4717,8 +4728,11 @@
                      d.free_shipping.current_value_cad < d.free_shipping.min_value_cad;
 
       var html = '';
+      // When only one option remains (e.g. tracked-is-cheaper case),
+      // it becomes the default-checked card.
+      var soleOption = !untracked || !tracked;
       if (untracked) html += spRateCardHtml('untracked', untracked, true);
-      if (tracked && tracked !== untracked) html += spRateCardHtml('tracked', tracked, false);
+      if (tracked && tracked !== untracked) html += spRateCardHtml('tracked', tracked, soleOption);
       html += '<div style="color:#888;font-size:.7rem;margin-top:8px">' + pkg + ' &middot; ~' + wKg + ' kg</div>';
       if (nearFree) {
         var diff = (d.free_shipping.min_value_cad - d.free_shipping.current_value_cad).toFixed(2);
@@ -4750,12 +4764,20 @@
         });
       });
 
-      // Default selection: untracked (cheapest)
+      // Default selection: prefer untracked (cheapest in the normal case);
+      // when we omitted untracked because tracked is cheaper, tracked
+      // becomes the default.
       if (untracked) {
         spShippingChoice = {
           fee_cad: untracked.fee_cad,
           label: spLabel('Without tracking · ', 'Sans suivi · ') + (untracked.label || 'Chit Chats Select'),
           postage_type: untracked.postage_type
+        };
+      } else if (tracked) {
+        spShippingChoice = {
+          fee_cad: tracked.fee_cad,
+          label: spLabel('With tracking · ', 'Avec suivi · ') + (tracked.label || 'Chit Chats Canada Tracked'),
+          postage_type: tracked.postage_type
         };
       }
       spUpdateShippingLine();
