@@ -687,6 +687,61 @@
     document.getElementById('qtySlider').addEventListener('input', updateQtyHighlight);
     updateQtyHighlight();
 
+    // ===== LIVE PRICING TABLE HYDRATION =====
+    // Hydrate pricing tables from /api/pricing-matrix so CRM edits propagate.
+    // See EN businesses.html for the full rationale comment.
+    (function hydratePricingTables() {
+      var MAP = {
+        'table-tshirts':     'tshirt',
+        'table-hoodies':     'hoodie',
+        'table-caps':        'hat',
+        'table-longsleeves': 'longsleeve',
+        'table-crewnecks':   'crewneck',
+        'table-hivis':       'hivis',
+        'table-polos':       'polo',
+        'table-joggers':     'joggers',
+        'table-totes':       'tote',
+      };
+      fetch('https://singhsprint-crm.vercel.app/api/pricing-matrix', { cache: 'force-cache' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data || !data.matrices) return;
+          Object.keys(MAP).forEach(function (id) {
+            var gt = MAP[id], m = data.matrices[gt];
+            var wrap = document.getElementById(id);
+            if (!m || !wrap) return;
+            var table = wrap.querySelector('table.pricing-table');
+            if (!table) return;
+            var thead = table.querySelector('thead');
+            if (thead) {
+              thead.innerHTML = '<tr><th>Quantité</th>' +
+                m.sides.map(function (s) {
+                  return '<th>' + s + '-côté' + (s > 1 ? 's' : '') + '</th>';
+                }).join('') + '</tr>';
+            }
+            var tiers = m.qty_tiers.slice().reverse();
+            var tbody = table.querySelector('tbody');
+            if (tbody) {
+              tbody.innerHTML = tiers.map(function (t, rowIdx) {
+                var origIdx = m.qty_tiers.findIndex(function (x) {
+                  return x.min === t.min && x.max === t.max;
+                });
+                var isBest = rowIdx === 0;
+                var prices = m.sides.map(function (s) {
+                  var ladder = m.prices[String(s)] || [];
+                  var p = ladder[origIdx];
+                  return '<td>' + (typeof p === 'number' ? '$' + p.toFixed(2) : '—') + '</td>';
+                }).join('');
+                return '<tr' + (isBest ? ' class="best-value"' : '') + '>' +
+                       '<td>' + t.label + '</td>' + prices + '</tr>';
+              }).join('');
+            }
+          });
+          if (typeof updateQtyHighlight === 'function') updateQtyHighlight();
+        })
+        .catch(function () { /* fallback static */ });
+    })();
+
     // ===== PRICING PDF DOWNLOAD — capture as lead, source=pricing_pdf =====
     var SUPABASE_URL = 'https://ptrqsjexrbyupexhcjdr.supabase.co';
     var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cnFzamV4cmJ5dXBleGhjamRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODg5NzgsImV4cCI6MjA5MTc2NDk3OH0.aqYJAXmmCEjtHU97UDTLZZlWwoS9ERldFzxTvunZEgA';
