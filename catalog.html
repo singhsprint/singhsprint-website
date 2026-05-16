@@ -283,7 +283,26 @@
   <meta name="twitter:title" content="Apparel Catalog — Singhs Print">
   <meta name="twitter:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
-</head>
+  <script>
+  // Early-fire the catalog fetch so it overlaps with the rest of
+  // page parsing + script downloads. The main render code grabs
+  // this promise via window.__SP_EARLY_CATALOG__ and uses it
+  // instead of starting a fresh fetch.
+  (function(){
+    try {
+      var qs = new URLSearchParams(location.search);
+      var p = new URLSearchParams();
+      if (qs.get("type")) p.set("type", qs.get("type"));
+      if (qs.get("q")) p.set("q", qs.get("q"));
+      if (qs.get("canadian")) p.set("canadian","1");
+      if (qs.get("csa")) p.set("csa","1");
+      var br = qs.getAll("brand"); br.forEach(function(b){ p.append("brand", b); });
+      p.set("limit","120");
+      window.__SP_EARLY_CATALOG__ = fetch("https://singhsprint-crm.vercel.app/api/catalog?"+p.toString(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+    } catch(e){ window.__SP_EARLY_CATALOG__ = null; }
+  })();
+  </script>
+  </head>
 <body>
 
   <div id="nav-placeholder"></div>
@@ -534,7 +553,7 @@
 
   <div id="footer-placeholder"></div>
 
-  <script src="components.js"></script>
+  <script src="components.js" defer></script>
   <script>
   // =========================================================================
   // Catalog state
@@ -1166,9 +1185,19 @@
     if (state.qty && state.qty !== 50) params.set('qty', String(state.qty));
 
     try {
-      const res = await fetch(`${CATALOG_API}?${params.toString()}`);
-      if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
+      // Prefer the early-fired fetch kicked off from <head>. Only valid
+      // on the very first paint (state.page===0). Saves ~150-300 ms vs
+      // starting the fetch after the main script parses.
+      let data;
+      if (state.page === 0 && window.__SP_EARLY_CATALOG__) {
+        data = await window.__SP_EARLY_CATALOG__;
+        window.__SP_EARLY_CATALOG__ = null;
+      }
+      if (!data) {
+        const res = await fetch(`${CATALOG_API}?${params.toString()}`);
+        if (!res.ok) throw new Error(res.status);
+        data = await res.json();
+      }
       const fresh = data.products || [];
       state.products = fresh;
       // If we got the full set in one shot (filtered view smaller than
