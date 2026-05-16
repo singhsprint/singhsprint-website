@@ -134,7 +134,7 @@
       .mobile-toggle{display:flex}
       .nav-links.active{display:flex;flex-direction:column;position:absolute;top:72px;left:0;right:0;background:#fff;padding:24px;border-bottom:1px solid #eee;gap:16px;z-index:100}
       .process-grid{grid-template-columns:1fr}
-      .pricing-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid #eee}
+      .pricing-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid #eee;margin-left:auto !important;margin-right:auto !important;max-width:calc(100vw - 32px)}
       .pricing-table{font-size:.82rem;min-width:560px}
       .pricing-table th,.pricing-table td{padding:10px 8px;white-space:nowrap}
       .pricing-tabs{gap:4px;overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;padding-bottom:8px;-webkit-overflow-scrolling:touch}
@@ -217,20 +217,9 @@
     </div>
   </section>
 
-  <!-- CREDENTIALS STRIP — procurement-grade trust signals -->
-  <section class="creds-strip" style="background:#f8f7f4;padding:20px 0;border-bottom:1px solid #eee">
-    <div class="container">
-      <div style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:.88rem;color:#444">
-        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>Quebec-registered &middot; NEQ 1181573313</span>
-        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>50% deposit + Net 30 balance</span>
-        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>Dedicated account manager</span>
-        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>Same-day quotes during business hours</span>
-        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>5.0&star; from 25 verified Google reviews</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- INDUSTRIES — quick links to vertical landing pages -->
+  <!-- INDUSTRIES — quick links to vertical landing pages. Moved ABOVE the
+       credentials strip so the first thing under the hero is something
+       clickable the visitor can engage with, not a passive trust row. -->
   <section style="padding:50px 0;background:#fff;border-bottom:1px solid #eee">
     <div class="container">
       <div style="text-align:center;margin-bottom:24px">
@@ -244,6 +233,19 @@
         <a href="/industries/corporate-tech-swag" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Corporate &amp; tech swag &rarr;</a>
         <a href="/industries/charity-events-fundraisers" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Charity &amp; events &rarr;</a>
         <a href="/industries/schools-sports-teams" style="display:block;padding:16px 18px;background:#f8f7f4;border-radius:12px;border:1px solid #eee;font-weight:600;font-size:.95rem;transition:all .15s" onmouseover="this.style.borderColor='#1a1a1a';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#eee';this.style.transform='none'">Schools &amp; sports &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CREDENTIALS STRIP — procurement-grade trust signals -->
+  <section class="creds-strip" style="background:#f8f7f4;padding:20px 0;border-bottom:1px solid #eee">
+    <div class="container">
+      <div style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:.88rem;color:#444">
+        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>Quebec-registered &middot; NEQ 1181573313</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>50% deposit + Net 30 balance</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>Dedicated account manager</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>Same-day quotes during business hours</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#1a9e75;flex-shrink:0"></span>5.0&star; from 25 verified Google reviews</span>
       </div>
     </div>
   </section>
@@ -350,7 +352,7 @@
       <div class="text-center">
         <span class="label" data-i18n="biz.pricing.label">Volume Pricing</span>
         <h2 data-i18n="biz.pricing.h2">Print prices per unit</h2>
-        <p class="pricing-note" data-i18n="biz.pricing.note">Prices shown are based on Gildan-quality blanks and include printing. Premium blanks (Bella+Canvas, Comfort Colors, American Apparel, etc.) may vary. Select a product to see the full breakdown by quantity and print sides.</p>
+        <p class="pricing-note" data-i18n="biz.pricing.note">Prices shown are based on Gildan-quality blanks and include printing. Premium blanks (Bella+Canvas, Comfort Colors, American Apparel, etc.) may vary, and final cost depends on the size of the print. Select a product to see the full breakdown by quantity and print sides.</p>
         <div class="canadian-note" data-i18n="biz.pricing.canadian">&#127464;&#127462; +$2 each for all-Canadian shirts (Rue Saint-Patrick)</div>
       </div>
 
