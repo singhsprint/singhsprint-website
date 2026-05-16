@@ -306,12 +306,18 @@
       .section{padding:60px 0}
       .hero{padding:40px 0 60px}
       .hero-grid{grid-template-columns:1fr;gap:32px}
-      /* Mobile: text+CTA first, video second. Was order:-1 which
-         pushed the 520px video above the fold and forced the primary
-         CTA below 891px scroll. Now CTA lands at ~470px scroll —
-         visible above the fold on any iPhone since the iPhone SE. */
-      .hero-visual{order:2;max-width:400px;margin:0 auto}
-      .hero-content{order:1}
+      /* Mobile elegant hero — voir EN index.html pour la justification.
+         Vidéo en premier, en-tête condensé, CTA primaire au-dessus
+         du pli grâce au format 4:3 qui plafonne la vidéo à ~300 px. */
+      .hero-visual{order:1;max-width:none;margin:0}
+      .hero-content{order:2}
+      .hero-photo{aspect-ratio:4/3;max-height:320px}
+      .hero-guarantee{display:none}
+      .hero h1{font-size:clamp(1.7rem,6.5vw,2.1rem) !important;line-height:1.1 !important;margin-bottom:12px !important}
+      .hero .subhead{font-size:.92rem !important;line-height:1.5 !important;margin-bottom:16px !important}
+      .hero-badge{display:none}
+      .hero-proof{font-size:.78rem;margin-bottom:0;margin-top:14px}
+      .hero-buttons{gap:8px;margin-bottom:4px}
       .hero-stats{gap:20px}
       .proof-stats{gap:24px}
       .products-grid{grid-template-columns:repeat(2,1fr)}
