@@ -1029,10 +1029,13 @@
       inStockOnly: true              // default ON — hide fully OOS items
     },
     sort:    getQueryParam('sort') || 'bestseller',
-    // Qty used to compute every card's "From $X". Default 200 = top tier
-    // (matches the old behaviour). The URL can override via ?qty=50 so
-    // links from other pages can pre-select a tier.
-    qty:     Math.max(1, Math.min(10000, parseInt(getQueryParam('qty') || '200', 10) || 200)),
+    // Qty used to compute every card's "From $X" and the qty pre-filled
+    // when a customer adds a product to their quote. 50 is the middle
+    // tier in QTY_TIERS — realistic for the typical team / event order
+    // and avoids cart accumulation when first-time shoppers add a few
+    // items quickly. Bulk shoppers can drag the slider up. The URL can
+    // pre-select any tier via ?qty=N.
+    qty:     Math.max(1, Math.min(10000, parseInt(getQueryParam('qty') || '50', 10) || 50)),
     products: [],
     page: 0,
     loading: false,
@@ -1083,7 +1086,7 @@
     document.querySelectorAll('.qty-ticks span').forEach(s => s.classList.toggle('active', parseInt(s.dataset.step,10) === step));
     // Reflect in URL so deep links carry the qty
     const url = new URL(location.href);
-    if (n === 200) url.searchParams.delete('qty'); else url.searchParams.set('qty', String(n));
+    if (n === 50) url.searchParams.delete('qty'); else url.searchParams.set('qty', String(n));
     history.replaceState(null, '', url.toString());
     // Visual loading state — fade prices so the customer sees something
     // happens immediately, even if the API takes a beat. Cards stay legible
@@ -1151,8 +1154,8 @@
     if (state.filters.csa)         params.set('csa', '1');
     state.filters.brand.forEach(b => params.append('brand', b));
     params.set('limit', '1500');
-    // Drive the "From $X" cards by the customer-chosen qty (default 200).
-    if (state.qty && state.qty !== 200) params.set('qty', String(state.qty));
+    // Drive the "From $X" cards by the customer-chosen qty (default 50).
+    if (state.qty && state.qty !== 50) params.set('qty', String(state.qty));
 
     try {
       const res = await fetch(`${CATALOG_API}?${params.toString()}`);
