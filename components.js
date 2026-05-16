@@ -1246,7 +1246,7 @@ function loadProductModal() {
   // Cache to avoid re-fetching the same product if the user opens it twice
   var cache = {};
 
-  function render(p, fallbackHref) {
+  function render(p, fallbackHref, qty) {
     var body = document.getElementById('sp-pm__body');
     if (!body) return;
     if (!p) {
@@ -1262,6 +1262,13 @@ function loadProductModal() {
     var weight = p.weight_oz ? (p.weight_oz + ' oz') : '';
     var fabric = p.fabric || '';
     var price  = p.price_from ? ('$' + Number(p.price_from).toFixed(2) + ' /unit') : '';
+    // Footnote tracks whichever qty tier the price was computed at, so the
+    // modal reads "1-side print at 200-unit volume" when the card said
+    // "/unit at 200+", and "250" when the card was "/unit at 250+".
+    var qtyN = (qty && Number(qty) > 0) ? Number(qty) : 50;
+    var qtyEn = 'Includes 1-side print at ' + qtyN + '-unit volume';
+    var qtyFr = 'Inclut impression 1 côté au volume de ' + qtyN + ' unités';
+    var quoteHref = '/quote?product=' + encodeURIComponent(p.product_id || style) + '&qty=' + qtyN;
     body.className = '';
     body.innerHTML = ''
       + '<div class="sp-pm__grid">'
@@ -1274,16 +1281,16 @@ function loadProductModal() {
       +     (weight ? ' &middot; ' + weight : '')
       +     (fabric ? ' &middot; ' + fabric : '')
       +   '</div>'
-      +   (price ? '<span class="sp-pm__price">' + t('From', 'À partir de') + ' ' + price + '<small>' + t('Includes 1-side print at 50-unit volume', 'Inclut impression 1 côté au volume de 50 unités') + '</small></span>' : '')
+      +   (price ? '<span class="sp-pm__price">' + t('From', 'À partir de') + ' ' + price + '<small>' + t(qtyEn, qtyFr) + '</small></span>' : '')
       +   '<div class="sp-pm__cta">'
-      +     '<a class="primary" href="/quote?product=' + encodeURIComponent(p.product_id || style) + '">' + t('Add to quote &rarr;', 'Ajouter à la soumission &rarr;') + '</a>'
+      +     '<a class="primary" href="' + quoteHref + '">' + t('Add to quote &rarr;', 'Ajouter à la soumission &rarr;') + '</a>'
       +     '<a class="secondary" href="' + fallbackHref + '">' + t('View full catalogue', 'Voir tout le catalogue') + '</a>'
       +   '</div>'
       + '</div>'
       + '</div>';
   }
 
-  window.__spOpenProductModal = function (style, fallbackHref, brand) {
+  window.__spOpenProductModal = function (style, fallbackHref, brand, qty) {
     if (!style) {
       // No style mapped — just navigate to the fallback (filter view).
       if (fallbackHref) window.location.href = fallbackHref;
@@ -1296,15 +1303,23 @@ function loadProductModal() {
     body.className = 'sp-pm__skel';
     body.innerHTML = t('Loading…', 'Chargement…');
 
-    var key = (brand ? brand + '|' : '') + style;
-    if (cache[key]) { render(cache[key], fallbackHref); return; }
+    // qty drives which volume tier the API computes price_from at. Most
+    // industry cards advertise "/unit at 200+" so we default to 200 — that
+    // way the modal price matches the card price the customer just saw.
+    // Pages with a different tier (e.g. Race Tees @ 250+) set
+    // data-modal-qty explicitly on the card.
+    var qtyVal = parseInt(qty, 10);
+    if (!Number.isFinite(qtyVal) || qtyVal < 1) qtyVal = 200;
+
+    var key = (brand ? brand + '|' : '') + style + '|' + qtyVal;
+    if (cache[key]) { render(cache[key], fallbackHref, qtyVal); return; }
 
     // brand+style disambiguates common style numbers (e.g. "8800" matches
     // both Bella+Canvas Women's Flowy Tank and Gildan DryBlend Polo). When
     // brand is provided, we filter the API search by it AND match the
     // brand on the client too as a safety net.
     var url = 'https://singhsprint-crm.vercel.app/api/catalog?q=' +
-              encodeURIComponent(style) + '&limit=8';
+              encodeURIComponent(style) + '&limit=8&qty=' + qtyVal;
     if (brand) url += '&brand=' + encodeURIComponent(brand);
     fetch(url, { cache: 'force-cache' })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -1319,9 +1334,9 @@ function loadProductModal() {
           list.find(function (p) { return norm(p.style_number) === sTarget; }) ||
           list[0];
         cache[key] = match;
-        render(match, fallbackHref);
+        render(match, fallbackHref, qtyVal);
       })
-      .catch(function () { render(null, fallbackHref); });
+      .catch(function () { render(null, fallbackHref, qtyVal); });
   };
 
   // Esc closes
@@ -1331,6 +1346,8 @@ function loadProductModal() {
 
   // Wire up any card on the page that has a data-modal-style attribute.
   // Optional data-modal-brand disambiguates common style numbers.
+  // Optional data-modal-qty makes the modal price match the card price
+  // (e.g. "/unit at 200+" on the card → qty=200 to the price API).
   // We delegate at document level so newly-injected cards work too.
   document.addEventListener('click', function (e) {
     var card = e.target.closest('[data-modal-style]');
@@ -1338,8 +1355,9 @@ function loadProductModal() {
     e.preventDefault();
     var style = card.getAttribute('data-modal-style');
     var brand = card.getAttribute('data-modal-brand') || null;
+    var qty   = card.getAttribute('data-modal-qty')   || null;
     var fb    = card.getAttribute('data-modal-fallback') || card.getAttribute('href') || '/catalog';
-    window.__spOpenProductModal(style, fb, brand);
+    window.__spOpenProductModal(style, fb, brand, qty);
   }, true);
 }
 
