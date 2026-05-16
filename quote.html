@@ -426,8 +426,36 @@
       /* Shipping estimator, INLINE inside Step 3 (moved there via JS). It
          visually flows with the form fields — no card border, no float,
          no shadow. Just looks like the next question in the sequence. */
-      #shippingEstimateCard{display:block !important;background:transparent !important;border:none !important;border-radius:0 !important;padding:0 !important;margin:0 0 18px !important;box-shadow:none !important}
+      #shippingEstimateCard{
+        display:block !important;
+        background:transparent !important;
+        border:none !important;
+        border-radius:0 !important;
+        padding:0 !important;
+        margin:0 0 18px !important;
+        box-shadow:none !important;
+        width:100% !important;
+        max-width:100% !important;
+        box-sizing:border-box !important;
+        overflow:hidden !important;
+      }
+      #shippingEstimateCard,
+      #shippingEstimateCard *{box-sizing:border-box}
       #shippingEstimateCard h4{font-size:.78rem !important;font-weight:600 !important;color:#1a1a1a !important;margin:0 0 8px !important;text-transform:none !important;letter-spacing:0 !important}
+      /* Postal-code row — three children (CA/US select + postal input +
+         Estimate button) can blow past the viewport on narrow phones
+         because the button's text is nowrap. Wrap to a second line if
+         needed and let the button span full-width on rewrap so nothing
+         clips off-screen. */
+      #shippingEstimateCard #fulfillDeliveryBody > div:first-of-type{
+        flex-wrap:wrap !important;
+      }
+      #shippingEstimateCard #shipCountry{flex:0 0 auto;min-width:60px}
+      #shippingEstimateCard #shipPostal{flex:1 1 140px;min-width:0}
+      #shippingEstimateCard #shipEstimateBtn{flex:0 0 auto}
+      @media(max-width:380px){
+        #shippingEstimateCard #shipEstimateBtn{flex:1 1 100%}
+      }
       /* Auto-hide when no delivery preference picked, or when "Local
          pickup" is selected — body JS toggles a class. */
       #shippingEstimateCard.is-hidden-mobile{display:none !important}
