@@ -217,10 +217,23 @@ function loadNav() {
   ];
 
   var EDITORIAL = [
-    { en: 'Portfolio',     fr: 'Portfolio',     i18n: 'nav.portfolio',  href: BASE + '/portfolio' },
-    { en: 'Inkwear',       fr: 'Inkwear',       i18n: 'nav.inkwear',    href: BASE + '/inkwear' },
-    { en: 'For Businesses',fr: 'Entreprises',   i18n: 'nav.businesses', href: BASE + '/businesses' },
-    { en: 'About',         fr: 'À propos',      i18n: 'nav.about',      href: BASE + '/about' }
+    { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
+    { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },
+    {
+      // For Businesses is a parent — hovering it reveals the 5 industry
+      // vertical landing pages under /industries/* plus a link back to
+      // the parent /businesses overview.
+      en: 'For Businesses', fr: 'Entreprises',
+      i18n: 'nav.businesses', href: BASE + '/businesses',
+      subs: [
+        { en: 'Construction & trades',   fr: 'Construction & métiers',     href: BASE + '/industries/construction-workwear' },
+        { en: 'Restaurant & hospitality',fr: 'Restauration & hôtellerie',  href: BASE + '/industries/restaurant-hospitality-uniforms' },
+        { en: 'Corporate & tech swag',   fr: 'Entreprise & tech swag',     href: BASE + '/industries/corporate-tech-swag' },
+        { en: 'Charity & events',        fr: 'Caritatif & événements',     href: BASE + '/industries/charity-events-fundraisers' },
+        { en: 'Schools & sports',        fr: 'Écoles & équipes sportives', href: BASE + '/industries/schools-sports-teams' }
+      ]
+    },
+    { en: 'About', fr: 'À propos', i18n: 'nav.about', href: BASE + '/about' }
   ];
 
   var ICON = {
@@ -256,15 +269,32 @@ function loadNav() {
       + t(c.en, c.fr) + ICON.chevD + '</a>'
       + dropdownHtml(c) + '</span>';
   }).join('');
+  // Editorial items support an optional subs[] array — when present we
+  // render them with the same dropdown pattern as the product CATS so a
+  // single hover reveals the industry verticals under "For Businesses".
   var row2Edit = EDITORIAL.map(function (l) {
     var active = isActive(l.href) ? ' is-active' : '';
+    if (l.subs && l.subs.length) {
+      return '<span class="sp-nav-parent">'
+        + '<a class="sp-nav-item' + active + '" href="' + l.href + '" data-i18n="' + l.i18n + '">'
+        + t(l.en, l.fr) + ICON.chevD + '</a>'
+        + dropdownHtml(l) + '</span>';
+    }
     return '<a class="sp-nav-item' + active + '" href="' + l.href + '" data-i18n="' + l.i18n + '">' + t(l.en, l.fr) + '</a>';
   }).join('');
   var drawerCats = CATS.map(function (c) {
     return '<a href="' + c.href + '" class="sp-drawer-link" data-i18n="' + c.i18n + '">' + t(c.en, c.fr) + ICON.chevR + '</a>';
   }).join('');
+  // In the drawer, items with subs render the parent + an indented list
+  // of children so mobile users see the industry verticals inline (no
+  // hover state to rely on).
   var drawerEdit = EDITORIAL.map(function (l) {
-    return '<a href="' + l.href + '" class="sp-drawer-link" data-i18n="' + l.i18n + '">' + t(l.en, l.fr) + '</a>';
+    var head = '<a href="' + l.href + '" class="sp-drawer-link" data-i18n="' + l.i18n + '">' + t(l.en, l.fr) + (l.subs && l.subs.length ? ICON.chevR : '') + '</a>';
+    if (!l.subs || !l.subs.length) return head;
+    var children = l.subs.map(function (sub) {
+      return '<a href="' + sub.href + '" class="sp-drawer-link" style="padding-left:14px;font-weight:400;color:#444;font-size:.88rem">' + t(sub.en, sub.fr) + '</a>';
+    }).join('');
+    return head + children;
   }).join('');
 
   var searchPlaceholder = t('Search 1,100+ blanks', 'Chercher parmi 1 100+ vêtements');
