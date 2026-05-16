@@ -1283,7 +1283,7 @@ function loadProductModal() {
       + '</div>';
   }
 
-  window.__spOpenProductModal = function (style, fallbackHref) {
+  window.__spOpenProductModal = function (style, fallbackHref, brand) {
     if (!style) {
       // No style mapped — just navigate to the fallback (filter view).
       if (fallbackHref) window.location.href = fallbackHref;
@@ -1296,17 +1296,29 @@ function loadProductModal() {
     body.className = 'sp-pm__skel';
     body.innerHTML = t('Loading…', 'Chargement…');
 
-    if (cache[style]) {
-      render(cache[style], fallbackHref);
-      return;
-    }
-    fetch('https://singhsprint-crm.vercel.app/api/catalog?q=' + encodeURIComponent(style) + '&limit=4', { cache: 'force-cache' })
+    var key = (brand ? brand + '|' : '') + style;
+    if (cache[key]) { render(cache[key], fallbackHref); return; }
+
+    // brand+style disambiguates common style numbers (e.g. "8800" matches
+    // both Bella+Canvas Women's Flowy Tank and Gildan DryBlend Polo). When
+    // brand is provided, we filter the API search by it AND match the
+    // brand on the client too as a safety net.
+    var url = 'https://singhsprint-crm.vercel.app/api/catalog?q=' +
+              encodeURIComponent(style) + '&limit=8';
+    if (brand) url += '&brand=' + encodeURIComponent(brand);
+    fetch(url, { cache: 'force-cache' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         var list = (d && d.products) ? d.products : [];
-        // Prefer an exact style_number match; otherwise fall back to first hit.
-        var match = list.find(function (p) { return (p.style_number || '').toUpperCase() === style.toUpperCase(); }) || list[0];
-        cache[style] = match;
+        var norm = function(s) { return (s || '').toString().toLowerCase().replace(/[^a-z0-9]/g, ''); };
+        var sTarget = norm(style);
+        var bTarget = norm(brand);
+        // Prefer brand+style exact match → style exact match → first hit.
+        var match =
+          list.find(function (p) { return norm(p.style_number) === sTarget && (!bTarget || norm(p.brand) === bTarget); }) ||
+          list.find(function (p) { return norm(p.style_number) === sTarget; }) ||
+          list[0];
+        cache[key] = match;
         render(match, fallbackHref);
       })
       .catch(function () { render(null, fallbackHref); });
@@ -1318,14 +1330,16 @@ function loadProductModal() {
   });
 
   // Wire up any card on the page that has a data-modal-style attribute.
+  // Optional data-modal-brand disambiguates common style numbers.
   // We delegate at document level so newly-injected cards work too.
   document.addEventListener('click', function (e) {
     var card = e.target.closest('[data-modal-style]');
     if (!card) return;
     e.preventDefault();
     var style = card.getAttribute('data-modal-style');
+    var brand = card.getAttribute('data-modal-brand') || null;
     var fb    = card.getAttribute('data-modal-fallback') || card.getAttribute('href') || '/catalog';
-    window.__spOpenProductModal(style, fb);
+    window.__spOpenProductModal(style, fb, brand);
   }, true);
 }
 
