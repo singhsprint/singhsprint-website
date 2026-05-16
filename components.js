@@ -651,7 +651,7 @@ function loadSchema() {
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": "5.0",
-          "reviewCount": "25",
+          "reviewCount": "27",
           "bestRating": "5"
         },
         "areaServed": [
@@ -1343,6 +1343,63 @@ function loadProductModal() {
   }, true);
 }
 
+// =========================================================================
+// loadLiveReviews — patches every visible "5.0★ (27 reviews)" / "5.0/5 (21
+// reviews)" / "(21 reviews)" / "(21 avis)" instance on the page using the
+// live numbers from /api/google-reviews. Build-time script (scripts/sync-
+// google-reviews.mjs) handles the same job for SEO + initial render; this
+// runtime patcher is the safety net for visitors hitting a stale deploy.
+// =========================================================================
+function loadLiveReviews() {
+  // Lightweight session cache so we don't refetch on every soft-nav.
+  try {
+    var cached = sessionStorage.getItem('sp-reviews');
+    if (cached) {
+      var c = JSON.parse(cached);
+      if (c && c._t && Date.now() - c._t < 6 * 3600 * 1000) {
+        patch(c.rating, c.count); return;
+      }
+    }
+  } catch (_) { /* ignore */ }
+
+  fetch('https://singhsprint-crm.vercel.app/api/google-reviews', { cache: 'force-cache' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || typeof d.rating !== 'number' || typeof d.count !== 'number') return;
+      patch(d.rating, d.count);
+      try {
+        sessionStorage.setItem('sp-reviews', JSON.stringify({ rating: d.rating, count: d.count, _t: Date.now() }));
+      } catch (_) { /* private mode etc. */ }
+    })
+    .catch(function () { /* ignore — fall back to whatever HTML rendered */ });
+
+  function patch(rating, count) {
+    var ratingStr = Number(rating).toFixed(1);
+    var countStr  = String(count);
+    // Walk text nodes and rewrite known patterns. Keeps the DOM structure
+    // intact and only touches the literal strings.
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    var patterns = [
+      [/\b5\.0★ \(\d+ reviews\)/g,    ratingStr + '★ (' + countStr + ' reviews)'],
+      [/\b5\.0\/5 \(\d+ reviews\)/g,  ratingStr + '/5 (' + countStr + ' reviews)'],
+      [/\b5\.0\/5 \(\d+ avis\)/g,     ratingStr + '/5 (' + countStr + ' avis)'],
+      [/\b\(21 reviews\)/g,           '(' + countStr + ' reviews)'],
+      [/\b\(21 Reviews\)/g,           '(' + countStr + ' Reviews)'],
+      [/\b\(21 avis\)/g,              '(' + countStr + ' avis)'],
+    ];
+    var node;
+    while ((node = walker.nextNode())) {
+      var txt = node.nodeValue;
+      if (!txt) continue;
+      var changed = txt;
+      for (var i = 0; i < patterns.length; i++) {
+        changed = changed.replace(patterns[i][0], patterns[i][1]);
+      }
+      if (changed !== txt) node.nodeValue = changed;
+    }
+  }
+}
+
 // Auto-run when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   loadSearchConsoleVerification();
@@ -1355,4 +1412,5 @@ document.addEventListener('DOMContentLoaded', function() {
   loadStickyCTA();
   loadMidPageCTA();
   loadProductModal();
+  loadLiveReviews();
 });

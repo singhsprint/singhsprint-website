@@ -37,7 +37,7 @@ const TOP_N     = parseInt(process.env.TOP_N || '25', 10);
 // the values here when the live business policy changes — no per-product
 // overrides are needed because these are brand-level facts.
 // ---------------------------------------------------------------------------
-const STAR_RATING = { ratingValue: '5.0', reviewCount: '21' }; // current Google Reviews
+const STAR_RATING = { ratingValue: '5.0', reviewCount: '27' }; // current Google Reviews
 const REVIEWS = [
   { name: 'Coodin',      date: '2024-06-01', body: 'Printed tees for my band on extremely short notice. Literally on the same day of our gig at Singhs Arcade. If you want a print shop that actually values their customers and isn’t strictly for profit, this is the place. 10/10' },
   { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },

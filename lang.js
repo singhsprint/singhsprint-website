@@ -109,7 +109,7 @@ var SP_LANG = (function() {
     // Proof bar
     'home.proof.orders':     { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.proof.clients':    { en: 'Happy Clients', fr: 'Clients satisfaits' },
-    'home.proof.rating-num': { en: '5.0/5 (21 reviews)', fr: '5,0/5 (21 avis)' },
+    'home.proof.rating-num': { en: '5.0/5 (27 reviews)', fr: '5,0/5 (21 avis)' },
     'home.proof.rating':     { en: 'Google Reviews', fr: 'Avis Google' },
     'home.proof.production': { en: 'In-House Production', fr: 'Production sur place' },
     // Why us
@@ -216,7 +216,7 @@ var SP_LANG = (function() {
     // Reviews
     'home.reviews.label':        { en: 'What Our Clients Say',          fr: 'Ce que disent nos clients' },
     'home.reviews.h':            { en: 'Real reviews from real customers', fr: 'De vrais avis de vrais clients' },
-    'home.reviews.avg':          { en: '5.0/5 (21 reviews) average',    fr: '5,0/5 (21 avis) en moyenne' },
+    'home.reviews.avg':          { en: '5.0/5 (27 reviews) average',    fr: '5,0/5 (21 avis) en moyenne' },
     'home.reviews.readall':      { en: 'Read all reviews →',            fr: 'Lire tous les avis →' },
     'home.reviews.author.label': { en: 'Google Review',                  fr: 'Avis Google' },
 
