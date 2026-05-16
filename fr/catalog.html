@@ -738,6 +738,27 @@
     _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
       ? initialColorIdx : 0;
     _detailGalleryIdx = 0;  // always start gallery on front view when opening a new product
+
+    // Refetch the full product payload so back/side mockups + complete
+    // color data populate. See EN catalog.html for the long rationale.
+    if (p && p.product_id) {
+      fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
+            encodeURIComponent(p.product_id) + '&limit=1', { cache: 'force-cache' })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          var full = (d && d.products && d.products[0]) || null;
+          if (!full || _detailProduct !== p) return;
+          var selectedName = ((p.colors || [])[_detailColorIdx] || {}).color_name;
+          _detailProduct = full;
+          if (selectedName) {
+            var ni = (full.colors || []).findIndex(function(c){ return c.color_name === selectedName; });
+            if (ni >= 0) _detailColorIdx = ni;
+          }
+          paintDetailHero();
+          if (typeof renderDetailModalSwatches === 'function') renderDetailModalSwatches();
+        })
+        .catch(function(){ /* keep the slim view */ });
+    }
     document.getElementById('detailModalBrand').textContent = (p.brand || '').toUpperCase() + ' · ' + (p.style_number || '');
     document.getElementById('detailModalTitle').textContent = p.name || '';
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
@@ -1532,9 +1553,9 @@
     // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
     // colorways like Gildan 18500 (75 colors) still get accurate signal —
     // before this we capped at 8 and a 75-color blank showed "8 + 67".
-    // Show every color the record carries — no cap. Hex chips are
-    // CSS-only and Algolia keeps DOM lean.
-    const SWATCH_LIMIT = 999;
+    // 8 swatches on the card + "+N more". Detail modal shows the full
+    // colorway grid with names.
+    const SWATCH_LIMIT = 8;
     const renderSwatches = () => {
       return (p.colors || []).slice(0, SWATCH_LIMIT).map((c, i) => {
         const hex     = c.hex_code || '#ccc';

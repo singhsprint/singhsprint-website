@@ -750,6 +750,33 @@
     _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
       ? initialColorIdx : 0;
     _detailGalleryIdx = 0;  // always start gallery on front view when opening a new product
+
+    // The product object we have right now is the SLIM Algolia hit — it
+    // lacks mockup_back_url, mockup_side_url, the full size arrays per
+    // color, etc. Refetch the full row by product_id so the gallery thumb
+    // strip (front / back / side) and the detail color grid have real
+    // data. We render twice: once with the slim data for instant first
+    // paint, then a second paintDetailHero() once the fat payload lands.
+    if (p && p.product_id) {
+      fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
+            encodeURIComponent(p.product_id) + '&limit=1', { cache: 'force-cache' })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          var full = (d && d.products && d.products[0]) || null;
+          if (!full || _detailProduct !== p) return;     // modal closed / moved on
+          // Preserve the user's currently-selected color across the swap.
+          var selectedName = ((p.colors || [])[_detailColorIdx] || {}).color_name;
+          _detailProduct = full;
+          if (selectedName) {
+            var ni = (full.colors || []).findIndex(function(c){ return c.color_name === selectedName; });
+            if (ni >= 0) _detailColorIdx = ni;
+          }
+          // Re-render whatever the modal exposes from the fatter payload.
+          paintDetailHero();
+          if (typeof renderDetailModalSwatches === 'function') renderDetailModalSwatches();
+        })
+        .catch(function(){ /* keep the slim view */ });
+    }
     document.getElementById('detailModalBrand').textContent = (p.brand || '').toUpperCase() + ' · ' + (p.style_number || '');
     document.getElementById('detailModalTitle').textContent = p.name || '';
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
@@ -793,32 +820,10 @@
     qtyInput.value = state.qty || 25;
     syncDetailAddBtn();
 
-    // Full color grid with names underneath.
-    const host = document.getElementById('detailModalSwatches');
-    host.innerHTML = (p.colors || []).map((c, i) => {
-      // Same fallback as the card swatches — multi-tone colors have no hex
-      // but always have a swatch image; show that image as the dot bg.
-      // Route through imgUrl() so S&S URLs go through /api/image-proxy.
-      const hex     = c.hex_code;
-      const swatch  = c.swatch_image_url;
-      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
-      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
-      const cleanName = (c.color_name || '').replace(/_\d+$/, '');
-      const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
-      return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${i === 0 ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
-        <span class="detail-modal__swatch-dot" style="background:${bg}"></span>
-        <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
-      </button>`;
-    }).join('');
-    host.querySelectorAll('.detail-modal__swatch').forEach(s => {
-      s.addEventListener('click', () => {
-        _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
-        _detailGalleryIdx = 0; // reset to front view when color changes — new color may not have the previous view
-        host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
-        s.setAttribute('aria-selected', 'true');
-        paintDetailHero();
-      });
-    });
+    // Full color grid with names underneath. Wrapped in a function so we
+    // can re-render after the fat product_id fetch lands with the full
+    // color array + back/side mockups.
+    renderDetailModalSwatches();
     paintDetailHero();
     document.getElementById('detailOverlay').classList.add('open');
     document.getElementById('detailModal').classList.add('open');
@@ -844,6 +849,40 @@
     if (c && c.mockup_side_url)  out.push({ key: 'side',  label: 'Side',  url: imgUrl(c.mockup_side_url) });
     if (out.length === 0 && fallback) out.push({ key: 'hero', label: 'Front', url: imgUrl(fallback) });
     return out;
+  }
+
+  // Render (or re-render) the color grid inside the detail modal. Called
+  // by openProductDetail with the slim Algolia data, then called again
+  // when the full /api/catalog?product_id=… payload arrives so the
+  // entire colorway (with names, swatch images, full size arrays) lands.
+  function renderDetailModalSwatches() {
+    const p = _detailProduct; if (!p) return;
+    const host = document.getElementById('detailModalSwatches');
+    if (!host) return;
+    host.innerHTML = (p.colors || []).map((c, i) => {
+      // Multi-tone colors have no parseable hex; fall back to the swatch
+      // image, route via imgUrl() so S&S URLs hit our /api/image-proxy.
+      const hex     = c.hex_code;
+      const swatch  = c.swatch_image_url;
+      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
+      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+      const cleanName = (c.color_name || '').replace(/_\d+$/, '');
+      const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
+      const isSelected = i === _detailColorIdx;
+      return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${isSelected ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
+        <span class="detail-modal__swatch-dot" style="background:${bg}"></span>
+        <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
+      </button>`;
+    }).join('');
+    host.querySelectorAll('.detail-modal__swatch').forEach(s => {
+      s.addEventListener('click', () => {
+        _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
+        _detailGalleryIdx = 0;
+        host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
+        s.setAttribute('aria-selected', 'true');
+        paintDetailHero();
+      });
+    });
   }
 
   function paintDetailHero() {
@@ -1440,6 +1479,16 @@
     const empty = document.getElementById('catEmpty');
     grid.innerHTML = '';
 
+    // Chip strip always re-renders so toggle state reflects current
+    // filters even when the result set is empty. Previously this lived
+    // below the early-return for empty.products, which left the
+    // Canadian-made / Hi-Vis-CSA / brand chips visually stuck on
+    // their previous state when a filter narrowed to zero hits.
+    renderChips();
+    document.getElementById('resultCount').textContent = (state._algoliaTotal != null
+      ? state._algoliaTotal
+      : state.products.length).toLocaleString();
+
     if (state.products.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
@@ -1460,8 +1509,8 @@
       grid.appendChild(byoCard());
     }
 
-    document.getElementById('resultCount').textContent = visible.length.toLocaleString();
-    renderChips();
+    // resultCount + chips were already painted at the top of render() so
+    // they reflect state on the empty-state path too — no duplicate call.
     if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
     maybeTranslateCatalog();
 
@@ -1568,11 +1617,12 @@
     // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
     // colorways like Gildan 18500 (75 colors) still get accurate signal —
     // before this we capped at 8 and a 75-color blank showed "8 + 67".
-    // Show every color the record carries. Hex chips are pure CSS (no
-    // network) and Algolia keeps only ~30 products in DOM at a time, so
-    // even the biggest 80-color Bella+Canvas runs are cheap to render.
-    // 999 is effectively "no limit" — the only cap is what the data has.
-    const SWATCH_LIMIT = 999;
+    // Card view shows a tidy row of 8 swatches with a "+N more" indicator
+    // past that — turning a 75-color Gildan 5000 card into a wall of
+    // chips drowns out the product photo and price. The detail modal
+    // (click the card) shows EVERY color in a proper grid with names,
+    // which is the right UX for browsing colorways anyway.
+    const SWATCH_LIMIT = 8;
     const renderSwatches = () => {
       return (p.colors || []).slice(0, SWATCH_LIMIT).map((c, i) => {
         const hex     = c.hex_code || '#ccc';
@@ -1839,10 +1889,15 @@
     row.innerHTML = '';
     // Type chips sit in a STABLE order. Active state transforms the chip in
     // place rather than jumping it to the front — way less disorienting.
+    // No "Hi-Vis" type chip — the "Hi-Vis / CSA" qualifier chip below
+    // (which filters on the broader is_hivis_or_csa Algolia facet)
+    // already covers everything the strict garment_type=hivis bucket
+    // would catch, plus the products whose hi-vis flag wasn't set at
+    // import time but whose name contains hi-vis/csa/ansi.
     const types = [
       ['tshirt','T-Shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
       ['polo','Polos'], ['longsleeve','Long Sleeves'], ['hat','Hats / Caps'],
-      ['tote','Tote Bags'], ['hivis','Hi-Vis']
+      ['tote','Tote Bags']
     ];
     types.forEach(([t, label]) => {
       const isActive = state.filters.type === t;
