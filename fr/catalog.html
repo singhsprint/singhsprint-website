@@ -1248,6 +1248,7 @@
           q:           state.filters.q,
           page:        state.page,
           hitsPerPage: 30,
+          qty:         state.qty,
         });
         const fresh = r.products || [];
         state.products = isFirstPage ? fresh : state.products.concat(fresh);

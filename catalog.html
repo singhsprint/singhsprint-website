@@ -1321,6 +1321,7 @@
           q:           state.filters.q,
           page:        state.page,
           hitsPerPage: 30,
+          qty:         state.qty,    // bridge resolves prices_by_qty[qty]
         });
         const fresh = r.products || [];
         state.products = isFirstPage ? fresh : state.products.concat(fresh);

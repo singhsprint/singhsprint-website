@@ -45,13 +45,22 @@
   // for example) doesn't refetch identical queries within a single visit.
   var cache = new Map();
 
-  function hitToProduct(h) {
+  function hitToProduct(h, qty) {
+    // If a qty is in play (catalog slider != 50), prefer prices_by_qty[qty]
+    // over the default price_from. Each record carries per-tier prices
+    // (5/10/25/50/100/200/500) computed at sync time, so slider drags
+    // resolve client-side without another roundtrip.
+    var p = (typeof h.price_from === 'number' && h.price_from > 0) ? h.price_from : null;
+    if (qty && h.prices_by_qty) {
+      var t = h.prices_by_qty[qty] || h.prices_by_qty[String(qty)];
+      if (typeof t === 'number' && t > 0) p = t;
+    }
     return {
       product_id:       h.objectID,
       brand:            h.brand,
       style_number:     h.style_number,
       name:             h.name,
-      description:      null,            // unused on the card
+      description:      h.description || null,
       garment_type:     h.garment_type,
       gender:           h.gender || null,
       weight_oz:        h.weight_oz,
@@ -62,7 +71,8 @@
       has_csa_cert:     !!h.has_csa_cert,
       in_stock:         !!h.in_stock,
       color_count:      h.color_count,
-      price_from:       (typeof h.price_from === 'number' && h.price_from > 0) ? h.price_from : null,
+      price_from:       p,
+      prices_by_qty:    h.prices_by_qty || null,
       colors:           Array.isArray(h.colors) ? h.colors : [],
     };
   }
@@ -88,8 +98,19 @@
    */
   async function search(opts) {
     opts = opts || {};
-    var key = JSON.stringify(opts);
-    if (cache.has(key)) return cache.get(key);
+    // qty doesn't change Algolia's hit set, only the price field we read,
+    // so the cache key intentionally excludes it. Different qty values
+    // reuse the same cached Algolia response and pick the right price
+    // off prices_by_qty client-side.
+    var cacheOpts = Object.assign({}, opts); delete cacheOpts.qty;
+    var key = JSON.stringify(cacheOpts);
+    var cached = cache.has(key) ? cache.get(key) : null;
+    if (cached) {
+      // Re-project the cached hits with the current qty's price.
+      return Object.assign({}, cached, {
+        products: cached._rawHits.map(function (h) { return hitToProduct(h, opts.qty); }),
+      });
+    }
 
     var facetFilters = buildFacetFilters(opts);
     var qs = new URLSearchParams();
@@ -115,13 +136,15 @@
     if (!res.ok) throw new Error('Algolia ' + res.status);
     var r = await res.json();
 
+    var rawHits = r.hits || [];
     var out = {
-      products:   (r.hits || []).map(hitToProduct),
+      products:   rawHits.map(function (h) { return hitToProduct(h, opts.qty); }),
       total:      r.nbHits,
       totalPages: r.nbPages,
       page:       r.page,
       facets:     r.facets || {},
       processingTimeMS: r.processingTimeMS,
+      _rawHits:   rawHits,   // kept on the cached entry for qty re-projection
     };
     cache.set(key, out);
     return out;
