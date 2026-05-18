@@ -3653,9 +3653,10 @@
     // product can't be fetched (e.g. catalog API down) so the legacy product
     // grid still works.
     // =========================================================================
-    var CATALOG_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/catalog';
-    var PRICING_API_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/pricing';
-    var IMAGE_PROXY_FOR_QUOTE = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+    var CATALOG_API_FOR_QUOTE        = 'https://singhsprint-crm.vercel.app/api/catalog';
+    var PRICING_API_FOR_QUOTE        = 'https://singhsprint-crm.vercel.app/api/pricing';
+    var LIVE_MATRIX_API_FOR_QUOTE    = 'https://singhsprint-crm.vercel.app/api/pricing/live-matrix';
+    var IMAGE_PROXY_FOR_QUOTE        = 'https://singhsprint-crm.vercel.app/api/image-proxy';
     // S&S Activewear 403's external hotlinks — route their images through
     // our server-side proxy. Mirrors imgUrl() in catalog.html.
     function imgUrl(raw) {
@@ -4037,6 +4038,9 @@
           '  </div>' +
           placementsHtml +
           uploadsHtml +
+          // Live per-item pricing table — populated async by paintCartItemLiveMatrix.
+          // Sits on its own flex line via flex-basis:100% so it spans the full row.
+          '<div id="ci-livematrix-' + idx + '" class="ci-livematrix" style="flex-basis:100%;margin-top:8px"></div>' +
           '</div>';
       }).join('');
 
@@ -4063,7 +4067,100 @@
           }
           updateCartTotal();
         });
+
+        // Live per-item pricing table — qty tiers × sides × decoration method.
+        // Hits /api/pricing/live-matrix which returns engine-derived prices
+        // for the actual variant's wholesale + garment_type, including DTF
+        // and embroidery side-by-side with the cell's implied margin %.
+        paintCartItemLiveMatrix(idx, it);
       });
+    }
+
+    // Per-item /api/pricing/live-matrix renderer. Cached per product_id since
+    // the matrix only changes when the CRM pricing config does (≤ once an
+    // hour in practice). Highlights the row matching the item's current qty.
+    var _liveMatrixCache = {};
+    function paintCartItemLiveMatrix(idx, it) {
+      var host = document.getElementById('ci-livematrix-' + idx);
+      if (!host || !it.product_id) return;
+      var loadingMsg = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.tierloading')) || 'Loading tier pricing…';
+      host.innerHTML = '<div style="font-size:.72rem;color:#999;padding:6px 0">' + loadingMsg + '</div>';
+
+      var render = function(matrix) {
+        if (!matrix || !Array.isArray(matrix.rows) || !matrix.rows.length) {
+          host.innerHTML = '';
+          return;
+        }
+        var sidesList = [];
+        for (var s = 1; s <= (matrix.max_sides || 4); s++) sidesList.push(s);
+        var showEmb = !!matrix.emb_supported;
+
+        var fmt = function(cell) {
+          if (!cell || cell.price == null) return '—';
+          return '$' + Number(cell.price).toFixed(2);
+        };
+        var qtyLabel = function(r) {
+          return r.qty_max == null ? (r.qty_min + '+') : (r.qty_min + '–' + r.qty_max);
+        };
+        var activeQty = Number(it.qty) || 50;
+
+        // Build the header. "DTF" group always shown; "Embroidery" only when
+        // the engine has a surcharge ladder configured for this garment.
+        var headSides = sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>'; }).join('');
+        var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
+          '<tr>' +
+            '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qty</th>' +
+            '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTF print</th>' +
+            (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Embroidery</th>' : '') +
+          '</tr>' +
+          '<tr>' + headSides + (showEmb ? headSides : '') + '</tr>' +
+        '</thead>';
+
+        var body = matrix.rows.map(function(r) {
+          var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
+          var rowStyle = isActive
+            ? 'background:#1a1a1a;color:#fff;font-weight:600'
+            : 'background:#fff;color:#1a1a1a';
+          var cells = sidesList.map(function(s) {
+            return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">'
+              + fmt(r.dtf[s]) + '</td>';
+          }).join('');
+          if (showEmb) {
+            cells += sidesList.map(function(s){
+              return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + ';border-left:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">'
+                + fmt(r.embroidery[s]) + '</td>';
+            }).join('');
+          }
+          return '<tr style="' + rowStyle + '">' +
+            '<td style="padding:6px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">' + qtyLabel(r) + '</td>' +
+            cells +
+          '</tr>';
+        }).join('');
+
+        host.innerHTML =
+          '<details style="margin-top:4px" ' + (window.innerWidth >= 720 ? 'open' : '') + '>' +
+            '<summary style="cursor:pointer;font-size:.72rem;font-weight:600;color:#666;letter-spacing:.04em;text-transform:uppercase;padding:6px 0;list-style:none">' +
+              '▾ Tier pricing for this item' +
+              '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— current row highlighted, change qty to reprice</span>' +
+            '</summary>' +
+            '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
+              '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' +
+                head + '<tbody>' + body + '</tbody>' +
+              '</table>' +
+            '</div>' +
+          '</details>';
+      };
+
+      var cached = _liveMatrixCache[it.product_id];
+      if (cached) { render(cached); return; }
+      fetch(LIVE_MATRIX_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if (!d || !d.rows) { host.innerHTML = ''; return; }
+          _liveMatrixCache[it.product_id] = d;
+          render(d);
+        })
+        .catch(function(){ host.innerHTML = ''; });
     }
 
     // Render the colour swatch picker for a cart row. Dedupes waist-size-
@@ -4492,7 +4589,39 @@
     // the request in /dashboard/inbox/requests with structured cart items
     // they can convert to a draft order in one click. We do BOTH so the
     // email backup keeps working even if the CRM is down at submit time.
-    var INBOUND_API = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var INBOUND_API        = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var INBOUND_UPLOAD_API = 'https://singhsprint-crm.vercel.app/api/inbound/upload';
+
+    // Upload the customer's design file to the CRM's `designs` storage
+    // bucket BEFORE we post the structured /api/inbound payload, so the
+    // resulting design_path can be persisted on the inbound_requests row.
+    // The 30-min auto-mockup cron needs this — without it the artwork
+    // only reaches us via the Web3Forms email backup, which is useless
+    // for programmatic rendering.
+    //
+    // Returns the upload response or null on any failure; the form
+    // submit MUST proceed either way (we never block a quote on the
+    // mockup path).
+    function uploadDesignFile(file) {
+      if (!file) return Promise.resolve(null);
+      try {
+        var fd = new FormData();
+        fd.append('file', file);
+        fd.append('kind', 'design');
+        return fetch(INBOUND_UPLOAD_API, {
+          method: 'POST',
+          body: fd
+          // Don't set Content-Type — let the browser pick the multipart boundary.
+        }).then(function(res){
+          if (!res.ok) return null;
+          return res.json();
+        }).catch(function(){ return null; });
+      } catch (e) {
+        console.warn('[design upload] skipped:', e);
+        return Promise.resolve(null);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       var form = document.getElementById('quoteForm');
       if (!form) return;
@@ -4521,7 +4650,27 @@
           form.appendChild(summaryHidden);
         }
 
-        // 2) Structured POST to CRM /api/inbound
+        // 1b) Pick the first design file the customer attached. The
+        // page exposes both a legacy single-design input (#designFile)
+        // and per-placement inputs (#design_<presetId>). We grab the
+        // earliest one with a real file and upload it to the CRM's
+        // /api/inbound/upload endpoint; the returned storage path
+        // travels alongside the structured payload so the 30-min
+        // mockup cron has something to render against.
+        var firstFile = null;
+        try {
+          var fileInputs = form.querySelectorAll('input[type="file"]');
+          for (var i = 0; i < fileInputs.length; i++) {
+            if (fileInputs[i].files && fileInputs[i].files[0]) {
+              firstFile = fileInputs[i].files[0];
+              break;
+            }
+          }
+        } catch (e) { /* file collection should never break submit */ }
+
+        // 2) Structured POST to CRM /api/inbound (after design upload)
+        var uploadPromise = uploadDesignFile(firstFile);
+        uploadPromise.then(function(uploaded){
         try {
           var fd = new FormData(form);
           var sizeBreakdown = {};
@@ -4562,6 +4711,15 @@
             notes:           fd.get('details') || null,
             cart_items:      items,
             size_breakdown:  sizeBreakdown,
+            // Customer-uploaded design — when present, the CRM's 30-min
+            // mockup cron will fetch this file, composite it onto the
+            // selected blank, and email the customer a preview. When
+            // null, mockup_status is stamped 'skipped' on the row and
+            // a rep handles preview manually.
+            design_path:     (uploaded && uploaded.path)       || null,
+            design_url:      (uploaded && uploaded.signed_url) || null,
+            design_mime:     (uploaded && uploaded.mime)       || null,
+            design_bytes:    (uploaded && uploaded.bytes)      || null,
             meta: {
               purpose:        fd.get('purpose') || null,
               blank_brand:    fd.get('blank_brand') || null,
@@ -4586,6 +4744,7 @@
           // Never block the form submit on our own analytics path.
           console.warn('[inbound dual-post] skipped:', e);
         }
+        });  // uploadPromise.then
       });
     });
 
