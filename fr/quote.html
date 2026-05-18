@@ -978,15 +978,8 @@
               <input type="hidden" name="service" id="serviceInput" required>
             </div>
 
-            <!-- Bulk pricing preview — visible after product is selected, lets visitors confirm tier prices before submitting -->
-            <details id="bulkPricingDetails" style="margin-bottom:24px;border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 18px;background:#fafafa;cursor:pointer">
-              <summary style="font-weight:600;font-size:.95rem;outline:none;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between">
-                <span><span  data-i18n="quote.bulk.label">Voir les prix en gros pour</span> <span id="bulkPricingProductName"  data-i18n="quote.bulk.product">votre produit</span></span>
-                <span style="font-size:.78rem;color:#999;font-weight:500"  data-i18n="quote.bulk.expand">cliquez pour développer ⌄</span>
-              </summary>
-              <div id="bulkPricingTableHost" style="margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;width:100%;box-sizing:border-box"></div>
-              <p style="margin-top:10px;font-size:.78rem;color:#888;line-height:1.5"><span  data-i18n="quote.bulk.note">Les prix sont par unité et incluent vêtement standard + impression. Le prix en gros s'applique à partir de 5 unités; les commandes plus petites utilisent le prix de détail.</span> <span style="display:block;margin-top:2px"  data-i18n="quote.bulk.canadianadd">Les vêtements canadiens ajoutent 2 $/unité sur les T-shirts et manches longues.</span></p>
-            </details>
+            <!-- Bulk pricing preview removed 2026-05-19 — per-line-item
+                 tier table covers the same info now. -->
 
             <div class="form-buttons" style="justify-content:flex-end">
               <button type="button" class="btn btn-primary" onclick="goToStep(2)"  data-i18n="quote.next">Suivant</button>

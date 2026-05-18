@@ -150,7 +150,7 @@ function translateHtml(html, T) {
 // Pre-translated meta descriptions per page so the SERP snippet is French
 // for FR results. Keys are relative paths from site root.
 const META_DESC_FR = {
-  'index.html': 'Imprimerie de vêtements personnalisés à l\'Ouest-de-l\'Île de Montréal. DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Délai standard de 7 à 10 jours, options urgentes, NEQ 1181573313.',
+  'index.html': 'Imprimerie de vêtements personnalisés à l\'Ouest-de-l\'Île de Montréal. DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Délai standard de 3 à 5 jours, options urgentes, NEQ 1181573313.',
   'about.html': 'Studio de vêtements personnalisés familial à Sainte-Anne-de-Bellevue, Québec. DTG, DTF, broderie et sérigraphie pour les clubs McGill, les entreprises de l\'Ouest-de-l\'Île et les comptes corporatifs Net-30. 1 100+ vêtements vierges, soumission en 1 heure, NEQ 1181573313.',
   'catalog.html': 'Parcourez 1 100+ vêtements vierges chez S&S Activewear, SanMar et Rue Saint-Patrick. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.',
   'quote.html': 'Demandez une soumission personnalisée pour t-shirts, hoodies, polos, casquettes et plus. Réponse humaine en moins d\'une heure pendant les heures d\'ouverture.',

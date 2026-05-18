@@ -780,7 +780,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "How long does a typical order take?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Standard turnaround is 7–10 business days from approved artwork. Rush (3–5 days) is available with a small surcharge; talk to us before ordering." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Standard turnaround is 3–5 business days from approved artwork. Rush (2–3 days) is available with a small surcharge; talk to us before ordering." }
           },
           {
             "@type": "Question",

@@ -43,10 +43,10 @@ const REVIEWS = [
   { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },
   { name: 'Ori Peer',    date: '2024-03-10', body: 'I love my shirt they supported my vision!!! Best spot in MTL!' }
 ];
-// Free Canada-wide shipping (cost is bundled into the per-unit quote). 7-10
+// Free Canada-wide shipping (cost is bundled into the per-unit quote). 3-5
 // day in-house production + 1-5 day Chit Chats / Canada Post transit. Adjust
 // if shop ever charges an explicit shipping line item.
-const SHIPPING = { country: 'CA', valueCAD: '0', handlingMin: 7, handlingMax: 10, transitMin: 1, transitMax: 5 };
+const SHIPPING = { country: 'CA', valueCAD: '0', handlingMin: 3, handlingMax: 5, transitMin: 1, transitMax: 5 };
 // 14-day window covers reprints/replacements for print quality + garment
 // defects — matches the satisfaction guarantee in the homepage FAQ.
 const RETURNS  = { country: 'CA', windowDays: 14 };
@@ -240,8 +240,8 @@ const I18N = {
                      fr: 'pour les logos et l\'identité corporative, et' },
   bodyP1Screen:    { en: 'for high-volume single-colour runs.',
                      fr: 'pour les tirages mono-couleur en gros volume.' },
-  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 12 units for embroidery. Standard turnaround is 7–10 business days from approved artwork; rush options (3–5 days) are available with a small surcharge. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
-                     fr: 'Minimums : 5 unités pour DTG/DTF, 12 unités pour la broderie. Délai standard : 7 à 10 jours ouvrables à partir de l\'approbation du visuel ; options urgentes (3 à 5 jours) moyennant un léger supplément. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
+  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 12 units for embroidery. Standard turnaround is 3–5 business days from approved artwork; rush options (2–3 days) are available with a small surcharge. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
+                     fr: 'Minimums : 5 unités pour DTG/DTF, 12 unités pour la broderie. Délai standard : 3 à 5 jours ouvrables à partir de l\'approbation du visuel ; options urgentes (2 à 3 jours) moyennant un léger supplément. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
 
   specsH2:         { en: 'Specifications', fr: 'Spécifications' },
   specBrand:       { en: 'Brand:',         fr: 'Marque :' },

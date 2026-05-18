@@ -52,8 +52,8 @@ var SP_LANG = (function() {
     'home.hero.h1a': { en: "West Island's", fr: "L'Ouest-de-l'Île," },
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
-      en: "DTG, DTF & Embroidery done in-house in Montreal's West Island. Low minimums, 7&ndash;10 day turnaround with rush options, and a real sample before every run. $20 off your first order of $100+.",
-      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 7 à 10 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus."
+      en: "DTG, DTF & Embroidery done in-house in Montreal's West Island. Low minimums, 3&ndash;5 day turnaround with rush options, and a real sample before every run. $20 off your first order of $100+.",
+      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
@@ -134,7 +134,7 @@ var SP_LANG = (function() {
     'home.faq.q2': { en: 'Is there a minimum order?', fr: 'Y a-t-il une commande minimum ?' },
     'home.faq.a2': { en: 'No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size.', fr: 'Aucun minimum. On imprime 1 article ou 1 000+. Idéal pour les petites marques, créateurs, écoles, gyms, cafés et entreprises de toute taille.' },
     'home.faq.q3': { en: 'How fast can you complete an order?', fr: 'En combien de temps pouvez-vous compléter une commande ?' },
-    'home.faq.a3': { en: "Standard 7-10 day turnaround from approved artwork. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage.", fr: "Délai standard de 7 à 10 jours après approbation du visuel. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission." },
+    'home.faq.a3': { en: "Standard 3-5 day turnaround from approved artwork. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage.", fr: "Délai standard de 3 à 5 jours après approbation du visuel. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission." },
     'home.faq.q4': { en: 'Can you supply the blank apparel?', fr: 'Pouvez-vous fournir les vêtements vierges ?' },
     'home.faq.a4': { en: "Yes! We source from S&amp;S Activewear, SanMar, and Rue Saint-Patrick, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On s\'approvisionne chez S&amp;S Activewear, SanMar et Rue Saint-Patrick — accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
@@ -289,8 +289,8 @@ var SP_LANG = (function() {
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
-      en: 'Standard turnaround is 7–10 business days from approved artwork. Rush (3–5 days) is available with a small surcharge. We don\'t quote timelines we can\'t hit.',
-      fr: 'Le délai standard est de 7 à 10 jours ouvrables à partir de l\'approbation du visuel. L\'option urgente (3 à 5 jours) est disponible moyennant un léger supplément. On ne promet pas de délais qu\'on ne peut pas tenir.'
+      en: 'Standard turnaround is 3–5 business days from approved artwork. Rush (2–3 days) is available with a small surcharge. We don\'t quote timelines we can\'t hit.',
+      fr: 'Le délai standard est de 3 à 5 jours ouvrables à partir de l\'approbation du visuel. L\'option urgente (2 à 3 jours) est disponible moyennant un léger supplément. On ne promet pas de délais qu\'on ne peut pas tenir.'
     },
     'about.values.qc.h': { en: 'Quality control', fr: 'Contrôle de qualité' },
     'about.values.qc.p': {
