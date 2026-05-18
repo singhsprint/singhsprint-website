@@ -1687,6 +1687,21 @@
       renderBulkPricingTable();
       // Refresh BYO decoration-only price (the method drives the per-piece cost)
       refreshByoPrice();
+      // DTG → DTF means same engine price; DTG ↔ Embroidery flips the
+      // engine's decoration_method axis. Wipe the per-item price cache so
+      // every line item refetches under the new method and the live
+      // estimate strip + per-row subtotals reflect the change immediately.
+      _priceCache = {};
+      if (typeof renderCartList === 'function') renderCartList();
+      // Also refresh the right-panel live-price strip if it was already
+      // populated (single-product / pre-cart flow).
+      if (typeof fetchLiveUnitPrice === 'function') {
+        fetchLiveUnitPrice(function(px) {
+          if (typeof renderPriceDisplay === 'function' && typeof px === 'number') {
+            renderPriceDisplay(state.qty || 50, px, true);
+          }
+        });
+      }
     }
 
     // ===== BULK PRICING TABLE RENDERER =====
@@ -3929,14 +3944,28 @@
     });
 
     // Per-item live-price cache so we don't refetch every render. Keyed by
-    // product_id + qty + sides.
+    // product_id + qty + sides + decoration_method, so switching DTG/DTF →
+    // Embroidery in the Print Method picker yields a fresh fetch instead
+    // of a stale DTF-flavoured cache hit.
     var _priceCache = {};
+    // Map the UI's service tile values (DTG / DTF / Embroidery / "Not sure")
+    // onto the engine's two-method axis: DTG and DTF both quote at the DTF
+    // base ladder (same press, same per-side cost); Embroidery layers the
+    // surcharge on top via the engine. Unknown / "Not sure" defaults to dtf
+    // so the customer sees a price right away — we recommend the right
+    // method at quote-reply time anyway.
+    function currentDecorationMethod() {
+      var s = (typeof state !== 'undefined' && state.service) ? String(state.service).toLowerCase() : '';
+      return s === 'embroidery' ? 'embroidery' : 'dtf';
+    }
     function liveUnitPrice(productId, qty, sides, cb) {
-      var key = productId + '_' + qty + '_' + sides;
+      var method = currentDecorationMethod();
+      var key = productId + '_' + qty + '_' + sides + '_' + method;
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
       fetch(PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(productId) +
-        '&qty=' + qty + '&sides=' + sides)
+        '&qty=' + qty + '&sides=' + sides +
+        '&decoration_method=' + method)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
           var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
@@ -4446,7 +4475,8 @@
       var url = PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(catalogPick.product_id) +
         '&qty='   + qty +
-        '&sides=' + sides;
+        '&sides=' + sides +
+        '&decoration_method=' + currentDecorationMethod();
       fetch(url, { signal: _livePriceAbort.signal })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) { cb(d && typeof d.unit_price === 'number' ? d.unit_price : null); })

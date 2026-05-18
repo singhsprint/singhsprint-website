@@ -1649,17 +1649,24 @@
 
     // ===== SERVICE =====
     function selectService(el) {
-      // Works for both the legacy .svc-btn row and the new .method-card grid.
-      // Scope to siblings inside the same parent so it doesn't accidentally
-      // deselect the Garment Source buttons (which also use .svc-btn).
       el.parentElement.querySelectorAll('.svc-btn, .method-card').forEach(function(o) { o.classList.remove('selected'); });
       el.classList.add('selected');
       state.service = el.dataset.value;
       document.getElementById('serviceInput').value = state.service;
       document.getElementById('sumMethod').textContent = state.service;
       renderBulkPricingTable();
-      // Refresh BYO decoration-only price (the method drives the per-piece cost)
       refreshByoPrice();
+      // Method changed → blow away the cached per-item DTF prices so
+      // Embroidery actually shows the surcharge.
+      _priceCache = {};
+      if (typeof renderCartList === 'function') renderCartList();
+      if (typeof fetchLiveUnitPrice === 'function') {
+        fetchLiveUnitPrice(function(px) {
+          if (typeof renderPriceDisplay === 'function' && typeof px === 'number') {
+            renderPriceDisplay(state.qty || 50, px, true);
+          }
+        });
+      }
     }
 
     // ===== BULK PRICING TABLE RENDERER =====
@@ -3891,12 +3898,21 @@
     // Per-item live-price cache so we don't refetch every render. Keyed by
     // product_id + qty + sides.
     var _priceCache = {};
+    // Map the UI Print Method tile (DTG / DTF / Embroidery / "Not sure")
+    // onto the engine's two-method axis. DTG + DTF both quote at the DTF
+    // base price; Embroidery layers the surcharge on top.
+    function currentDecorationMethod() {
+      var s = (typeof state !== 'undefined' && state.service) ? String(state.service).toLowerCase() : '';
+      return s === 'embroidery' ? 'embroidery' : 'dtf';
+    }
     function liveUnitPrice(productId, qty, sides, cb) {
-      var key = productId + '_' + qty + '_' + sides;
+      var method = currentDecorationMethod();
+      var key = productId + '_' + qty + '_' + sides + '_' + method;
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
       fetch(PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(productId) +
-        '&qty=' + qty + '&sides=' + sides)
+        '&qty=' + qty + '&sides=' + sides +
+        '&decoration_method=' + method)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
           var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
@@ -4400,7 +4416,8 @@
       var url = PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(catalogPick.product_id) +
         '&qty='   + qty +
-        '&sides=' + sides;
+        '&sides=' + sides +
+        '&decoration_method=' + currentDecorationMethod();
       fetch(url, { signal: _livePriceAbort.signal })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) { cb(d && typeof d.unit_price === 'number' ? d.unit_price : null); })
