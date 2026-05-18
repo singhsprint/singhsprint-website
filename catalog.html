@@ -1172,13 +1172,24 @@
   }
 
   const state = {
-    filters: {                       // active filter state — drives /api/catalog query
+    filters: {                       // active filter state — drives Algolia query
       type: getQueryParam('type') || null,
       brand: [],
       canadian: false,
       csa: false,
       q: '',
-      inStockOnly: true              // default ON — hide fully OOS items
+      inStockOnly: true,             // default ON — hide fully OOS items
+      // Derived facet filters (2026-05-19). Each is an array because the
+      // panel UI is multi-select within a category (e.g. show me red OR blue
+      // products). Empty arrays = no constraint.
+      colorFamilies:   [],
+      genders:         [],
+      fabricFamilies:  [],
+      weightClasses:   [],
+      sizes:           [],
+      // Price range (CAD per piece, at qty=50). null = unbounded that side.
+      priceMin:        null,
+      priceMax:        null,
     },
     sort:    getQueryParam('sort') || 'bestseller',
     // Qty used to compute every card's "From $X" and the qty pre-filled
@@ -1313,15 +1324,23 @@
       try {
         const isFirstPage = state.page === 0;
         const r = await window.SPCatalog.search({
-          type:        state.filters.type,
-          brands:      state.filters.brand,
-          canadian:    state.filters.canadian,
-          csa:         state.filters.csa,
-          inStockOnly: state.filters.inStockOnly,
-          q:           state.filters.q,
-          page:        state.page,
-          hitsPerPage: 30,
-          qty:         state.qty,    // bridge resolves prices_by_qty[qty]
+          type:           state.filters.type,
+          brands:         state.filters.brand,
+          canadian:       state.filters.canadian,
+          csa:            state.filters.csa,
+          inStockOnly:    state.filters.inStockOnly,
+          q:              state.filters.q,
+          // New derived facet filters.
+          colorFamilies:  state.filters.colorFamilies,
+          genders:        state.filters.genders,
+          fabricFamilies: state.filters.fabricFamilies,
+          weightClasses:  state.filters.weightClasses,
+          sizes:          state.filters.sizes,
+          priceMin:       state.filters.priceMin,
+          priceMax:       state.filters.priceMax,
+          page:           state.page,
+          hitsPerPage:    30,
+          qty:            state.qty,    // bridge resolves prices_by_qty[qty]
         });
         const fresh = r.products || [];
         state.products = isFirstPage ? fresh : state.products.concat(fresh);
@@ -1935,9 +1954,146 @@
             <span>CSA / Hi-vis certified</span>
           </label>
         </div>
+
+        ${renderColorFamilyGroup()}
+        ${renderGenderGroup()}
+        ${renderFabricGroup()}
+        ${renderSizesGroup()}
+        ${renderWeightGroup()}
+        ${renderPriceGroup()}
       </div>
     `;
   }
+
+  // =========================================================================
+  // Filter panel — derived facet sections.
+  //
+  // Each renderer pulls counts from state._algoliaFacets when it's available
+  // (set on every Algolia response in fetchPage), so chip rows show "(214)"
+  // next to each option for the currently-active filter set. When facets
+  // haven't been fetched yet, the counts are dropped quietly rather than
+  // showing 0s.
+  // =========================================================================
+  // Visual swatch hex per color family — same buckets the sync emits.
+  const COLOR_FAMILY_SWATCHES = {
+    red:    '#d63a3a', orange: '#e8862a', yellow: '#efc52b',
+    green:  '#2f9e44', teal:   '#0c9d96', blue:   '#1f6fd6',
+    purple: '#7e5ad6', pink:   '#e060a3', brown:  '#735239',
+    black:  '#111111', white:  '#fafafa', grey:   '#9a9a9a',
+  };
+  const COLOR_FAMILY_ORDER = ['red','orange','yellow','green','teal','blue','purple','pink','brown','black','white','grey'];
+
+  function facetCounts(field) {
+    const f = (state._algoliaFacets || {})[field] || {};
+    return f;  // { value: count }
+  }
+
+  function chipRow(field, options, isActiveFn, toggleFn) {
+    const counts = facetCounts(field);
+    return options.map(opt => {
+      const [val, label, hex] = Array.isArray(opt) ? opt : [opt, opt, null];
+      const active = isActiveFn(val);
+      const c = counts[val];
+      const swatch = hex
+        ? `<span style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.12);background:${hex};display:inline-block"></span>`
+        : '';
+      const cap = (label || val).toString();
+      const labelHtml = cap.charAt(0).toUpperCase() + cap.slice(1);
+      return `<button type="button"
+        onclick="${toggleFn}('${val.replace(/'/g,"\\'")}')"
+        style="font-size:.84rem;padding:7px 12px;border-radius:50px;border:1px solid ${active ? 'var(--ink)' : 'var(--line)'};background:${active ? 'var(--ink)' : '#fff'};color:${active ? '#fff' : 'var(--ink)'};cursor:pointer;font-family:inherit;font-weight:${active ? 600 : 500};display:inline-flex;align-items:center;gap:6px;transition:all .15s">
+          ${swatch}<span>${labelHtml}</span>${typeof c === 'number' ? `<span style="font-size:.72rem;color:${active ? 'rgba(255,255,255,.65)' : 'var(--soft)'};font-weight:500">${c}</span>` : ''}
+        </button>`;
+    }).join('');
+  }
+
+  function filterSection(title, body) {
+    return `<div class="filter-group" style="margin-bottom:24px">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">${title}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${body}</div>
+    </div>`;
+  }
+
+  function renderColorFamilyGroup() {
+    const opts = COLOR_FAMILY_ORDER.map(c => [c, c, COLOR_FAMILY_SWATCHES[c]]);
+    return filterSection('Color',
+      chipRow('color_families', opts, v => state.filters.colorFamilies.includes(v), 'toggleColor')
+    );
+  }
+  function renderGenderGroup() {
+    const opts = [['mens','Men'], ['womens','Women'], ['unisex','Unisex'], ['youth','Youth']];
+    return filterSection('Gender',
+      chipRow('gender', opts, v => state.filters.genders.includes(v), 'toggleGender')
+    );
+  }
+  function renderFabricGroup() {
+    const opts = [
+      ['cotton','100% cotton'], ['cotton-blend','Cotton blend'],
+      ['tri-blend','Tri-blend'], ['polyester','Polyester'],
+      ['performance','Performance / wicking'], ['fleece','Fleece'], ['canvas','Canvas'],
+    ];
+    return filterSection('Fabric',
+      chipRow('fabric_family', opts, v => state.filters.fabricFamilies.includes(v), 'toggleFabric')
+    );
+  }
+  function renderWeightGroup() {
+    const opts = [
+      ['light','Light (≤4.5 oz)'], ['mid','Mid-weight'],
+      ['heavy','Heavyweight'], ['outerwear','Outerwear'],
+    ];
+    return filterSection('Weight',
+      chipRow('weight_class', opts, v => state.filters.weightClasses.includes(v), 'toggleWeight')
+    );
+  }
+  function renderSizesGroup() {
+    // Pull every size that appears in any loaded product, sorted by the
+    // canonical SIZE_ORDER (mirrors the one used in the sync helper).
+    const SIZE_ORDER = ['NB','3M','6M','12M','18M','24M','2T','3T','4T','5T',
+      'YXS','YS','YM','YL','YXL','XS','S','M','L','XL','2XL','3XL','4XL','5XL','6XL','7XL',
+      '28','29','30','31','32','33','34','35','36','38','40','42','44','46','48','50','52','OS'];
+    const counts = facetCounts('sizes_available');
+    const all = Object.keys(counts);
+    if (!all.length) return '';
+    all.sort((a, b) => {
+      const ai = SIZE_ORDER.indexOf(a), bi = SIZE_ORDER.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+    return filterSection('Sizes available',
+      chipRow('sizes_available', all, v => state.filters.sizes.includes(v), 'toggleSize')
+    );
+  }
+  function renderPriceGroup() {
+    const min = state.filters.priceMin ?? '';
+    const max = state.filters.priceMax ?? '';
+    return `<div class="filter-group" style="margin-bottom:24px">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Price per unit (CAD)</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="number" min="0" step="1" placeholder="Min" value="${min}"
+          oninput="state.filters.priceMin = this.value ? Number(this.value) : null"
+          style="width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;background:#fafaf7"/>
+        <span style="color:var(--soft);font-size:.86rem">to</span>
+        <input type="number" min="0" step="1" placeholder="Max" value="${max}"
+          oninput="state.filters.priceMax = this.value ? Number(this.value) : null"
+          style="width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;background:#fafaf7"/>
+        <span style="color:var(--soft);font-size:.78rem">at qty 50</span>
+      </div>
+    </div>`;
+  }
+
+  // Multi-select toggle helpers — flip the chosen value in/out of the
+  // matching state.filters array. resetAndFetch reloads with the new set.
+  function multiToggle(arrName, val) {
+    const cur = state.filters[arrName] || [];
+    state.filters[arrName] = cur.includes(val) ? cur.filter(x => x !== val) : cur.concat([val]);
+  }
+  window.toggleColor   = function (v) { multiToggle('colorFamilies',  v); renderFilterPanel(); };
+  window.toggleGender  = function (v) { multiToggle('genders',        v); renderFilterPanel(); };
+  window.toggleFabric  = function (v) { multiToggle('fabricFamilies', v); renderFilterPanel(); };
+  window.toggleWeight  = function (v) { multiToggle('weightClasses',  v); renderFilterPanel(); };
+  window.toggleSize    = function (v) { multiToggle('sizes',          v); renderFilterPanel(); };
 
   // Brand search inside the filter panel — purely client-side; toggles
   // visibility of the label rows by substring match on lowercased brand name.
@@ -2046,7 +2202,11 @@
   }
   function closeFilterPanel() { document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
   function clearAllFilters()  {
-    state.filters = { type:null, brand:[], canadian:false, csa:false, q:'', inStockOnly:true };
+    state.filters = {
+      type: null, brand: [], canadian: false, csa: false, q: '', inStockOnly: true,
+      colorFamilies: [], genders: [], fabricFamilies: [], weightClasses: [], sizes: [],
+      priceMin: null, priceMax: null,
+    };
     document.getElementById('searchInput').value='';
     closeFilterPanel();
     resetAndFetch();
@@ -2058,7 +2218,13 @@
       (state.filters.type ? 1 : 0) +
       state.filters.brand.length +
       (state.filters.canadian ? 1 : 0) +
-      (state.filters.csa ? 1 : 0);
+      (state.filters.csa ? 1 : 0) +
+      state.filters.colorFamilies.length +
+      state.filters.genders.length +
+      state.filters.fabricFamilies.length +
+      state.filters.weightClasses.length +
+      state.filters.sizes.length +
+      ((state.filters.priceMin != null || state.filters.priceMax != null) ? 1 : 0);
     const pill = document.getElementById('filterCount');
     if (pill) {
       pill.textContent = activeCount;

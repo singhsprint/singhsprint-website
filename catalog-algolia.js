@@ -74,6 +74,13 @@
       price_from:       p,
       prices_by_qty:    h.prices_by_qty || null,
       colors:           Array.isArray(h.colors) ? h.colors : [],
+      // Derived facet fields — surfaced so the UI can show active-filter
+      // chip labels ("Cotton", "Heather Aqua → grey", "L in stock"...) on
+      // each product card if it wants to.
+      color_families:   Array.isArray(h.color_families)  ? h.color_families  : [],
+      fabric_family:    h.fabric_family || null,
+      weight_class:     h.weight_class  || null,
+      sizes_available:  Array.isArray(h.sizes_available) ? h.sizes_available : [],
     };
   }
 
@@ -87,7 +94,39 @@
     if (opts.brands && opts.brands.length) {
       f.push(opts.brands.map(function (b) { return 'brand_norm:' + b; }));
     }
+    // New facet filters (2026-05-19). Each grouping is an OR (any-of) within
+    // its category, AND across categories. Empty arrays are skipped so the
+    // caller can pass them unconditionally.
+    if (opts.colorFamilies && opts.colorFamilies.length) {
+      f.push(opts.colorFamilies.map(function (c) { return 'color_families:' + c; }));
+    }
+    if (opts.genders && opts.genders.length) {
+      f.push(opts.genders.map(function (g) { return 'gender:' + g; }));
+    }
+    if (opts.fabricFamilies && opts.fabricFamilies.length) {
+      f.push(opts.fabricFamilies.map(function (x) { return 'fabric_family:' + x; }));
+    }
+    if (opts.weightClasses && opts.weightClasses.length) {
+      f.push(opts.weightClasses.map(function (w) { return 'weight_class:' + w; }));
+    }
+    if (opts.sizes && opts.sizes.length) {
+      f.push(opts.sizes.map(function (s) { return 'sizes_available:' + s; }));
+    }
     return f;
+  }
+
+  // Translate priceMin/priceMax into Algolia's `numericFilters` syntax.
+  // Algolia returns no hits when min > max, so caller is responsible for
+  // sanity-checking the bounds before passing them through.
+  function buildNumericFilters(opts) {
+    var n = [];
+    if (typeof opts.priceMin === 'number' && opts.priceMin > 0) {
+      n.push('price_from >= ' + opts.priceMin);
+    }
+    if (typeof opts.priceMax === 'number' && opts.priceMax > 0) {
+      n.push('price_from <= ' + opts.priceMax);
+    }
+    return n;
   }
 
   /**
@@ -112,15 +151,22 @@
       });
     }
 
-    var facetFilters = buildFacetFilters(opts);
+    var facetFilters   = buildFacetFilters(opts);
+    var numericFilters = buildNumericFilters(opts);
     var qs = new URLSearchParams();
     qs.set('query',         opts.q || '');
     qs.set('page',          String(opts.page || 0));
     qs.set('hitsPerPage',   String(opts.hitsPerPage || 30));
-    // Return facets for the filter panel so the brand list + type chips
-    // can show live counts that reflect the current filter set.
-    qs.set('facets',        JSON.stringify(['brand_norm', 'garment_type']));
-    if (facetFilters.length) qs.set('facetFilters', JSON.stringify(facetFilters));
+    // Return facets for the filter panel so chip counts reflect the current
+    // filter set. Includes the new derived facets so the side panel can
+    // show "(420)" next to each Color / Gender / Fabric / Sizes / Weight
+    // option without a second request.
+    qs.set('facets', JSON.stringify([
+      'brand_norm', 'garment_type', 'gender',
+      'color_families', 'fabric_family', 'weight_class', 'sizes_available',
+    ]));
+    if (facetFilters.length)   qs.set('facetFilters',   JSON.stringify(facetFilters));
+    if (numericFilters.length) qs.set('numericFilters', JSON.stringify(numericFilters));
 
     var url = 'https://' + cfg.appId + '-dsn.algolia.net/1/indexes/' +
               encodeURIComponent(cfg.indexName) + '/query';
