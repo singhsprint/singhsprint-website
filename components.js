@@ -494,8 +494,26 @@ function loadNav() {
               panel.innerHTML = '<div class="sp-search-empty">' + t('No products match.', 'Aucun produit.') + '</div>';
               return;
             }
+            // S&S Activewear and Blanks.ca both 403 direct hotlinks from
+            // external referrers, so every supplier image gets routed through
+            // /api/image-proxy here, matching catalog.html's imgUrl() rules.
+            // Anything else (local /images, singhsprint.com) is passed through.
+            var IMG_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+            var PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca'];
+            function searchImgUrl(raw) {
+              if (!raw) return '';
+              if (raw.indexOf('/api/image-proxy') >= 0) return raw;
+              if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
+              for (var i = 0; i < PROXIED_HOSTS.length; i++) {
+                if (raw.indexOf(PROXIED_HOSTS[i]) >= 0) {
+                  return IMG_PROXY + '?url=' + encodeURIComponent(raw);
+                }
+              }
+              return raw;
+            }
             panel.innerHTML = list.slice(0, 8).map(function (p) {
-              var img = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
+              var raw = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
+              var img = searchImgUrl(raw);
               return '<a class="sp-search-result" href="' + BASE + '/catalog?q=' + encodeURIComponent(p.style_number || p.name || '') + '">'
                 + (img ? '<img src="' + img + '" alt="" loading="lazy"/>' : '<span style="width:44px;height:44px"></span>')
                 + '<span style="flex:1;min-width:0"><strong>' + (p.name || p.style_number || '') + '</strong>'
