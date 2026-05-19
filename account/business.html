@@ -16,7 +16,7 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
     a{color:inherit;text-decoration:none}
-    .wrap{max-width:900px;margin:0 auto;padding:60px 24px 80px}
+    .wrap{max-width:900px;margin:0 auto;padding:28px 24px 80px}
     .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
     .back-link:hover{color:#1a1a1a}
     .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
@@ -76,6 +76,8 @@
   </style>
 </head>
 <body>
+
+<div id="nav-placeholder"></div>
 
 <main class="wrap">
   <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
@@ -188,6 +190,8 @@
   </div>
 </main>
 
+<div id="footer-placeholder"></div>
+<script src="/components.js" defer></script>
 <script src="/account/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/lang.js" defer></script>
