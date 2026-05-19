@@ -23,17 +23,13 @@
     .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1}
     .hero p{color:#666;font-size:.95rem;margin-top:6px}
     .biz-pill{display:inline-block;margin-left:8px;padding:3px 10px;border-radius:50px;background:#1a1a1a;color:#e8ff3c;font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px}
-    .stat{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,.03);text-decoration:none;color:#1a1a1a;transition:transform .12s,border-color .15s;display:block}
-    .stat:hover{border-color:#1a1a1a;transform:translateY(-1px)}
-    .stat__label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:8px}
-    .stat__value{font-family:'Playfair Display',Georgia,serif;font-size:2rem;font-weight:800;line-height:1}
-    .stat__sub{font-size:.78rem;color:#888;margin-top:6px}
-    .stat--accent .stat__value{color:#1a1a1a}
-    .stat--accent{background:#e8ff3c;border-color:#1a1a1a}
+    /* Three-tile dashboard grid. Below 640px it stacks to a single column. */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+    @media (max-width:760px){.grid{grid-template-columns:1fr}}
     .cards-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:18px}
-    .nav-card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.03);text-decoration:none;color:#1a1a1a;transition:transform .12s,border-color .15s;display:flex;flex-direction:column;gap:6px}
-    .nav-card:hover{border-color:#1a1a1a;transform:translateY(-1px)}
+    /* Nav-card variant — keeps the unified .acct-card surface from
+       _account-ui.js but adds the inline column layout used here. */
+    .nav-card{display:flex;flex-direction:column;gap:6px}
     .nav-card h3{font-size:1.02rem;font-weight:700}
     .nav-card p{font-size:.86rem;color:#666}
     .nav-card .arrow{margin-top:8px;font-size:.82rem;font-weight:600;color:#1a1a1a}
@@ -48,6 +44,7 @@
 
 <main class="wrap">
   <a href="/" class="back-link" data-i18n="account.back.home">← Back to homepage</a>
+  <div id="acct-subnav"></div>
 
   <div class="hero">
     <div>
@@ -57,53 +54,51 @@
     <button id="signout" class="signout-btn" type="button" data-i18n="account.signout">Sign out</button>
   </div>
 
-  <!-- ------- Quick stats ------- -->
+  <!-- ------- Quick stats (3 tiles, balanced) ------- -->
   <div class="grid">
-    <a href="/account/orders.html" class="stat" id="stat-active">
-      <div class="stat__label" data-i18n="account.dash.stat.active">Active quotes</div>
-      <div class="stat__value" id="stat-active-val">—</div>
-      <div class="stat__sub" data-i18n="account.dash.stat.active.sub">In review or being contacted</div>
+    <a href="/account/orders.html" class="acct-card" id="stat-active">
+      <div class="acct-stat__label" data-i18n="account.dash.stat.active">Active quotes</div>
+      <div class="acct-stat__value" id="stat-active-val">—</div>
+      <div class="acct-stat__sub" data-i18n="account.dash.stat.active.sub">In review or being contacted</div>
     </a>
-    <a href="/account/orders.html#past" class="stat" id="stat-past">
-      <div class="stat__label" data-i18n="account.dash.stat.past">Past orders</div>
-      <div class="stat__value" id="stat-past-val">—</div>
-      <div class="stat__sub" data-i18n="account.dash.stat.past.sub">Reorder with one click</div>
+    <a href="/account/orders.html#past" class="acct-card" id="stat-past">
+      <div class="acct-stat__label" data-i18n="account.dash.stat.past">Past orders</div>
+      <div class="acct-stat__value" id="stat-past-val">—</div>
+      <div class="acct-stat__sub" data-i18n="account.dash.stat.past.sub">Reorder with one click</div>
     </a>
-    <a href="/account/referrals.html" class="stat stat--accent">
-      <div class="stat__label" data-i18n="account.dash.stat.credit">Credit balance</div>
-      <div class="stat__value" id="stat-credit-val">—</div>
-      <div class="stat__sub" id="stat-credit-sub" data-i18n="account.dash.stat.credit.sub">From referrals and rewards</div>
-    </a>
-    <a href="/account/referrals.html" class="stat">
-      <div class="stat__label" data-i18n="account.dash.stat.ref">Referrals</div>
-      <div class="stat__value" id="stat-ref-val">—</div>
-      <div class="stat__sub" id="stat-ref-sub" data-i18n="account.dash.stat.ref.sub">People who signed up with your code</div>
+    <a href="/account/referrals.html" class="acct-card acct-card--accent">
+      <div class="acct-stat__label" data-i18n="account.dash.stat.credit">Credit &amp; referrals</div>
+      <div class="acct-stat__row">
+        <div class="acct-stat__value" id="stat-credit-val">—</div>
+        <span class="pip" id="stat-ref-pip">0 <span data-i18n="account.dash.stat.ref.signed">signed up</span></span>
+      </div>
+      <div class="acct-stat__sub" id="stat-credit-sub" data-i18n="account.dash.stat.credit.sub">From referrals and rewards</div>
     </a>
   </div>
 
   <!-- ------- Sub-pages ------- -->
   <div class="cards-row">
-    <a href="/account/orders.html" class="nav-card">
+    <a href="/account/orders.html" class="acct-card nav-card">
       <h3 data-i18n="account.dash.card.orders">Quotes &amp; orders</h3>
       <p data-i18n="account.dash.card.orders.sub">See pending quote requests, track current orders, and reorder anything you've printed with us before.</p>
       <span class="arrow" data-i18n="account.cta.view">View →</span>
     </a>
-    <a href="/account/referrals.html" class="nav-card">
+    <a href="/account/referrals.html" class="acct-card nav-card">
       <h3 data-i18n="account.dash.card.ref">Referrals &amp; credit</h3>
       <p data-i18n="account.dash.card.ref.sub">Share your code, earn $25 for every friend whose order ships, and apply credits at checkout.</p>
       <span class="arrow" data-i18n="account.cta.share">Share →</span>
     </a>
-    <a href="/account/business.html" class="nav-card" id="card-business">
+    <a href="/account/business.html" class="acct-card nav-card" id="card-business">
       <h3 id="card-business-title" data-i18n="account.dash.card.biz">Business account</h3>
       <p id="card-business-sub" data-i18n="account.dash.card.biz.sub">Submitted an RFP? Request business pricing, net-30 terms, multi-user teams, and the artwork library.</p>
       <span class="arrow" id="card-business-arrow" data-i18n="account.cta.apply">Apply →</span>
     </a>
-    <a href="/account/programs.html" class="nav-card" id="card-programs">
+    <a href="/account/programs.html" class="acct-card nav-card" id="card-programs">
       <h3 data-i18n="account.dash.card.programs">Programs</h3>
       <p id="card-programs-sub" data-i18n="account.dash.card.programs.sub">Institutional ordering with cohorts, gated catalogs, and spending allowances.</p>
       <span class="arrow" data-i18n="account.cta.open">Open →</span>
     </a>
-    <a href="/account/settings.html" class="nav-card">
+    <a href="/account/settings.html" class="acct-card nav-card">
       <h3 data-i18n="account.dash.card.settings">Settings</h3>
       <p data-i18n="account.dash.card.settings.sub">Profile info, payment password, saved cards, and sign out.</p>
       <span class="arrow" data-i18n="account.cta.manage">Manage →</span>
@@ -113,6 +108,7 @@
 
 <div id="footer-placeholder"></div>
 <script src="/components.js" defer></script>
+<script src="/account/_account-ui.js" defer></script>
 <script src="/account/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/lang.js" defer></script>
@@ -155,8 +151,21 @@
 
     if (refR.status === 'fulfilled') {
       const s = refR.value.stats || {};
-      $('stat-ref-val').textContent = s.redeemed || 0;
-      $('stat-ref-sub').textContent = (s.qualifying || 0) + ' qualifying · ' + (s.paid || 0) + ' paid out';
+      const signedUp = s.redeemed || 0;
+      const qualifying = s.qualifying || 0;
+      const paid = s.paid || 0;
+      // Merged tile shows signed-up count as a pip beside the credit balance.
+      const pipLabel = window.acctUI && window.acctUI.t
+        ? window.acctUI.t('signed up', 'inscrits')
+        : 'signed up';
+      $('stat-ref-pip').innerHTML = signedUp + ' <span>' + pipLabel + '</span>';
+      // Sub-line summarises both pipeline + payout in one sentence.
+      const subParts = [];
+      if (qualifying > 0) subParts.push(qualifying + ' qualifying');
+      if (paid > 0)       subParts.push(paid + ' paid out');
+      if (subParts.length) {
+        $('stat-credit-sub').textContent = subParts.join(' · ');
+      }
     }
 
     if (bizR.status === 'fulfilled') {

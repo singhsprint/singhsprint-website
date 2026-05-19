@@ -35,7 +35,7 @@
  * ========================================================================= */
 
 const Stripe = require('stripe');
-const { requireUser, setCorsHeaders } = require('../_lib/auth');
+const { requireUser, setCorsHeaders, readJsonBody } = require('../_lib/auth');
 const { adminClient } = require('../_lib/supabase');
 const { requireBusiness } = require('../_lib/business');
 
@@ -48,7 +48,14 @@ function stripeClient() {
 module.exports = async function handler(req, res) {
   setCorsHeaders(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'GET')     return res.status(405).json({ error: 'method not allowed' });
+
+  const action = req.query?.action;
+  const isPortalAction = action === 'portal' || action === 'portal-session';
+
+  // Portal action accepts GET or POST. Default invoice-list is GET only.
+  if (!isPortalAction && req.method !== 'GET') {
+    return res.status(405).json({ error: 'method not allowed' });
+  }
 
   let user;
   try { ({ user } = await requireUser(req)); }
@@ -56,8 +63,13 @@ module.exports = async function handler(req, res) {
 
   const supabase = adminClient();
 
-  try { await requireBusiness(supabase, user.id); }
-  catch (e) { return res.status(e.status || 500).json(e.body || { error: 'business gate failed' }); }
+  // Invoice LIST is a business-tier feature (B2B invoice history view).
+  // Billing portal is available to ANY customer with a Stripe profile —
+  // it's their own data and Stripe enforces auth on the hosted page.
+  if (!isPortalAction) {
+    try { await requireBusiness(supabase, user.id); }
+    catch (e) { return res.status(e.status || 500).json(e.body || { error: 'business gate failed' }); }
+  }
 
   // Look up the Stripe customer the saved-cards flow created lazily.
   // If absent, the business has no invoices yet — return empty list.
@@ -67,29 +79,43 @@ module.exports = async function handler(req, res) {
   if (pErr) return res.status(500).json({ error: pErr.message });
 
   if (!prof?.stripe_customer_id) {
+    if (isPortalAction) {
+      return res.status(409).json({
+        error: 'No Stripe customer yet. Add a card or pay an invoice first to set one up.'
+      });
+    }
     return res.status(200).json({ invoices: [], hasStripeCustomer: false });
   }
 
   const stripe = stripeClient();
-  const action = req.query?.action;
 
   // ------------------------------------------------------------
-  // ?action=portal-session — bounce to Stripe Billing Portal
+  // ?action=portal — bounce to Stripe Billing Portal. Accepts an
+  // optional returnTo URL in the POST body; falls back to the
+  // orders page.
   // ------------------------------------------------------------
-  if (action === 'portal-session') {
+  if (isPortalAction) {
+    let body = {};
+    if (req.method === 'POST') {
+      try { body = await readJsonBody(req); } catch (_) { /* body optional */ }
+    }
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const host  = req.headers['x-forwarded-host']  || req.headers.host || 'singhsprint.com';
+    let returnTo = body.returnTo || `${proto}://${host}/account/orders.html`;
+    // Defensive: only allow http(s) targets to avoid open-redirect-style abuse.
+    if (!/^https?:\/\//i.test(returnTo)) returnTo = `${proto}://${host}/account/orders.html`;
     try {
       const session = await stripe.billingPortal.sessions.create({
-        customer: prof.stripe_customer_id,
-        return_url: `${proto}://${host}/account/business.html`
+        customer:   prof.stripe_customer_id,
+        return_url: returnTo
       });
-      return res.status(200).json({ portalUrl: session.url });
+      // Return both keys for forward-compat with any existing callers.
+      return res.status(200).json({ url: session.url, portalUrl: session.url });
     } catch (e) {
       // Most common cause: billing portal not configured in Stripe
       // Dashboard → Settings → Billing → Customer portal.
       return res.status(502).json({
-        error: 'Stripe billing portal not configured. Visit Stripe Dashboard → Settings → Billing → Customer portal → Activate.',
+        error: 'Stripe billing portal not configured. Activate it under Stripe → Settings → Billing → Customer portal.',
         stripeMessage: e.message
       });
     }

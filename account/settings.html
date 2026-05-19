@@ -76,6 +76,7 @@
 
 <main class="wrap">
   <a href="/account/" class="back-link">← Back to account</a>
+  <div id="acct-subnav"></div>
 
   <div class="hero">
     <div>
@@ -89,10 +90,19 @@
   <!-- PROFILE -->
   <!-- ----------------------------------------------------------------- -->
   <section class="card">
-    <h2>Profile</h2>
-    <div class="row"><div class="key">Email</div><div class="val" id="profile-email">—</div></div>
-    <div class="row"><div class="key">Phone</div><div class="val" id="profile-phone">—</div></div>
-    <div class="row"><div class="key">Account created</div><div class="val" id="profile-created">—</div></div>
+    <h2 data-i18n="account.settings.profile">Profile</h2>
+    <div class="row">
+      <div class="key" data-i18n="account.settings.name">Display name</div>
+      <div class="val" id="profile-name-cell">
+        <div class="acct-editable">
+          <span id="profile-name-display">—</span>
+          <button class="acct-editable__pencil" id="profile-name-edit" type="button" data-i18n="account.settings.edit">Edit</button>
+        </div>
+      </div>
+    </div>
+    <div class="row"><div class="key" data-i18n="account.settings.email">Email</div><div class="val" id="profile-email">—</div></div>
+    <div class="row"><div class="key" data-i18n="account.settings.phone">Phone</div><div class="val" id="profile-phone">—</div></div>
+    <div class="row"><div class="key" data-i18n="account.settings.created">Account created</div><div class="val" id="profile-created">—</div></div>
   </section>
 
   <!-- ----------------------------------------------------------------- -->
@@ -180,6 +190,7 @@
 
 <div id="footer-placeholder"></div>
 <script src="/components.js" defer></script>
+<script src="/account/_account-ui.js" defer></script>
 <script src="/account/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
@@ -210,11 +221,91 @@
     $('hello').textContent = 'Signed in as ' + (user.email || user.phone || user.id);
     $('profile-email').textContent   = user.email || '—';
     $('profile-phone').textContent   = user.phone || '—';
-    $('profile-created').textContent = new Date(user.created_at).toLocaleDateString();
+    // Locale-aware long date ("May 19, 2026" instead of "5/19/2026"). Falls
+    // back to native toLocaleDateString if the shared helper hasn't loaded.
+    $('profile-created').textContent = window.acctUI
+      ? window.acctUI.fmtDate(user.created_at)
+      : new Date(user.created_at).toLocaleDateString();
 
+    // Display name comes from profiles.display_name. We hit the same
+    // referral GET that already runs (it joins profiles); but to keep
+    // settings.html self-contained we make a dedicated call here.
+    await refreshDisplayName();
     await refreshPasswordStatus();
     await refreshCardsView();
   })();
+
+  // ------------- display name (inline edit) -------------
+  // Stored on profiles.display_name. Read piggybacks on the referral GET
+  // (which already fetches the profile row) so we don't have to add a new
+  // serverless function — Vercel Hobby caps us at 12. Write goes through
+  // payment-password.js's ?action=profile branch.
+  let currentName = '';
+
+  async function refreshDisplayName() {
+    try {
+      const r = await api.authedFetch('/api/account/referral');
+      if (!r.ok) return;
+      const j = await r.json();
+      currentName = (j.profile && j.profile.displayName) || '';
+      renderNameStatic();
+    } catch (_) { /* non-fatal */ }
+  }
+
+  function renderNameStatic() {
+    const cell = $('profile-name-cell');
+    cell.innerHTML = ''
+      + '<div class="acct-editable">'
+      + '  <span id="profile-name-display"></span>'
+      + '  <button class="acct-editable__pencil" id="profile-name-edit" type="button">Edit</button>'
+      + '</div>';
+    const span = $('profile-name-display');
+    if (currentName) {
+      span.textContent = currentName;
+      span.style.color = '';
+    } else {
+      span.textContent = (window.acctUI && window.acctUI.isFr) ? '— ajouter' : '— add yours';
+      span.style.color = '#888';
+    }
+    $('profile-name-edit').onclick = renderNameEditor;
+  }
+
+  function renderNameEditor() {
+    const cell = $('profile-name-cell');
+    const safe = (currentName || '').replace(/"/g, '&quot;');
+    cell.innerHTML = ''
+      + '<div class="acct-editable">'
+      + '  <input id="profile-name-input" type="text" maxlength="60" value="' + safe + '" placeholder="Your name or company">'
+      + '  <button class="acct-editable__pencil" id="profile-name-save" type="button">Save</button>'
+      + '  <button class="acct-editable__pencil" id="profile-name-cancel" type="button">Cancel</button>'
+      + '</div>';
+    const input = $('profile-name-input');
+    input.focus(); input.select();
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('profile-name-save').click();
+      if (e.key === 'Escape') renderNameStatic();
+    });
+    $('profile-name-cancel').onclick = renderNameStatic;
+    $('profile-name-save').onclick = async () => {
+      const next = input.value.trim();
+      try {
+        const r = await api.authedFetch('/api/account/payment-password?action=profile', {
+          method: 'POST',
+          body:   JSON.stringify({ displayName: next })
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'Save failed');
+        currentName = next;
+        renderNameStatic();
+        if (window.acctUI) window.acctUI.toast('Saved');
+      } catch (e) {
+        if (window.acctUI) window.acctUI.toast(e.message);
+      }
+    };
+  }
+
+  // Bind the initial Edit click.
+  $('profile-name-edit').onclick = renderNameEditor;
 
   // ------------- sign out -------------
   $('signout').onclick = async () => {

@@ -25,6 +25,12 @@
     .share-card h2{font-size:1.1rem;font-weight:700;margin-bottom:6px}
     .share-card .copy{color:#1a1a1a;font-size:.9rem;margin-bottom:18px;max-width:520px}
     .code-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    /* Share button is the obvious primary action — full black, lime border
+       glow on hover. Copy buttons stay as secondary actions. */
+    #share-btn{display:inline-flex;align-items:center;gap:6px}
+    #share-btn::before{content:"";width:14px;height:14px;background:url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2.4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'18\' cy=\'5\' r=\'3\'/><circle cx=\'6\' cy=\'12\' r=\'3\'/><circle cx=\'18\' cy=\'19\' r=\'3\'/><path d=\'M8.6 13.5L15.4 17.5M15.4 6.5L8.6 10.5\'/></svg>") center/contain no-repeat}
+    #copy-code,#copy-link{background:#fff !important;color:#1a1a1a !important;border:1.5px solid #1a1a1a !important}
+    #copy-code:hover,#copy-link:hover{background:#1a1a1a !important;color:#fff !important}
     .code{display:inline-flex;align-items:center;padding:12px 20px;background:#fff;border:1px solid #1a1a1a;border-radius:12px;font-family:'Inter',monospace;font-size:1.4rem;font-weight:800;letter-spacing:.18em;color:#1a1a1a;flex:1;min-width:160px;justify-content:center}
     .code-row button{padding:13px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .05s}
     .code-row button:hover{opacity:.92}
@@ -66,6 +72,7 @@
 
 <main class="wrap">
   <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <div id="acct-subnav"></div>
   <div class="hero">
     <h1 data-i18n="account.ref.h1">Referrals &amp; credit</h1>
     <p data-i18n="account.ref.sub">Share your code, earn credit when friends order.</p>
@@ -78,8 +85,9 @@
 
     <div class="code-row">
       <span class="code" id="code-display">······</span>
-      <button id="copy-code" type="button">Copy code</button>
-      <button id="copy-link" type="button">Copy link</button>
+      <button id="share-btn" type="button" data-i18n="account.ref.share">Share</button>
+      <button id="copy-code" type="button" data-i18n="account.ref.copycode">Copy code</button>
+      <button id="copy-link" type="button" data-i18n="account.ref.copylink">Copy link</button>
     </div>
 
     <div class="share-stats">
@@ -120,6 +128,7 @@
 
 <div id="footer-placeholder"></div>
 <script src="/components.js" defer></script>
+<script src="/account/_account-ui.js" defer></script>
 <script src="/account/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/lang.js" defer></script>
@@ -216,7 +225,20 @@
     });
   }
 
-  // ------- Copy actions -------
+  // ------- Share / Copy actions -------
+  // Native Web Share API (with clipboard fallback + toast) — best UX on
+  // iOS/Android where it opens the system share sheet. Falls back to
+  // clipboard on desktops without share support.
+  $('share-btn').onclick = async () => {
+    const code = $('code-display').textContent.trim();
+    if (!code || code === '······') return;
+    if (window.acctUI && window.acctUI.shareReferral) {
+      await window.acctUI.shareReferral({
+        url:  shareUrl || window.location.origin,
+        text: 'Use my code ' + code + ' for $25 off your first order at Singhs Print:'
+      });
+    }
+  };
   $('copy-code').onclick = async () => {
     const code = $('code-display').textContent.trim();
     if (!code || code === '······') return;

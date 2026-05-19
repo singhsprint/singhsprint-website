@@ -40,12 +40,15 @@
     .btn--primary:hover{opacity:.92}
     .btn--ghost{background:#f4f2eb;color:#1a1a1a}
     .btn--ghost:hover{background:#ebe9e0}
-    .empty{text-align:center;color:#888;padding:28px 18px;border:1px dashed #d8d5c7;border-radius:14px;background:#fafaf7;font-size:.9rem}
-    .empty a{color:#1a1a1a;font-weight:600;text-decoration:underline}
     .loading{color:#999;font-size:.86rem}
     .reorder-msg{margin-top:8px;font-size:.84rem}
     .reorder-msg--ok{color:#22592c}
     .reorder-msg--err{color:#a01a1a}
+    /* Stripe billing portal launcher — secondary footer card under past orders */
+    .portal-launch{margin-top:20px;display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:18px 22px;box-shadow:0 2px 10px rgba(0,0,0,.03);flex-wrap:wrap}
+    .portal-launch__body{flex:1;min-width:200px}
+    .portal-launch__title{font-weight:700;font-size:.95rem;margin-bottom:2px}
+    .portal-launch__sub{color:#888;font-size:.82rem}
   </style>
 </head>
 <body>
@@ -54,6 +57,7 @@
 
 <main class="wrap">
   <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <div id="acct-subnav"></div>
   <div class="hero">
     <h1 data-i18n="account.orders.h1">Quotes &amp; orders</h1>
     <p data-i18n="account.orders.sub">Track active requests and reorder anything you've printed with us before.</p>
@@ -67,11 +71,22 @@
   <section id="past-section">
     <h2 id="past" data-i18n="account.orders.past">Past orders</h2>
     <div id="past-list" class="loading">Loading…</div>
+
+    <!-- Stripe Billing Portal launcher. Only rendered once we know there
+         is at least one paid invoice (the script flips display:flex). -->
+    <div id="portal-launch" class="portal-launch" style="display:none">
+      <div class="portal-launch__body">
+        <div class="portal-launch__title" data-i18n="account.orders.portal.title">Manage invoices &amp; payment methods</div>
+        <div class="portal-launch__sub" data-i18n="account.orders.portal.sub">Opens a secure Stripe page where you can download receipts, update your card, and view tax info.</div>
+      </div>
+      <button id="open-portal" class="btn btn--primary" type="button" data-i18n="account.orders.portal.open">Open Stripe portal →</button>
+    </div>
   </section>
 </main>
 
 <div id="footer-placeholder"></div>
 <script src="/components.js" defer></script>
+<script src="/account/_account-ui.js" defer></script>
 <script src="/account/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/lang.js" defer></script>
@@ -139,16 +154,65 @@
     const j = await r.json();
     renderList('active-list', j.active || [], 'active');
     renderList('past-list',   j.past   || [], 'past');
+
+    // Show the Stripe portal launcher once the user has any past order.
+    // (If they've never paid an invoice, Stripe has no Customer record yet
+    // and the portal won't have anything useful to show.)
+    if ((j.past || []).length > 0) {
+      $('portal-launch').style.display = 'flex';
+    }
   }
+
+  // Stripe Billing Portal — opens a new tab to the secure Stripe-hosted
+  // page where customers manage receipts, cards, and tax info.
+  $('open-portal').addEventListener('click', async () => {
+    const btn = $('open-portal');
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Opening…';
+    try {
+      const r = await api.authedFetch('/api/account/invoices?action=portal', {
+        method: 'POST', body: JSON.stringify({ returnTo: location.href })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.url) throw new Error(j.error || 'Could not open portal.');
+      window.location.assign(j.url);
+    } catch (e) {
+      if (window.acctUI) window.acctUI.toast(e.message);
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
 
   function renderList(rootId, rows, bucket) {
     const root = $(rootId);
     root.innerHTML = '';
     root.className = '';
     if (!rows.length) {
-      root.innerHTML = bucket === 'active'
-        ? '<div class="empty">No active quotes. <a href="/quote">Start a new one →</a></div>'
-        : '<div class="empty">No past orders yet — they\'ll show up here after your first one ships.</div>';
+      // Lean on the shared empty-state helper (acctUI.emptyState) for
+      // consistent illustration + CTA across the portal. If the helper
+      // hasn't loaded yet (defer race), fall back to a plain message.
+      if (window.acctUI && window.acctUI.emptyState) {
+        root.innerHTML = bucket === 'active'
+          ? window.acctUI.emptyState({
+              icon:     'quote',
+              title:    'No active quotes yet',
+              body:     "Tell us what you're printing — we'll come back with a custom quote within a few hours.",
+              ctaHref:  '/quote',
+              ctaLabel: 'Start a new quote'
+            })
+          : window.acctUI.emptyState({
+              icon:     'box',
+              title:    "Your past prints will live here",
+              body:     'After your first order ships, you\'ll be able to reorder it with a single click.',
+              ctaHref:  '/quote',
+              ctaLabel: 'Get your first quote'
+            });
+      } else {
+        root.innerHTML = bucket === 'active'
+          ? '<div class="empty">No active quotes. <a href="/quote">Start a new one →</a></div>'
+          : '<div class="empty">No past orders yet — they\'ll show up here after your first one ships.</div>';
+      }
       return;
     }
     rows.forEach((order) => {

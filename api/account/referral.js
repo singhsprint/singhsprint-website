@@ -90,7 +90,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     const profQ = supabase
       .from('profiles')
-      .select('referral_code, referred_by_user_id')
+      .select('referral_code, referred_by_user_id, display_name')
       .eq('id', user.id)
       .maybeSingle();
     const settQ = supabase
@@ -180,7 +180,12 @@ module.exports = async function handler(req, res) {
         paid:       paidRes.data?.length     || 0
       },
       paidEntries: paidRes.data || [],
-      referredBy
+      referredBy,
+      // Profile snapshot used by other portal pages (e.g. settings inline
+      // edit) so we don't need a separate /api/account/profile endpoint.
+      profile: {
+        displayName: prof.data?.display_name || null
+      }
     });
   }
 

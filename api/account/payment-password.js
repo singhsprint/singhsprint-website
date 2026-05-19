@@ -69,6 +69,30 @@ module.exports = async function handler(req, res) {
   const action = req.query?.action || body.action;
 
   // ------------------------------------------------------------
+  // POST ?action=profile — update lightweight profile fields
+  // (display_name today, extensible later). Folded into this handler
+  // to avoid adding another function under the Hobby 12-fn cap.
+  // ------------------------------------------------------------
+  if (action === 'profile') {
+    const patch = {};
+    if (typeof body.displayName === 'string') {
+      const name = body.displayName.trim();
+      if (name.length > 80) return res.status(400).json({ error: 'displayName too long (max 80 chars)' });
+      patch.display_name = name || null;
+    }
+    if (Object.keys(patch).length === 0) {
+      return res.status(400).json({ error: 'no profile fields supplied' });
+    }
+    patch.updated_at = new Date().toISOString();
+    const { error: updErr } = await supabase
+      .from('profiles')
+      .update(patch)
+      .eq('id', user.id);
+    if (updErr) return res.status(500).json({ error: updErr.message });
+    return res.status(200).json({ ok: true, profile: { displayName: patch.display_name } });
+  }
+
+  // ------------------------------------------------------------
   // POST ?action=verify — exchange the password for an unlock token
   // ------------------------------------------------------------
   if (action === 'verify') {
