@@ -171,6 +171,17 @@
     .placement-preset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
     @media (min-width:600px){.placement-preset-grid{grid-template-columns:repeat(4,1fr)}}
     .preset-card{position:relative;border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .15s;background:#fff;user-select:none}
+    /* Embroidery-only constraints. Engine can't physically hoop an
+       oversized chest panel or a full-back panel — sewing machine bed
+       is ~12"; anything larger needs DTF or screen. Hide those presets
+       when the customer has selected Embroidery so they can't pick a
+       combo we can't deliver. The chest presets pick up a "(5×5″ hoop)"
+       size hint, Full Front picks up "(larger panel)" so it's clear
+       what each option actually produces. */
+    body.is-embroidery [data-preset="oversized"],
+    body.is-embroidery [data-preset="back-full"]{display:none !important}
+    .preset-emb-hint{display:none;font-size:.66rem;font-weight:600;color:#7a5b15;background:#fff8e8;border:1px solid #f0e3b8;border-radius:50px;padding:1px 7px;margin-top:4px;letter-spacing:.02em}
+    body.is-embroidery .preset-emb-hint{display:inline-block}
     .preset-card:hover{border-color:#1a1a1a;transform:translateY(-1px)}
     .preset-card.selected{border-color:#1a1a1a;background:#fafafa;box-shadow:0 0 0 1.5px #1a1a1a inset}
     .preset-card .preset-shirt{width:42px;height:50px;margin:0 auto 6px;display:block}
@@ -888,18 +899,21 @@
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="6" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
                     <span class="preset-label" data-i18n="quote.placement.leftchest.l">Left Chest</span>
                     <span class="preset-desc" data-i18n="quote.placement.leftchest.d">~3-4" &mdash; logo / pocket</span>
+                    <span class="preset-emb-hint">5×5″ hoop</span>
                   </div>
                   <div class="preset-card selected" data-preset="center-chest" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="14" y="17" width="14" height="10" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
                     <span class="preset-label" data-i18n="quote.placement.centerchest.l">Center Chest</span>
                     <span class="preset-desc" data-i18n="quote.placement.centerchest.d">~7" mid-chest</span>
+                    <span class="preset-emb-hint">5×5″ hoop</span>
                   </div>
                   <div class="preset-card" data-preset="full-front" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="20" height="18" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
                     <span class="preset-label" data-i18n="quote.placement.fullfront.l">Full Front</span>
                     <span class="preset-desc" data-i18n="quote.placement.fullfront.d">~11" chest panel</span>
+                    <span class="preset-emb-hint">larger jumbo hoop</span>
                   </div>
                   <div class="preset-card" data-preset="oversized" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
@@ -1714,6 +1728,51 @@
       renderBulkPricingTable();
       // Refresh BYO decoration-only price (the method drives the per-piece cost)
       refreshByoPrice();
+      // Method-specific placement constraints + size hints:
+      //   • Embroidery hoops can't go past ~12", so Oversized and Full
+      //     Back disappear; chest presets pick up a "(5×5″ hoop)" hint
+      //     and Full Front picks up a "(larger jumbo hoop)" hint.
+      // Driven by the .is-embroidery body class — CSS does the rest.
+      var isEmb = String(state.service || '').toLowerCase() === 'embroidery';
+      document.body.classList.toggle('is-embroidery', isEmb);
+      // If the customer had Oversized or Full Back selected and just
+      // flipped to Embroidery, silently deselect those — otherwise the
+      // engine would still see them in the cart's placements array
+      // (defaulting to 1× multiplier) and the customer would expect a
+      // print we can't actually produce.
+      if (isEmb) {
+        // 1) Sweep the per-cart-item placements: if a cart row had
+        //    Oversized or Full Back picked under DTG/DTF, strip it.
+        //    Items left with zero placements default to Center Chest so
+        //    every row keeps at least one valid location.
+        if (typeof SinghsCart !== 'undefined') {
+          var citems = SinghsCart.read().items || [];
+          var changed = false;
+          citems.forEach(function(it, idx) {
+            var orig = (it.placements || []).slice();
+            var filtered = orig.filter(function(p) { return !EMB_DISALLOWED[p]; });
+            if (filtered.length === 0) filtered.push('center-chest');
+            var same = filtered.length === orig.length &&
+                       filtered.every(function(x, i){ return x === orig[i]; });
+            if (!same) {
+              SinghsCart.updateSilent(idx, { placements: filtered });
+              changed = true;
+            }
+          });
+          if (changed && typeof renderCartList === 'function') renderCartList();
+        }
+        // 2) Same sweep in the GLOBAL placement picker (used when the
+        //    customer is in single-product / non-cart mode). Deselect
+        //    the now-hidden cards so they don't quietly stay in state.
+        document.querySelectorAll('.preset-card[data-preset="oversized"].selected, .preset-card[data-preset="back-full"].selected')
+          .forEach(function(c){
+            // togglePlacementPreset expects the card to currently be
+            // selected; flip it once to deselect cleanly.
+            if (typeof togglePlacementPreset === 'function') {
+              togglePlacementPreset(c);
+            }
+          });
+      }
       // DTG → DTF means same engine price; DTG ↔ Embroidery flips the
       // engine's decoration_method axis. Wipe the per-item price cache so
       // every line item refetches under the new method and the live
@@ -3877,18 +3936,40 @@
     // Render the expandable picker. Groups the preset options by where
     // they sit on THIS garment type — caps get Cap-only options, totes
     // get Bag-only options, shirts get the full Front/Back/Sleeves set.
+    // Placements the embroidery hoop physically can't accommodate. Filtered
+    // out of the per-cart-item picker when Embroidery is the active method
+    // so the customer can't pick a combo we can't produce.
+    var EMB_DISALLOWED = { 'oversized': 1, 'back-full': 1 };
+    // Per-placement hoop-size hint shown next to chest options when method
+    // is Embroidery. Keeps customers from expecting a 12"-wide logo on a
+    // 5×5" hoop. Mirrors the same hint in the GLOBAL placement picker via
+    // the .preset-emb-hint span / .is-embroidery body class.
+    var EMB_PLACEMENT_HINT = {
+      'left-chest':   '5×5″ hoop',
+      'center-chest': '5×5″ hoop',
+      'full-front':   'larger jumbo hoop',
+    };
     function renderCartPlacementPicker(idx, picked, garmentType) {
       var groups = placementGroupsFor(garmentType);
+      var isEmb  = String((typeof state !== 'undefined' && state.service) || '').toLowerCase() === 'embroidery';
       var pickedSet = {};
       picked.forEach(function(p){ pickedSet[p] = true; });
       var html = '';
       groups.forEach(function(g) {
+        // Filter the group's ids for embroidery-disallowed presets — and
+        // drop the entire group if nothing's left after filtering (e.g.
+        // back-full is the only Back option on totes).
+        var ids = isEmb ? g.ids.filter(function(id){ return !EMB_DISALLOWED[id]; }) : g.ids;
+        if (!ids.length) return;
         html += '<div class="ci-picker__group">';
         html += '  <div class="ci-picker__group-label">' + escapeAttr(g.label) + '</div>';
         html += '  <div class="ci-picker__opts">';
-        g.ids.forEach(function(id) {
+        ids.forEach(function(id) {
           var sel = pickedSet[id] ? ' is-selected' : '';
-          html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + '</button>';
+          var hint = isEmb && EMB_PLACEMENT_HINT[id]
+            ? ' <small style="opacity:.7;font-weight:500">· ' + EMB_PLACEMENT_HINT[id] + '</small>'
+            : '';
+          html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + hint + '</button>';
         });
         html += '  </div>';
         html += '</div>';
@@ -3989,14 +4070,29 @@
       var s = (typeof state !== 'undefined' && state.service) ? String(state.service).toLowerCase() : '';
       return s === 'embroidery' ? 'embroidery' : 'dtf';
     }
-    function liveUnitPrice(productId, qty, sides, cb) {
+    // Accept an optional `placements` array as the 4th arg — when method
+    // is Embroidery the engine multiplies the surcharge by each placement's
+    // own multiplier (Left Chest 1×, Center Chest 2×, Full Front 3×, etc.).
+    // Without the placements list, the engine defaults to "N × 1× left
+    // chest" which mispriced any quote that asked for, say, Full Front
+    // embroidery (should be 3× cost, was showing 1×). Cache key includes
+    // the placement list so DTF/Embroidery + Center/Full quotes each get
+    // their own slot.
+    function liveUnitPrice(productId, qty, sides, placements, cb) {
+      // Backwards-compat: older callers pass (productId, qty, sides, cb)
+      // with no placements arg. Detect and shift.
+      if (typeof placements === 'function') { cb = placements; placements = []; }
       var method = currentDecorationMethod();
-      var key = productId + '_' + qty + '_' + sides + '_' + method;
+      var placementsArr = Array.isArray(placements) ? placements.slice() : [];
+      var placementsKey = placementsArr.join(',');
+      var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey;
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
-      fetch(PRICING_API_FOR_QUOTE +
+      var url = PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(productId) +
         '&qty=' + qty + '&sides=' + sides +
-        '&decoration_method=' + method)
+        '&decoration_method=' + method;
+      if (placementsKey) url += '&embroidery_placements=' + encodeURIComponent(placementsKey);
+      fetch(url)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
           var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
@@ -4119,7 +4215,7 @@
             paintCartItemSwatches(idx, p.colors || [], it.color_id);
           });
 
-        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, function(price) {
+        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, it.placements || [], function(price) {
           var el = document.getElementById('ci-price-' + idx);
           if (!el) return;
           if (price != null) {
@@ -4393,15 +4489,18 @@
       strip.style.display = 'block';
 
       // Per-item unit prices live in _priceCache keyed by
-      // product_id + qty + sides + decoration_method (the method suffix
-      // was added 2026-05-19 so DTF/Embroidery quotes don't share a
-      // cache slot). Use the same key shape liveUnitPrice writes with.
+      // product_id + qty + sides + decoration_method + placements.
+      // The placements component was added 2026-05-19 so embroidery on
+      // Center Chest (2× surcharge) doesn't share a cache slot with
+      // embroidery on Left Chest (1×). Use the same key liveUnitPrice
+      // writes with.
       var method = currentDecorationMethod();
       var cartUnitSum = 0, cartUnits = 0, knownAll = true;
       items.forEach(function (it) {
         var qty   = Number(it.qty) || 0;
         var sides = it.sides || 1;
-        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method];
+        var pk    = (it.placements || []).join(',');
+        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk];
         cartUnits += qty;
         if (typeof p === 'number') cartUnitSum += p;
         else knownAll = false;
@@ -4431,7 +4530,7 @@
         if (items.length === 1 && items[0].product_id) {
           // Async refetch — meanwhile show the cart-qty estimate so the
           // strip doesn't blank out.
-          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, function (livePx) {
+          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, items[0].placements || [], function (livePx) {
             if (typeof livePx === 'number' && livePx > 0) {
               document.getElementById('livePriceUnit').textContent =
                 '$' + livePx.toFixed(2);

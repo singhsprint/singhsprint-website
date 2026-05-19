@@ -1669,8 +1669,21 @@
       document.getElementById('sumMethod').textContent = state.service;
       renderBulkPricingTable();
       refreshByoPrice();
-      // Method changed → blow away the cached per-item DTF prices so
-      // Embroidery actually shows the surcharge.
+      // Embroidery-only constraints (see EN quote.html for full rationale).
+      var isEmb = String(state.service || '').toLowerCase() === 'embroidery';
+      document.body.classList.toggle('is-embroidery', isEmb);
+      if (isEmb && typeof SinghsCart !== 'undefined') {
+        var citems = SinghsCart.read().items || [];
+        var changed = false;
+        citems.forEach(function(it, idx) {
+          var orig = (it.placements || []).slice();
+          var filtered = orig.filter(function(p) { return !EMB_DISALLOWED[p]; });
+          if (filtered.length === 0) filtered.push('center-chest');
+          var same = filtered.length === orig.length && filtered.every(function(x, i){ return x === orig[i]; });
+          if (!same) { SinghsCart.updateSilent(idx, { placements: filtered }); changed = true; }
+        });
+        if (changed && typeof renderCartList === 'function') renderCartList();
+      }
       _priceCache = {};
       if (typeof renderCartList === 'function') renderCartList();
       if (typeof fetchLiveUnitPrice === 'function') {
@@ -3813,18 +3826,30 @@
     // Render the expandable picker. Groups the preset options by where
     // they sit on THIS garment type — caps get Cap-only options, totes
     // get Bag-only options, shirts get the full Front/Back/Sleeves set.
+    var EMB_DISALLOWED = { 'oversized': 1, 'back-full': 1 };
+    var EMB_PLACEMENT_HINT = {
+      'left-chest':   'cerceau 5×5″',
+      'center-chest': 'cerceau 5×5″',
+      'full-front':   'grand cerceau',
+    };
     function renderCartPlacementPicker(idx, picked, garmentType) {
       var groups = placementGroupsFor(garmentType);
+      var isEmb  = String((typeof state !== 'undefined' && state.service) || '').toLowerCase() === 'embroidery';
       var pickedSet = {};
       picked.forEach(function(p){ pickedSet[p] = true; });
       var html = '';
       groups.forEach(function(g) {
+        var ids = isEmb ? g.ids.filter(function(id){ return !EMB_DISALLOWED[id]; }) : g.ids;
+        if (!ids.length) return;
         html += '<div class="ci-picker__group">';
         html += '  <div class="ci-picker__group-label">' + escapeAttr(g.label) + '</div>';
         html += '  <div class="ci-picker__opts">';
-        g.ids.forEach(function(id) {
+        ids.forEach(function(id) {
           var sel = pickedSet[id] ? ' is-selected' : '';
-          html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + '</button>';
+          var hint = isEmb && EMB_PLACEMENT_HINT[id]
+            ? ' <small style="opacity:.7;font-weight:500">· ' + EMB_PLACEMENT_HINT[id] + '</small>'
+            : '';
+          html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + hint + '</button>';
         });
         html += '  </div>';
         html += '</div>';
@@ -3920,14 +3945,19 @@
       var s = (typeof state !== 'undefined' && state.service) ? String(state.service).toLowerCase() : '';
       return s === 'embroidery' ? 'embroidery' : 'dtf';
     }
-    function liveUnitPrice(productId, qty, sides, cb) {
+    function liveUnitPrice(productId, qty, sides, placements, cb) {
+      if (typeof placements === 'function') { cb = placements; placements = []; }
       var method = currentDecorationMethod();
-      var key = productId + '_' + qty + '_' + sides + '_' + method;
+      var placementsArr = Array.isArray(placements) ? placements.slice() : [];
+      var placementsKey = placementsArr.join(',');
+      var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey;
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
-      fetch(PRICING_API_FOR_QUOTE +
+      var url = PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(productId) +
         '&qty=' + qty + '&sides=' + sides +
-        '&decoration_method=' + method)
+        '&decoration_method=' + method;
+      if (placementsKey) url += '&embroidery_placements=' + encodeURIComponent(placementsKey);
+      fetch(url)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
           var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
@@ -4042,7 +4072,7 @@
             paintCartItemSwatches(idx, p.colors || [], it.color_id);
           });
 
-        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, function(price) {
+        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, it.placements || [], function(price) {
           var el = document.getElementById('ci-price-' + idx);
           if (!el) return;
           if (price != null) {
@@ -4262,7 +4292,8 @@
       items.forEach(function (it) {
         var qty   = Number(it.qty) || 0;
         var sides = it.sides || 1;
-        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method];
+        var pk    = (it.placements || []).join(',');
+        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk];
         cartUnits += qty;
         if (typeof p === 'number') cartUnitSum += p;
         else knownAll = false;
@@ -4292,7 +4323,7 @@
         if (items.length === 1 && items[0].product_id) {
           // Async refetch — meanwhile show the cart-qty estimate so the
           // strip doesn't blank out.
-          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, function (livePx) {
+          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, items[0].placements || [], function (livePx) {
             if (typeof livePx === 'number' && livePx > 0) {
               document.getElementById('livePriceUnit').textContent =
                 '$' + livePx.toFixed(2);
