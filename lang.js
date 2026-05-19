@@ -6,7 +6,15 @@
 // The toggle button is injected by components.js.
 
 var SP_LANG = (function() {
-  var currentLang = localStorage.getItem('sp-lang') || 'en';
+  // Trust the document's lang attribute over localStorage when they
+  // conflict — if the user landed on /fr/<path> their browser served a
+  // FR-marked HTML even though localStorage says 'en'. Falling through
+  // to localStorage prevents a toggle-button flash where /fr/quote.html
+  // showed "EN" but clicking it tried to go to /fr/quote (no-op) because
+  // currentLang was wrong.
+  var docLang = (document.documentElement.lang || '').toLowerCase().slice(0, 2);
+  var storedLang = localStorage.getItem('sp-lang');
+  var currentLang = (docLang === 'fr' || docLang === 'en') ? docLang : (storedLang || 'en');
 
   var translations = {
     // ===== NAV / PROMO =====
@@ -1083,7 +1091,102 @@ var SP_LANG = (function() {
     'guide.proc.h2.rfp': { en: 'What an actual RFP looks like', fr: 'À quoi ressemble une vraie demande de prix' },
     'guide.proc.h2.related': { en: 'Related industry programs', fr: 'Programmes connexes' },
     'guide.proc.cta.h3': { en: 'Build the program with us', fr: 'Bâtissons le programme ensemble' },
-    'guide.proc.cta.btn': { en: 'Start your RFP →', fr: 'Démarrer votre demande →' }
+    'guide.proc.cta.btn': { en: 'Start your RFP →', fr: 'Démarrer votre demande →' },
+
+    // ===== ACCOUNT =====
+    'account.back.home':       { en: '← Back to homepage',  fr: '← Retour à l\'accueil' },
+    'account.back.account':    { en: '← Back to account',   fr: '← Retour au compte' },
+    'account.signout':         { en: 'Sign out',            fr: 'Déconnexion' },
+    'account.business.badge':  { en: 'Business',            fr: 'Entreprise' },
+
+    // Sign in
+    'account.signin.h1':       { en: 'Sign in', fr: 'Connexion' },
+    'account.signin.sub':      { en: 'We\'ll send you a 6-digit code — no password needed.', fr: 'Nous vous enverrons un code à 6 chiffres — aucun mot de passe requis.' },
+    'account.signin.tab.email':{ en: 'Email', fr: 'Courriel' },
+    'account.signin.tab.phone':{ en: 'Phone', fr: 'Téléphone' },
+    'account.signin.label.email':{ en: 'Email address', fr: 'Adresse courriel' },
+    'account.signin.label.phone':{ en: 'Phone number',  fr: 'Numéro de téléphone' },
+    'account.signin.send':     { en: 'Send code',       fr: 'Envoyer le code' },
+    'account.signin.code':     { en: 'Enter the 6-digit code', fr: 'Entrez le code à 6 chiffres' },
+    'account.signin.verify':   { en: 'Verify and sign in', fr: 'Vérifier et se connecter' },
+    'account.signin.resend':   { en: 'Resend code', fr: 'Renvoyer le code' },
+    'account.signin.different':{ en: '← Use a different address', fr: '← Utiliser une autre adresse' },
+    'account.signin.help':     { en: 'Saving a card later? You\'ll be asked to set a payment password so only you can use it at checkout.', fr: 'Vous voulez enregistrer une carte plus tard ? Nous vous demanderons un mot de passe de paiement pour qu\'elle ne soit utilisable que par vous au moment du paiement.' },
+
+    // Dashboard
+    'account.dash.h1':            { en: 'My account', fr: 'Mon compte' },
+    'account.dash.stat.active':   { en: 'Active quotes', fr: 'Demandes en cours' },
+    'account.dash.stat.active.sub':{ en: 'In review or being contacted', fr: 'En révision ou en contact' },
+    'account.dash.stat.past':     { en: 'Past orders', fr: 'Commandes passées' },
+    'account.dash.stat.past.sub': { en: 'Reorder with one click', fr: 'Recommandez en un clic' },
+    'account.dash.stat.credit':   { en: 'Credit balance', fr: 'Solde de crédit' },
+    'account.dash.stat.credit.sub':{ en: 'From referrals and rewards', fr: 'Provenant des parrainages et récompenses' },
+    'account.dash.stat.ref':      { en: 'Referrals', fr: 'Parrainages' },
+    'account.dash.stat.ref.sub':  { en: 'People who signed up with your code', fr: 'Personnes inscrites avec votre code' },
+    'account.dash.card.orders':   { en: 'Quotes &amp; orders', fr: 'Demandes et commandes' },
+    'account.dash.card.orders.sub':{ en: 'See pending quote requests, track current orders, and reorder anything you\'ve printed with us before.', fr: 'Consultez vos demandes en attente, suivez vos commandes actuelles et recommandez ce que vous avez déjà imprimé avec nous.' },
+    'account.dash.card.ref':      { en: 'Referrals &amp; credit', fr: 'Parrainages et crédit' },
+    'account.dash.card.ref.sub':  { en: 'Share your code, earn $25 for every friend whose order ships, and apply credits at checkout.', fr: 'Partagez votre code, gagnez 25 $ pour chaque ami dont la commande est expédiée, et appliquez vos crédits au paiement.' },
+    'account.dash.card.biz':      { en: 'Business account', fr: 'Compte entreprise' },
+    'account.dash.card.biz.sub':  { en: 'Submitted an RFP? Request business pricing, net-30 terms, multi-user teams, and the artwork library.', fr: 'Vous avez soumis un appel d\'offres ? Demandez les tarifs entreprise, les conditions net 30, les comptes d\'équipe et la bibliothèque graphique.' },
+    'account.dash.card.programs': { en: 'Programs', fr: 'Programmes' },
+    'account.dash.card.programs.sub':{ en: 'Institutional ordering with cohorts, gated catalogs, and spending allowances.', fr: 'Achats institutionnels avec cohortes, catalogue restreint et plafonds de dépenses.' },
+    'account.dash.card.settings': { en: 'Settings', fr: 'Paramètres' },
+    'account.dash.card.settings.sub':{ en: 'Profile info, payment password, saved cards, and sign out.', fr: 'Profil, mot de passe de paiement, cartes enregistrées et déconnexion.' },
+    'account.cta.view':        { en: 'View →',   fr: 'Voir →' },
+    'account.cta.share':       { en: 'Share →',  fr: 'Partager →' },
+    'account.cta.open':        { en: 'Open →',   fr: 'Ouvrir →' },
+    'account.cta.manage':      { en: 'Manage →', fr: 'Gérer →' },
+    'account.cta.apply':       { en: 'Apply →',  fr: 'Demander →' },
+
+    // Orders
+    'account.orders.h1':       { en: 'Quotes &amp; orders', fr: 'Demandes et commandes' },
+    'account.orders.sub':      { en: 'Track active requests and reorder past prints.', fr: 'Suivez vos demandes en cours et recommandez vos impressions précédentes.' },
+    'account.orders.active':   { en: 'Active', fr: 'En cours' },
+    'account.orders.past':     { en: 'Past orders', fr: 'Commandes passées' },
+    'account.orders.empty.active':{ en: 'No active quotes. <a href="/quote">Start a new one →</a>', fr: 'Aucune demande en cours. <a href="/quote">Démarrer une nouvelle →</a>' },
+    'account.orders.empty.past':{ en: 'No past orders yet — they\'ll show up here after your first one ships.', fr: 'Aucune commande passée — elles apparaîtront ici après l\'expédition de votre première.' },
+    'account.orders.btn.track':{ en: 'Track',   fr: 'Suivre' },
+    'account.orders.btn.reorder':{ en: 'Reorder', fr: 'Recommander' },
+
+    // Referrals
+    'account.ref.h1':          { en: 'Referrals &amp; credit', fr: 'Parrainages et crédit' },
+    'account.ref.sub':         { en: 'Share your code, earn credit when friends order.', fr: 'Partagez votre code, gagnez du crédit quand vos amis commandent.' },
+    'account.ref.code.h2':     { en: 'Your referral code', fr: 'Votre code de parrainage' },
+    'account.ref.copy.code':   { en: 'Copy code', fr: 'Copier le code' },
+    'account.ref.copy.link':   { en: 'Copy link', fr: 'Copier le lien' },
+    'account.ref.stat.signups':{ en: 'Signed up', fr: 'Inscriptions' },
+    'account.ref.stat.qual':   { en: 'Qualifying orders', fr: 'Commandes admissibles' },
+    'account.ref.stat.paid':   { en: 'Paid out', fr: 'Versés' },
+    'account.ref.bal.h2':      { en: 'Credit balance', fr: 'Solde de crédit' },
+    'account.ref.bal.applies': { en: 'applies at checkout', fr: 'appliqué au paiement' },
+    'account.ref.redeem.h2':   { en: 'Have a referral code?', fr: 'Vous avez un code de parrainage ?' },
+    'account.ref.redeem.btn':  { en: 'Apply', fr: 'Appliquer' },
+    'account.ref.redeem.ph':   { en: 'ENTER CODE', fr: 'ENTREZ LE CODE' },
+
+    // Business
+    'account.biz.h1':          { en: 'Business account', fr: 'Compte entreprise' },
+    'account.biz.sub':         { en: 'Net-30 invoicing, multi-user teams, an artwork library, and volume pricing for repeat buyers.', fr: 'Facturation net 30, comptes d\'équipe, bibliothèque graphique et tarifs de volume pour les acheteurs réguliers.' },
+    'account.biz.request.h2':  { en: 'Request business status', fr: 'Demander le statut entreprise' },
+    'account.biz.team.h2':     { en: 'Team',     fr: 'Équipe' },
+    'account.biz.artwork.h2':  { en: 'Artwork library', fr: 'Bibliothèque graphique' },
+    'account.biz.invoices.h2': { en: 'Invoices', fr: 'Factures' },
+    'account.biz.terms.h2':    { en: 'Payment terms &amp; pricing', fr: 'Conditions de paiement et tarifs' },
+    'account.biz.invite.btn':  { en: 'Send invite', fr: 'Envoyer l\'invitation' },
+    'account.biz.invite.ph':   { en: 'teammate@acme.com', fr: 'collègue@acme.com' },
+    'account.biz.upload.btn':  { en: 'Upload', fr: 'Téléverser' },
+
+    // Programs
+    'account.prog.h1':         { en: 'Programs', fr: 'Programmes' },
+    'account.prog.sub':        { en: 'Institutional ordering — cohorts, catalog whitelists, spending allowances, reporting.', fr: 'Achats institutionnels — cohortes, listes de catalogues, plafonds de dépenses, rapports.' },
+    'account.prog.your':       { en: 'Your program', fr: 'Votre programme' },
+    'account.prog.shop':       { en: 'Shop your catalog →', fr: 'Voir votre catalogue →' },
+    'account.prog.allowance':  { en: 'Allowance', fr: 'Plafond' },
+    'account.prog.spent':      { en: 'Spent', fr: 'Dépensé' },
+    'account.prog.remaining':  { en: 'Remaining', fr: 'Restant' },
+    'account.prog.new.btn':    { en: '+ New program', fr: '+ Nouveau programme' },
+    'account.prog.export.csv': { en: 'Export CSV', fr: 'Exporter CSV' },
+    'account.prog.banner.full':{ en: 'View full catalog →', fr: 'Voir le catalogue complet →' }
   };
 
   function t(key) {
@@ -1117,9 +1220,39 @@ var SP_LANG = (function() {
     } catch (e) {}
   }
 
+  // Toggle the active language.
+  //
+  // Two flavours of localization in play across the site:
+  //   1. Pages that translate in-place via `data-i18n` attributes (most
+  //      single-file marketing pages, e.g. /index, /catalog).
+  //   2. Pages that have a separate French HTML file at /fr/<path>
+  //      (e.g. /quote ↔ /fr/quote, /about ↔ /fr/about,
+  //      /youth-initiative ↔ /fr/youth-initiative).
+  //
+  // Flavour 2 doesn't use data-i18n attributes on its hardcoded copy, so
+  // calling applyLang() in place does nothing visible. We detect those
+  // pages by looking for a `<link rel="alternate" hreflang="<target>">`
+  // tag in <head> and navigate there. Falls back to in-place swap when
+  // no hreflang alternate is declared.
   function toggleLang() {
-    currentLang = currentLang === 'en' ? 'fr' : 'en';
-    localStorage.setItem('sp-lang', currentLang);
+    var next = currentLang === 'en' ? 'fr' : 'en';
+    // Look up the hreflang alternate for the target language. Pages
+    // that ship a separate /fr/ HTML file declare these in <head>.
+    var alt = document.querySelector('link[rel="alternate"][hreflang="' + next + '"]');
+    if (alt) {
+      var href = alt.getAttribute('href');
+      if (href) {
+        // Persist the preference BEFORE navigating so the destination
+        // boots with the right currentLang and doesn't flicker EN-first
+        // before reading localStorage.
+        try { localStorage.setItem('sp-lang', next); } catch (e) {}
+        window.location.href = href;
+        return;
+      }
+    }
+    // No mirror — fall back to in-place data-i18n swap.
+    currentLang = next;
+    try { localStorage.setItem('sp-lang', currentLang); } catch (e) {}
     applyLang();
   }
 
