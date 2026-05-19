@@ -1112,6 +1112,13 @@
             <h2 data-i18n="quote.step3.h">How do we reach you?</h2>
             <p class="step-desc" data-i18n="quote.step3.desc">We'll send your quote by email, usually within an hour during business hours (9am-9pm).</p>
 
+            <!-- Signed-in pill — populated by quoteAccountAware() in the script below.
+                 Hidden by default; appears when an active Supabase session is detected. -->
+            <div id="sp-quote-account-pill" style="display:none;background:#e8ff3c;border:1px solid #1a1a1a;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:.88rem;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <span><span style="font-weight:700" data-i18n="quote.account.signedin">Signed in as</span> <span id="sp-quote-account-email" style="font-weight:600"></span></span>
+              <a href="#" id="sp-quote-account-signout" style="text-decoration:underline;font-size:.78rem;color:#1a1a1a" data-i18n="quote.account.changeacct">Use a different account</a>
+            </div>
+
             <div class="form-row">
               <div class="form-group"><label for="name" data-i18n="quote.contact.namelabel">Full name *</label><input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="quote.contact.name.ph" required></div>
               <div class="form-group"><label for="company" data-i18n="quote.contact.companylabel">Company / brand</label><input type="text" id="company" name="company" placeholder="Optional" data-i18n-placeholder="quote.contact.company.ph"></div>
@@ -1140,6 +1147,19 @@
                 <option data-i18n="quote.contact.hear.opt5">Repeat customer</option>
                 <option data-i18n="quote.contact.hear.opt6">Other</option>
               </select>
+            </div>
+
+            <!-- Account opt-in checkbox — hidden for already-signed-in users, shown for
+                 anonymous visitors so they can opt to create an account in one step.
+                 Default: unchecked, so the anonymous flow is unaffected unless the user
+                 actively opts in. -->
+            <div class="form-group" id="sp-quote-signup-block" style="margin-top:8px">
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:#fafaf7;border:1px solid #e6e3d8;padding:14px;border-radius:10px;font-weight:400">
+                <input type="checkbox" id="sp-quote-signup-optin" style="margin-top:3px;flex-shrink:0">
+                <span style="font-size:.88rem;line-height:1.5;color:#1a1a1a" data-i18n="quote.account.signup">
+                  <strong>Create an account</strong> to track this quote, reorder anything you print with us, and earn referral credits. We'll email you a sign-in link right after we receive your quote.
+                </span>
+              </label>
             </div>
 
             <div class="form-buttons">
@@ -3208,6 +3228,138 @@
           form.appendChild(input);
         }
       });
+    })();
+
+    // ===== ACCOUNT INTEGRATION =====
+    // Auth-aware enhancements layered on top of the anonymous quote flow.
+    // Two paths:
+    //   1. SIGNED IN — pre-fill name/email/phone/company from the user's
+    //      customer record, show a "signed in as X" pill, hide the signup
+    //      opt-in. The lead still posts via the anon-key POST below; the
+    //      customer record is what links it to the user once the CRM
+    //      converts the lead to an order.
+    //   2. ANONYMOUS — show a "create an account" checkbox under the
+    //      contact fields. If checked at submit, fire an OTP email after
+    //      the lead is saved so the user can claim the quote later via
+    //      the handle_new_user trigger that auto-links the customer by
+    //      email match.
+    (function quoteAccountAware() {
+      function loadSupabase(cb) {
+        if (window.supabase && window.supabase.createClient) return cb();
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+        s.onload = cb;
+        s.onerror = function(){ /* fail silently — anonymous flow still works */ };
+        document.head.appendChild(s);
+      }
+
+      loadSupabase(function() {
+        var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: { persistSession: true, autoRefreshToken: true, storageKey: 'sp.session.v1' }
+        });
+        window.SP_QUOTE_AUTH = client;
+
+        client.auth.getSession().then(function(res) {
+          var session = res && res.data && res.data.session;
+          window.SP_QUOTE_SESSION = session || null;
+          if (session) showSignedInUI(session.user, session.access_token);
+          else         showAnonymousUI();
+        });
+      });
+
+      function showSignedInUI(user, accessToken) {
+        var pill = document.getElementById('sp-quote-account-pill');
+        if (pill) {
+          pill.style.display = 'flex';
+          var emailEl = document.getElementById('sp-quote-account-email');
+          if (emailEl) emailEl.textContent = user.email || user.phone || '(account)';
+        }
+        var signup = document.getElementById('sp-quote-signup-block');
+        if (signup) signup.style.display = 'none';
+
+        var signoutLink = document.getElementById('sp-quote-account-signout');
+        if (signoutLink) {
+          signoutLink.onclick = function(e) {
+            e.preventDefault();
+            if (!confirm('Sign out of this account?')) return;
+            window.SP_QUOTE_AUTH.auth.signOut().then(function() { location.reload(); });
+          };
+        }
+        prefillFromCustomer(user, accessToken);
+      }
+
+      function showAnonymousUI() {
+        var signup = document.getElementById('sp-quote-signup-block');
+        if (signup) signup.style.display = '';
+      }
+
+      function setInputIfEmpty(id, val) {
+        var el = document.getElementById(id);
+        if (el && !el.value && val) el.value = val;
+      }
+
+      function prefillFromCustomer(user, accessToken) {
+        // First-pass prefill from the auth user itself — covers brand-new
+        // accounts that don't have a customer row yet.
+        if (user.email) setInputIfEmpty('email', user.email);
+        if (user.phone) setInputIfEmpty('phone', user.phone);
+
+        // Then enrich from the customers table if a record exists for them.
+        // Uses the user's JWT so RLS (if ever enabled) recognises them.
+        fetch(SUPABASE_URL + '/rest/v1/customers?user_id=eq.' + encodeURIComponent(user.id)
+              + '&select=contact_name,email,phone,company_name&limit=1', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + (accessToken || SUPABASE_KEY)
+          }
+        })
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(rows) {
+          if (!rows || !rows[0]) return;
+          var c = rows[0];
+          if (c.contact_name) setInputIfEmpty('name',    c.contact_name);
+          if (c.email)        setInputIfEmpty('email',   c.email);
+          if (c.phone)        setInputIfEmpty('phone',   c.phone);
+          if (c.company_name) setInputIfEmpty('company', c.company_name);
+        })
+        .catch(function() { /* prefill is best-effort */ });
+      }
+
+      // Account opt-in: after the regular submit handler runs and the lead
+      // is posted, if the checkbox is checked we trigger a passwordless OTP
+      // sign-in. The handle_new_user trigger will link any matching customer
+      // by email when this user first signs in.
+      var form = document.getElementById('quoteForm');
+      if (form) {
+        form.addEventListener('submit', function() {
+          setTimeout(function() {
+            var optin = document.getElementById('sp-quote-signup-optin');
+            if (!optin || !optin.checked) return;
+            var emailEl = document.getElementById('email');
+            var email = emailEl && emailEl.value && emailEl.value.trim();
+            if (!email || !window.SP_QUOTE_AUTH) return;
+
+            window.SP_QUOTE_AUTH.auth.signInWithOtp({
+              email: email,
+              options: {
+                shouldCreateUser: true,
+                emailRedirectTo: 'https://www.singhsprint.com/account/'
+              }
+            }).then(function() {
+              // Surface a confirmation inside the success card so the user
+              // knows to check their inbox.
+              var success = document.getElementById('formSuccess');
+              if (!success) return;
+              var note = document.createElement('p');
+              note.style.cssText = 'margin-top:14px;padding:12px 14px;background:#e8ff3c;border:1px solid #1a1a1a;border-radius:10px;font-size:.92rem;text-align:left';
+              note.innerHTML = '<strong>Check your email</strong> — we just sent a sign-in link to <strong>'
+                + email.replace(/[<>&"]/g, function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c];})
+                + '</strong>. Click it to access your account and track this quote.';
+              success.appendChild(note);
+            }).catch(function() { /* OTP failure shouldn't break the quote flow */ });
+          }, 100);
+        });
+      }
     })();
 
     // ===== FORM SUBMIT =====

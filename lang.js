@@ -1205,7 +1205,15 @@ var SP_LANG = (function() {
     'account.prog.remaining':  { en: 'Remaining', fr: 'Restant' },
     'account.prog.new.btn':    { en: '+ New program', fr: '+ Nouveau programme' },
     'account.prog.export.csv': { en: 'Export CSV', fr: 'Exporter CSV' },
-    'account.prog.banner.full':{ en: 'View full catalog →', fr: 'Voir le catalogue complet →' }
+    'account.prog.banner.full':{ en: 'View full catalog →', fr: 'Voir le catalogue complet →' },
+
+    // ===== QUOTE PAGE — ACCOUNT INTEGRATION =====
+    'quote.account.signedin':  { en: 'Signed in as', fr: 'Connecté en tant que' },
+    'quote.account.changeacct':{ en: 'Use a different account', fr: 'Utiliser un autre compte' },
+    'quote.account.signup':    {
+      en: '<strong>Create an account</strong> to track this quote, reorder anything you print with us, and earn referral credits. We\'ll email you a sign-in link right after we receive your quote.',
+      fr: '<strong>Créer un compte</strong> pour suivre cette soumission, recommander tout ce que vous imprimez chez nous, et accumuler des crédits de parrainage. Nous vous enverrons un lien de connexion par courriel dès que nous recevons votre demande.'
+    }
   };
 
   function t(key) {
