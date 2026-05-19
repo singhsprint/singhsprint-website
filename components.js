@@ -90,7 +90,19 @@ function loadNav() {
       '.sp-logo img{display:block;height:52px;width:auto}',
       '.sp-spacer{flex:1}',
       '.sp-search-wrap{position:relative;display:inline-block}',
-      '.sp-search{display:flex;align-items:center;gap:8px;border:1px solid #e6e3d8;border-radius:22px;padding:6px 14px 6px 12px;min-width:280px;color:#1a1a1a;font-size:.85rem;background:#fff;transition:border-color .15s}',
+      '.sp-search{display:flex;align-items:center;gap:8px;border:1px solid #e6e3d8;border-radius:22px;padding:6px 6px 6px 12px;min-width:280px;color:#1a1a1a;font-size:.85rem;background:#fff;transition:border-color .15s}',
+      // Submit button — round, dark, sits inside the pill on the right.
+      // Tap target for users who want to commit a search instead of
+      // browsing the typeahead list. Bound to the same /catalog?q=…
+      // navigation the Enter key triggers.
+      '.sp-search-go{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:none;background:#1a1a1a;color:#fff;cursor:pointer;font-weight:700;font-size:.9rem;line-height:1;padding:0;margin-left:auto;flex-shrink:0;transition:transform .12s,background .12s}',
+      '.sp-search-go:hover{background:#000;transform:translateX(2px)}',
+      '.sp-search-go:active{transform:translateX(1px)}',
+      '.sp-search-go svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}',
+      // Prominent "See all results" CTA at the top of the typeahead panel.
+      '.sp-search-allbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#e8ff3c;color:#1a1a1a;border-radius:10px;padding:10px 14px;text-decoration:none;font-weight:700;font-size:.86rem;margin-bottom:6px;border:1px solid rgba(0,0,0,.08)}',
+      '.sp-search-allbtn:hover{background:#dff531}',
+      '.sp-search-allbtn .sp-search-allbtn__hint{font-size:.72rem;font-weight:500;color:#1a1a1a;opacity:.75}',
       '.sp-search:hover,.sp-search:focus-within{border-color:#1a1a1a}',
       '.sp-search svg{width:14px;height:14px;flex-shrink:0;color:#888}',
       '.sp-search input{border:none;outline:none;background:transparent;font-size:.86rem;flex:1;min-width:0;color:#1a1a1a;font-family:inherit;padding:4px 0}',
@@ -375,6 +387,9 @@ function loadNav() {
     + '      <label class="sp-search" for="sp-search-input">'
     +          ICON.search
     + '        <input id="sp-search-input" type="search" autocomplete="off" placeholder="' + searchPlaceholder + '" aria-label="' + searchPlaceholder + '"/>'
+    + '        <button type="button" id="sp-search-go" class="sp-search-go" aria-label="' + t('Search', 'Rechercher') + '">'
+    + '          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5l5 5l-5 5"/></svg>'
+    + '        </button>'
     + '      </label>'
     + '      <div class="sp-search-panel" id="sp-search-panel" aria-live="polite"></div>'
     + '    </div>'
@@ -416,6 +431,9 @@ function loadNav() {
     + '      <label class="sp-search" for="sp-search-input-mobile" style="width:100%;min-width:0">'
     +          ICON.search
     + '        <input id="sp-search-input-mobile" type="search" autocomplete="off" placeholder="' + searchPlaceholder + '" aria-label="' + searchPlaceholder + '"/>'
+    + '        <button type="button" id="sp-search-go-mobile" class="sp-search-go" aria-label="' + t('Search', 'Rechercher') + '">'
+    + '          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5l5 5l-5 5"/></svg>'
+    + '        </button>'
     + '      </label>'
     + '      <div class="sp-search-panel" id="sp-search-panel-mobile" aria-live="polite"></div>'
     + '    </div>'
@@ -511,7 +529,16 @@ function loadNav() {
               }
               return raw;
             }
-            panel.innerHTML = list.slice(0, 8).map(function (p) {
+            // The "See all results in catalog" CTA is the customer's
+            // primary intent button when they typed a query and want the
+            // full filterable result set. Promote it to the TOP of the
+            // dropdown styled as a yellow accent button — way more
+            // discoverable than a centered link buried under 8 cards.
+            var allBtn = '<a class="sp-search-allbtn" href="' + BASE + '/catalog?q=' + encodeURIComponent(q) + '">'
+              + '<span>' + t('See all results for ', 'Voir tous les résultats pour ') + '"' + q + '"</span>'
+              + '<span class="sp-search-allbtn__hint">↵</span>'
+              + '</a>';
+            panel.innerHTML = allBtn + list.slice(0, 8).map(function (p) {
               var raw = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
               var img = searchImgUrl(raw);
               return '<a class="sp-search-result" href="' + BASE + '/catalog?q=' + encodeURIComponent(p.style_number || p.name || '') + '">'
@@ -519,14 +546,25 @@ function loadNav() {
                 + '<span style="flex:1;min-width:0"><strong>' + (p.name || p.style_number || '') + '</strong>'
                 + '<br><span style="color:#888;font-size:.76rem">' + (p.brand || '') + (p.style_number ? ' &middot; ' + p.style_number : '') + '</span></span>'
                 + '</a>';
-            }).join('') + '<a class="sp-search-result" style="color:#1a1a1a;font-weight:600;justify-content:center" href="' + BASE + '/catalog?q=' + encodeURIComponent(q) + '">'
-              + t('See all results for ', 'Voir tous les résultats pour ') + '"' + q + '" &rarr;</a>';
+            }).join('');
           })
           .catch(function () {
             panel.innerHTML = '<div class="sp-search-empty">' + t("Couldn't load — try again.", 'Échec — réessayez.') + '</div>';
           });
       }, 180);
     });
+    // Match the submit button to this specific input (desktop button pairs
+    // with desktop input, mobile with mobile). Same go-to-catalog behavior
+    // as pressing Enter — clicking commits the search.
+    var goBtn = document.getElementById(inputId.replace('sp-search-input', 'sp-search-go'));
+    if (goBtn) {
+      goBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var q = input.value.trim();
+        if (q.length) window.location.href = BASE + '/catalog?q=' + encodeURIComponent(q);
+        else input.focus();   // empty input → just focus, let them type
+      });
+    }
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();

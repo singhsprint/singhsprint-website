@@ -4153,6 +4153,7 @@
         var sidesList = [];
         for (var s = 1; s <= (matrix.max_sides || 4); s++) sidesList.push(s);
         var showEmb = !!matrix.emb_supported;
+        var isMobile = window.innerWidth < 720;
 
         var fmt = function(cell) {
           if (!cell || cell.price == null) return '—';
@@ -4163,50 +4164,90 @@
         };
         var activeQty = Number(it.qty) || 50;
 
-        // Build the header. "DTF" group always shown; "Embroidery" only when
-        // the engine has a surcharge ladder configured for this garment.
-        var headSides = sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>'; }).join('');
-        var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
-          '<tr>' +
-            '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qty</th>' +
-            '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTF print</th>' +
-            (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Embroidery</th>' : '') +
-          '</tr>' +
-          '<tr>' + headSides + (showEmb ? headSides : '') + '</tr>' +
-        '</thead>';
-
-        var body = matrix.rows.map(function(r) {
-          var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
-          var rowStyle = isActive
-            ? 'background:#1a1a1a;color:#fff;font-weight:600'
-            : 'background:#fff;color:#1a1a1a';
-          var cells = sidesList.map(function(s) {
-            return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">'
-              + fmt(r.dtf[s]) + '</td>';
+        // Render a single method's table (DTF or Embroidery). `accessor` is
+        // the property name on each row ('dtf' or 'embroidery'); `label` is
+        // the human-readable method name shown above the table. `bg` is the
+        // tinted background for the header row, matching the wide-table
+        // colour convention (cream for DTF, peach for Embroidery).
+        function buildMethodTable(label, accessor, bg) {
+          var headSides = sidesList.map(function(s){
+            return '<th style="text-align:right;padding:5px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>';
           }).join('');
-          if (showEmb) {
-            cells += sidesList.map(function(s){
-              return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + ';border-left:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">'
-                + fmt(r.embroidery[s]) + '</td>';
+          var body = matrix.rows.map(function(r) {
+            var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
+            var rowStyle = isActive
+              ? 'background:#1a1a1a;color:#fff;font-weight:600'
+              : 'background:#fff;color:#1a1a1a';
+            var border = isActive ? '#333' : '#f0eee5';
+            var cells = sidesList.map(function(s) {
+              return '<td style="text-align:right;padding:5px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + '">'
+                + fmt(r[accessor][s]) + '</td>';
             }).join('');
-          }
-          return '<tr style="' + rowStyle + '">' +
-            '<td style="padding:6px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">' + qtyLabel(r) + '</td>' +
-            cells +
-          '</tr>';
-        }).join('');
+            return '<tr style="' + rowStyle + '">' +
+              '<td style="padding:5px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + border + '">' + qtyLabel(r) + '</td>' +
+              cells +
+            '</tr>';
+          }).join('');
+          return '<div style="margin-top:8px;border:1px solid #e8e6df;border-radius:10px;background:#fff;overflow:hidden">' +
+            '<div style="background:' + bg + ';font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#666;padding:6px 10px">' + label + '</div>' +
+            '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
+              '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' +
+                '<thead style="font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
+                  '<tr><th style="text-align:left;padding:5px 8px;font-weight:600">Qty</th>' + headSides + '</tr>' +
+                '</thead>' +
+                '<tbody>' + body + '</tbody>' +
+              '</table>' +
+            '</div>' +
+          '</div>';
+        }
+
+        // Mobile (< 720px): stack DTF and Embroidery as two narrow 5-column
+        // tables — much more readable than swiping a single 9-column table.
+        // Desktop: keep the original side-by-side 9-column layout because
+        // there's room and the comparison is easier at a glance.
+        var inner;
+        if (isMobile) {
+          inner = buildMethodTable('DTF print', 'dtf', '#f7f6f0') +
+                  (showEmb ? buildMethodTable('Embroidery', 'embroidery', '#fef6e7') : '');
+        } else {
+          // Desktop wide table (original layout).
+          var headSidesWide = sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>'; }).join('');
+          var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
+            '<tr>' +
+              '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qty</th>' +
+              '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTF print</th>' +
+              (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Embroidery</th>' : '') +
+            '</tr>' +
+            '<tr>' + headSidesWide + (showEmb ? headSidesWide : '') + '</tr>' +
+          '</thead>';
+          var body = matrix.rows.map(function(r) {
+            var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
+            var rowStyle = isActive ? 'background:#1a1a1a;color:#fff;font-weight:600' : 'background:#fff;color:#1a1a1a';
+            var border = isActive ? '#333' : '#f0eee5';
+            var cells = sidesList.map(function(s) {
+              return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + '">' + fmt(r.dtf[s]) + '</td>';
+            }).join('');
+            if (showEmb) {
+              cells += sidesList.map(function(s){
+                return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + ';border-left:1px solid ' + border + '">' + fmt(r.embroidery[s]) + '</td>';
+              }).join('');
+            }
+            return '<tr style="' + rowStyle + '">' +
+              '<td style="padding:6px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + border + '">' + qtyLabel(r) + '</td>' + cells +
+            '</tr>';
+          }).join('');
+          inner = '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
+            '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' + head + '<tbody>' + body + '</tbody></table>' +
+          '</div>';
+        }
 
         host.innerHTML =
-          '<details style="margin-top:4px" ' + (window.innerWidth >= 720 ? 'open' : '') + '>' +
+          '<details style="margin-top:4px" ' + (isMobile ? '' : 'open') + '>' +
             '<summary style="cursor:pointer;font-size:.72rem;font-weight:600;color:#666;letter-spacing:.04em;text-transform:uppercase;padding:6px 0;list-style:none">' +
               '▾ Tier pricing for this item' +
               '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— current row highlighted, change qty to reprice</span>' +
             '</summary>' +
-            '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
-              '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' +
-                head + '<tbody>' + body + '</tbody>' +
-              '</table>' +
-            '</div>' +
+            inner +
           '</details>';
       };
 
