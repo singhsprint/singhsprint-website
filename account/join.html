@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join your program · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:560px;margin:0 auto;padding:40px 24px 80px}
+    .hero{margin-bottom:24px}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2.1rem,4.4vw,2.8rem);font-weight:800;line-height:1.05;margin-bottom:10px;letter-spacing:-.01em}
+    .hero p{color:#555;font-size:1rem;max-width:480px}
+    /* Lime-accent hero card holds the code input — gives the page a focal point */
+    .join-card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:28px 24px;box-shadow:0 2px 10px rgba(0,0,0,.03);position:relative;overflow:hidden}
+    .join-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:#e8ff3c}
+    label{display:block;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:8px}
+    input[type=text]{width:100%;padding:14px 16px;border:1.5px solid #e0ddd1;border-radius:12px;font-family:inherit;font-size:1.15rem;font-weight:700;letter-spacing:.05em;color:#1a1a1a;background:#fafaf7;outline:none;text-transform:uppercase}
+    input[type=text]:focus{border-color:#1a1a1a;background:#fff}
+    button.primary{width:100%;margin-top:14px;padding:14px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .15s,box-shadow .15s}
+    button.primary:hover{opacity:.94;box-shadow:0 4px 14px rgba(232,255,60,.45)}
+    button.primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+    .helper{margin-top:10px;font-size:.84rem;color:#666;text-align:center}
+    .helper a{color:#1a1a1a;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+    .msg{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:.86rem}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+    .hide{display:none !important}
+    /* Step list used when the student hasn't signed in yet */
+    .steps{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap}
+    .step{flex:1;min-width:140px;background:#fff;border:1px solid #e9e7df;border-radius:14px;padding:14px}
+    .step__num{font-family:'Playfair Display',Georgia,serif;font-weight:800;color:#888;font-size:1.6rem;line-height:1}
+    .step__txt{font-size:.86rem;color:#555;margin-top:6px}
+    /* Signed-in chip */
+    .you{display:inline-flex;align-items:center;gap:6px;background:#f4f2eb;padding:6px 10px;border-radius:50px;font-size:.78rem;color:#666;margin-bottom:14px}
+    .you strong{color:#1a1a1a;font-weight:700}
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="wrap">
+  <div class="hero">
+    <h1 data-i18n="join.h1">Join your program</h1>
+    <p data-i18n="join.sub">Your school or organization gave you an access code. Enter it below to unlock your cohort catalog, your spending allowance, and one-click ordering.</p>
+  </div>
+
+  <div id="signed-in-chip" class="you hide">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    <span>Signed in as <strong id="you-name">—</strong></span>
+  </div>
+
+  <div class="join-card">
+    <label for="code" data-i18n="join.label">Access code</label>
+    <input id="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="UOTTAWA-NURSING-2026">
+    <button id="redeem" class="primary" type="button" data-i18n="join.cta">Unlock my program</button>
+    <div id="msg" class="msg hide"></div>
+    <div class="helper" id="helper">
+      <span data-i18n="join.alreadyhave">Already have an account?</span>
+      <a id="signin-link" href="#" data-i18n="join.signin">Sign in first →</a>
+    </div>
+  </div>
+
+  <!-- Lightweight onboarding steps (only show for signed-out visitors) -->
+  <div class="steps" id="steps">
+    <div class="step"><div class="step__num">1</div><div class="step__txt" data-i18n="join.step1">Sign in or create your free account.</div></div>
+    <div class="step"><div class="step__num">2</div><div class="step__txt" data-i18n="join.step2">Enter the access code your school gave you.</div></div>
+    <div class="step"><div class="step__num">3</div><div class="step__txt" data-i18n="join.step3">Pick your size and place your order.</div></div>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+<script src="/components.js" defer></script>
+<script src="/account/_account-ui.js" defer></script>
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $   = (id) => document.getElementById(id);
+  const api = window.SP_AUTH_API;
+  const params = new URLSearchParams(location.search);
+
+  // The school's portal can pre-fill ?code=XXX so the student doesn't
+  // even have to retype it.
+  const preCode = (params.get('code') || '').trim().toUpperCase();
+  if (preCode) $('code').value = preCode;
+
+  function showMsg(text, kind) {
+    const el = $('msg');
+    el.textContent = text;
+    el.className   = 'msg msg--' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function hideMsg() {
+    const el = $('msg');
+    el.className = 'msg hide';
+    el.textContent = '';
+  }
+
+  // Build a returnTo that bounces back here with the typed code so the
+  // OTP round trip doesn't lose the student's place.
+  function signinUrl() {
+    const code = $('code').value.trim();
+    const here = '/account/join.html' + (code ? ('?code=' + encodeURIComponent(code)) : '');
+    return '/account/signin.html?returnTo=' + encodeURIComponent(here);
+  }
+  $('signin-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    location.href = signinUrl();
+  });
+
+  // Decide what to show based on session state.
+  (async function init() {
+    const session = await api.getSession();
+    if (session) {
+      const u = session.user;
+      $('signed-in-chip').classList.remove('hide');
+      $('you-name').textContent = u.email || u.phone || u.id;
+      $('helper').classList.add('hide');     // No need for the sign-in prompt
+      $('steps').classList.add('hide');      // They're past step 1
+      // Auto-redeem when ?code= is present and the field is pre-filled.
+      // Keeps the flow to a single click for students who land here from
+      // a deep link in their school's portal.
+      if (preCode && session && params.get('auto') !== '0') {
+        setTimeout(() => $('redeem').click(), 200);
+      }
+    } else {
+      // If we have a pre-filled code, prefer to send them straight to sign-in
+      // so they can paste their email and come back to an authed redeem.
+      if (preCode) {
+        location.replace(signinUrl());
+        return;
+      }
+    }
+  })();
+
+  $('redeem').addEventListener('click', async function () {
+    hideMsg();
+    const code = $('code').value.trim().toUpperCase();
+    if (!code) { showMsg('Please enter your access code.', 'err'); return; }
+    const session = await api.getSession();
+    if (!session) {
+      // Bounce through sign-in, then come back and auto-redeem.
+      location.href = signinUrl();
+      return;
+    }
+    this.disabled = true;
+    const original = this.textContent;
+    this.textContent = 'Unlocking…';
+    try {
+      const r = await api.authedFetch('/api/account/programs?action=redeem-key', {
+        method: 'POST',
+        body:   JSON.stringify({ code })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Could not redeem that code.');
+      const name = (j.program && j.program.name) || 'your program';
+      showMsg('Welcome to ' + name + '! Redirecting…', 'ok');
+      // Cache profile so the global nav can refresh its account chip.
+      try { api.cacheAccountProfile && api.cacheAccountProfile({ accountType: 'personal' }); } catch (_) {}
+      // Land them on programs.html, which will show the cohort + catalog.
+      setTimeout(() => { location.assign('/account/programs.html'); }, 900);
+    } catch (e) {
+      showMsg(e.message, 'err');
+      this.disabled = false;
+      this.textContent = original;
+    }
+  });
+
+  // Enter-to-submit so the page feels like a single keystroke.
+  $('code').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') $('redeem').click();
+  });
+})();
+</script>
+</body>
+</html>

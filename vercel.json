@@ -34,6 +34,10 @@
       "destination": "/order.html"
     },
     {
+      "source": "/join",
+      "destination": "/account/join.html"
+    },
+    {
       "source": "/api/account/credits",
       "destination": "/api/account/referral?view=credits"
     },

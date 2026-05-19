@@ -132,6 +132,52 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ programs: out });
   }
 
+  // ------------------------------------------------------------
+  // POST ?action=redeem-key — student redeems their cohort access code
+  // (e.g. UOTTAWA-NURSING-2026). Runs BEFORE the business / admin gate
+  // since any signed-in student should be able to redeem.
+  // ------------------------------------------------------------
+  if (req.method === 'POST' && req.query?.action === 'redeem-key') {
+    let body = {};
+    try { body = await readJsonBody(req); }
+    catch (_) { /* body optional; will fail validation below */ }
+    const code = String(body.code || '').trim();
+    if (!code) return res.status(400).json({ error: 'Access code is required' });
+
+    // The redeem function does all the heavy lifting: validates the
+    // code, enforces max-uses, inserts (idempotent) into program_members,
+    // and returns the program identifiers. Errors come back as Postgres
+    // RAISE EXCEPTION with specific codes we translate to HTTP statuses.
+    const { data, error } = await supabase
+      .rpc('redeem_program_access_code', {
+        target_user_id: user.id,
+        in_code:        code
+      });
+    if (error) {
+      // P0002 = not found (Postgres convention); P0001 = generic
+      // "raise_exception" which we use for max-uses-reached.
+      const status =
+        error.code === 'P0002' ? 404 :
+        error.code === 'P0001' ? 409 :
+        error.code === '22023' ? 400 :
+        500;
+      return res.status(status).json({ error: error.message });
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row || !row.program_id) {
+      return res.status(404).json({ error: 'No active program found for that access code' });
+    }
+    return res.status(200).json({
+      ok:      true,
+      program: {
+        id:       row.program_id,
+        slug:     row.program_slug,
+        name:     row.program_name,
+        joinedAt: row.joined_at
+      }
+    });
+  }
+
   try { await requireBusiness(supabase, user.id); }
   catch (e) { return res.status(e.status || 500).json(e.body || { error: 'business gate failed' }); }
 
@@ -277,7 +323,7 @@ module.exports = async function handler(req, res) {
     // List
     const { data: progs, error } = await supabase
       .from('programs')
-      .select('id, slug, name, cohort_label, default_spending_allowance_cents, order_window_opens_at, order_window_closes_at, is_active')
+      .select('id, slug, name, cohort_label, default_spending_allowance_cents, order_window_opens_at, order_window_closes_at, is_active, access_code, access_code_active, access_code_max_uses')
       .eq('organization_id', org.id)
       .order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
@@ -398,6 +444,53 @@ module.exports = async function handler(req, res) {
     if (own.error)     return res.status(500).json({ error: own.error });
     if (own.notFound)  return res.status(404).json({ error: 'program not found' });
     if (own.forbidden) return res.status(403).json({ error: 'forbidden' });
+
+    // -----------------------------------------------------------
+    // POST ?action=set-access-code — admin sets / regenerates / revokes
+    //   body: { id, code?, active?, maxUses? }
+    //     code:   null|'' to clear; pass a new value to set
+    //     active: bool — flip without changing code
+    //     maxUses: null or integer cap (null = unlimited)
+    //   Codes are normalized to UPPER-CASE for display consistency.
+    // -----------------------------------------------------------
+    if (action === 'set-access-code') {
+      const patch = { updated_at: new Date().toISOString() };
+      if (Object.prototype.hasOwnProperty.call(body, 'code')) {
+        const c = body.code == null ? null : String(body.code).trim().toUpperCase();
+        if (c != null && !/^[A-Z0-9_-]{4,40}$/.test(c)) {
+          return res.status(400).json({
+            error: 'Access codes must be 4–40 chars of letters, digits, _ or -'
+          });
+        }
+        patch.access_code = c || null;
+      }
+      if (Object.prototype.hasOwnProperty.call(body, 'active')) {
+        patch.access_code_active = !!body.active;
+      }
+      if (Object.prototype.hasOwnProperty.call(body, 'maxUses')) {
+        const n = body.maxUses;
+        if (n != null && (!Number.isInteger(Number(n)) || Number(n) < 1)) {
+          return res.status(400).json({ error: 'maxUses must be a positive integer or null' });
+        }
+        patch.access_code_max_uses = n == null ? null : Number(n);
+      }
+      const { data, error } = await supabase
+        .from('programs').update(patch).eq('id', body.id).select(
+          'id, access_code, access_code_active, access_code_max_uses'
+        ).single();
+      if (error) {
+        // 23505 = unique_violation when code is taken by another active program.
+        if (error.code === '23505') {
+          return res.status(409).json({ error: 'That access code is already in use by another active program' });
+        }
+        // 23514 = check_constraint (charset / length).
+        if (error.code === '23514') {
+          return res.status(400).json({ error: 'Access code failed validation' });
+        }
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(200).json({ accessCode: data });
+    }
 
     if (action === 'add-catalog') {
       const ids = Array.isArray(body.productIds) ? body.productIds : [];

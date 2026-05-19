@@ -146,6 +146,38 @@
 
     <!-- ---- Selected program detail ---- -->
     <div id="detail-section" class="hide">
+      <!-- Access code (shared cohort code) -->
+      <div class="card">
+        <h2>Access code
+          <span style="color:#888;font-size:.78rem;font-weight:500">one shared key students enter on /join</span>
+        </h2>
+        <p class="sub">Give this code to your cohort (printable flyers, intranet, email blast). Anyone with the code who signs in to Singhs Print and enters it will be added to this program with the default cohort settings.</p>
+
+        <div class="row-2col" style="margin-top:10px;align-items:center">
+          <input id="access-code-input" type="text" autocapitalize="characters" spellcheck="false" placeholder="UOTTAWA-NURSING-2026" style="text-transform:uppercase;font-weight:700;letter-spacing:.04em">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn--primary" id="access-code-save" type="button">Save</button>
+            <button class="btn btn--ghost"   id="access-code-copy" type="button">Copy</button>
+            <button class="btn btn--ghost"   id="access-code-share" type="button">Share link</button>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:.84rem;color:#666">
+          <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="access-code-active">
+            <span>Active</span>
+          </label>
+          <span>·</span>
+          <label style="display:inline-flex;align-items:center;gap:6px">
+            <span>Max uses</span>
+            <input id="access-code-max" type="number" min="1" placeholder="unlimited" style="width:110px;padding:6px 8px;border:1px solid #e0ddd1;border-radius:8px;font-family:inherit">
+          </label>
+          <span>·</span>
+          <span><strong id="access-code-uses">0</strong> joined via this code</span>
+        </div>
+        <div id="access-code-msg" class="msg hide"></div>
+      </div>
+
       <!-- Invite members -->
       <div class="card">
         <h2>Invite members
@@ -408,8 +440,69 @@
     renderCatalog(p.catalogProductIds || []);
     renderMembers(p.members || []);
     renderInvites(p.pendingInvites || []);
+    renderAccessCode(p);
     $('export-csv').href = '/api/account/programs?id=' + encodeURIComponent(id) + '&export=csv';
   }
+
+  // ---- access code ----
+  function renderAccessCode(p) {
+    $('access-code-input').value   = p.access_code || '';
+    $('access-code-active').checked = p.access_code_active !== false;
+    $('access-code-max').value     = p.access_code_max_uses != null ? p.access_code_max_uses : '';
+    // The redemption count = members joined_via='access_code'.
+    const joined = (p.members || []).filter((m) => m.joinedVia === 'access_code').length;
+    $('access-code-uses').textContent = joined;
+    hideMsg('access-code-msg');
+  }
+
+  $('access-code-save').onclick = async function () {
+    if (!selectedProgramId) return;
+    hideMsg('access-code-msg');
+    const code   = ($('access-code-input').value || '').trim().toUpperCase();
+    const active = $('access-code-active').checked;
+    const maxRaw = $('access-code-max').value;
+    const maxUses = maxRaw === '' ? null : Number(maxRaw);
+    this.disabled = true;
+    const original = this.textContent;
+    this.textContent = 'Saving…';
+    try {
+      const r = await api.authedFetch('/api/account/programs?action=set-access-code', {
+        method: 'POST',
+        body: JSON.stringify({ id: selectedProgramId, code: code || null, active, maxUses })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Save failed');
+      showMsg('access-code-msg', 'Saved.', 'ok');
+      // Refresh to pick up server-side defaults.
+      await selectProgram(selectedProgramId);
+    } catch (e) {
+      showMsg('access-code-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+      this.textContent = original;
+    }
+  };
+
+  $('access-code-copy').onclick = async function () {
+    const code = ($('access-code-input').value || '').trim();
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      showMsg('access-code-msg', 'Code copied.', 'ok');
+    } catch (_) { showMsg('access-code-msg', 'Copy failed.', 'err'); }
+  };
+
+  $('access-code-share').onclick = async function () {
+    const code = ($('access-code-input').value || '').trim();
+    if (!code) return;
+    const url = location.origin + '/join?code=' + encodeURIComponent(code);
+    try {
+      await navigator.clipboard.writeText(url);
+      showMsg('access-code-msg', 'Share link copied: ' + url, 'ok');
+    } catch (_) {
+      showMsg('access-code-msg', 'Share link: ' + url, 'ok');
+    }
+  };
 
   // ---- invites ----
   function renderInvites(invites) {
