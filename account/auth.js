@@ -74,9 +74,19 @@
   async function requestEmailOtp(email) {
     const e = normalizeEmail(email);
     if (!e) throw new Error('Please enter a valid email address.');
+    // emailRedirectTo points magic-link clicks at /account/ where this
+    // auth client is initialized — the Supabase JS client picks the
+    // access token out of the URL hash automatically. Without this,
+    // links land at the bare homepage (which doesn't initialize Supabase)
+    // and the sign-in is silently dropped. The current email template
+    // shows only the 6-digit code (no link), but this guards against
+    // template changes.
     const { error } = await client.auth.signInWithOtp({
       email: e,
-      options: { shouldCreateUser: true }
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: window.location.origin + '/account/'
+      }
     });
     if (error) throw error;
     return { email: e };
