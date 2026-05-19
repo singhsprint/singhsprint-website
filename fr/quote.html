@@ -2999,6 +2999,8 @@
       } else {
         calculatePrice();
       }
+      // Size grid changed → refresh shipping rates + free-shipping delta.
+      if (typeof spRecalcShippingIfStale === 'function') spRecalcShippingIfStale();
     }
 
     // ===== STEP NAVIGATION =====
@@ -4209,8 +4211,29 @@
       if (btn) btn.textContent = collapsed ? btn.dataset.collapsedLabel : btn.dataset.expandedLabel;
     }
 
-    function onCartItemChange(idx, patch) { SinghsCart.update(idx, patch); }
-    function removeCartItem(idx)         { SinghsCart.remove(idx); }
+    function onCartItemChange(idx, patch) {
+      SinghsCart.update(idx, patch);
+      // Cart changed → shipping is stale, refetch on next idle. See EN
+      // quote.html for full rationale.
+      spRecalcShippingIfStale();
+    }
+    function removeCartItem(idx) {
+      SinghsCart.remove(idx);
+      spRecalcShippingIfStale();
+    }
+
+    var _spShipDebounce = null;
+    function spRecalcShippingIfStale() {
+      var postalEl = document.getElementById('shipPostal');
+      var postal = (postalEl && postalEl.value || '').trim();
+      if (!postal || postal.length < 3) return;
+      clearTimeout(_spShipDebounce);
+      _spShipDebounce = setTimeout(function() {
+        if (typeof spRequestShippingEstimate === 'function') {
+          spRequestShippingEstimate();
+        }
+      }, 350);
+    }
 
     // Update the right-panel live-price strip.
     //

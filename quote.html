@@ -3061,6 +3061,10 @@
       } else {
         calculatePrice();
       }
+      // Size grid changed → shipping weight + order subtotal both shift,
+      // so refresh the rate cards + the "Add $X more for FREE shipping"
+      // delta. Debounced inside the helper so rapid keystrokes coalesce.
+      if (typeof spRecalcShippingIfStale === 'function') spRecalcShippingIfStale();
     }
 
     // ===== STEP NAVIGATION =====
@@ -4330,8 +4334,44 @@
       if (btn) btn.textContent = collapsed ? btn.dataset.collapsedLabel : btn.dataset.expandedLabel;
     }
 
-    function onCartItemChange(idx, patch) { SinghsCart.update(idx, patch); }
-    function removeCartItem(idx)         { SinghsCart.remove(idx); }
+    function onCartItemChange(idx, patch) {
+      SinghsCart.update(idx, patch);
+      // Cart qty / sides / placements changed → the shipping estimate is
+      // now stale (different box weight, different order subtotal, so the
+      // "Add $X more for FREE shipping" line and the rate cards have to
+      // recompute). Debounced via spRecalcShippingIfStale to coalesce
+      // rapid input changes into a single API hit.
+      spRecalcShippingIfStale();
+    }
+    function removeCartItem(idx) {
+      SinghsCart.remove(idx);
+      spRecalcShippingIfStale();
+    }
+
+    // -------------------------------------------------------------------------
+    // Shipping recalc on qty/sizes change. The shipping estimator is fetched
+    // from /api/shipping with the current items + postal code, and its
+    // response includes the per-rate fee AND the free-shipping threshold
+    // gap. Without this hook, the customer hits Estimate at qty=10 (sees
+    // "Add $400 more for FREE shipping"), bumps qty to 100 in Step 1/2,
+    // returns to Step 3, and is still looking at the qty=10 numbers.
+    // -------------------------------------------------------------------------
+    var _spShipDebounce = null;
+    function spRecalcShippingIfStale() {
+      // Only refetch if the customer already supplied a postal — otherwise
+      // there's nothing to refresh and the panel still shows the "enter
+      // postal" placeholder.
+      var postalEl = document.getElementById('shipPostal');
+      var postal = (postalEl && postalEl.value || '').trim();
+      if (!postal || postal.length < 3) return;
+      // Debounce so a flurry of size-grid keystrokes only fires one fetch.
+      clearTimeout(_spShipDebounce);
+      _spShipDebounce = setTimeout(function() {
+        if (typeof spRequestShippingEstimate === 'function') {
+          spRequestShippingEstimate();
+        }
+      }, 350);
+    }
 
     // Update the right-panel live-price strip.
     //
