@@ -4277,17 +4277,21 @@
       if (!strip) return;
       strip.style.display = 'block';
 
-      // Per-item unit prices live in _priceCache keyed by product_id+qty+sides.
+      // Per-item unit prices live in _priceCache keyed by
+      // product_id + qty + sides + decoration_method (the method suffix
+      // was added 2026-05-19 so DTF/Embroidery quotes don't share a
+      // cache slot). Use the same key shape liveUnitPrice writes with.
+      var method = currentDecorationMethod();
       var cartUnitSum = 0, cartUnits = 0, knownAll = true;
       items.forEach(function (it) {
         var qty   = Number(it.qty) || 0;
         var sides = it.sides || 1;
-        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides];
+        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method];
         cartUnits += qty;
         if (typeof p === 'number') cartUnitSum += p;
         else knownAll = false;
       });
-      var avgUnitPrice = items.length > 0 ? (cartUnitSum / items.length) : null;
+      var avgUnitPrice = (items.length > 0 && cartUnitSum > 0) ? (cartUnitSum / items.length) : null;
 
       // Size grid total — the authoritative count once filled.
       var sizeTotalEl = document.getElementById('sizeTotal');
