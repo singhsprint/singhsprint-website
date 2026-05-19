@@ -395,6 +395,20 @@
       .quote-hero{padding-top:18px !important;padding-bottom:6px !important}
       .quote-hero h1{margin-bottom:6px !important}
       .quote-hero .sub{font-size:.88rem !important;line-height:1.5}
+      /* Tier-pricing table inside cart rows — phones need tighter cells +
+         a smaller font, plus a hard overflow-x:auto wrapper so it scrolls
+         INSIDE its column instead of forcing the cart-item flex parent to
+         grow past the viewport. Without this the page itself overflows
+         and the sticky #livePriceStrip gets pushed off the bottom edge. */
+      .ci-livematrix{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .ci-livematrix > details > div{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+      .ci-livematrix table{font-size:.68rem !important}
+      .ci-livematrix table th,
+      .ci-livematrix table td{padding:5px 6px !important}
+      /* Belt-and-braces — never let the page itself scroll horizontally
+         on phones. If something inside overflows, it gets clipped at the
+         body edge rather than pushing the layout sideways. */
+      html,body{overflow-x:hidden;max-width:100vw}
       .step-pills{gap:6px !important;margin-bottom:14px !important}
       .step-pill{font-size:.7rem !important;padding:6px 10px !important;flex:1 1 0;min-width:0;text-align:center}
       .step-pill__num{display:none}
@@ -421,7 +435,20 @@
          else in the sidebar is marketing — irrelevant when the user is
          heads-down filling out the form. Hiding the panel reclaims the
          large empty block of vertical space below "Next". */
-      .mockup-panel{display:none !important}
+      /* OLD rule was `.mockup-panel{display:none !important}` which also
+         killed the sticky live-price strip + shipping estimator inside it.
+         display:contents on the parent makes the panel disappear layout-
+         wise but lets its children still render, so:
+           • #livePriceStrip can pick up the sticky-bottom rule from
+             components.js (position:fixed bottom:0)
+           • #shippingEstimateCard can be relocated by JS into Step 3
+           • Everything else inside the panel (marketing reassurance,
+             mockup card, etc.) gets explicitly hidden so we don't
+             leak marketing copy into the form flow. */
+      .mockup-panel{display:contents !important}
+      .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard){
+        display:none !important;
+      }
 
       /* Shipping estimator, INLINE inside Step 3 (moved there via JS). It
          visually flows with the form fields — no card border, no float,
@@ -4042,7 +4069,12 @@
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
         var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
         return '' +
-          '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap">' +
+          // overflow:hidden + max-width:100% + box-sizing prevent the
+          // 9-column tier table inside the row from forcing the cart-item
+          // (and the whole page) to grow horizontally past the mobile
+          // viewport. Customers can still swipe inside the table's
+          // overflow-x:auto container to see the embroidery columns.
+          '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap;max-width:100%;box-sizing:border-box;overflow:hidden">' +
           '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
           '    <img id="ci-img-' + idx + '" src="' + imgUrl(it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
           '  </div>' +
@@ -4065,7 +4097,9 @@
           uploadsHtml +
           // Live per-item pricing table — populated async by paintCartItemLiveMatrix.
           // Sits on its own flex line via flex-basis:100% so it spans the full row.
-          '<div id="ci-livematrix-' + idx + '" class="ci-livematrix" style="flex-basis:100%;margin-top:8px"></div>' +
+          // min-width:0 lets the inner overflow-x:auto container actually
+          // clip + scroll on mobile instead of forcing the row wider.
+          '<div id="ci-livematrix-' + idx + '" class="ci-livematrix" style="flex-basis:100%;min-width:0;max-width:100%;width:100%;margin-top:8px;box-sizing:border-box"></div>' +
           '</div>';
       }).join('');
 
