@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Initiative Jeunesse — Vêtements personnalisés gratuits | Singhs Print</title>
+  <meta name="description" content="Moins de 16 ans et tu amasses de l'argent pour une cause ? Vêtements personnalisés GRATUITS, jusqu'à 10 pièces. Tu lances ta petite entreprise (tonte de gazon, kiosque, etc.) ? 50 % de rabais. Grand Montréal.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <meta property="og:title" content="Initiative Jeunesse Singhs Print — vêtements gratuits pour les jeunes">
+  <meta property="og:description" content="Moins de 16 ans. Collecte pour une cause → t-shirts gratuits (jusqu'à 10). Petite entreprise → 50% de rabais. Grand Montréal.">
+  <meta property="og:url" content="https://www.singhsprint.com/fr/youth-initiative">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.singhsprint.com/images/hero-duo.jpg">
+
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/youth-initiative">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/youth-initiative">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/youth-initiative">
+
+  <style>
+    /* Inline styles mirrored from EN page — see /youth-initiative.html for comments. */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;font-size:16px}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf6;line-height:1.6;-webkit-font-smoothing:antialiased}
+    img{max-width:100%;height:auto;display:block} a{text-decoration:none;color:inherit}
+    button{cursor:pointer;border:none;background:none;font-family:inherit}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:800;line-height:1.15}
+    h1{font-size:clamp(2.4rem,5vw,3.8rem)}
+    h2{font-size:clamp(1.7rem,3.2vw,2.6rem);margin-bottom:14px}
+    h3{font-size:1.3rem;margin-bottom:8px}
+    .subhead{font-size:1.1rem;color:#555;line-height:1.65}
+    .label{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#888;margin-bottom:12px}
+
+    .yi-hero{padding:84px 0 56px;background:linear-gradient(180deg,#fff 0%,#fafaf6 100%);text-align:center;position:relative}
+    .yi-hero .label{color:#1a7a3a}
+    .yi-hero h1{margin-bottom:20px}
+    .yi-hero .tagline{font-size:clamp(1.05rem,1.8vw,1.3rem);color:#444;max-width:680px;margin:0 auto 28px;font-weight:500;line-height:1.5}
+    .yi-hero .meta-row{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;font-size:.86rem;color:#666;margin-top:14px}
+    .yi-hero .meta-row strong{color:#1a1a1a}
+
+    .yi-tiers{padding:48px 0 32px}
+    .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px}
+    .tier-card{background:#fff;border:1.5px solid #ece9df;border-radius:24px;padding:32px 30px;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden}
+    .tier-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.06);border-color:#dad6c5}
+    .tier-card__icon{font-size:1.9rem;margin-bottom:14px}
+    .tier-card__price{font-size:2.4rem;font-weight:800;font-family:'Playfair Display',serif;line-height:1;color:#1a1a1a;margin-bottom:6px}
+    .tier-card__price-suffix{font-size:.95rem;font-weight:500;color:#666;margin-left:6px;font-family:'Inter',sans-serif}
+    .tier-card__cap{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;background:#f4f2eb;padding:5px 11px;border-radius:50px;display:inline-block;margin-bottom:18px}
+    .tier-card h2{font-size:1.55rem;margin-bottom:10px}
+    .tier-card__desc{font-size:.95rem;color:#444;line-height:1.6;margin-bottom:18px}
+    .tier-card__examples{font-size:.84rem;color:#777;line-height:1.6}
+    .tier-card__examples strong{color:#1a1a1a;font-weight:600}
+    .tier-card--charity{border-color:#cce5d4;background:linear-gradient(180deg,#f3faf5 0%,#fff 80%)}
+    .tier-card--charity .tier-card__cap{background:#e1f3e7;color:#1a7a3a}
+    .tier-card--hustle{border-color:#e8e0c4;background:linear-gradient(180deg,#fdfaee 0%,#fff 80%)}
+    .tier-card--hustle .tier-card__cap{background:#f5edcf;color:#7a5b15}
+
+    .yi-how{padding:24px 0 56px}
+    .how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:32px}
+    .how-step{background:#fff;border:1px solid #ece9df;border-radius:18px;padding:24px;position:relative}
+    .how-step__num{position:absolute;top:-14px;left:18px;width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;font-family:'Inter',sans-serif}
+    .how-step h3{font-size:1.05rem;margin-bottom:6px;font-family:'Inter',sans-serif;font-weight:700}
+    .how-step p{font-size:.86rem;color:#555;line-height:1.55}
+
+    .yi-rules{background:#1a1a1a;color:#fff;padding:54px 0}
+    .yi-rules h2{color:#fff;margin-bottom:8px}
+    .yi-rules .subhead{color:#bbb}
+    .rules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+    .rule-card{background:#222;border:1px solid #333;border-radius:14px;padding:22px}
+    .rule-card__hint{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px}
+    .rule-card h3{font-size:1rem;color:#fff;margin-bottom:6px;font-family:'Inter',sans-serif;font-weight:700}
+    .rule-card p{font-size:.84rem;color:#bbb;line-height:1.55}
+
+    .yi-apply{padding:64px 0;background:#fff;border-top:1px solid #ece9df;border-bottom:1px solid #ece9df}
+    .form-card{max-width:720px;margin:0 auto;background:#fff;padding:8px 0}
+    .form-section{margin-bottom:30px}
+    .form-section__title{font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-bottom:14px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .form-row--single{grid-template-columns:1fr}
+    .form-group{display:flex;flex-direction:column}
+    .form-group label{font-size:.84rem;color:#555;margin-bottom:6px;font-weight:500}
+    .form-group label .req{color:#a01a1a}
+    .form-group input,
+    .form-group select,
+    .form-group textarea{padding:12px 14px;font-size:1rem;font-family:inherit;color:#1a1a1a;background:#fafaf6;border:1.5px solid #e6e3d8;border-radius:10px;outline:none;transition:border-color .15s,background .15s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a1a1a;background:#fff}
+    .form-group textarea{resize:vertical;min-height:120px;line-height:1.5}
+    .form-group small{font-size:.74rem;color:#888;margin-top:4px}
+
+    .tier-picker{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .tier-picker__opt{position:relative;background:#fafaf6;border:1.5px solid #e6e3d8;border-radius:14px;padding:18px;cursor:pointer;transition:all .15s}
+    .tier-picker__opt:hover{border-color:#1a1a1a}
+    .tier-picker__opt.is-selected{border-color:#1a1a1a;background:#fff;box-shadow:0 0 0 3px rgba(26,26,26,.06)}
+    .tier-picker__opt input{position:absolute;opacity:0;pointer-events:none}
+    .tier-picker__title{font-size:.95rem;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+    .tier-picker__price{font-size:1.4rem;font-weight:800;font-family:'Playfair Display',serif;line-height:1;margin-bottom:6px}
+    .tier-picker__desc{font-size:.78rem;color:#666;line-height:1.4}
+
+    .upload-zone{border:2px dashed #d6d3c5;border-radius:14px;padding:22px;text-align:center;cursor:pointer;background:#fafaf6;transition:border-color .15s,background .15s}
+    .upload-zone:hover,.upload-zone.is-drag{border-color:#1a1a1a;background:#fff}
+    .upload-zone input{display:none}
+    .upload-zone__icon{font-size:1.6rem;margin-bottom:4px}
+    .upload-zone__hint{font-size:.84rem;color:#1a1a1a;font-weight:600}
+    .upload-zone__sub{font-size:.74rem;color:#888;margin-top:4px}
+    .upload-zone.has-file{border-style:solid;border-color:#1a7a3a;background:#f3faf5}
+    .upload-zone.has-file .upload-zone__icon{color:#1a7a3a}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;border-radius:50px;font-size:1rem;font-weight:600;transition:all .2s;font-family:inherit}
+    .btn-accent{background:#e8ff3c;color:#1a1a1a}
+    .btn-accent:hover{background:#ddf535;transform:translateY(-1px);box-shadow:0 8px 22px rgba(232,255,60,.36)}
+    .btn-accent:disabled{opacity:.5;cursor:wait}
+    .form-submit{display:flex;justify-content:flex-end;gap:14px;margin-top:8px;align-items:center}
+    .form-submit .status{font-size:.86rem;color:#888;flex:1}
+    .form-success{background:#f3faf5;border:1.5px solid #cce5d4;border-radius:14px;padding:22px;text-align:center;color:#1a7a3a;font-weight:600}
+    .form-error{background:#fdf1f1;border:1.5px solid #f0c8c8;border-radius:10px;padding:12px 14px;color:#a01a1a;font-size:.9rem;margin-bottom:14px;display:none}
+    .form-error.is-on{display:block}
+
+    .yi-faq{padding:64px 0;background:#fafaf6}
+    .faq-list{max-width:760px;margin:32px auto 0}
+    .faq-item{background:#fff;border:1px solid #ece9df;border-radius:14px;margin-bottom:10px;overflow:hidden}
+    .faq-q{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;font-weight:700;font-size:1rem;width:100%;text-align:left}
+    .faq-q::after{content:'+';color:#888;font-size:1.3rem;font-weight:500;transition:transform .2s}
+    .faq-item.is-open .faq-q::after{transform:rotate(45deg)}
+    .faq-a{padding:0 22px 18px;color:#555;font-size:.94rem;line-height:1.6;display:none}
+    .faq-item.is-open .faq-a{display:block}
+
+    @media (max-width:720px){
+      .yi-hero{padding:54px 0 30px}
+      .tier-grid,.tier-picker,.form-row{grid-template-columns:1fr}
+      .how-grid{grid-template-columns:1fr 1fr;gap:14px}
+      .rules-grid{grid-template-columns:1fr;gap:14px}
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-placeholder"></div>
+
+  <main>
+
+    <section class="yi-hero">
+      <div class="container">
+        <span class="label">Singhs Print · Initiative Jeunesse</span>
+        <h1>Si t&rsquo;es jeune et que tu fais quelque chose de bien,<br/>on s&rsquo;occupe de tes vêtements.</h1>
+        <p class="tagline">
+          Moins de 16 ans et tu amasses de l&rsquo;argent pour une cause? <strong>Vêtements personnalisés gratuits</strong>, jusqu&rsquo;à 10 pièces.<br/>
+          Tu lances ta petite entreprise &mdash; kiosque, tonte de gazon, promenade de chiens? <strong>50% de rabais</strong>, jusqu&rsquo;à 10 pièces.
+        </p>
+        <a href="#apply" class="btn btn-accent">Postuler maintenant &rarr;</a>
+        <div class="meta-row">
+          <span>📍 Région du <strong>Grand Montréal</strong> seulement</span>
+          <span>👤 Candidats de moins de <strong>16 ans</strong></span>
+          <span>📞 Un humain vous répond sous <strong>2 jours ouvrables</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="yi-tiers">
+      <div class="container">
+        <div class="tier-grid">
+
+          <div class="tier-card tier-card--charity">
+            <div class="tier-card__icon">🌱</div>
+            <span class="tier-card__cap">Volet 1 · Cause</span>
+            <div class="tier-card__price">GRATUIT<span class="tier-card__price-suffix">vêtements</span></div>
+            <h2>Collecte pour une cause</h2>
+            <p class="tier-card__desc">
+              Si tu organises une collecte de fonds &mdash; vente de pâtisseries, kiosque de
+              limonade, lave-auto pour la banque alimentaire, collecte de cartes pour un
+              refuge &mdash; on couvre le coût de tes t-shirts pour que ton équipe ait l&rsquo;air pro.
+            </p>
+            <p class="tier-card__examples">
+              <strong>Jusqu&rsquo;à 10 pièces.</strong> T-shirts, manches longues, hoodies ou sacs fourre-tout.
+              Inclus une impression un côté ou un logo brodé. Tu apportes la cause et le design
+              (ou on t&rsquo;aide à le faire).
+            </p>
+          </div>
+
+          <div class="tier-card tier-card--hustle">
+            <div class="tier-card__icon">🚀</div>
+            <span class="tier-card__cap">Volet 2 · Hustle</span>
+            <div class="tier-card__price">50% rabais<span class="tier-card__price-suffix">prix régulier</span></div>
+            <h2>Ta propre petite entreprise</h2>
+            <p class="tier-card__desc">
+              Tonte de gazon, promenade de chiens, pelletage, tutorat, boutique Etsy, chaîne YouTube
+              &mdash; on coupe ton coût de vêtements en deux pour que tu aies l&rsquo;air d&rsquo;un vrai pro
+              dès le jour un.
+            </p>
+            <p class="tier-card__examples">
+              <strong>Jusqu&rsquo;à 10 pièces.</strong> N&rsquo;importe quel vêtement, n&rsquo;importe quelle méthode
+              d&rsquo;impression, n&rsquo;importe quelle couleur. Même qualité Singhs Print &mdash; tu paies
+              juste la moitié du prix régulier.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="yi-how">
+      <div class="container">
+        <h2 style="text-align:center">Comment ça fonctionne</h2>
+        <p class="subhead" style="text-align:center;max-width:620px;margin:0 auto">Postule, on jase, on imprime. Aucune paperasse au-delà du formulaire ci-dessous.</p>
+        <div class="how-grid">
+          <div class="how-step">
+            <span class="how-step__num">1</span>
+            <h3>Remplis le formulaire</h3>
+            <p>Raconte-nous sur quoi tu travailles. Un parent ou tuteur doit être en copie.</p>
+          </div>
+          <div class="how-step">
+            <span class="how-step__num">2</span>
+            <h3>On te rappelle</h3>
+            <p>Sous 2 jours ouvrables — on confirme tailles, design et détails de ramassage.</p>
+          </div>
+          <div class="how-step">
+            <span class="how-step__num">3</span>
+            <h3>On imprime</h3>
+            <p>Même atelier et même qualité que toutes nos autres commandes.</p>
+          </div>
+          <div class="how-step">
+            <span class="how-step__num">4</span>
+            <h3>Tu ramasses</h3>
+            <p>Ramassage à notre atelier de Sainte-Anne-de-Bellevue, ou livraison locale gratuite.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="yi-rules">
+      <div class="container">
+        <h2 style="text-align:center">Qui peut postuler</h2>
+        <p class="subhead" style="text-align:center;max-width:620px;margin:0 auto">Programme simple pour qu&rsquo;on puisse vraiment le faire fonctionner.</p>
+        <div class="rules-grid">
+          <div class="rule-card">
+            <div class="rule-card__hint">Âge</div>
+            <h3>Moins de 16 ans au moment de la commande</h3>
+            <p>Le but est de soutenir les jeunes qui démarrent. Le contact sur le formulaire doit être un parent ou tuteur.</p>
+          </div>
+          <div class="rule-card">
+            <div class="rule-card__hint">Où</div>
+            <h3>Région du Grand Montréal</h3>
+            <p>Pour qu&rsquo;on puisse rester assez près sans que la livraison dévore la valeur. Ouest-de-l&rsquo;Île, Île de Montréal, Laval, Rive-Sud — tous admissibles.</p>
+          </div>
+          <div class="rule-card">
+            <div class="rule-card__hint">Quoi</div>
+            <h3>Une candidature par jeune, par projet</h3>
+            <p>10 pièces maximum par projet. Si ça décolle et qu&rsquo;il faut plus plus tard, on en reparlera — mais le programme couvre un tour à la fois.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="yi-apply" id="apply">
+      <div class="container">
+        <h2 style="text-align:center;margin-bottom:8px">Postuler</h2>
+        <p class="subhead" style="text-align:center;max-width:560px;margin:0 auto 28px">
+          ~3 minutes. Un parent ou tuteur doit remplir le formulaire (ou être en copie sur le courriel).
+        </p>
+
+        <form class="form-card" id="yiForm" novalidate>
+
+          <div class="form-error" id="yiError"></div>
+
+          <div class="form-section">
+            <div class="form-section__title">Programme</div>
+            <div class="tier-picker">
+              <label class="tier-picker__opt is-selected" data-tier="charity">
+                <input type="radio" name="tier" value="charity" checked>
+                <div class="tier-picker__title">🌱 Collecte pour une cause</div>
+                <div class="tier-picker__price">Gratuit</div>
+                <div class="tier-picker__desc">Jusqu&rsquo;à 10 pièces pour un jeune de moins de 16 ans amassant pour une vraie cause.</div>
+              </label>
+              <label class="tier-picker__opt" data-tier="hustle">
+                <input type="radio" name="tier" value="hustle">
+                <div class="tier-picker__title">🚀 Ta propre entreprise</div>
+                <div class="tier-picker__price">50% rabais</div>
+                <div class="tier-picker__desc">Jusqu&rsquo;à 10 pièces de n&rsquo;importe quel vêtement pour la vraie petite entreprise d&rsquo;un jeune.</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section__title">À propos du candidat</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="yiName">Nom complet du candidat <span class="req">*</span></label>
+                <input type="text" id="yiName" name="name" required autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="yiAge">Âge <span class="req">*</span></label>
+                <input type="number" id="yiAge" name="age" min="5" max="15" required inputmode="numeric">
+                <small>Moins de 16 ans au moment de la commande.</small>
+              </div>
+            </div>
+            <div class="form-row form-row--single">
+              <div class="form-group">
+                <label for="yiDesc">Sur quoi tu travailles? <span class="req">*</span></label>
+                <textarea id="yiDesc" name="description" placeholder="Raconte-nous l'histoire — c'est quoi la cause / l'entreprise, pourquoi c'est important pour toi, l'idée de design, n'importe quoi d'autre qu'on devrait savoir."></textarea>
+                <small>Plus tu nous donnes de contexte, plus notre réponse sera utile.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section__title">Contact parent / tuteur</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="yiParent">Nom du parent ou tuteur <span class="req">*</span></label>
+                <input type="text" id="yiParent" name="parent_name" required>
+              </div>
+              <div class="form-group">
+                <label for="yiPostal">Code postal <span class="req">*</span></label>
+                <input type="text" id="yiPostal" name="postal_code" placeholder="H4M 1J9" required>
+                <small>Grand Montréal uniquement. On organise ramassage ou livraison locale.</small>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="yiEmail">Courriel <span class="req">*</span></label>
+                <input type="email" id="yiEmail" name="email" required autocomplete="email">
+              </div>
+              <div class="form-group">
+                <label for="yiPhone">Téléphone <span class="req">*</span></label>
+                <input type="tel" id="yiPhone" name="phone" required autocomplete="tel" placeholder="(514) ___-____">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section__title">Vêtements</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="yiGarment">Quel type de vêtement?</label>
+                <select id="yiGarment" name="garment_preference">
+                  <option value="">— Pas encore sûr —</option>
+                  <option value="tshirt">T-shirts</option>
+                  <option value="hoodie">Hoodies / coton ouaté</option>
+                  <option value="longsleeve">Manches longues</option>
+                  <option value="polo">Polos</option>
+                  <option value="hat">Casquettes / chapeaux</option>
+                  <option value="tote">Sacs fourre-tout</option>
+                  <option value="mixed">Un mélange</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="yiQty">Combien de pièces?</label>
+                <input type="number" id="yiQty" name="qty" min="1" max="10" value="10" inputmode="numeric">
+                <small>Jusqu&rsquo;à 10 par projet.</small>
+              </div>
+            </div>
+            <div class="form-row form-row--single">
+              <div class="form-group">
+                <label>Une photo? (optionnel)</label>
+                <label class="upload-zone" id="yiUpload">
+                  <input type="file" id="yiFile" accept="image/*,.pdf" />
+                  <div class="upload-zone__icon" id="yiUploadIcon">📎</div>
+                  <div class="upload-zone__hint" id="yiUploadHint">Ajoute un flyer, photo de ton kiosque, ou ton logo</div>
+                  <div class="upload-zone__sub" id="yiUploadSub">PNG, JPG, PDF — jusqu&rsquo;à 10 Mo</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-submit">
+            <span class="status" id="yiStatus"></span>
+            <button type="submit" class="btn btn-accent" id="yiSubmit">Soumettre la candidature &rarr;</button>
+          </div>
+
+        </form>
+
+        <div id="yiSuccess" style="display:none">
+          <div class="form-success">
+            <div style="font-size:2rem;margin-bottom:8px">🎉</div>
+            <div style="font-size:1.15rem;font-weight:700;margin-bottom:6px">Candidature reçue!</div>
+            <div style="font-size:.95rem;font-weight:500;color:#3d6e4a">
+              On vient de t&rsquo;envoyer une copie par courriel et un humain te recontactera sous 2 jours ouvrables.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="yi-faq">
+      <div class="container">
+        <h2 style="text-align:center">FAQ</h2>
+        <div class="faq-list">
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Qu&rsquo;est-ce qui compte comme «&nbsp;collecte pour une cause&nbsp;»?</button>
+            <div class="faq-a">N&rsquo;importe quelle cause où l&rsquo;argent va ailleurs que dans ta poche — un organisme enregistré (banque alimentaire, hôpital, refuge), une collecte scolaire, un fonds communautaire, un GoFundMe pour une famille du quartier. Pas besoin de paperasse officielle; on veut juste savoir pour quoi tu amasses et grossièrement où va l&rsquo;argent.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Qu&rsquo;est-ce qui compte comme «&nbsp;ta propre entreprise&nbsp;»?</button>
+            <div class="faq-a">N&rsquo;importe quoi où tu fais le travail toi-même. Tonte de gazon, promenade de chiens, pelletage, kiosque, pâtisserie, tutorat, boutique Etsy/Depop/Discord, chaîne YouTube, infolettre, événement que tu organises. Si tu fais le hustle et que les clients/auditeurs sont réels, ça compte.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Et si j&rsquo;ai 16 ans ou plus?</button>
+            <div class="faq-a">Ce programme spécifique est pour les moins de 16 ans. Si tu as 16-18 ans et que tu lances quelque chose de vrai, on veut quand même te parler — écris-nous via le formulaire <a href="/fr/quote" style="color:#1a1a1a;text-decoration:underline">/quote</a> et explique ta situation dans les notes; on trouvera une solution.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Est-ce qu&rsquo;il faut un design pro?</button>
+            <div class="faq-a">Non. Apporte ce que tu as — un croquis sur papier, une maquette Canva, une photo de ton logo, ton écriture. Pas de design du tout? On t&rsquo;aide à en faire un. Ça fait partie du programme.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Combien de temps ça prend?</button>
+            <div class="faq-a">Même délai que toutes nos commandes — 3 à 5 jours ouvrables après approbation du visuel. Options urgentes (2-3 jours) disponibles si ta date est serrée.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Est-ce que mon parent peut soumettre pour moi?</button>
+            <div class="faq-a">Oui — et il devrait. Le contact sur le formulaire doit être un parent ou tuteur, mais l&rsquo;histoire / description devrait être dans les mots du jeune.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Et si je suis hors du Grand Montréal?</button>
+            <div class="faq-a">La zone de livraison gratuite est ce qui limite le programme — on veut livrer en personne pour que la valeur ne soit pas mangée par Postes Canada. Si tu es hors du Grand Montréal mais que tu veux participer, écris-nous à <a href="mailto:sales@singhsprint.com" style="color:#1a1a1a;text-decoration:underline">sales@singhsprint.com</a> et on regardera au cas par cas.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/components.js" defer></script>
+
+  <script>
+  // /fr/youth-initiative form — mirrors EN page logic. Submits to same
+  // /api/inbound with kind='youth_initiative'.
+  (function() {
+    var INBOUND_API = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var UPLOAD_API  = 'https://singhsprint-crm.vercel.app/api/inbound/upload';
+    var picker = document.querySelectorAll('.tier-picker__opt');
+    picker.forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        picker.forEach(function(o) { o.classList.remove('is-selected'); });
+        opt.classList.add('is-selected');
+        var input = opt.querySelector('input[name="tier"]');
+        if (input) input.checked = true;
+      });
+    });
+    var fileInput = document.getElementById('yiFile');
+    var uploadZone = document.getElementById('yiUpload');
+    var _uploadedPath = null;
+    fileInput.addEventListener('change', function() {
+      var f = fileInput.files && fileInput.files[0];
+      if (!f) return;
+      if (f.size > 10 * 1024 * 1024) { setError('Fichier trop volumineux (10 Mo max).'); fileInput.value = ''; return; }
+      document.getElementById('yiUploadIcon').textContent = '⏳';
+      document.getElementById('yiUploadHint').textContent = 'Téléversement…';
+      document.getElementById('yiUploadSub').textContent = f.name + ' · ' + Math.round(f.size/1024) + ' KB';
+      var fd = new FormData(); fd.append('file', f); fd.append('kind', 'design');
+      fetch(UPLOAD_API, { method: 'POST', body: fd })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if (d && d.path) {
+            _uploadedPath = d.path;
+            uploadZone.classList.add('has-file');
+            document.getElementById('yiUploadIcon').textContent = '✓';
+            document.getElementById('yiUploadHint').textContent = 'Reçu — ' + f.name;
+            document.getElementById('yiUploadSub').textContent = 'Clique pour changer';
+          } else {
+            setError("Impossible de téléverser — essayez un fichier plus petit ou sautez cette étape.");
+            document.getElementById('yiUploadIcon').textContent = '📎';
+            document.getElementById('yiUploadHint').textContent = 'Ajoute un flyer, photo de ton kiosque, ou ton logo';
+            document.getElementById('yiUploadSub').textContent = 'PNG, JPG, PDF — jusqu\'à 10 Mo';
+          }
+        })
+        .catch(function(){ setError("Impossible de téléverser."); });
+    });
+    var form = document.getElementById('yiForm'),
+        success = document.getElementById('yiSuccess'),
+        submit = document.getElementById('yiSubmit'),
+        statusEl = document.getElementById('yiStatus');
+    function setError(msg) {
+      var el = document.getElementById('yiError');
+      if (!msg) { el.classList.remove('is-on'); el.textContent = ''; return; }
+      el.classList.add('is-on'); el.textContent = msg;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    form.addEventListener('submit', function(ev) {
+      ev.preventDefault();
+      setError('');
+      var tier        = (form.querySelector('input[name="tier"]:checked') || {}).value;
+      var name        = form.elements['name'].value.trim();
+      var age         = parseInt(form.elements['age'].value, 10);
+      var description = form.elements['description'].value.trim();
+      var parentName  = form.elements['parent_name'].value.trim();
+      var postal      = form.elements['postal_code'].value.trim().toUpperCase();
+      var email       = form.elements['email'].value.trim();
+      var phone       = form.elements['phone'].value.trim();
+      var garment     = form.elements['garment_preference'].value;
+      var qty         = Math.max(1, Math.min(10, parseInt(form.elements['qty'].value, 10) || 10));
+      if (!tier)        return setError('Choisis quel programme.');
+      if (!name)        return setError('Nom du candidat requis.');
+      if (!age || age < 5 || age > 15) return setError('L\'âge doit être entre 5 et 15 ans.');
+      if (!description) return setError('Dis-nous sur quoi tu travailles.');
+      if (!parentName)  return setError('Nom du parent ou tuteur requis.');
+      if (!postal || postal.length < 3) return setError('Code postal valide requis (Grand Montréal).');
+      if (!email)       return setError('Courriel du parent ou tuteur requis.');
+      if (!phone)       return setError('Téléphone du parent ou tuteur requis.');
+      submit.disabled = true;
+      submit.innerHTML = 'Envoi…';
+      statusEl.textContent = '';
+      var payload = {
+        kind:           'youth_initiative',
+        contact_name:   name,
+        email:          email,
+        phone:          phone,
+        total_qty:      qty,
+        notes:          description,
+        source_url:     'https://www.singhsprint.com/fr/youth-initiative',
+        meta: {
+          tier:               tier,
+          age:                age,
+          parent_name:        parentName,
+          postal_code:        postal,
+          garment_preference: garment || null,
+          language:           'fr',
+        },
+      };
+      if (_uploadedPath) payload.design_path = _uploadedPath;
+      fetch(INBOUND_API, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      })
+      .then(function(r) { if (!r.ok) throw new Error('inbound ' + r.status); return r.json(); })
+      .then(function() {
+        form.style.display = 'none';
+        success.style.display = 'block';
+        success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      })
+      .catch(function() {
+        setError("Quelque chose s'est mal passé — réessayez, ou écrivez-nous à sales@singhsprint.com.");
+        submit.disabled = false;
+        submit.innerHTML = 'Soumettre la candidature &rarr;';
+      });
+    });
+  })();
+  </script>
+
+</body>
+</html>

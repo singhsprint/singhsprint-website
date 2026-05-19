@@ -37,6 +37,7 @@ var SP_LANG = (function() {
     'footer.inkwear': { en: 'Inkwear', fr: 'Inkwear' },
     'footer.businesses': { en: 'For Businesses', fr: 'Pour entreprises' },
     'footer.about': { en: 'About', fr: 'À propos' },
+    'footer.youth': { en: 'Youth Initiative', fr: 'Initiative Jeunesse' },
     'footer.services': { en: 'Services', fr: 'Services' },
     'footer.dtg': { en: 'DTG Printing', fr: 'Impression DTG' },
     'footer.dtf': { en: 'DTF Transfers', fr: 'Transferts DTF' },

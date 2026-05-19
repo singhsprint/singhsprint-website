@@ -36,6 +36,7 @@ const MARKETING = [
   { path: '/catalog',                                   priority: 0.95, changefreq: 'daily',   hreflang: true },
   { path: '/businesses',                                priority: 0.9,  changefreq: 'weekly',  hreflang: true },
   { path: '/about',                                     priority: 0.8,  changefreq: 'monthly', hreflang: true },
+  { path: '/youth-initiative',                          priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/industries/construction-workwear',          priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/industries/restaurant-hospitality-uniforms',priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/industries/corporate-tech-swag',            priority: 0.85, changefreq: 'monthly', hreflang: true },
