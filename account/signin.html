@@ -17,20 +17,28 @@
     body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
     a{color:inherit;text-decoration:none}
     .wrap{max-width:460px;margin:0 auto;padding:60px 24px 80px}
-    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:24px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:18px}
     .back-link:hover{color:#1a1a1a}
+    /* Brand wordmark above the heading, same Playfair as the rest of the site */
+    .wordmark{display:inline-flex;align-items:center;gap:8px;font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:800;color:#1a1a1a;margin-bottom:18px;letter-spacing:-0.01em}
+    .wordmark .dot{display:inline-block;width:10px;height:10px;background:#e8ff3c;border:1.5px solid #1a1a1a;border-radius:50%}
     .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.8rem,3.6vw,2.4rem);font-weight:800;line-height:1.1;margin-bottom:8px}
     .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
-    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:28px 24px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
-    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f4f2eb;border-radius:12px;padding:4px;margin-bottom:20px}
-    .tab{padding:9px 12px;text-align:center;font-size:.86rem;font-weight:600;border-radius:8px;cursor:pointer;color:#888;background:transparent;border:none;font-family:inherit}
+    /* Lime accent stripe at top of card + slightly stronger border on the bottom */
+    .card{position:relative;background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:28px 24px;box-shadow:0 2px 10px rgba(0,0,0,.03);overflow:hidden}
+    .card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:#e8ff3c}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f4f2eb;border-radius:12px;padding:4px;margin-bottom:20px;margin-top:6px}
+    .tab{padding:9px 12px;text-align:center;font-size:.86rem;font-weight:600;border-radius:8px;cursor:pointer;color:#888;background:transparent;border:none;font-family:inherit;position:relative}
     .tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    /* Tiny lime underline on the active tab */
+    .tab.active::after{content:"";position:absolute;left:25%;right:25%;bottom:2px;height:2px;background:#e8ff3c;border-radius:2px}
     label{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}
     input[type=text],input[type=email],input[type=tel]{width:100%;padding:13px 14px;border:1px solid #e0ddd1;border-radius:12px;font-family:inherit;font-size:1rem;color:#1a1a1a;background:#fff;outline:none;transition:border-color .15s ease}
     input:focus{border-color:#1a1a1a}
-    .code-input{letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums;font-size:1.4rem;font-weight:700}
-    button.primary{width:100%;margin-top:16px;padding:13px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .05s ease,opacity .15s}
-    button.primary:hover{opacity:.92}
+    .code-input{letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums;font-size:1.4rem;font-weight:700;border-color:#1a1a1a;background:#fafaf7}
+    .code-input:focus{border-color:#1a1a1a;box-shadow:0 0 0 4px rgba(232,255,60,.5)}
+    button.primary{width:100%;margin-top:16px;padding:13px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .05s ease,opacity .15s,box-shadow .15s}
+    button.primary:hover{opacity:.92;box-shadow:0 4px 14px rgba(232,255,60,.45)}
     button.primary:active{transform:translateY(1px)}
     button.primary:disabled{opacity:.5;cursor:not-allowed}
     .link-button{background:none;border:none;color:#666;font-family:inherit;font-size:.86rem;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:6px 0}
@@ -47,6 +55,8 @@
 
 <main class="wrap">
   <a href="/" class="back-link" data-i18n="account.back.home">← Back to homepage</a>
+
+  <div class="wordmark"><span class="dot" aria-hidden="true"></span> Singhs Print</div>
 
   <div class="hero">
     <h1 data-i18n="account.signin.h1">Sign in</h1>
