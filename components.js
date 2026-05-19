@@ -283,12 +283,22 @@ function loadNav() {
     }
   ];
 
+  // EDITORIAL, right-rail nav items.
+  // Ordering rationale (2026-05-19):
+  //   1. For Businesses, highest-LTV customer path, gets the leftmost
+  //      eyeball position. Brackets the rail with the two ends of the
+  //      funnel: "For Businesses" on the left, "Get a Quote" CTA on
+  //      the right.
+  //   2. About, surfaced second because the "who are you" question is
+  //      the single most common follow-up to "this looks interesting"
+  //      and we'd rather customers find the brand story in one click
+  //      than 4 clicks deep.
+  //   3. Portfolio, social proof / past work, third trust signal.
+  //   4. Inkwear + Youth Initiative, niche programs that build the
+  //      brand but aren't the primary sale, last in order.
   var EDITORIAL = [
-    { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
-    { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },
-    { en: 'Youth Initiative', fr: 'Initiative Jeunesse', i18n: 'nav.youth', href: BASE + '/youth-initiative' },
     {
-      // For Businesses is a parent — hovering it reveals the 5 industry
+      // For Businesses is a parent, hovering it reveals the 5 industry
       // vertical landing pages under /industries/* plus a link back to
       // the parent /businesses overview.
       en: 'For Businesses', fr: 'Entreprises',
@@ -301,7 +311,10 @@ function loadNav() {
         { en: 'Schools & sports',        fr: 'Écoles & équipes sportives', href: BASE + '/industries/schools-sports-teams' }
       ]
     },
-    { en: 'About', fr: 'À propos', i18n: 'nav.about', href: BASE + '/about' }
+    { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' },
+    { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
+    { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },
+    { en: 'Youth Initiative', fr: 'Initiative Jeunesse', i18n: 'nav.youth', href: BASE + '/youth-initiative' }
   ];
 
   var ICON = {

@@ -75,7 +75,10 @@
     .yi-rules{background:#1a1a1a;color:#fff;padding:54px 0}
     .yi-rules h2{color:#fff;margin-bottom:8px}
     .yi-rules .subhead{color:#bbb}
-    .rules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+    /* auto-fit so 3 rules cleanly become 4 once we add the "kid-driven"
+       guardrail, and any further additions wrap naturally without us
+       having to retune column counts each time. */
+    .rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:32px}
     .rule-card{background:#222;border:1px solid #333;border-radius:14px;padding:22px}
     .rule-card__hint{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#e8ff3c;margin-bottom:6px}
     .rule-card h3{font-size:1rem;color:#fff;margin-bottom:6px;font-family:'Inter',sans-serif;font-weight:700}
@@ -193,6 +196,10 @@
               <strong>Up to 10 pieces.</strong> T-shirts, long sleeves, hoodies, or tote bags. Includes
               a one-side print or embroidered logo. You bring the cause &amp; the design (or we&rsquo;ll
               help you sketch one).
+              <br><br>
+              <strong>Has to be your idea.</strong> School-assigned projects that the school is funding
+              don&rsquo;t qualify, but a real fundraiser you started yourself absolutely does, even if
+              your classmates are pitching in.
             </p>
           </div>
 
@@ -267,6 +274,11 @@
             <div class="rule-card__hint">What</div>
             <h3>One application per kid, per project</h3>
             <p>10 pieces is the cap per project. If your fundraiser or hustle does well and you need more later, we&rsquo;ll be happy to talk, but the program covers one round at a time.</p>
+          </div>
+          <div class="rule-card">
+            <div class="rule-card__hint">Who&rsquo;s driving it</div>
+            <h3>Kid-led, not school-assigned</h3>
+            <p>The project has to be the applicant&rsquo;s own idea. Class-assigned fundraisers where the school has its own budget don&rsquo;t qualify, but a real fundraiser a kid started themselves (even with classmates pitching in) absolutely does.</p>
           </div>
         </div>
       </div>
@@ -420,6 +432,10 @@
           <div class="faq-item">
             <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">What counts as a "self-propelled hustle"?</button>
             <div class="faq-a">Something where you're doing the work yourself. Lawn mowing, dog walking, snow shovelling, lemonade stand, baking, tutoring, an Etsy / Depop / Discord shop, a YouTube channel, a niche newsletter, an event you're organizing. If you're doing the hustling and the customer / audience is real, it counts.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">Does a school assignment / class fundraiser count?</button>
+            <div class="faq-a">If the school assigned the project and the school is funding it, no, that's not what this is for. But if you started the fundraiser yourself and you're rallying classmates around it (even meeting in the classroom), that's exactly what we're here for. The standard is "kid-driven", who had the idea, who's doing the legwork. When you fill out the application, just tell us the real story; we'll figure it out on the call.</div>
           </div>
           <div class="faq-item">
             <button class="faq-q" onclick="this.parentElement.classList.toggle('is-open')">What if I'm 16 or older?</button>
