@@ -129,23 +129,77 @@
     return n;
   }
 
+  // ===========================================================================
+  // Disjunctive-facet fan-out.
+  //
+  // Algolia returns facet counts *filtered by the active facetFilters*. That
+  // makes counts inside a multi-select category collapse to 0 the moment the
+  // user picks any value in that category (because the other values can no
+  // longer co-occur). The Amazon-style behaviour customers expect is:
+  //
+  //   • Selecting "100% cotton" still shows accurate counts on Cotton-blend,
+  //     Polyester, Performance, etc.
+  //   • But picking "Red" + "Blue" inside Color is an OR within the category
+  //     and an AND with everything else.
+  //
+  // The standard fix is to fire one query per multi-select category with
+  // *that category's* filters removed, then merge those facet counts back
+  // into the main response. Algolia exposes `/1/indexes/*/queries` so we
+  // can batch all 6 queries (main + 5 disjunctive) in a single HTTP roundtrip.
+  // ===========================================================================
+  var DISJUNCTIVE_FACETS = [
+    'color_families',
+    'gender',
+    'fabric_family',
+    'weight_class',
+    'sizes_available',
+  ];
+  var ALL_FACETS = ['brand_norm', 'garment_type'].concat(DISJUNCTIVE_FACETS);
+
+  // Build a per-category filter set: the same facetFilters minus the entries
+  // belonging to `category`. Used to compute "what would the counts be if
+  // this category's selections were cleared?"
+  function filtersWithout(facetFilters, category) {
+    return facetFilters
+      .map(function (entry) {
+        if (Array.isArray(entry)) {
+          // OR-group — drop any leaves that belong to this category, keep
+          // the rest. If the whole group belonged to category, drop the group.
+          var kept = entry.filter(function (s) { return s.indexOf(category + ':') !== 0; });
+          return kept.length ? kept : null;
+        }
+        // Single string — drop if it belongs to this category.
+        return entry.indexOf(category + ':') === 0 ? null : entry;
+      })
+      .filter(Boolean);
+  }
+
+  function buildParams(opts, facetFilters, numericFilters, facets, page, hitsPerPage) {
+    var qs = new URLSearchParams();
+    qs.set('query',       opts.q || '');
+    qs.set('page',        String(page || 0));
+    qs.set('hitsPerPage', String(hitsPerPage || 30));
+    qs.set('facets',      JSON.stringify(facets));
+    if (facetFilters.length)   qs.set('facetFilters',   JSON.stringify(facetFilters));
+    if (numericFilters.length) qs.set('numericFilters', JSON.stringify(numericFilters));
+    return qs.toString();
+  }
+
   /**
    * Issue an Algolia REST query and translate the hits into the shape
-   * catalog.html's productCard() expects. Algolia's normal POST body is
-   * { params: <url-encoded query string> }; the SDK does this for us, but
-   * we keep the deps tiny by hand-rolling the same shape.
+   * catalog.html's productCard() expects. Sends a multi-query so chip
+   * counts in multi-select categories (Color / Gender / Fabric / Sizes /
+   * Weight) stay accurate even after the user has picked a value in that
+   * category.
    */
   async function search(opts) {
     opts = opts || {};
     // qty doesn't change Algolia's hit set, only the price field we read,
-    // so the cache key intentionally excludes it. Different qty values
-    // reuse the same cached Algolia response and pick the right price
-    // off prices_by_qty client-side.
+    // so the cache key intentionally excludes it.
     var cacheOpts = Object.assign({}, opts); delete cacheOpts.qty;
     var key = JSON.stringify(cacheOpts);
     var cached = cache.has(key) ? cache.get(key) : null;
     if (cached) {
-      // Re-project the cached hits with the current qty's price.
       return Object.assign({}, cached, {
         products: cached._rawHits.map(function (h) { return hitToProduct(h, opts.qty); }),
       });
@@ -153,23 +207,22 @@
 
     var facetFilters   = buildFacetFilters(opts);
     var numericFilters = buildNumericFilters(opts);
-    var qs = new URLSearchParams();
-    qs.set('query',         opts.q || '');
-    qs.set('page',          String(opts.page || 0));
-    qs.set('hitsPerPage',   String(opts.hitsPerPage || 30));
-    // Return facets for the filter panel so chip counts reflect the current
-    // filter set. Includes the new derived facets so the side panel can
-    // show "(420)" next to each Color / Gender / Fabric / Sizes / Weight
-    // option without a second request.
-    qs.set('facets', JSON.stringify([
-      'brand_norm', 'garment_type', 'gender',
-      'color_families', 'fabric_family', 'weight_class', 'sizes_available',
-    ]));
-    if (facetFilters.length)   qs.set('facetFilters',   JSON.stringify(facetFilters));
-    if (numericFilters.length) qs.set('numericFilters', JSON.stringify(numericFilters));
 
-    var url = 'https://' + cfg.appId + '-dsn.algolia.net/1/indexes/' +
-              encodeURIComponent(cfg.indexName) + '/query';
+    // 1. Main query — full filters, returns the actual hits + facet counts
+    //    for facets that ARE NOT disjunctive (brand_norm, garment_type).
+    var mainParams = buildParams(opts, facetFilters, numericFilters, ALL_FACETS, opts.page, opts.hitsPerPage);
+    var requests = [{ indexName: cfg.indexName, params: mainParams }];
+
+    // 2. One sidecar query per disjunctive category — same filters with
+    //    that category's filters dropped, only that category's facet
+    //    requested, zero hits to keep the response tiny.
+    DISJUNCTIVE_FACETS.forEach(function (cat) {
+      var subset = filtersWithout(facetFilters, cat);
+      var p = buildParams(opts, subset, numericFilters, [cat], 0, 0);
+      requests.push({ indexName: cfg.indexName, params: p });
+    });
+
+    var url = 'https://' + cfg.appId + '-dsn.algolia.net/1/indexes/*/queries';
     var res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -177,20 +230,34 @@
         'X-Algolia-API-Key':         cfg.searchKey,
         'Content-Type':              'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({ params: qs.toString() }),
+      body: JSON.stringify({ requests: requests }),
     });
     if (!res.ok) throw new Error('Algolia ' + res.status);
-    var r = await res.json();
+    var body = await res.json();
+    var results = body.results || [];
+    var main = results[0] || {};
 
-    var rawHits = r.hits || [];
+    // Merge facet counts: main has every facet, but the multi-select ones
+    // are filtered. Overwrite each disjunctive category's counts with its
+    // sidecar query's response, which reflects "counts if this category's
+    // selection were cleared".
+    var mergedFacets = Object.assign({}, main.facets || {});
+    DISJUNCTIVE_FACETS.forEach(function (cat, i) {
+      var sideRes = results[i + 1];
+      if (sideRes && sideRes.facets && sideRes.facets[cat]) {
+        mergedFacets[cat] = sideRes.facets[cat];
+      }
+    });
+
+    var rawHits = main.hits || [];
     var out = {
       products:   rawHits.map(function (h) { return hitToProduct(h, opts.qty); }),
-      total:      r.nbHits,
-      totalPages: r.nbPages,
-      page:       r.page,
-      facets:     r.facets || {},
-      processingTimeMS: r.processingTimeMS,
-      _rawHits:   rawHits,   // kept on the cached entry for qty re-projection
+      total:      main.nbHits,
+      totalPages: main.nbPages,
+      page:       main.page,
+      facets:     mergedFacets,
+      processingTimeMS: main.processingTimeMS,
+      _rawHits:   rawHits,
     };
     cache.set(key, out);
     return out;

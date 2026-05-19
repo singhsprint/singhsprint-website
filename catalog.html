@@ -1686,9 +1686,17 @@
     card.setAttribute('tabindex', '0');
     if (p.in_stock === false) card.classList.add('card--oos');
 
-    // Track the selected color INDEX per card (default: first in-stock).
+    // Track the selected color INDEX per card.
+    //   1) If a Color filter is active, prefer a colorway whose family matches
+    //      one of the selected filters — so picking "Red" makes every card
+    //      actually show its red colorway, not whatever happened to be first.
+    //   2) Otherwise, default to the first in-stock color.
+    //   3) Otherwise, index 0.
+    const filterIdx     = pickColorByFilter(p, state.filters.colorFamilies);
     const firstInStockIdx = (p.colors || []).findIndex(c => Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0);
-    card._selectedColorIdx = firstInStockIdx >= 0 ? firstInStockIdx : 0;
+    card._selectedColorIdx = filterIdx >= 0
+      ? filterIdx
+      : (firstInStockIdx >= 0 ? firstInStockIdx : 0);
 
     let badge = '';
     if (p.in_stock === false)                                            badge = `<div class="badge badge--oos" data-i18n="cat.card.oos">Out of stock</div>`;
@@ -1818,6 +1826,81 @@
     const h = hex.replace('#','');
     const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
     return (r*299 + g*587 + b*114) / 1000 > 200;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Client-side color-family bucketing — mirrors the sync-time helper in
+  // scripts/sync-algolia.mjs. Used to find a colorway whose hex maps to the
+  // currently-active Color filter so we can pre-select the matching swatch
+  // (and use its mockup as the card hero) instead of just showing whatever
+  // color happened to come first in the colors[] array.
+  // ---------------------------------------------------------------------------
+  function hexToColorFamily(hex) {
+    if (typeof hex !== 'string') return null;
+    const m = hex.trim().match(/^#?([0-9a-f]{6})$/i);
+    if (!m) return null;
+    const num = parseInt(m[1], 16);
+    const r = (num >> 16) & 0xff, g = (num >> 8) & 0xff, b = num & 0xff;
+    const rn = r/255, gn = g/255, bn = b/255;
+    const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+    const L = (max + min) / 2;
+    const D = max - min;
+    const S = D === 0 ? 0 : D / (1 - Math.abs(2 * L - 1));
+    let H = 0;
+    if (D !== 0) {
+      if      (max === rn) H = 60 * (((gn - bn) / D) % 6);
+      else if (max === gn) H = 60 * ((bn - rn) / D + 2);
+      else                 H = 60 * ((rn - gn) / D + 4);
+      if (H < 0) H += 360;
+    }
+    if (L >= 0.92) return 'white';
+    if (L <= 0.08) return 'black';
+    if (S <  0.12) return 'grey';
+    if (H < 15)   return 'red';
+    if (H < 45)   return L < 0.4 ? 'brown' : 'orange';
+    if (H < 70)   return 'yellow';
+    if (H < 170)  return 'green';
+    if (H < 200)  return 'teal';
+    if (H < 255)  return 'blue';
+    if (H < 290)  return 'purple';
+    if (H < 335)  return 'pink';
+    return 'red';
+  }
+  function colorFamilyOf(c) {
+    if (!c) return null;
+    const fam = hexToColorFamily(c.hex_code);
+    if (fam) return fam;
+    const n = String(c.color_name || '').toLowerCase();
+    if (/(black|onyx|jet|coal)/.test(n))           return 'black';
+    if (/(white|ivory|cream|natural|bone)/.test(n)) return 'white';
+    if (/(red|crimson|cherry|burgundy|maroon|wine)/.test(n)) return 'red';
+    if (/(orange|rust|tangerine|copper)/.test(n))  return 'orange';
+    if (/(yellow|gold|mustard|lemon)/.test(n))     return 'yellow';
+    if (/(green|olive|forest|mint|kelly|sage|hunter)/.test(n)) return 'green';
+    if (/(teal|turquoise|aqua|cyan)/.test(n))      return 'teal';
+    if (/(blue|navy|royal|cobalt|denim|indigo|sapphire)/.test(n)) return 'blue';
+    if (/(purple|violet|lavender|plum|orchid|lilac)/.test(n)) return 'purple';
+    if (/(pink|fuchsia|magenta|rose|salmon|coral)/.test(n)) return 'pink';
+    if (/(brown|tan|khaki|chocolate|mocha|sand|camel|beige)/.test(n)) return 'brown';
+    if (/(grey|gray|charcoal|silver|graphite|heather|smoke|steel)/.test(n)) return 'grey';
+    return null;
+  }
+  // Given a product and a set of selected color-family filters, find the
+  // first in-stock colorway whose family matches. Returns -1 if none.
+  function pickColorByFilter(p, filters) {
+    if (!filters || !filters.length) return -1;
+    const colors = p.colors || [];
+    const want = new Set(filters);
+    // Prefer in-stock matches; fall back to any match if none have stock.
+    let firstAnyMatch = -1;
+    for (let i = 0; i < colors.length; i++) {
+      const fam = colorFamilyOf(colors[i]);
+      if (!fam || !want.has(fam)) continue;
+      const inStock = Array.isArray(colors[i].sizes_in_stock) && colors[i].sizes_in_stock.length > 0;
+      if (inStock) return i;
+      if (firstAnyMatch < 0) firstAnyMatch = i;
+    }
+    return firstAnyMatch;
   }
 
   // =========================================================================
