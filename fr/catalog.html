@@ -1134,7 +1134,8 @@
       brand: [],
       canadian: false,
       csa: false,
-      q: '',
+      // Hydrate from `?q=` so deep links from the nav search pre-filter.
+      q: getQueryParam('q') || '',
       inStockOnly: true,
       colorFamilies:   [],
       genders:         [],
@@ -2194,6 +2195,13 @@
     state.filters.q = e.target.value.trim();
     resetAndFetch();
   }, 250));
+
+  // Pre-fill the input from `?q=...` so the customer sees what's searched.
+  (function hydrateSearchFromUrl() {
+    if (!state.filters.q) return;
+    var input = document.getElementById('searchInput');
+    if (input) input.value = state.filters.q;
+  })();
 
   function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), ms); }; }
 

@@ -1201,7 +1201,10 @@
       brand: [],
       canadian: false,
       csa: false,
-      q: '',
+      // Hydrate from `?q=` so deep links from the nav's search dropdown
+      // (e.g. /catalog?q=hoodies) actually pre-filter the catalog instead
+      // of landing on the unfiltered list with the search param ignored.
+      q: getQueryParam('q') || '',
       inStockOnly: true,             // default ON — hide fully OOS items
       // Derived facet filters (2026-05-19). Each is an array because the
       // panel UI is multi-select within a category (e.g. show me red OR blue
@@ -2344,6 +2347,15 @@
     state.filters.q = e.target.value.trim();
     resetAndFetch();
   }, 250));
+
+  // Pre-fill the search input from `?q=...` so the customer can see exactly
+  // what's being searched (and edit it inline) when they arrive via the
+  // nav's "See all results" CTA / Enter key.
+  (function hydrateSearchFromUrl() {
+    if (!state.filters.q) return;
+    var input = document.getElementById('searchInput');
+    if (input) input.value = state.filters.q;
+  })();
 
   function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), ms); }; }
 
