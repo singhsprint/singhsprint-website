@@ -6,15 +6,34 @@
 // The toggle button is injected by components.js.
 
 var SP_LANG = (function() {
-  // Trust the document's lang attribute over localStorage when they
-  // conflict — if the user landed on /fr/<path> their browser served a
-  // FR-marked HTML even though localStorage says 'en'. Falling through
-  // to localStorage prevents a toggle-button flash where /fr/quote.html
-  // showed "EN" but clicking it tried to go to /fr/quote (no-op) because
-  // currentLang was wrong.
+  // Two flavors of pages exist:
+  //   1) Pages with a /fr mirror (have <link rel="alternate" hreflang="fr">
+  //      pointing to a different URL). On these, trust the doc's lang
+  //      attribute, because the user is already on the right mirror.
+  //   2) Pages WITHOUT a mirror (like /account/*). These are bilingual
+  //      via data-i18n attributes only, so trust localStorage so the
+  //      user's preference from the previous page carries over.
   var docLang = (document.documentElement.lang || '').toLowerCase().slice(0, 2);
   var storedLang = localStorage.getItem('sp-lang');
-  var currentLang = (docLang === 'fr' || docLang === 'en') ? docLang : (storedLang || 'en');
+  var hasMirror = (function() {
+    var alts = document.querySelectorAll('link[rel="alternate"][hreflang]');
+    for (var i = 0; i < alts.length; i++) {
+      var hl = (alts[i].getAttribute('hreflang') || '').toLowerCase();
+      if (hl !== 'x-default' && alts[i].getAttribute('href') &&
+          alts[i].getAttribute('href') !== location.href) {
+        return true;
+      }
+    }
+    return false;
+  })();
+  var currentLang;
+  if (hasMirror) {
+    currentLang = (docLang === 'fr' || docLang === 'en') ? docLang : (storedLang || 'en');
+  } else {
+    currentLang = (storedLang === 'fr' || storedLang === 'en')
+      ? storedLang
+      : ((docLang === 'fr' || docLang === 'en') ? docLang : 'en');
+  }
 
   var translations = {
     // ===== NAV / PROMO =====
