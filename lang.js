@@ -20,6 +20,7 @@ var SP_LANG = (function() {
     'nav.howitworks': { en: 'How It Works', fr: 'Comment ça marche' },
     'nav.portfolio': { en: 'Portfolio', fr: 'Portfolio' },
     'nav.inkwear': { en: 'Inkwear', fr: 'Inkwear' },
+    'nav.youth': { en: 'Youth Initiative', fr: 'Initiative Jeunesse' },
     'nav.businesses': { en: 'For Businesses', fr: 'Pour entreprises' },
     'nav.about': { en: 'About', fr: 'À propos' },
     'nav.login': { en: 'Login', fr: 'Connexion' },

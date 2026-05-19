@@ -286,6 +286,7 @@ function loadNav() {
   var EDITORIAL = [
     { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
     { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },
+    { en: 'Youth Initiative', fr: 'Initiative Jeunesse', i18n: 'nav.youth', href: BASE + '/youth-initiative' },
     {
       // For Businesses is a parent — hovering it reveals the 5 industry
       // vertical landing pages under /industries/* plus a link back to
