@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account settings · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:760px;margin:0 auto;padding:60px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+    .hero{margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1}
+    .hero p{color:#666;font-size:.95rem;margin-top:6px}
+    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .card h2{font-size:1.05rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:.92rem;border-top:1px solid #f0eee5}
+    .row:first-of-type{border-top:none}
+    .row .key{color:#888}
+    .row .val{color:#1a1a1a;font-weight:600;text-align:right;word-break:break-all;max-width:60%}
+    button.primary,button.ghost,button.danger{padding:10px 14px;border-radius:10px;font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer;border:none;transition:opacity .15s,transform .05s}
+    button.primary{background:#1a1a1a;color:#fff}
+    button.primary:hover{opacity:.92}
+    button.primary:active{transform:translateY(1px)}
+    button.primary:disabled{opacity:.5;cursor:not-allowed}
+    button.ghost{background:#f4f2eb;color:#1a1a1a}
+    button.ghost:hover{background:#ebe9e0}
+    button.danger{background:transparent;color:#a01a1a;border:1px solid #f4c2c2}
+    button.danger:hover{background:#fdecec}
+    input[type=text],input[type=email],input[type=password],input[type=tel]{width:100%;padding:11px 13px;border:1px solid #e0ddd1;border-radius:10px;font-family:inherit;font-size:.95rem;color:#1a1a1a;background:#fff;outline:none}
+    input:focus{border-color:#1a1a1a}
+    .msg{margin-top:12px;padding:11px 13px;border-radius:10px;font-size:.84rem}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+    .pwd-grid{display:grid;gap:10px}
+    .pwd-grid label{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:4px}
+    .cards-list{display:grid;gap:10px}
+    .card-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fafaf7;border:1px solid #e9e7df;border-radius:12px;gap:12px}
+    .card-row__left{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand{display:inline-flex;align-items:center;justify-content:center;width:42px;height:28px;border-radius:6px;background:#1a1a1a;color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+    .brand.visa{background:#1a1f71}
+    .brand.mastercard{background:#eb001b}
+    .brand.amex{background:#016fd0}
+    .brand.discover{background:#ff6000}
+    .card-row__meta{display:flex;flex-direction:column;min-width:0}
+    .card-row__line{font-weight:700;font-size:.94rem}
+    .card-row__sub{color:#888;font-size:.78rem}
+    .default-pill{display:inline-block;margin-left:6px;padding:2px 7px;background:#e8ff3c;color:#1a1a1a;font-size:.66rem;font-weight:800;border-radius:6px;letter-spacing:.04em;text-transform:uppercase}
+    .empty{text-align:center;color:#888;padding:24px 12px;font-size:.9rem}
+    .locked{padding:18px;background:#fafaf7;border:1px dashed #d8d5c7;border-radius:12px;color:#666;font-size:.9rem;text-align:center}
+    .locked button{margin-top:10px}
+    .hide{display:none !important}
+    .modal-bg{position:fixed;inset:0;background:rgba(20,20,18,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}
+    .modal{background:#fff;border-radius:18px;padding:24px;max-width:440px;width:100%;max-height:90vh;overflow:auto}
+    .modal h3{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+    .modal p{color:#666;font-size:.86rem;margin-bottom:14px}
+    #stripe-element{padding:14px;border:1px solid #e0ddd1;border-radius:12px;background:#fff;min-height:48px}
+    .small-link{font-size:.82rem;color:#666;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-family:inherit}
+    .small-link:hover{color:#1a1a1a}
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <a href="/account/" class="back-link">← Back to account</a>
+
+  <div class="hero">
+    <div>
+      <h1>Settings</h1>
+      <p id="hello">Loading…</p>
+    </div>
+    <button id="signout" class="ghost" type="button">Sign out</button>
+  </div>
+
+  <!-- ----------------------------------------------------------------- -->
+  <!-- PROFILE -->
+  <!-- ----------------------------------------------------------------- -->
+  <section class="card">
+    <h2>Profile</h2>
+    <div class="row"><div class="key">Email</div><div class="val" id="profile-email">—</div></div>
+    <div class="row"><div class="key">Phone</div><div class="val" id="profile-phone">—</div></div>
+    <div class="row"><div class="key">Account created</div><div class="val" id="profile-created">—</div></div>
+  </section>
+
+  <!-- ----------------------------------------------------------------- -->
+  <!-- PAYMENT PASSWORD -->
+  <!-- ----------------------------------------------------------------- -->
+  <section class="card">
+    <h2>Payment password
+      <span id="pwd-status" style="font-size:.78rem;color:#888;font-weight:500;"></span>
+    </h2>
+    <p style="color:#666;font-size:.88rem;margin-bottom:14px;">
+      A second password — separate from sign-in — that protects your saved
+      cards. You'll be asked for it any time a saved card is used.
+    </p>
+
+    <div class="pwd-grid">
+      <div id="pwd-current-wrap" class="hide">
+        <label for="pwd-current">Current payment password</label>
+        <input id="pwd-current" type="password" autocomplete="current-password">
+      </div>
+      <div>
+        <label for="pwd-new" id="pwd-new-label">New payment password (min 8 chars)</label>
+        <input id="pwd-new" type="password" autocomplete="new-password">
+      </div>
+      <div>
+        <button id="pwd-save" class="primary" type="button">Save payment password</button>
+      </div>
+    </div>
+    <div id="pwd-msg" class="msg hide"></div>
+  </section>
+
+  <!-- ----------------------------------------------------------------- -->
+  <!-- SAVED CARDS -->
+  <!-- ----------------------------------------------------------------- -->
+  <section class="card">
+    <h2>Saved cards
+      <button id="add-card" class="primary" type="button">+ Add card</button>
+    </h2>
+
+    <div id="cards-locked" class="locked hide">
+      Enter your payment password to view or manage saved cards.
+      <br><button id="unlock-cards" class="primary" type="button">Unlock</button>
+    </div>
+
+    <div id="cards-needs-pwd" class="locked hide">
+      Set a payment password above before you can save a card.
+    </div>
+
+    <div id="cards-list" class="cards-list"></div>
+    <div id="cards-empty" class="empty hide">No saved cards yet.</div>
+  </section>
+</main>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Unlock modal — prompts for payment password when needed             -->
+<!-- ------------------------------------------------------------------ -->
+<div id="modal-unlock" class="modal-bg hide" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h3>Enter payment password</h3>
+    <p>Your payment password protects saved cards. It's separate from your sign-in.</p>
+    <label for="unlock-input" class="label">Payment password</label>
+    <input id="unlock-input" type="password" autocomplete="current-password">
+    <div id="unlock-msg" class="msg hide" style="margin-top:10px;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button class="ghost"   id="unlock-cancel" type="button">Cancel</button>
+      <button class="primary" id="unlock-submit" type="button">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Add-card modal — Stripe Elements                                    -->
+<!-- ------------------------------------------------------------------ -->
+<div id="modal-card" class="modal-bg hide" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h3>Add a card</h3>
+    <p>Stored securely with Stripe. We never see your card number.</p>
+    <div id="stripe-element"></div>
+    <div id="card-msg" class="msg hide" style="margin-top:10px;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button class="ghost"   id="card-cancel" type="button">Cancel</button>
+      <button class="primary" id="card-save"   type="button">Save card</button>
+    </div>
+  </div>
+</div>
+
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const api = window.SP_AUTH_API;
+
+  // ------------- state -------------
+  let unlockToken = null;           // payment-unlock token, kept in memory only
+
+  function showMsg(id, text, kind) {
+    const el = $(id); el.textContent = text;
+    el.className = 'msg msg--' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function hideMsg(id) { const el = $(id); el.className = 'msg hide'; el.textContent = ''; }
+
+  // ------------- bootstrap: require a session -------------
+  (async function init() {
+    const session = await api.getSession();
+    if (!session) {
+      location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname));
+      return;
+    }
+    const user = session.user;
+    $('hello').textContent = 'Signed in as ' + (user.email || user.phone || user.id);
+    $('profile-email').textContent   = user.email || '—';
+    $('profile-phone').textContent   = user.phone || '—';
+    $('profile-created').textContent = new Date(user.created_at).toLocaleDateString();
+
+    await refreshPasswordStatus();
+    await refreshCardsView();
+  })();
+
+  // ------------- sign out -------------
+  $('signout').onclick = async () => {
+    await api.signOut();
+    location.replace('/');
+  };
+
+  // ------------- payment-password status -------------
+  let pwdIsSet = false;
+
+  async function refreshPasswordStatus() {
+    const r = await api.authedFetch('/api/account/payment-password');
+    if (!r.ok) { $('pwd-status').textContent = ''; return; }
+    const j = await r.json();
+    pwdIsSet = !!j.isSet;
+    $('pwd-current-wrap').classList.toggle('hide', !pwdIsSet);
+    $('pwd-new-label').textContent = pwdIsSet
+      ? 'New payment password (min 8 chars)'
+      : 'Choose a payment password (min 8 chars)';
+    $('pwd-status').textContent = pwdIsSet
+      ? ('Set · last changed ' + (j.updatedAt ? new Date(j.updatedAt).toLocaleDateString() : '—'))
+      : 'Not set';
+    $('cards-needs-pwd').classList.toggle('hide', pwdIsSet);
+  }
+
+  // ------------- save / change password -------------
+  $('pwd-save').onclick = async function () {
+    hideMsg('pwd-msg');
+    const body = { password: $('pwd-new').value };
+    if (pwdIsSet) body.currentPassword = $('pwd-current').value;
+
+    this.disabled = true;
+    const original = this.textContent;
+    this.textContent = 'Saving…';
+    try {
+      const r = await api.authedFetch('/api/account/payment-password', {
+        method: 'POST', body: JSON.stringify(body)
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Could not save password.');
+      unlockToken = j.unlockToken || null;
+      $('pwd-new').value = '';
+      $('pwd-current').value = '';
+      showMsg('pwd-msg', pwdIsSet ? 'Payment password changed.' : 'Payment password set.', 'ok');
+      await refreshPasswordStatus();
+      await refreshCardsView();
+    } catch (e) {
+      showMsg('pwd-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+      this.textContent = original;
+    }
+  };
+
+  // ------------- unlock modal -------------
+  function openUnlock() {
+    $('modal-unlock').classList.remove('hide');
+    hideMsg('unlock-msg');
+    $('unlock-input').value = '';
+    setTimeout(() => $('unlock-input').focus(), 50);
+  }
+  function closeUnlock() { $('modal-unlock').classList.add('hide'); }
+
+  $('unlock-cancel').onclick = closeUnlock;
+  $('unlock-cards').onclick  = openUnlock;
+  $('unlock-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('unlock-submit').click(); });
+
+  $('unlock-submit').onclick = async function () {
+    hideMsg('unlock-msg');
+    this.disabled = true;
+    try {
+      const r = await api.authedFetch('/api/account/payment-password?action=verify', {
+        method: 'POST', body: JSON.stringify({ password: $('unlock-input').value })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Incorrect password.');
+      unlockToken = j.unlockToken;
+      closeUnlock();
+      await refreshCardsView();
+    } catch (e) {
+      showMsg('unlock-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  // ------------- cards view -------------
+  async function authedCardFetch(path, options) {
+    const session = await api.getSession();
+    return fetch(path, Object.assign({}, options || {}, {
+      headers: Object.assign({}, (options && options.headers) || {}, {
+        'Authorization':    'Bearer ' + session.access_token,
+        'Content-Type':     'application/json',
+        'X-Payment-Unlock': unlockToken || ''
+      })
+    }));
+  }
+
+  async function refreshCardsView() {
+    $('cards-list').innerHTML = '';
+    $('cards-empty').classList.add('hide');
+    $('cards-locked').classList.add('hide');
+    if (!pwdIsSet) return;             // already showing cards-needs-pwd
+    if (!unlockToken) { $('cards-locked').classList.remove('hide'); return; }
+
+    const r = await authedCardFetch('/api/account/cards');
+    if (r.status === 401) {
+      unlockToken = null;
+      $('cards-locked').classList.remove('hide');
+      return;
+    }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { $('cards-empty').textContent = j.error || 'Could not load cards.'; $('cards-empty').classList.remove('hide'); return; }
+
+    const cards = j.cards || [];
+    if (!cards.length) { $('cards-empty').textContent = 'No saved cards yet.'; $('cards-empty').classList.remove('hide'); return; }
+
+    cards.forEach((c) => {
+      const row = document.createElement('div');
+      row.className = 'card-row';
+      const brand = (c.brand || 'card').toLowerCase();
+      row.innerHTML = `
+        <div class="card-row__left">
+          <span class="brand ${brand}">${escapeHtml(c.brand || 'card').slice(0,4)}</span>
+          <div class="card-row__meta">
+            <div class="card-row__line">•••• ${escapeHtml(c.last4 || '----')}
+              ${c.is_default ? '<span class="default-pill">Default</span>' : ''}
+            </div>
+            <div class="card-row__sub">Expires ${String(c.exp_month||'').padStart(2,'0')}/${String(c.exp_year||'').slice(-2)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          ${c.is_default ? '' : `<button class="ghost" data-id="${c.id}" data-action="default">Make default</button>`}
+          <button class="danger" data-id="${c.id}" data-action="delete">Remove</button>
+        </div>`;
+      $('cards-list').appendChild(row);
+    });
+
+    $('cards-list').addEventListener('click', cardsListClick, { once: true });
+  }
+
+  async function cardsListClick(e) {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) { $('cards-list').addEventListener('click', cardsListClick, { once: true }); return; }
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'delete') {
+      if (!confirm('Remove this card?')) { $('cards-list').addEventListener('click', cardsListClick, { once: true }); return; }
+      const r = await authedCardFetch('/api/account/cards', { method: 'DELETE', body: JSON.stringify({ id }) });
+      if (!r.ok && r.status !== 204) alert('Could not remove card.');
+    } else if (btn.dataset.action === 'default') {
+      const r = await authedCardFetch('/api/account/cards?action=set-default', { method: 'POST', body: JSON.stringify({ id }) });
+      if (!r.ok) alert('Could not change default.');
+    }
+    await refreshCardsView();
+  }
+
+  // ------------- add card flow -------------
+  let stripe = null, elements = null, cardEl = null, setupClientSecret = null;
+
+  $('add-card').onclick = async function () {
+    if (!pwdIsSet) { alert('Please set a payment password first.'); return; }
+    if (!unlockToken) { openUnlock(); return; }
+
+    // Ask the server for a SetupIntent
+    const r = await authedCardFetch('/api/account/cards', { method: 'POST', body: JSON.stringify({}) });
+    if (r.status === 401) { unlockToken = null; openUnlock(); return; }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { alert(j.error || 'Could not start card setup.'); return; }
+    setupClientSecret = j.clientSecret;
+    const pk = j.publishableKey || window.SP_AUTH.stripePublishableKey;
+
+    if (!window.Stripe) { alert('Stripe library failed to load.'); return; }
+    stripe = window.Stripe(pk);
+    elements = stripe.elements();
+    cardEl = elements.create('card', {
+      style: {
+        base: { fontFamily: 'Inter, system-ui, sans-serif', fontSize: '15px', color: '#1a1a1a',
+                '::placeholder': { color: '#9b9684' } }
+      }
+    });
+
+    $('modal-card').classList.remove('hide');
+    hideMsg('card-msg');
+    // Mount the element (clears any previous mount).
+    $('stripe-element').innerHTML = '';
+    cardEl.mount('#stripe-element');
+  };
+
+  $('card-cancel').onclick = function () {
+    if (cardEl) { try { cardEl.destroy(); } catch (_) {} }
+    cardEl = null;
+    $('modal-card').classList.add('hide');
+  };
+
+  $('card-save').onclick = async function () {
+    hideMsg('card-msg');
+    this.disabled = true;
+    const original = this.textContent;
+    this.textContent = 'Saving…';
+    try {
+      const result = await stripe.confirmCardSetup(setupClientSecret, {
+        payment_method: { card: cardEl }
+      });
+      if (result.error) throw new Error(result.error.message || 'Card setup failed.');
+      // Webhook will insert the saved_cards row. Poll briefly for it.
+      showMsg('card-msg', 'Saved! Updating your card list…', 'ok');
+      for (let i = 0; i < 6; i++) {
+        await new Promise((r) => setTimeout(r, 600));
+        await refreshCardsView();
+        // If the new pm shows up, we're done.
+        if ($('cards-list').querySelector('[data-id]')) break;
+      }
+      if (cardEl) { try { cardEl.destroy(); } catch (_) {} }
+      cardEl = null;
+      $('modal-card').classList.add('hide');
+    } catch (e) {
+      showMsg('card-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+      this.textContent = original;
+    }
+  };
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+})();
+</script>
+</body>
+</html>

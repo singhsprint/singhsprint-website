@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:460px;margin:0 auto;padding:60px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:24px}
+    .back-link:hover{color:#1a1a1a}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.8rem,3.6vw,2.4rem);font-weight:800;line-height:1.1;margin-bottom:8px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
+    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:28px 24px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f4f2eb;border-radius:12px;padding:4px;margin-bottom:20px}
+    .tab{padding:9px 12px;text-align:center;font-size:.86rem;font-weight:600;border-radius:8px;cursor:pointer;color:#888;background:transparent;border:none;font-family:inherit}
+    .tab.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    label{display:block;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}
+    input[type=text],input[type=email],input[type=tel]{width:100%;padding:13px 14px;border:1px solid #e0ddd1;border-radius:12px;font-family:inherit;font-size:1rem;color:#1a1a1a;background:#fff;outline:none;transition:border-color .15s ease}
+    input:focus{border-color:#1a1a1a}
+    .code-input{letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums;font-size:1.4rem;font-weight:700}
+    button.primary{width:100%;margin-top:16px;padding:13px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .05s ease,opacity .15s}
+    button.primary:hover{opacity:.92}
+    button.primary:active{transform:translateY(1px)}
+    button.primary:disabled{opacity:.5;cursor:not-allowed}
+    .link-button{background:none;border:none;color:#666;font-family:inherit;font-size:.86rem;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:6px 0}
+    .link-button:hover{color:#1a1a1a}
+    .row-between{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+    .msg{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:.86rem}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+    .help{margin-top:20px;font-size:.82rem;color:#888;text-align:center;line-height:1.55}
+    .hide{display:none !important}
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <a href="/" class="back-link" data-i18n="account.back.home">← Back to homepage</a>
+
+  <div class="hero">
+    <h1 data-i18n="account.signin.h1">Sign in</h1>
+    <p data-i18n="account.signin.sub">We'll send you a 6-digit code — no password needed.</p>
+  </div>
+
+  <div class="card">
+    <!-- Step 1: choose method + enter contact info -->
+    <div id="step-request">
+      <div class="tabs" role="tablist">
+        <button class="tab active" id="tab-email" type="button" data-i18n="account.signin.tab.email">Email</button>
+        <button class="tab"        id="tab-phone" type="button" data-i18n="account.signin.tab.phone">Phone</button>
+      </div>
+
+      <div id="pane-email">
+        <label for="email" data-i18n="account.signin.label.email">Email address</label>
+        <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+      </div>
+
+      <div id="pane-phone" class="hide">
+        <label for="phone" data-i18n="account.signin.label.phone">Phone number</label>
+        <input id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(514) 555-1234">
+      </div>
+
+      <button id="send-code" class="primary" type="button" data-i18n="account.signin.send">Send code</button>
+      <div id="msg-request" class="msg hide"></div>
+    </div>
+
+    <!-- Step 2: enter the OTP -->
+    <div id="step-verify" class="hide">
+      <label for="code" data-i18n="account.signin.code">Enter the 6-digit code</label>
+      <input id="code" class="code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+
+      <button id="verify" class="primary" type="button" data-i18n="account.signin.verify">Verify and sign in</button>
+      <div id="msg-verify" class="msg hide"></div>
+
+      <div class="row-between">
+        <button class="link-button" id="back-to-request" type="button" data-i18n="account.signin.different">← Use a different address</button>
+        <button class="link-button" id="resend" type="button" data-i18n="account.signin.resend">Resend code</button>
+      </div>
+    </div>
+
+    <p class="help" data-i18n="account.signin.help">
+      Saving a card later? You'll be asked to set a payment password so only
+      you can use it at checkout.
+    </p>
+  </div>
+</main>
+
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $  = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get('returnTo') || window.SP_AUTH.defaultReturnTo || '/';
+
+  // If already signed in, skip straight to returnTo.
+  window.SP_AUTH_API.getSession().then((s) => { if (s) location.replace(returnTo); });
+
+  // Tabs
+  let mode = 'email';
+  $('tab-email').onclick = () => switchMode('email');
+  $('tab-phone').onclick = () => switchMode('phone');
+  function switchMode(m) {
+    mode = m;
+    $('tab-email').classList.toggle('active', m === 'email');
+    $('tab-phone').classList.toggle('active', m === 'phone');
+    $('pane-email').classList.toggle('hide', m !== 'email');
+    $('pane-phone').classList.toggle('hide', m !== 'phone');
+    hideMsg('msg-request');
+  }
+
+  function showMsg(id, text, kind) {
+    const el = $(id);
+    el.textContent = text;
+    el.className = 'msg msg--' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function hideMsg(id) { const el = $(id); el.className = 'msg hide'; el.textContent = ''; }
+
+  let pendingTarget = null; // { email } or { phone }
+
+  $('send-code').onclick = async function () {
+    hideMsg('msg-request');
+    this.disabled = true;
+    const original = this.textContent;
+    this.textContent = 'Sending…';
+    try {
+      pendingTarget = mode === 'email'
+        ? await window.SP_AUTH_API.requestEmailOtp($('email').value)
+        : await window.SP_AUTH_API.requestPhoneOtp($('phone').value);
+      $('step-request').classList.add('hide');
+      $('step-verify').classList.remove('hide');
+      $('code').focus();
+    } catch (e) {
+      showMsg('msg-request', e.message || 'Could not send code. Please try again.', 'err');
+    } finally {
+      this.disabled = false;
+      this.textContent = original;
+    }
+  };
+
+  $('back-to-request').onclick = function () {
+    $('step-verify').classList.add('hide');
+    $('step-request').classList.remove('hide');
+    hideMsg('msg-verify');
+  };
+
+  $('resend').onclick = async function () {
+    if (!pendingTarget) return;
+    hideMsg('msg-verify');
+    this.disabled = true;
+    try {
+      if (pendingTarget.email) await window.SP_AUTH_API.requestEmailOtp(pendingTarget.email);
+      else                     await window.SP_AUTH_API.requestPhoneOtp(pendingTarget.phone);
+      showMsg('msg-verify', 'New code sent.', 'ok');
+    } catch (e) {
+      showMsg('msg-verify', e.message || 'Could not resend.', 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  $('verify').onclick = async function () {
+    hideMsg('msg-verify');
+    this.disabled = true;
+    const original = this.textContent;
+    this.textContent = 'Verifying…';
+    try {
+      const code = $('code').value;
+      if (pendingTarget.email)      await window.SP_AUTH_API.verifyEmailOtp(pendingTarget.email, code);
+      else if (pendingTarget.phone) await window.SP_AUTH_API.verifyPhoneOtp(pendingTarget.phone, code);
+      location.replace(returnTo);
+    } catch (e) {
+      showMsg('msg-verify', e.message || 'Incorrect code. Please try again.', 'err');
+      this.disabled = false;
+      this.textContent = original;
+    }
+  };
+
+  // Submit on Enter
+  $('email').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('send-code').click(); });
+  $('phone').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('send-code').click(); });
+  $('code').addEventListener('keydown',  (e) => { if (e.key === 'Enter') $('verify').click(); });
+})();
+</script>
+</body>
+</html>

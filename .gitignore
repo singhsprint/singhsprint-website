@@ -16,3 +16,5 @@ Thumbs.db
 # Source images for industries pages — processed copies live in /images/industries/.
 # Keep the originals on disk for re-processing but don't bloat the repo with 24MB of PNGs.
 ForBusinessesTab/
+site-env.txt
+settings.html.bak

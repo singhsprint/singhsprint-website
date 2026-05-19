@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programs · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1040px;margin:0 auto;padding:60px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
+    .biz-strip{background:#1a1a1a;color:#e8ff3c;padding:10px 16px;border-radius:12px;margin-bottom:16px;font-size:.86rem;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .biz-strip .badge{background:#e8ff3c;color:#1a1a1a;padding:2px 8px;border-radius:50px;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;margin-right:8px}
+    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .card h2{font-size:1.05rem;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .card .sub{color:#666;font-size:.88rem;margin-bottom:14px}
+    label{display:block;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px;margin-top:10px}
+    input[type=text],input[type=number],input[type=email],input[type=datetime-local],select,textarea{width:100%;padding:11px 13px;border:1px solid #e0ddd1;border-radius:10px;font-family:inherit;font-size:.95rem;color:#1a1a1a;background:#fff;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#1a1a1a}
+    .btn{padding:9px 14px;border-radius:10px;font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,background .15s}
+    .btn--primary{background:#1a1a1a;color:#fff}
+    .btn--ghost{background:#f4f2eb;color:#1a1a1a}
+    .btn--danger{background:transparent;color:#a01a1a;border:1px solid #f4c2c2}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .programs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:14px}
+    .program-card{background:#fff;border:1px solid #e9e7df;border-radius:14px;padding:18px;cursor:pointer;transition:border-color .15s,transform .12s}
+    .program-card:hover{border-color:#1a1a1a;transform:translateY(-1px)}
+    .program-card.is-active{border:2px solid #1a1a1a;background:#fafaf7}
+    .program-card__title{font-weight:700;margin-bottom:4px}
+    .program-card__sub{color:#888;font-size:.82rem;margin-bottom:10px}
+    .program-card__stats{display:flex;gap:14px;font-size:.78rem;color:#666}
+    .program-card__stats strong{color:#1a1a1a;font-weight:700}
+    .empty{text-align:center;color:#888;padding:18px;font-size:.88rem;background:#fafaf7;border:1px dashed #d8d5c7;border-radius:12px}
+    .loading{color:#999;font-size:.88rem;padding:10px 0}
+    table{width:100%;border-collapse:collapse;margin-top:6px}
+    th,td{text-align:left;padding:10px 6px;font-size:.86rem;border-top:1px solid #f0eee5;vertical-align:middle}
+    th{color:#888;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-top:none}
+    td.amount{text-align:right;font-variant-numeric:tabular-nums}
+    .pill{display:inline-block;padding:3px 9px;border-radius:50px;background:#f4f2eb;color:#1a1a1a;font-size:.66rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .pill--low{background:#fdecec;color:#a01a1a}
+    .pill--ok{background:#eef7e9;color:#22592c}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#f4f2eb;border-radius:50px;font-size:.78rem;font-weight:600;margin:3px 4px 3px 0}
+    .chip button{background:none;border:none;cursor:pointer;color:#666;font-size:1rem;padding:0;line-height:1}
+    .chip button:hover{color:#a01a1a}
+    .msg{margin-top:12px;padding:11px 13px;border-radius:10px;font-size:.84rem}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+    .hide{display:none !important}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .row-2col{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row-2col input{flex:1;min-width:180px}
+    .balance-bar{display:block;height:6px;border-radius:6px;background:#f0eee5;overflow:hidden;margin-top:6px}
+    .balance-bar__fill{display:block;height:100%;background:#1a1a1a;border-radius:6px}
+    .balance-bar__fill.is-low{background:#a01a1a}
+    /* Member-mode card uses lime accent to reinforce it's a program perk */
+    .member-program{background:#e8ff3c;border:2px solid #1a1a1a;border-radius:18px;padding:22px;margin-bottom:18px}
+    .member-program h2{font-family:'Playfair Display',Georgia,serif;font-size:1.4rem;font-weight:800;line-height:1.2;margin-bottom:6px}
+    .member-program .cohort{font-size:.78rem;color:#1a1a1a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px}
+    .member-program .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+    .member-program .stat{background:rgba(255,255,255,.6);border-radius:10px;padding:12px}
+    .member-program .stat__lbl{font-size:.7rem;color:#1a1a1a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+    .member-program .stat__val{font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:800}
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <div class="hero">
+    <h1 data-i18n="account.prog.h1">Programs</h1>
+    <p data-i18n="account.prog.sub">Institutional ordering — cohorts, catalog whitelists, spending allowances, reporting.</p>
+  </div>
+
+  <div id="biz-strip" class="biz-strip hide">
+    <span><span class="badge">Business</span><span id="biz-strip-name">Your organization</span></span>
+    <span style="font-size:.78rem;opacity:.85" id="biz-strip-sub"></span>
+  </div>
+
+  <!-- ============== MEMBER VIEW (read-only, shown to members) ============== -->
+  <div id="member-section" class="hide">
+    <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:12px">Your program</h2>
+    <div id="member-cards"></div>
+  </div>
+
+  <!-- ============== ADMIN VIEW ============== -->
+  <div id="admin-section" class="hide">
+    <!-- ---- Program picker ---- -->
+    <div class="card">
+      <h2>Programs in your organization
+        <button class="btn btn--primary" id="new-program-btn" type="button">+ New program</button>
+      </h2>
+      <div class="programs-grid" id="programs-grid"></div>
+      <div id="programs-empty" class="empty hide">No programs yet. Create one to start gating a catalog by cohort.</div>
+    </div>
+
+    <!-- ---- New / edit program form (toggled) ---- -->
+    <div class="card hide" id="form-card">
+      <h2 id="form-title">New program</h2>
+      <div class="form-row">
+        <div>
+          <label for="f-name">Name</label>
+          <input id="f-name" type="text" maxlength="200" placeholder="uOttawa Nursing 2026 intake">
+        </div>
+        <div>
+          <label for="f-cohort">Cohort label (shown in reports)</label>
+          <input id="f-cohort" type="text" maxlength="120" placeholder="Nursing 2026">
+        </div>
+        <div>
+          <label for="f-slug">Slug (URL-safe identifier)</label>
+          <input id="f-slug" type="text" maxlength="64" placeholder="uottawa-nursing-2026">
+        </div>
+        <div>
+          <label for="f-allowance">Default spending allowance (CAD)</label>
+          <input id="f-allowance" type="number" step="1" min="0" placeholder="150">
+        </div>
+        <div>
+          <label for="f-opens">Order window opens</label>
+          <input id="f-opens" type="datetime-local">
+        </div>
+        <div>
+          <label for="f-closes">Order window closes</label>
+          <input id="f-closes" type="datetime-local">
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn--primary" id="form-save" type="button">Save program</button>
+        <button class="btn btn--ghost"   id="form-cancel" type="button">Cancel</button>
+      </div>
+      <div id="form-msg" class="msg hide"></div>
+    </div>
+
+    <!-- ---- Selected program detail ---- -->
+    <div id="detail-section" class="hide">
+      <!-- Invite members -->
+      <div class="card">
+        <h2>Invite members
+          <span style="color:#888;font-size:.78rem;font-weight:500">explicit invitations only</span>
+        </h2>
+        <p class="sub">Invite people by email one at a time. Existing accounts are attached immediately; new sign-ups are attached the first time they sign in with this email. Nobody is added automatically based on email domain alone.</p>
+        <div class="row-2col" style="margin-top:10px">
+          <input id="invite-input" type="email" placeholder="student@uottawa.ca">
+          <button class="btn btn--primary" id="invite-send" type="button">Send invite</button>
+        </div>
+        <div id="invite-msg" class="msg hide"></div>
+
+        <div id="invites-table-wrap" class="hide" style="margin-top:18px">
+          <h3 style="font-size:.86rem;font-weight:700;margin-bottom:6px;color:#666;letter-spacing:.04em;text-transform:uppercase">Pending invites</h3>
+          <table id="invites-table">
+            <thead><tr><th>Email</th><th>Invited</th><th></th></tr></thead>
+            <tbody id="invites-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Optional domain guardrail -->
+      <div class="card">
+        <h2>Restrict invites by email domain
+          <span style="color:#888;font-size:.78rem;font-weight:500">optional safety net</span>
+        </h2>
+        <p class="sub">If you list one or more domains here, invites can only be issued to addresses matching one of them. Leave empty to allow invites to any email. Domains never auto-attach anyone — they only constrain who you can invite.</p>
+        <div id="domains-list"></div>
+        <div class="row-2col" style="margin-top:10px">
+          <input id="domain-input" type="text" placeholder="uottawa.ca">
+          <button class="btn btn--ghost" id="domain-add" type="button">Add domain</button>
+        </div>
+      </div>
+
+      <!-- Catalog whitelist -->
+      <div class="card">
+        <h2>Catalog whitelist
+          <span style="color:#888;font-size:.78rem;font-weight:500">products members may order</span>
+        </h2>
+        <p class="sub">Members see only the products you whitelist here on the catalog page. Leave empty for an open program (no gating).</p>
+        <div id="catalog-list"></div>
+        <div class="row-2col" style="margin-top:10px">
+          <input id="catalog-input" type="text" placeholder="Paste product UUID(s), comma-separated">
+          <button class="btn btn--primary" id="catalog-add" type="button">Add</button>
+        </div>
+        <p class="sub" style="margin-top:8px;font-size:.78rem">Find product UUIDs in the CRM catalog table or via /api/catalog. A picker UI is a follow-on.</p>
+      </div>
+
+      <!-- Members + reporting -->
+      <div class="card">
+        <h2>Members
+          <a class="btn btn--ghost" id="export-csv" href="#" target="_blank" rel="noopener">Export CSV</a>
+        </h2>
+        <p class="sub">Per-member allowance, spend to date, and remaining balance. Click a member to override their allowance.</p>
+        <div id="members-loading" class="loading">Loading…</div>
+        <table id="members-table" class="hide">
+          <thead>
+            <tr>
+              <th>Member</th><th>Cohort</th><th>Joined via</th>
+              <th class="amount">Allowance</th>
+              <th class="amount">Spent</th>
+              <th class="amount">Remaining</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="members-body"></tbody>
+        </table>
+        <div id="members-empty" class="empty hide">No members yet. Add a domain above or invite directly.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="no-access" class="card hide" style="text-align:center">
+    <h2 style="font-size:1.1rem">Programs are a business-tier feature</h2>
+    <p style="color:#666;margin-top:6px">Request business status from the <a href="/account/business.html" style="text-decoration:underline">business page</a> to set up institutional programs.</p>
+  </div>
+</main>
+
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const api = window.SP_AUTH_API;
+
+  function fmtMoney(cents) {
+    if (cents == null) return '—';
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
+      .format(cents / 100);
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch (_) { return iso; }
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function slugify(s) {
+    return String(s || '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64);
+  }
+  function showMsg(id, text, kind) {
+    const el = $(id); el.textContent = text; el.className = 'msg msg--' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function hideMsg(id) { const el = $(id); el.className = 'msg hide'; el.textContent = ''; }
+
+  let selectedProgramId = null;
+  let editingProgramId  = null;
+
+  (async function init() {
+    const session = await api.getSession();
+    if (!session) {
+      location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname));
+      return;
+    }
+    // Check member view first (works for any user with a program membership).
+    await loadMemberView();
+    // Then attempt admin view (succeeds only for business owners/admins).
+    await loadAdminView();
+  })();
+
+  async function loadMemberView() {
+    const r = await api.authedFetch('/api/account/my-program');
+    if (!r.ok) return;
+    const j = await r.json();
+    const programs = j.programs || [];
+    if (!programs.length) return;
+
+    $('member-section').classList.remove('hide');
+    const root = $('member-cards');
+    root.innerHTML = '';
+    programs.forEach((p) => {
+      const remaining = p.remainingCents;
+      const allowance = p.allowanceCents;
+      const pct = allowance && allowance > 0 ? Math.max(0, Math.min(100, (remaining / allowance) * 100)) : 100;
+      const card = document.createElement('div');
+      card.className = 'member-program';
+      card.innerHTML = `
+        <div class="cohort">${esc(p.cohortLabel || 'Program')}</div>
+        <h2>${esc(p.name)}</h2>
+        <div style="font-size:.88rem;color:#1a1a1a">${p.isOpen ? 'Order window is open.' : 'Order window is closed.'}
+          ${p.windowClosesAt ? ' Closes ' + esc(fmtDate(p.windowClosesAt)) + '.' : ''}</div>
+        <div class="stat-row">
+          ${allowance != null ? `
+            <div class="stat"><div class="stat__lbl">Allowance</div><div class="stat__val">${esc(fmtMoney(allowance))}</div></div>
+            <div class="stat"><div class="stat__lbl">Spent</div><div class="stat__val">${esc(fmtMoney(p.spentCents))}</div></div>
+            <div class="stat"><div class="stat__lbl">Remaining</div><div class="stat__val">${esc(fmtMoney(remaining))}</div></div>
+          ` : `
+            <div class="stat"><div class="stat__lbl">Allowance</div><div class="stat__val">Unlimited</div></div>
+          `}
+          <div class="stat"><div class="stat__lbl">Approved products</div><div class="stat__val">${p.catalogProductIds.length || 'All'}</div></div>
+        </div>
+        ${allowance != null ? `<div class="balance-bar" style="margin-top:14px"><span class="balance-bar__fill ${pct < 20 ? 'is-low' : ''}" style="width:${pct}%"></span></div>` : ''}
+        <div style="margin-top:14px"><a class="btn btn--primary" href="/catalog?program=${esc(p.slug)}" style="background:#1a1a1a;color:#e8ff3c">Shop your catalog →</a></div>`;
+      root.appendChild(card);
+    });
+  }
+
+  async function loadAdminView() {
+    const r = await api.authedFetch('/api/account/programs');
+    if (r.status === 403) {
+      // Not business OR not org admin — show member-only view (already loaded above)
+      if ($('member-section').classList.contains('hide')) {
+        $('no-access').classList.remove('hide');
+      }
+      return;
+    }
+    if (!r.ok) return;
+    const j = await r.json();
+    $('admin-section').classList.remove('hide');
+    renderPrograms(j.programs || []);
+  }
+
+  function renderPrograms(programs) {
+    const grid = $('programs-grid');
+    grid.innerHTML = '';
+    if (!programs.length) {
+      $('programs-empty').classList.remove('hide');
+      $('detail-section').classList.add('hide');
+      return;
+    }
+    $('programs-empty').classList.add('hide');
+    programs.forEach((p) => {
+      const card = document.createElement('div');
+      card.className = 'program-card' + (p.id === selectedProgramId ? ' is-active' : '');
+      card.innerHTML = `
+        <div class="program-card__title">${esc(p.name)}</div>
+        <div class="program-card__sub">${esc(p.cohort_label || p.slug)}</div>
+        <div class="program-card__stats">
+          <div><strong>${p.memberCount}</strong> members</div>
+          <div><strong>${esc(fmtMoney(p.totalSpentCents))}</strong> spent</div>
+        </div>`;
+      card.onclick = () => selectProgram(p.id);
+      grid.appendChild(card);
+    });
+  }
+
+  // ---- new program form ----
+  $('new-program-btn').onclick = () => {
+    editingProgramId = null;
+    $('form-title').textContent = 'New program';
+    ['f-name','f-cohort','f-slug','f-allowance','f-opens','f-closes'].forEach((id) => $(id).value = '');
+    $('form-card').classList.remove('hide');
+    hideMsg('form-msg');
+  };
+  $('form-cancel').onclick = () => $('form-card').classList.add('hide');
+  $('f-name').addEventListener('input', () => {
+    if (!editingProgramId && !$('f-slug').value.trim()) {
+      $('f-slug').placeholder = slugify($('f-name').value) || 'uottawa-nursing-2026';
+    }
+  });
+  $('form-save').onclick = async function () {
+    hideMsg('form-msg');
+    const body = {
+      name:                            $('f-name').value.trim(),
+      cohortLabel:                     $('f-cohort').value.trim() || undefined,
+      slug:                            $('f-slug').value.trim() || slugify($('f-name').value),
+      defaultSpendingAllowanceCents:   $('f-allowance').value ? Math.round(Number($('f-allowance').value) * 100) : null,
+      windowOpensAt:                   $('f-opens').value  ? new Date($('f-opens').value).toISOString()  : null,
+      windowClosesAt:                  $('f-closes').value ? new Date($('f-closes').value).toISOString() : null
+    };
+    if (!body.name) { showMsg('form-msg', 'Name is required.', 'err'); return; }
+    this.disabled = true;
+    try {
+      const method = editingProgramId ? 'PUT' : 'POST';
+      const payload = editingProgramId ? { id: editingProgramId, ...body } : body;
+      const r = await api.authedFetch('/api/account/programs', {
+        method, body: JSON.stringify(payload)
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Save failed.');
+      showMsg('form-msg', 'Saved.', 'ok');
+      $('form-card').classList.add('hide');
+      await loadAdminView();
+      selectProgram(j.program.id);
+    } catch (e) {
+      showMsg('form-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  // ---- program detail ----
+  async function selectProgram(id) {
+    selectedProgramId = id;
+    $('detail-section').classList.remove('hide');
+    await loadAdminView(); // re-render grid with selection highlight
+    const r = await api.authedFetch('/api/account/programs?id=' + encodeURIComponent(id));
+    if (!r.ok) return;
+    const j = await r.json();
+    const p = j.program;
+    renderDomains(p.emailDomains || []);
+    renderCatalog(p.catalogProductIds || []);
+    renderMembers(p.members || []);
+    renderInvites(p.pendingInvites || []);
+    $('export-csv').href = '/api/account/programs?id=' + encodeURIComponent(id) + '&export=csv';
+  }
+
+  // ---- invites ----
+  function renderInvites(invites) {
+    const wrap = $('invites-table-wrap');
+    const body = $('invites-body');
+    if (!invites.length) { wrap.classList.add('hide'); body.innerHTML = ''; return; }
+    wrap.classList.remove('hide');
+    body.innerHTML = '';
+    invites.forEach((inv) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${esc(inv.email)}</strong></td>
+        <td>${esc(fmtDate(inv.invitedAt))}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn btn--danger" data-revoke="${esc(inv.id)}">Revoke</button>
+        </td>`;
+      body.appendChild(tr);
+    });
+    body.querySelectorAll('button[data-revoke]').forEach((b) => {
+      b.onclick = async () => {
+        if (!confirm('Revoke this invite?')) return;
+        await api.authedFetch('/api/account/programs?action=revoke-invite', {
+          method: 'POST',
+          body: JSON.stringify({ id: selectedProgramId, inviteId: b.dataset.revoke })
+        });
+        selectProgram(selectedProgramId);
+      };
+    });
+  }
+
+  $('invite-send').onclick = async function () {
+    hideMsg('invite-msg');
+    const email = $('invite-input').value.trim().toLowerCase();
+    if (!email) { showMsg('invite-msg', 'Enter an email.', 'err'); return; }
+    this.disabled = true;
+    try {
+      const r = await api.authedFetch('/api/account/programs?action=invite-member', {
+        method: 'POST',
+        body: JSON.stringify({ id: selectedProgramId, email })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Invite failed.');
+      showMsg('invite-msg',
+        j.appliedImmediately ? 'Existing user added to the program.' : 'Invite sent.',
+        'ok');
+      $('invite-input').value = '';
+      selectProgram(selectedProgramId);
+    } catch (e) {
+      showMsg('invite-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  // ---- domains ----
+  function renderDomains(list) {
+    const root = $('domains-list');
+    if (!list.length) { root.innerHTML = '<div class="empty">No domain restrictions — invites can be issued to any email.</div>'; return; }
+    root.innerHTML = list.map((d) =>
+      `<span class="chip">@${esc(d)} <button data-rm-domain="${esc(d)}" aria-label="Remove">×</button></span>`
+    ).join('');
+    root.querySelectorAll('button[data-rm-domain]').forEach((b) => {
+      b.onclick = async () => {
+        await api.authedFetch('/api/account/programs?action=remove-domain', {
+          method: 'POST', body: JSON.stringify({ id: selectedProgramId, domain: b.dataset.rmDomain })
+        });
+        selectProgram(selectedProgramId);
+      };
+    });
+  }
+  $('domain-add').onclick = async function () {
+    const domain = $('domain-input').value.trim();
+    if (!domain) return;
+    const r = await api.authedFetch('/api/account/programs?action=add-domain', {
+      method: 'POST', body: JSON.stringify({ id: selectedProgramId, domain })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); alert(j.error || 'Could not add'); return; }
+    $('domain-input').value = '';
+    selectProgram(selectedProgramId);
+  };
+
+  // ---- catalog ----
+  function renderCatalog(ids) {
+    const root = $('catalog-list');
+    if (!ids.length) { root.innerHTML = '<div class="empty">Open program — members see the full catalog.</div>'; return; }
+    root.innerHTML = ids.map((id) =>
+      `<span class="chip"><span style="font-family:monospace;font-size:.74rem">${esc(id.slice(0,8))}…</span> <button data-rm-prod="${esc(id)}" aria-label="Remove">×</button></span>`
+    ).join('');
+    root.querySelectorAll('button[data-rm-prod]').forEach((b) => {
+      b.onclick = async () => {
+        await api.authedFetch('/api/account/programs?action=remove-catalog', {
+          method: 'POST', body: JSON.stringify({ id: selectedProgramId, productIds: [b.dataset.rmProd] })
+        });
+        selectProgram(selectedProgramId);
+      };
+    });
+  }
+  $('catalog-add').onclick = async function () {
+    const raw = $('catalog-input').value.trim();
+    if (!raw) return;
+    const ids = raw.split(/[,\s]+/).filter(Boolean);
+    const r = await api.authedFetch('/api/account/programs?action=add-catalog', {
+      method: 'POST', body: JSON.stringify({ id: selectedProgramId, productIds: ids })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); alert(j.error || 'Could not add'); return; }
+    $('catalog-input').value = '';
+    selectProgram(selectedProgramId);
+  };
+
+  // ---- members ----
+  function renderMembers(members) {
+    $('members-loading').classList.add('hide');
+    if (!members.length) { $('members-empty').classList.remove('hide'); $('members-table').classList.add('hide'); return; }
+    $('members-empty').classList.add('hide');
+    $('members-table').classList.remove('hide');
+    const body = $('members-body'); body.innerHTML = '';
+    members.forEach((m) => {
+      const rem = m.spendingAllowanceCents != null
+        ? Math.max(0, m.spendingAllowanceCents - m.spentCents) : null;
+      const low = m.spendingAllowanceCents && rem != null && rem < m.spendingAllowanceCents * 0.1;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${esc(m.email || m.userId.slice(0,8))}</strong>${m.displayName ? '<br><span style="color:#888;font-size:.78rem">' + esc(m.displayName) + '</span>' : ''}</td>
+        <td>${esc(m.cohortLabel || '—')}</td>
+        <td><span class="pill">${esc(m.joinedVia || 'manual')}</span></td>
+        <td class="amount">${esc(fmtMoney(m.spendingAllowanceCents))}</td>
+        <td class="amount">${esc(fmtMoney(m.spentCents))}</td>
+        <td class="amount">${esc(fmtMoney(rem))} ${low ? '<span class="pill pill--low" style="margin-left:6px">Low</span>' : ''}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn btn--ghost" data-edit="${esc(m.userId)}">Allowance</button>
+          <button class="btn btn--danger" data-rm-member="${esc(m.userId)}">Remove</button>
+        </td>`;
+      body.appendChild(tr);
+    });
+    body.querySelectorAll('button[data-edit]').forEach((b) => {
+      b.onclick = async () => {
+        const cur = prompt('Spending allowance for this member, in CAD dollars (blank to clear override):', '');
+        if (cur === null) return;
+        const cents = cur === '' ? null : Math.round(Number(cur) * 100);
+        await api.authedFetch('/api/account/programs?action=set-member-allowance', {
+          method: 'POST',
+          body: JSON.stringify({ id: selectedProgramId, userId: b.dataset.edit, spendingAllowanceCents: cents })
+        });
+        selectProgram(selectedProgramId);
+      };
+    });
+    body.querySelectorAll('button[data-rm-member]').forEach((b) => {
+      b.onclick = async () => {
+        if (!confirm('Remove this member from the program?')) return;
+        await api.authedFetch('/api/account/programs?action=remove-member', {
+          method: 'POST', body: JSON.stringify({ id: selectedProgramId, userId: b.dataset.rmMember })
+        });
+        selectProgram(selectedProgramId);
+      };
+    });
+  }
+})();
+</script>
+</body>
+</html>

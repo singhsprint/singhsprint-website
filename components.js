@@ -119,6 +119,17 @@ function loadNav() {
       '.sp-cart svg{width:16px;height:16px}',
       '.sp-cart-count{position:absolute;top:-5px;right:-5px;background:#e8ff3c;color:#1a1a1a;font-size:.65rem;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 4px;font-weight:700;border:1.5px solid #1a1a1a}',
       '.sp-cart-count.is-on{display:flex}',
+      // Account chip: same round-button style as .sp-cart, sits between
+      // cart and phone in row 1. Links to /account/ which redirects to
+      // /account/signin.html if no session — no per-page JS needed.
+      // For business customers it morphs into a pill ("Account · Business"),
+      // tinted with the lime accent — see updateAccountChip() below.
+      '.sp-account{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #e6e3d8;border-radius:50%;color:#1a1a1a;text-decoration:none;background:#fff;transition:border-color .15s,background .15s,width .15s}',
+      '.sp-account:hover{border-color:#1a1a1a}',
+      '.sp-account svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
+      '.sp-account.is-biz{width:auto;padding:0 12px 0 8px;border-radius:50px;background:#e8ff3c;border-color:#1a1a1a;gap:6px}',
+      '.sp-account.is-biz .sp-account-label{display:inline-flex;align-items:center;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#1a1a1a}',
+      '.sp-account .sp-account-label{display:none}',
       '.sp-phone{font-size:.88rem;color:#1a1a1a;font-weight:600;text-decoration:none;padding:6px 8px;border-radius:50px;transition:background .15s;display:inline-flex;align-items:center;gap:6px;flex-shrink:0}',
       '.sp-phone:hover{background:#f4f2eb}',
       '.sp-phone svg{display:none;width:18px;height:18px}',
@@ -409,6 +420,10 @@ function loadNav() {
     + '    </div>'
     + '    <a href="' + BASE + '/quote#cart" class="sp-cart" aria-label="' + t('Cart', 'Panier') + '">' + ICON.bag
     +        '<span class="sp-cart-count" id="sp-cart-count">0</span></a>'
+    + '    <a href="/account/" class="sp-account" id="sp-account-chip" aria-label="' + t('My account', 'Mon compte') + '" title="' + t('My account', 'Mon compte') + '">'
+    + '      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>'
+    + '      <span class="sp-account-label" id="sp-account-label">' + t('Business', 'Entreprise') + '</span>'
+    + '    </a>'
     + '    <a href="tel:5149151539" class="sp-phone" aria-label="Call us at 514-915-1539">' + ICON.phone + '<span>514-915-1539</span></a>'
     + '    <button id="langToggle" onclick="SP_LANG && SP_LANG.toggleLang && SP_LANG.toggleLang()">' + (IS_FR ? 'EN' : 'FR') + '</button>'
     + '    <a href="' + BASE + '/quote" class="sp-cta" data-i18n="nav.quote">' + t('Get a Quote', 'Soumission') + '</a>'
@@ -629,6 +644,29 @@ function loadNav() {
     } else {
       setTimeout(run, 2500);
     }
+  })();
+
+  // ----- Account chip state -----
+  // Reads /account/auth.js's cache at localStorage['sp.account.profile']
+  // to decide whether to morph the round icon into the lime "Business"
+  // pill. Personal accounts and anonymous visitors see the default round
+  // icon. The cache is written by /account/auth.js on every session
+  // refresh, so this swap is instant on subsequent page loads.
+  (function updateAccountChip() {
+    var chip = document.getElementById('sp-account-chip');
+    if (!chip) return;
+    try {
+      var raw = localStorage.getItem('sp.account.profile');
+      if (!raw) return;
+      var prof = JSON.parse(raw);
+      if (prof && prof.accountType === 'business') {
+        chip.classList.add('is-biz');
+        chip.setAttribute('aria-label',
+          (IS_FR ? 'Compte entreprise' : 'Business account')
+          + (prof.orgName ? ' — ' + prof.orgName : ''));
+        chip.setAttribute('title', chip.getAttribute('aria-label'));
+      }
+    } catch (e) { /* cache corrupt — ignore */ }
   })();
 }
 

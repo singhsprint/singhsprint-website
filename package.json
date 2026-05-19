@@ -1,0 +1,13 @@
+{
+  "name": "singhsprint-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static marketing site + Vercel serverless API for singhsprint.com. The /api folder hosts the Meta CAPI proxy and the customer-account endpoints.",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "stripe": "^16.0.0"
+  }
+}

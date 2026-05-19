@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quotes &amp; orders · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:900px;margin:0 auto;padding:60px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
+    section{margin-bottom:30px}
+    section h2{font-size:1.05rem;font-weight:700;margin-bottom:12px}
+    .lead{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:18px 20px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .lead__main{min-width:0;flex:1}
+    .lead__kind{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:4px}
+    .lead__title{font-weight:700;font-size:.98rem}
+    .lead__sub{color:#888;font-size:.82rem;margin-top:4px}
+    .pill{display:inline-flex;align-items:center;padding:4px 10px;border-radius:50px;font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+    .pill--new{background:#e8ff3c;color:#1a1a1a}
+    .pill--in_review,.pill--review{background:#fde68a;color:#5b4500}
+    .pill--contacted{background:#cdeefd;color:#0c4a6e}
+    .pill--converted{background:#c7d2fe;color:#312e81}
+    .pill--closed{background:#e5e7eb;color:#374151}
+    .actions{display:flex;gap:8px}
+    .btn{padding:9px 14px;border-radius:10px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,background .15s}
+    .btn--primary{background:#1a1a1a;color:#fff}
+    .btn--primary:hover{opacity:.92}
+    .btn--ghost{background:#f4f2eb;color:#1a1a1a}
+    .btn--ghost:hover{background:#ebe9e0}
+    .empty{text-align:center;color:#888;padding:28px 18px;border:1px dashed #d8d5c7;border-radius:14px;background:#fafaf7;font-size:.9rem}
+    .empty a{color:#1a1a1a;font-weight:600;text-decoration:underline}
+    .loading{color:#999;font-size:.86rem}
+    .reorder-msg{margin-top:8px;font-size:.84rem}
+    .reorder-msg--ok{color:#22592c}
+    .reorder-msg--err{color:#a01a1a}
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <div class="hero">
+    <h1 data-i18n="account.orders.h1">Quotes &amp; orders</h1>
+    <p data-i18n="account.orders.sub">Track active requests and reorder anything you've printed with us before.</p>
+  </div>
+
+  <section>
+    <h2 data-i18n="account.orders.active">Active</h2>
+    <div id="active-list" class="loading">Loading…</div>
+  </section>
+
+  <section id="past-section">
+    <h2 id="past" data-i18n="account.orders.past">Past orders</h2>
+    <div id="past-list" class="loading">Loading…</div>
+  </section>
+</main>
+
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const api = window.SP_AUTH_API;
+
+  // Status values come straight from the CRM's orders table. We label the
+  // common ones; unknown values fall through verbatim. Verify the real
+  // set post-deploy with: select distinct status from orders;
+  const STATUS_LABEL = {
+    new: 'New', in_progress: 'In progress', quoted: 'Quoted',
+    pending_approval: 'Awaiting approval', approved: 'Approved',
+    in_production: 'In production', shipped: 'Shipped',
+    completed: 'Completed', cancelled: 'Cancelled'
+  };
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (_) { return iso; }
+  }
+  // orders.total is numeric DOLLARS in the CRM, not cents.
+  function fmtMoney(dollars) {
+    if (dollars == null) return '—';
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
+      .format(Number(dollars));
+  }
+  function itemCount(items) {
+    if (!items) return null;
+    try {
+      const arr = Array.isArray(items) ? items : (typeof items === 'string' ? JSON.parse(items) : items);
+      if (Array.isArray(arr)) {
+        const total = arr.reduce((acc, it) => acc + Number(it.qty || it.quantity || 1), 0);
+        return total > 0 ? `${total} item${total === 1 ? '' : 's'}` : null;
+      }
+    } catch (_) {}
+    return null;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  (async function init() {
+    const session = await api.getSession();
+    if (!session) {
+      location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname));
+      return;
+    }
+    await refresh();
+  })();
+
+  async function refresh() {
+    const r = await api.authedFetch('/api/account/orders');
+    if (!r.ok) {
+      $('active-list').textContent = 'Could not load orders.';
+      $('past-list').textContent   = '';
+      return;
+    }
+    const j = await r.json();
+    renderList('active-list', j.active || [], 'active');
+    renderList('past-list',   j.past   || [], 'past');
+  }
+
+  function renderList(rootId, rows, bucket) {
+    const root = $(rootId);
+    root.innerHTML = '';
+    root.className = '';
+    if (!rows.length) {
+      root.innerHTML = bucket === 'active'
+        ? '<div class="empty">No active quotes. <a href="/quote">Start a new one →</a></div>'
+        : '<div class="empty">No past orders yet — they\'ll show up here after your first one ships.</div>';
+      return;
+    }
+    rows.forEach((order) => {
+      const el = document.createElement('div');
+      el.className = 'lead';
+      const status = STATUS_LABEL[order.status] || order.status || '—';
+      const trackUrl = order.order_number ? '/order/' + encodeURIComponent(order.order_number) : null;
+      const items = itemCount(order.items);
+      el.innerHTML = `
+        <div class="lead__main">
+          <div class="lead__kind">Order ${esc(order.order_number || '#' + (order.id || '').slice(0,8))}</div>
+          <div class="lead__title">${esc(fmtMoney(order.total))}${items ? ' · ' + esc(items) : ''}</div>
+          <div class="lead__sub">${esc(fmtDate(order.created_at))}${order.deadline ? ' · deadline ' + esc(fmtDate(order.deadline)) : ''}</div>
+          <div class="reorder-msg" data-order-msg="${esc(order.id)}"></div>
+        </div>
+        <span class="pill pill--${esc(order.status || 'unknown')}">${esc(status)}</span>
+        <div class="actions">
+          ${trackUrl ? `<a class="btn btn--ghost" href="${esc(trackUrl)}">Track</a>` : ''}
+          ${bucket === 'past' ? `<button class="btn btn--primary" data-reorder="${esc(order.id)}">Reorder</button>` : ''}
+        </div>`;
+      root.appendChild(el);
+    });
+
+    // Wire up reorder buttons.
+    root.querySelectorAll('button[data-reorder]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.reorder;
+        const msgEl = root.querySelector(`[data-order-msg="${CSS.escape(id)}"]`);
+        btn.disabled = true;
+        const original = btn.textContent;
+        btn.textContent = 'Reordering…';
+        msgEl.className = 'reorder-msg';
+        msgEl.textContent = '';
+        try {
+          const r = await api.authedFetch('/api/account/reorder', {
+            method: 'POST', body: JSON.stringify({ sourceOrderId: id })
+          });
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok) throw new Error(j.error || 'Could not reorder.');
+          msgEl.className = 'reorder-msg reorder-msg--ok';
+          msgEl.innerHTML = 'New order created. <a href="' + esc(j.order.trackingUrl) + '">Track it →</a>';
+          await refresh();
+        } catch (e) {
+          msgEl.className = 'reorder-msg reorder-msg--err';
+          msgEl.textContent = e.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = original;
+        }
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

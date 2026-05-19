@@ -1711,6 +1711,9 @@
     card.className = 'card card--clickable';
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
+    // Tagged so the program-catalog filter (in /account/program-catalog-filter.js)
+    // can hide / show cards based on the signed-in user's program whitelist.
+    if (p.product_id) card.setAttribute('data-product-id', p.product_id);
     if (p.in_stock === false) card.classList.add('card--oos');
 
     // Track the selected color INDEX per card.
@@ -2437,6 +2440,7 @@
   </script>
 
   <script src="lang.js" defer></script>
+  <script src="/account/program-catalog-filter.js" defer></script>
   <script src="ai-translate.js" defer></script>
 </body>
 </html>

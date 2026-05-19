@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business account · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:900px;margin:0 auto;padding:60px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
+
+    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .card h2{font-size:1.05rem;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .card p.sub{color:#666;font-size:.88rem;margin-bottom:14px}
+
+    label{display:block;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px;margin-top:10px}
+    input[type=text],input[type=email],select,textarea{width:100%;padding:11px 13px;border:1px solid #e0ddd1;border-radius:10px;font-family:inherit;font-size:.95rem;color:#1a1a1a;background:#fff;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#1a1a1a}
+    textarea{min-height:80px;resize:vertical;line-height:1.5}
+
+    .btn{padding:10px 16px;border-radius:10px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:opacity .15s,background .15s;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+    .btn--primary{background:#1a1a1a;color:#fff}
+    .btn--primary:hover{opacity:.92}
+    .btn--ghost{background:#f4f2eb;color:#1a1a1a}
+    .btn--ghost:hover{background:#ebe9e0}
+    .btn--danger{background:transparent;color:#a01a1a;border:1px solid #f4c2c2}
+    .btn--danger:hover{background:#fdecec}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    .msg{margin-top:12px;padding:11px 13px;border-radius:10px;font-size:.84rem}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+
+    .banner{padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.92rem}
+    .banner--pending{background:#fde68a;color:#5b4500;border:1px solid #f0c963}
+    .banner--ok{background:#cdeefd;color:#0c4a6e;border:1px solid #8ed5f0}
+    .banner--biz{background:#1a1a1a;color:#e8ff3c;border:1px solid #1a1a1a}
+
+    .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid #f0eee5;font-size:.92rem;gap:10px}
+    .row:first-of-type{border-top:none}
+    .pill{display:inline-block;padding:3px 9px;border-radius:50px;background:#f4f2eb;color:#1a1a1a;font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .pill--review{background:#fde68a;color:#5b4500}
+    .pill--done{background:#cdeefd;color:#0c4a6e}
+    .pill--closed{background:#e5e7eb;color:#374151}
+    .pill--unknown{background:#f4f2eb;color:#666}
+
+    table{width:100%;border-collapse:collapse;margin-top:6px}
+    th,td{text-align:left;padding:10px 6px;font-size:.88rem;border-top:1px solid #f0eee5}
+    th{color:#888;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-top:none}
+
+    .grid-assets{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:10px}
+    .asset{background:#fafaf7;border:1px solid #e9e7df;border-radius:12px;padding:12px;font-size:.82rem;display:flex;flex-direction:column;gap:6px;word-break:break-word}
+    .asset img{display:block;width:100%;height:120px;object-fit:contain;background:#fff;border-radius:8px;border:1px solid #f0eee5}
+    .asset .name{font-weight:700;font-size:.84rem}
+    .asset .meta{color:#888;font-size:.74rem}
+    .asset__actions{display:flex;gap:6px;margin-top:auto}
+    .upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .upload-row input[type=file]{font-size:.86rem}
+
+    .empty{text-align:center;color:#888;padding:18px;font-size:.88rem;background:#fafaf7;border:1px dashed #d8d5c7;border-radius:12px}
+    .hide{display:none !important}
+    .loading{color:#999;font-size:.88rem;padding:8px 0}
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <div class="hero">
+    <h1 data-i18n="account.biz.h1">Business account</h1>
+    <p data-i18n="account.biz.sub">Net-30 invoicing, multi-user teams, an artwork library, and volume pricing for repeat buyers.</p>
+  </div>
+
+  <div id="biz-strip" class="hide" style="background:#1a1a1a;color:#e8ff3c;padding:10px 16px;border-radius:12px;margin-bottom:16px;font-size:.86rem;font-weight:600;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <span><span style="background:#e8ff3c;color:#1a1a1a;padding:2px 8px;border-radius:50px;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;margin-right:8px">Business</span><span id="biz-strip-name">Your organization</span></span>
+    <span id="biz-strip-terms" style="font-size:.78rem;opacity:.85">Prepaid · standard pricing</span>
+  </div>
+
+  <div id="state-banner"></div>
+
+  <!-- ============== PERSONAL ACCOUNT: request flow ============== -->
+  <div id="section-request" class="card hide">
+    <h2>Request business status</h2>
+    <p class="sub">Tell us about your company and we'll review within 1–2 business days. Existing customers: your company name pre-fills below.</p>
+
+    <label for="req-company">Company name</label>
+    <input id="req-company" type="text" maxlength="200" placeholder="Acme Apparel Co.">
+
+    <label for="req-volume">Expected monthly volume</label>
+    <select id="req-volume">
+      <option value="">— select —</option>
+      <option value="under_1k">Under $1,000</option>
+      <option value="1k_5k">$1,000 – $5,000</option>
+      <option value="5k_25k">$5,000 – $25,000</option>
+      <option value="25k_plus">$25,000+</option>
+    </select>
+
+    <label for="req-notes">Notes (optional)</label>
+    <textarea id="req-notes" placeholder="Anything we should know — net-30 terms needed, multiple shipping locations, branded sub-brands, etc."></textarea>
+
+    <div style="margin-top:14px">
+      <button id="req-submit" class="btn btn--primary" type="button">Submit request</button>
+    </div>
+    <div id="req-msg" class="msg hide"></div>
+  </div>
+
+  <!-- ============== BUSINESS ACCOUNT: tools ============== -->
+  <div id="section-biz" class="hide">
+    <!-- ---- Team ---- -->
+    <div class="card">
+      <h2>Team
+        <span id="org-name" class="pill"></span>
+      </h2>
+      <p class="sub">Add coworkers so they can place quotes, see order history, and pull from the shared artwork library.</p>
+      <div id="team-loading" class="loading">Loading…</div>
+      <table id="team-table" class="hide">
+        <thead><tr><th>Member</th><th>Role</th><th></th></tr></thead>
+        <tbody id="team-body"></tbody>
+      </table>
+
+      <div style="margin-top:16px">
+        <label for="invite-email">Invite by email</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <input id="invite-email" type="email" placeholder="teammate@acme.com" style="flex:1;min-width:200px">
+          <select id="invite-role" style="max-width:140px">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button id="invite-btn" class="btn btn--primary" type="button">Send invite</button>
+        </div>
+        <div id="invite-msg" class="msg hide"></div>
+      </div>
+    </div>
+
+    <!-- ---- Artwork ---- -->
+    <div class="card">
+      <h2>Artwork library</h2>
+      <p class="sub">Upload logos and designs once, reuse across orders. Visible to your whole team.</p>
+
+      <div class="upload-row">
+        <input id="upload-file" type="file" accept="image/*,application/pdf,application/postscript,.ai,.eps,.svg">
+        <input id="upload-label" type="text" placeholder="Label (optional)" style="max-width:240px">
+        <button id="upload-btn" class="btn btn--primary" type="button">Upload</button>
+      </div>
+      <div id="upload-msg" class="msg hide"></div>
+
+      <div id="assets-loading" class="loading" style="margin-top:12px">Loading…</div>
+      <div id="assets-grid" class="grid-assets hide"></div>
+      <div id="assets-empty" class="empty hide" style="margin-top:12px">No artwork uploaded yet.</div>
+    </div>
+
+    <!-- ---- Invoices (Stripe-hosted) ---- -->
+    <div class="card">
+      <h2>Invoices
+        <a id="inv-portal-link" href="#" class="btn btn--ghost hide" style="font-size:.78rem;font-weight:600;text-decoration:none">Manage in Stripe →</a>
+      </h2>
+      <p class="sub">Invoices are issued and tracked in Stripe. Pay online with one click, or download the PDF for your records.</p>
+      <div id="inv-loading" class="loading">Loading…</div>
+      <table id="inv-table" class="hide">
+        <thead><tr><th>Invoice</th><th>Date</th><th>Period</th><th style="text-align:right">Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody id="inv-body"></tbody>
+      </table>
+      <div id="inv-empty" class="empty hide">No invoices yet. Your first one will appear here after we issue it.</div>
+    </div>
+
+    <!-- ---- Payment terms & pricing tier ---- -->
+    <div class="card">
+      <h2>Payment terms &amp; pricing</h2>
+      <div class="row"><div>Account type</div><div><strong>Business</strong></div></div>
+      <div class="row"><div>Default payment terms</div><div id="biz-terms">Prepaid</div></div>
+      <div class="row"><div>Net-30 invoicing</div><div id="biz-net30">Not approved</div></div>
+      <div class="row"><div>Volume pricing tier</div><div id="biz-tier">Standard</div></div>
+      <p class="sub" style="margin-top:14px">Need different terms or higher volume pricing? <a href="mailto:sales@singhsprint.com" style="text-decoration:underline">Email sales</a> and we'll review.</p>
+    </div>
+  </div>
+</main>
+
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const api = window.SP_AUTH_API;
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch (_) { return iso; }
+  }
+  function fmtBytes(n) {
+    if (n == null) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return (n/1024).toFixed(0) + ' KB';
+    return (n/(1024*1024)).toFixed(1) + ' MB';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function showMsg(id, text, kind) {
+    const el = $(id); el.textContent = text; el.className = 'msg msg--' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function hideMsg(id) { const el = $(id); el.className = 'msg hide'; el.textContent = ''; }
+
+  let bizState = null;
+
+  (async function init() {
+    const session = await api.getSession();
+    if (!session) {
+      location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname));
+      return;
+    }
+    await loadBizState();
+  })();
+
+  async function loadBizState() {
+    const r = await api.authedFetch('/api/account/business-request');
+    if (!r.ok) {
+      $('state-banner').innerHTML = '<div class="banner banner--pending">Could not load business status.</div>';
+      return;
+    }
+    bizState = await r.json();
+    renderState();
+  }
+
+  function renderState() {
+    const isBiz   = bizState.accountType === 'business';
+    const pending = (bizState.requests || []).some((r) => r.status === 'pending');
+    const rejected= !isBiz && !pending && (bizState.requests || []).some((r) => r.status === 'rejected');
+    const hasRfp  = (bizState.recentRfpLeads || []).length > 0;
+
+    // Banner
+    if (isBiz) {
+      $('state-banner').innerHTML = '<div class="banner banner--biz">Business account — unlocked features below.</div>';
+    } else if (pending) {
+      $('state-banner').innerHTML = '<div class="banner banner--pending">Your business request is under review. We\'ll email you when there\'s a decision.</div>';
+    } else if (rejected) {
+      $('state-banner').innerHTML = '<div class="banner banner--pending">A previous request wasn\'t approved. You can submit a new one below.</div>';
+    } else {
+      $('state-banner').innerHTML = '';
+    }
+
+    // Sections
+    $('section-biz').classList.toggle('hide', !isBiz);
+    $('section-request').classList.toggle('hide', isBiz || pending);
+
+    if (isBiz) {
+      loadTeam();
+      loadAssets();
+      loadInvoices();
+      // Net-30 + tier
+      $('biz-net30').textContent = bizState.net30Approved ? 'Approved' : 'Not approved';
+      // Top strip — make the business identity unmistakable.
+      $('biz-strip').classList.remove('hide');
+      if (bizState.organizationName) $('biz-strip-name').textContent = bizState.organizationName;
+      $('biz-strip-terms').textContent =
+        (bizState.net30Approved ? 'Net-30 · ' : 'Prepaid · ') +
+        (bizState.volumePricingTier ? bizState.volumePricingTier + ' pricing' : 'standard pricing');
+      // Cache for the nav chip.
+      if (window.SP_AUTH_API) window.SP_AUTH_API.cacheAccountProfile({
+        accountType: 'business',
+        orgName:     bizState.organizationName || null
+      });
+    } else if (!pending) {
+      // Pre-fill company name from the CRM customer record if we have one.
+      if (bizState.suggestedCompanyName && !$('req-company').value) {
+        $('req-company').value = bizState.suggestedCompanyName;
+      }
+    }
+  }
+
+  // -------- Submit business request --------
+  $('req-submit').onclick = async function () {
+    hideMsg('req-msg');
+    const body = {
+      companyName:           $('req-company').value.trim(),
+      expectedMonthlyVolume: $('req-volume').value || undefined,
+      notes:                 $('req-notes').value.trim() || undefined
+    };
+    if (!body.companyName) { showMsg('req-msg', 'Company name is required.', 'err'); return; }
+
+    this.disabled = true;
+    try {
+      const r = await api.authedFetch('/api/account/business-request', {
+        method: 'POST', body: JSON.stringify(body)
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Submission failed.');
+      showMsg('req-msg', 'Request submitted. We\'ll be in touch.', 'ok');
+      await loadBizState();
+    } catch (e) {
+      showMsg('req-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  // -------- Team --------
+  async function loadTeam() {
+    $('team-loading').classList.remove('hide');
+    $('team-table').classList.add('hide');
+    const r = await api.authedFetch('/api/account/team');
+    if (!r.ok) { $('team-loading').textContent = 'Could not load team.'; return; }
+    const j = await r.json();
+    $('org-name').textContent = j.organization?.name || '';
+    $('biz-terms').textContent = (j.organization?.defaultPaymentTerms === 'net30') ? 'Net-30'
+      : (j.organization?.defaultPaymentTerms === 'net15') ? 'Net-15' : 'Prepaid';
+
+    const body = $('team-body');
+    body.innerHTML = '';
+    (j.members || []).forEach((m) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(m.email || m.displayName || '—')}${m.isPending ? ' <span class="pill">Invited</span>' : ''}</td>
+        <td>${esc(m.role)}</td>
+        <td style="text-align:right">
+          ${m.role !== 'owner' ? `<button class="btn btn--danger" data-rm="${esc(m.userId)}">Remove</button>` : ''}
+        </td>`;
+      body.appendChild(tr);
+    });
+    body.querySelectorAll('button[data-rm]').forEach((btn) => {
+      btn.onclick = async () => {
+        if (!confirm('Remove this member?')) return;
+        const r = await api.authedFetch('/api/account/team', {
+          method: 'DELETE', body: JSON.stringify({ userId: btn.dataset.rm })
+        });
+        if (!r.ok && r.status !== 204) {
+          const j = await r.json().catch(() => ({}));
+          alert(j.error || 'Could not remove.');
+        }
+        loadTeam();
+      };
+    });
+
+    $('team-loading').classList.add('hide');
+    $('team-table').classList.remove('hide');
+  }
+
+  $('invite-btn').onclick = async function () {
+    hideMsg('invite-msg');
+    const email = $('invite-email').value.trim();
+    const role  = $('invite-role').value;
+    if (!email) { showMsg('invite-msg', 'Enter an email.', 'err'); return; }
+    this.disabled = true;
+    try {
+      const r = await api.authedFetch('/api/account/team?action=invite', {
+        method: 'POST', body: JSON.stringify({ email, role })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Invite failed.');
+      showMsg('invite-msg', 'Invite sent.', 'ok');
+      $('invite-email').value = '';
+      loadTeam();
+    } catch (e) {
+      showMsg('invite-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+
+  // -------- Artwork --------
+  async function loadAssets() {
+    $('assets-loading').classList.remove('hide');
+    $('assets-grid').classList.add('hide');
+    $('assets-empty').classList.add('hide');
+    const r = await api.authedFetch('/api/account/artwork');
+    if (!r.ok) { $('assets-loading').textContent = 'Could not load artwork.'; return; }
+    const j = await r.json();
+    const grid = $('assets-grid'); grid.innerHTML = '';
+    const assets = j.assets || [];
+    if (!assets.length) {
+      $('assets-loading').classList.add('hide');
+      $('assets-empty').classList.remove('hide');
+      return;
+    }
+    assets.forEach((a) => {
+      const isImage = /^image\//.test(a.mimeType || '');
+      const el = document.createElement('div');
+      el.className = 'asset';
+      el.innerHTML = `
+        ${isImage && a.downloadUrl ? `<img src="${esc(a.downloadUrl)}" alt="${esc(a.label)}">` : ''}
+        <div class="name">${esc(a.label)}</div>
+        <div class="meta">${esc(a.mimeType || 'file')} · ${esc(fmtBytes(a.sizeBytes))} · ${esc(a.ownerScope)}</div>
+        <div class="asset__actions">
+          ${a.downloadUrl ? `<a class="btn btn--ghost" href="${esc(a.downloadUrl)}" download>Download</a>` : ''}
+          <button class="btn btn--danger" data-rm="${esc(a.id)}">Delete</button>
+        </div>`;
+      grid.appendChild(el);
+    });
+    grid.querySelectorAll('button[data-rm]').forEach((btn) => {
+      btn.onclick = async () => {
+        if (!confirm('Delete this artwork?')) return;
+        const r = await api.authedFetch('/api/account/artwork', {
+          method: 'DELETE', body: JSON.stringify({ id: btn.dataset.rm })
+        });
+        if (!r.ok && r.status !== 204) {
+          const j = await r.json().catch(() => ({}));
+          alert(j.error || 'Could not delete.');
+        }
+        loadAssets();
+      };
+    });
+    $('assets-loading').classList.add('hide');
+    $('assets-grid').classList.remove('hide');
+  }
+
+  // -------- Invoices (Stripe-hosted) --------
+  const INV_STATUS_LABEL = {
+    draft: 'Draft', open: 'Awaiting payment', paid: 'Paid',
+    void: 'Void', uncollectible: 'Uncollectible'
+  };
+  const INV_STATUS_PILL = {
+    draft: 'review', open: 'review', paid: 'done',
+    void: 'closed', uncollectible: 'closed'
+  };
+  function fmtMoney(cents, currency) {
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency', currency: (currency || 'cad').toUpperCase()
+    }).format((cents || 0) / 100);
+  }
+  async function loadInvoices() {
+    $('inv-loading').classList.remove('hide');
+    $('inv-table').classList.add('hide');
+    $('inv-empty').classList.add('hide');
+    const r = await api.authedFetch('/api/account/invoices');
+    if (!r.ok) {
+      $('inv-loading').textContent = 'Could not load invoices.';
+      return;
+    }
+    const j = await r.json();
+    if (!j.hasStripeCustomer || (j.invoices || []).length === 0) {
+      $('inv-loading').classList.add('hide');
+      $('inv-empty').classList.remove('hide');
+      return;
+    }
+    const body = $('inv-body');
+    body.innerHTML = '';
+    j.invoices.forEach((inv) => {
+      const tr = document.createElement('tr');
+      const period = (inv.periodStart && inv.periodEnd)
+        ? fmtDate(inv.periodStart) + ' – ' + fmtDate(inv.periodEnd) : '—';
+      tr.innerHTML = `
+        <td><strong>${esc(inv.number || inv.id.slice(0,12))}</strong></td>
+        <td>${esc(fmtDate(inv.createdAt))}</td>
+        <td>${esc(period)}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums">${esc(fmtMoney(inv.amountDueCents, inv.currency))}</td>
+        <td><span class="ssprint-pill pill pill--${esc(INV_STATUS_PILL[inv.status] || 'unknown')}">${esc(INV_STATUS_LABEL[inv.status] || inv.status)}</span></td>
+        <td style="text-align:right;white-space:nowrap">
+          ${inv.hostedInvoiceUrl ? `<a class="btn btn--primary" href="${esc(inv.hostedInvoiceUrl)}" target="_blank" rel="noopener" style="font-size:.78rem;padding:6px 12px">View in Stripe</a>` : ''}
+          ${inv.pdfUrl ? `<a class="btn btn--ghost" href="${esc(inv.pdfUrl)}" target="_blank" rel="noopener" style="font-size:.78rem;padding:6px 12px;margin-left:4px">PDF</a>` : ''}
+        </td>`;
+      body.appendChild(tr);
+    });
+    $('inv-loading').classList.add('hide');
+    $('inv-table').classList.remove('hide');
+
+    // Surface the "Manage in Stripe →" portal link too (one-time session URL).
+    try {
+      const pr = await api.authedFetch('/api/account/invoices?action=portal-session');
+      if (pr.ok) {
+        const pj = await pr.json();
+        if (pj.portalUrl) {
+          const a = $('inv-portal-link');
+          a.href = pj.portalUrl;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.classList.remove('hide');
+        }
+      }
+    } catch (_) { /* portal not configured — link stays hidden */ }
+  }
+
+  $('upload-btn').onclick = async function () {
+    hideMsg('upload-msg');
+    const file = $('upload-file').files[0];
+    if (!file) { showMsg('upload-msg', 'Pick a file first.', 'err'); return; }
+    const label = $('upload-label').value.trim() || file.name;
+
+    this.disabled = true;
+    const original = this.textContent; this.textContent = 'Uploading…';
+    try {
+      // 1. Ask the server for a signed upload URL.
+      const presR = await api.authedFetch('/api/account/artwork?action=upload-url', {
+        method: 'POST',
+        body: JSON.stringify({
+          filename: file.name, label,
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size
+        })
+      });
+      const pres = await presR.json().catch(() => ({}));
+      if (!presR.ok) throw new Error(pres.error || 'Could not start upload.');
+
+      // 2. PUT the file directly to Supabase Storage.
+      const putR = await fetch(pres.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+      });
+      if (!putR.ok) throw new Error('Upload failed (HTTP ' + putR.status + ').');
+
+      showMsg('upload-msg', 'Uploaded.', 'ok');
+      $('upload-file').value = '';
+      $('upload-label').value = '';
+      loadAssets();
+    } catch (e) {
+      showMsg('upload-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+      this.textContent = original;
+    }
+  };
+})();
+</script>
+</body>
+</html>

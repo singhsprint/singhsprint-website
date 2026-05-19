@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Referrals &amp; credit · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:760px;margin:0 auto;padding:60px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
+    .share-card{background:#e8ff3c;border:2px solid #1a1a1a;border-radius:18px;padding:26px 24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .share-card h2{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+    .share-card .copy{color:#1a1a1a;font-size:.9rem;margin-bottom:18px;max-width:520px}
+    .code-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .code{display:inline-flex;align-items:center;padding:12px 20px;background:#fff;border:1px solid #1a1a1a;border-radius:12px;font-family:'Inter',monospace;font-size:1.4rem;font-weight:800;letter-spacing:.18em;color:#1a1a1a;flex:1;min-width:160px;justify-content:center}
+    .code-row button{padding:13px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s,transform .05s}
+    .code-row button:hover{opacity:.92}
+    .code-row button:active{transform:translateY(1px)}
+    .share-stats{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .share-stat{background:rgba(255,255,255,.6);border-radius:10px;padding:12px;text-align:center}
+    .share-stat__val{font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;font-weight:800;line-height:1}
+    .share-stat__lbl{font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:#1a1a1a;font-weight:700;margin-top:4px}
+
+    .card{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:22px 22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .card h2{font-size:1.05rem;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .balance{font-family:'Playfair Display',Georgia,serif;font-size:2.6rem;font-weight:800;line-height:1;margin-bottom:6px}
+    .balance__sub{color:#888;font-size:.84rem}
+
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{text-align:left;padding:10px 6px;font-size:.86rem;border-top:1px solid #f0eee5}
+    th{color:#888;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-top:none}
+    td.amount{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+    td.amount.neg{color:#a01a1a}
+    td.amount.pos{color:#22592c}
+
+    .how-it-works{background:#fafaf7;border:1px dashed #d8d5c7;border-radius:14px;padding:18px 20px;font-size:.86rem;color:#666;margin-top:8px}
+    .how-it-works strong{color:#1a1a1a}
+    .empty{text-align:center;color:#888;padding:18px;font-size:.88rem}
+
+    .redeem-row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+    .redeem-row input{flex:1;min-width:160px;padding:11px 13px;border:1px solid #e0ddd1;border-radius:10px;font-family:inherit;font-size:.95rem;color:#1a1a1a;letter-spacing:.1em;text-transform:uppercase;outline:none}
+    .redeem-row input:focus{border-color:#1a1a1a}
+    .redeem-row button{padding:11px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer}
+    .msg{margin-top:10px;padding:11px 13px;border-radius:10px;font-size:.84rem}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+    .hide{display:none !important}
+  </style>
+</head>
+<body>
+
+<main class="wrap">
+  <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <div class="hero">
+    <h1 data-i18n="account.ref.h1">Referrals &amp; credit</h1>
+    <p data-i18n="account.ref.sub">Share your code, earn credit when friends order.</p>
+  </div>
+
+  <!-- ------- Your code ------- -->
+  <div class="share-card">
+    <h2>Your referral code</h2>
+    <p class="copy" id="share-copy">Share this and they'll get <strong id="copy-referee-amt">$25 off</strong> their first order of <strong id="copy-minorder">$100+</strong>. When that order ships, <strong id="copy-referrer-amt">$25</strong> lands in your credit balance below.</p>
+
+    <div class="code-row">
+      <span class="code" id="code-display">······</span>
+      <button id="copy-code" type="button">Copy code</button>
+      <button id="copy-link" type="button">Copy link</button>
+    </div>
+
+    <div class="share-stats">
+      <div class="share-stat"><div class="share-stat__val" id="stat-redeemed">0</div><div class="share-stat__lbl">Signed up</div></div>
+      <div class="share-stat"><div class="share-stat__val" id="stat-qualifying">0</div><div class="share-stat__lbl">Qualifying orders</div></div>
+      <div class="share-stat"><div class="share-stat__val" id="stat-paid">0</div><div class="share-stat__lbl">Paid out</div></div>
+    </div>
+  </div>
+
+  <!-- ------- Credit balance ------- -->
+  <div class="card">
+    <h2>Credit balance <span style="color:#888;font-size:.78rem;font-weight:500;">applies at checkout</span></h2>
+    <div class="balance" id="balance">$0.00</div>
+    <div class="balance__sub" id="balance-sub">Earned via referrals and order rewards.</div>
+
+    <table id="ledger-table" class="hide" style="margin-top:18px">
+      <thead><tr><th>Date</th><th>Reason</th><th style="text-align:right">Amount</th></tr></thead>
+      <tbody id="ledger-body"></tbody>
+    </table>
+    <div id="ledger-empty" class="empty">No credit activity yet.</div>
+  </div>
+
+  <!-- ------- Apply someone else's code (new accounts only) ------- -->
+  <div class="card" id="redeem-card">
+    <h2>Have a referral code?</h2>
+    <p style="color:#666;font-size:.88rem;margin-bottom:4px">Apply it once, before your first order, to get the welcome credit on your first qualifying purchase.</p>
+    <div class="redeem-row">
+      <input id="redeem-input" type="text" maxlength="16" placeholder="ENTER CODE">
+      <button id="redeem-btn" type="button">Apply</button>
+    </div>
+    <div id="redeem-msg" class="msg hide"></div>
+  </div>
+
+  <div class="how-it-works">
+    <strong>How it works.</strong> Share your code with friends or post your link. They get a welcome credit on their first qualifying order. When that order ships, you get the matching credit. Credits auto-apply at checkout on your next order. We pay out only after shipping so refunds don't pull credit back.
+  </div>
+</main>
+
+<script src="/account/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lang.js" defer></script>
+<script src="/account/auth.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const api = window.SP_AUTH_API;
+
+  function fmtMoney(cents) {
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
+      .format((cents || 0) / 100);
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch (_) { return iso; }
+  }
+  function showMsg(id, text, kind) {
+    const el = $(id); el.textContent = text; el.className = 'msg msg--' + (kind === 'ok' ? 'ok' : 'err');
+  }
+  function hideMsg(id) { const el = $(id); el.className = 'msg hide'; el.textContent = ''; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  let shareUrl = '';
+
+  (async function init() {
+    const session = await api.getSession();
+    if (!session) {
+      location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname));
+      return;
+    }
+    await Promise.all([loadReferral(), loadCredits()]);
+  })();
+
+  async function loadReferral() {
+    const r = await api.authedFetch('/api/account/referral');
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j.code) $('code-display').textContent = j.code;
+    shareUrl = j.shareUrl || '';
+
+    if (j.settings) {
+      $('copy-referee-amt').textContent  = fmtMoney(j.settings.referee_credit_cents)  + ' off';
+      $('copy-referrer-amt').textContent = fmtMoney(j.settings.referrer_credit_cents);
+      $('copy-minorder').textContent     = fmtMoney(j.settings.min_qualifying_order_cents) + '+';
+    }
+    if (j.stats) {
+      $('stat-redeemed').textContent   = j.stats.redeemed   || 0;
+      $('stat-qualifying').textContent = j.stats.qualifying || 0;
+      $('stat-paid').textContent       = j.stats.paid       || 0;
+    }
+    // Hide the redeem card if the user has already used a code or is
+    // ineligible (referredBy.alreadyApplied = true means it's already paid).
+    if (j.referredBy) {
+      $('redeem-card').innerHTML =
+        '<h2>You were referred by ' + esc(j.referredBy.code || 'a friend') + '</h2>' +
+        '<p style="color:#666;font-size:.88rem">' +
+        (j.referredBy.alreadyApplied
+          ? 'Welcome credit has been applied to your account.'
+          : 'Your welcome credit will land here after your first qualifying order ships.') +
+        '</p>';
+    }
+  }
+
+  async function loadCredits() {
+    const r = await api.authedFetch('/api/account/credits');
+    if (!r.ok) return;
+    const j = await r.json();
+    $('balance').textContent = fmtMoney(j.balanceCents);
+
+    const entries = j.entries || [];
+    if (!entries.length) {
+      $('ledger-empty').classList.remove('hide');
+      $('ledger-table').classList.add('hide');
+      return;
+    }
+    $('ledger-empty').classList.add('hide');
+    $('ledger-table').classList.remove('hide');
+    const body = $('ledger-body');
+    body.innerHTML = '';
+    entries.forEach((e) => {
+      const tr = document.createElement('tr');
+      const cls = e.amountCents >= 0 ? 'pos' : 'neg';
+      const sign = e.amountCents >= 0 ? '+' : '−';
+      tr.innerHTML = `
+        <td>${esc(fmtDate(e.createdAt))}</td>
+        <td>${esc(e.reasonLabel)}${e.note ? ' · ' + esc(e.note) : ''}</td>
+        <td class="amount ${cls}">${sign}${esc(fmtMoney(Math.abs(e.amountCents)))}</td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  // ------- Copy actions -------
+  $('copy-code').onclick = async () => {
+    const code = $('code-display').textContent.trim();
+    if (!code || code === '······') return;
+    try { await navigator.clipboard.writeText(code); $('copy-code').textContent = 'Copied!'; setTimeout(() => $('copy-code').textContent = 'Copy code', 1200); }
+    catch (_) { /* clipboard blocked — silently fail */ }
+  };
+  $('copy-link').onclick = async () => {
+    if (!shareUrl) return;
+    try { await navigator.clipboard.writeText(shareUrl); $('copy-link').textContent = 'Copied!'; setTimeout(() => $('copy-link').textContent = 'Copy link', 1200); }
+    catch (_) { /* */ }
+  };
+
+  // ------- Redeem -------
+  $('redeem-btn').onclick = async function () {
+    hideMsg('redeem-msg');
+    const code = $('redeem-input').value.trim().toUpperCase();
+    this.disabled = true;
+    try {
+      const r = await api.authedFetch('/api/account/referral?action=redeem', {
+        method: 'POST', body: JSON.stringify({ code })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Could not apply that code.');
+      showMsg('redeem-msg', 'Code applied. Your welcome credit will appear after your first qualifying order ships.', 'ok');
+      $('redeem-input').value = '';
+      await loadReferral();
+    } catch (e) {
+      showMsg('redeem-msg', e.message, 'err');
+    } finally {
+      this.disabled = false;
+    }
+  };
+})();
+</script>
+</body>
+</html>
