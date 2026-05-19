@@ -1,0 +1,4 @@
+# Endpoints folded into other handlers to stay under the Vercel Hobby
+# 12-function limit. The same URLs still work via rewrites in vercel.json.
+api/account/credits.js
+api/account/my-program.js

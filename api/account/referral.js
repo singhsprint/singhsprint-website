@@ -48,6 +48,43 @@ module.exports = async function handler(req, res) {
   const supabase = adminClient();
 
   // ------------------------------------------------------------
+  // GET ?view=credits — credit balance + ledger (was /api/account/credits;
+  // folded in here to stay under the Vercel Hobby 12-function limit)
+  // ------------------------------------------------------------
+  if (req.method === 'GET' && req.query?.view === 'credits') {
+    const REASON_LABEL = {
+      referral_referrer: 'Referral reward',
+      referral_referee:  'Welcome credit (referred sign-up)',
+      order_completed:   'Order loyalty credit',
+      manual_adjust:     'Adjustment',
+      spent_on_order:    'Applied to order'
+    };
+    const [profRes, ledgerRes] = await Promise.all([
+      supabase.from('profiles').select('credit_balance_cents').eq('id', user.id).maybeSingle(),
+      supabase
+        .from('credit_ledger')
+        .select('id, amount_cents, reason, reference_id, note, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+    ]);
+    if (profRes.error)   return res.status(500).json({ error: profRes.error.message });
+    if (ledgerRes.error) return res.status(500).json({ error: ledgerRes.error.message });
+    return res.status(200).json({
+      balanceCents: profRes.data?.credit_balance_cents || 0,
+      entries: (ledgerRes.data || []).map((e) => ({
+        id:          e.id,
+        amountCents: e.amount_cents,
+        reason:      e.reason,
+        reasonLabel: REASON_LABEL[e.reason] || e.reason,
+        referenceId: e.reference_id,
+        note:        e.note,
+        createdAt:   e.created_at
+      }))
+    });
+  }
+
+  // ------------------------------------------------------------
   // GET
   // ------------------------------------------------------------
   if (req.method === 'GET') {
