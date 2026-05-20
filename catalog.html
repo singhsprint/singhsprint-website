@@ -2055,7 +2055,7 @@
         <div class="filter-group" style="margin-bottom:8px">
           <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Special</div>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
-            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; render()" style="accent-color:var(--ink);width:15px;height:15px"/>
+            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; resetAndFetch()" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>In stock only</span>
           </label>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
@@ -2269,13 +2269,21 @@
 
     // Stock toggle — last position, distinct label depending on state so
     // it reads as a state rather than a filter.
+    //
+    // Both branches must call resetAndFetch(), not render(). render() only
+    // re-renders the products already in state.products; the in-stock
+    // filter is applied SERVER-SIDE in the Algolia query (catalog-algolia.js
+    // line 92), so flipping the toggle has to re-fetch to surface the
+    // previously-filtered-out items. Earlier this called render() and
+    // toggling off the chip silently did nothing — bug surfaced when a
+    // user searched "scrub" (1 in-stock, 22 OOS) and couldn't expand.
     if (state.filters.inStockOnly) {
       row.appendChild(makeChip('In stock only', 'active', () => {
-        state.filters.inStockOnly = false; render();
+        state.filters.inStockOnly = false; resetAndFetch();
       }));
     } else {
       row.appendChild(makeChip('Show out of stock', 'passive', () => {
-        state.filters.inStockOnly = true; render();
+        state.filters.inStockOnly = true; resetAndFetch();
       }));
     }
 
