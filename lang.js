@@ -696,12 +696,12 @@ var SP_LANG = (function() {
     // ===== CATALOG =====
     'cat.hero.h1': { en: 'Our blanks catalog', fr: 'Notre catalogue de vêtements' },
     'cat.hero.p': {
-      en: 'Browse <strong id="catCount">1,100+</strong> blanks from S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.',
-      fr: 'Parcourez <strong id="catCount">1 100+</strong> vêtements de S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d\'une minute.'
+      en: 'Browse <strong id="catCount">4,500+</strong> blanks from S&amp;S Activewear, SanMar Canada &amp; Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.',
+      fr: 'Parcourez <strong id="catCount">4 500+</strong> vêtements de S&amp;S Activewear, SanMar Canada et Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d\'une minute.'
     },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
     'cat.hero.meta2': { en: '<strong>3–5 day</strong> typical turnaround', fr: 'Délai habituel de <strong>3 à 5 jours</strong>' },
-    'cat.hero.meta3': { en: 'SanMar &amp; Canadian-made supplier integrations coming soon', fr: 'Intégrations SanMar et fournisseurs canadiens bientôt disponibles' },
+    'cat.hero.meta3': { en: 'Canadian-made supplier integration coming soon', fr: 'Intégration fournisseur canadien bientôt disponible' },
     'cat.search.placeholder': { en: 'Search by brand, style number, fabric…', fr: 'Rechercher par marque, numéro de style, tissu…' },
     'cat.btn.filters': { en: 'Filters', fr: 'Filtres' },
     'cat.qty.label': { en: 'Pricing for', fr: 'Prix pour' },

@@ -541,12 +541,13 @@ function loadNav() {
               panel.innerHTML = '<div class="sp-search-empty">' + t('No products match.', 'Aucun produit.') + '</div>';
               return;
             }
-            // S&S Activewear and Blanks.ca both 403 direct hotlinks from
-            // external referrers, so every supplier image gets routed through
+            // S&S Activewear, Blanks.ca and SanMar Canada all 403 direct
+            // hotlinks from external referrers, so every supplier image
+            // gets routed through
             // /api/image-proxy here, matching catalog.html's imgUrl() rules.
             // Anything else (local /images, singhsprint.com) is passed through.
             var IMG_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
-            var PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca'];
+            var PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
             function searchImgUrl(raw) {
               if (!raw) return '';
               if (raw.indexOf('/api/image-proxy') >= 0) return raw;

@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalog | Singhs Print — Custom Apparel Montreal</title>
-  <meta name="description" content="Browse 1,100+ printable blanks from S&S Activewear — Bella+Canvas, Gildan, Berne, Adidas. Filter by brand, fit, fabric, Canadian-made, or Hi-Vis. Pick a SKU and get a printed-garment quote in under a minute.">
+  <meta name="description" content="Browse 4,500+ printable blanks from S&S Activewear, SanMar Canada & Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors and more. Filter by brand, fit, fabric, Canadian-made, or Hi-Vis. Pick a SKU and get a printed-garment quote in under a minute.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -285,14 +285,14 @@
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/catalog">
   <meta property="og:title" content="Apparel Catalog — Singhs Print">
-  <meta property="og:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
+  <meta property="og:description" content="Browse 4,500+ blanks from S&S Activewear, SanMar Canada & Blanks.ca — ready to decorate. Live pricing, stock status, all colors.">
   <meta property="og:locale" content="en_CA">
   <meta property="og:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Apparel Catalog — Singhs Print">
-  <meta name="twitter:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
+  <meta name="twitter:description" content="Browse 4,500+ blanks from S&S Activewear, SanMar Canada & Blanks.ca — ready to decorate. Live pricing, stock status, all colors.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <script>
   // Early-fire the catalog fetch so it overlaps with the rest of
@@ -341,7 +341,7 @@
 
   <section class="cat-hero">
     <h1 data-i18n="cat.hero.h1">Our blanks catalog</h1>
-    <p data-i18n="cat.hero.p">Browse <strong id="catCount">1,100+</strong> blanks from S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
+    <p data-i18n="cat.hero.p">Browse <strong id="catCount">4,500+</strong> blanks from S&amp;S Activewear, SanMar Canada &amp; Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
     <!-- Auto-translation badge — only visible when FR is active. The
          supplier feeds (S&S Activewear) only provide English copy, so we
          machine-translate product/color/spec text on the fly. -->
@@ -353,7 +353,7 @@
       <span>·</span>
       <span data-i18n="cat.hero.meta2"><strong>3–5 day</strong> typical turnaround</span>
       <span>·</span>
-      <span data-i18n="cat.hero.meta3">SanMar &amp; Canadian-made supplier integrations coming soon</span>
+      <span data-i18n="cat.hero.meta3">Canadian-made supplier integration coming soon</span>
     </div>
   </section>
 
@@ -1316,7 +1316,7 @@
   // /api/image-proxy (server-side fetch with auth + 24h edge cache).
   // Local /images/* paths and anything already on singhsprint.com get
   // passed through untouched.
-  const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca'];
+  const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
   function imgUrl(raw) {
     if (!raw) return '/images/product-tshirt-white.jpg';
     if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
