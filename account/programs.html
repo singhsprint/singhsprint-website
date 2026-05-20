@@ -219,11 +219,15 @@
         </h2>
         <p class="sub">Members see only the products you whitelist here on the catalog page. Leave empty for an open program (no gating).</p>
         <div id="catalog-list"></div>
-        <div class="row-2col" style="margin-top:10px">
-          <input id="catalog-input" type="text" placeholder="Paste product UUID(s), comma-separated">
-          <button class="btn btn--primary" id="catalog-add" type="button">Add</button>
+
+        <!-- Product picker (replaced the old UUID-paste field with a real
+             search + click-to-add experience). The catalog is fetched once
+             from the CRM on first interaction and cached in memory. -->
+        <div style="position:relative;margin-top:10px">
+          <input id="catalog-input" type="search" autocomplete="off" placeholder="Search products by name, brand, or style…" style="width:100%">
+          <div id="catalog-dropdown" class="hide" style="position:absolute;left:0;right:0;top:100%;z-index:20;margin-top:4px;background:#fff;border:1px solid #e9e7df;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.06);max-height:280px;overflow:auto"></div>
         </div>
-        <p class="sub" style="margin-top:8px;font-size:.78rem">Find product UUIDs in the CRM catalog table or via /api/catalog. A picker UI is a follow-on.</p>
+        <p class="sub" style="margin-top:8px;font-size:.78rem">Click a product to add it. Click the × on a chip above to remove. Empty whitelist = members can order anything.</p>
       </div>
 
       <!-- Members + reporting -->
@@ -436,6 +440,9 @@
     if (!r.ok) return;
     const j = await r.json();
     const p = j.program;
+    // Stash for the catalog picker — it filters out products already on
+    // the whitelist when rendering the search dropdown.
+    currentDetail = p;
     renderDomains(p.emailDomains || []);
     renderCatalog(p.catalogProductIds || []);
     renderMembers(p.members || []);
@@ -584,33 +591,164 @@
     selectProgram(selectedProgramId);
   };
 
-  // ---- catalog ----
+  // ---- catalog picker ----
+  // The picker replaces the old UUID-paste field. We fetch the catalog
+  // once from the CRM (singhsprint-crm.vercel.app/api/catalog) on first
+  // interaction and cache it in memory. Typing filters the cache client-
+  // side; click on a result adds it to the whitelist via the existing
+  // ?action=add-catalog endpoint.
+  let catalogCache = null;            // null until first fetch
+  let catalogCacheLoading = null;     // in-flight Promise
+
+  // Resolve catalog API base. The CRM serves the public catalog read API
+  // at https://singhsprint-crm.vercel.app/api/catalog. The site exposes
+  // the same data via its own /api/catalog rewrite for the catalog.html
+  // page, so we prefer the same-origin form first to avoid CORS surprises
+  // and fall back to the CRM origin if it 404s.
+  async function loadCatalog() {
+    if (catalogCache) return catalogCache;
+    if (catalogCacheLoading) return catalogCacheLoading;
+    catalogCacheLoading = (async () => {
+      const tryFetch = async (url) => {
+        try {
+          const r = await fetch(url, { cache: 'no-store' });
+          if (!r.ok) return null;
+          return await r.json();
+        } catch (_) { return null; }
+      };
+      // Limit=500 covers the full catalog comfortably; the picker filters
+      // client-side so one fetch handles every keystroke after.
+      let j = await tryFetch('/api/catalog?limit=500');
+      if (!j) j = await tryFetch('https://singhsprint-crm.vercel.app/api/catalog?limit=500');
+      // Catalog API may return { products: [...] }, { items: [...] }, or
+      // the bare array depending on which version is deployed. Normalize.
+      const list = Array.isArray(j) ? j
+                 : Array.isArray(j?.products) ? j.products
+                 : Array.isArray(j?.items)    ? j.items
+                 : [];
+      catalogCache = list.map((p) => ({
+        id:    p.id || p.product_id,
+        name:  p.display_name || p.name || p.title || p.style_name || '(unnamed)',
+        sku:   p.sku || p.style || '',
+        brand: p.brand || p.supplier || '',
+        thumb: p.thumb_url || p.image || p.primary_image_url || null
+      })).filter((p) => !!p.id);
+      return catalogCache;
+    })();
+    return catalogCacheLoading;
+  }
+
+  // Look a product up in the cache by id. Returns null if cache hasn't
+  // loaded yet or the id isn't in it.
+  function productById(id) {
+    if (!catalogCache) return null;
+    return catalogCache.find((p) => p.id === id) || null;
+  }
+
   function renderCatalog(ids) {
     const root = $('catalog-list');
-    if (!ids.length) { root.innerHTML = '<div class="empty">Open program — members see the full catalog.</div>'; return; }
-    root.innerHTML = ids.map((id) =>
-      `<span class="chip"><span style="font-family:monospace;font-size:.74rem">${esc(id.slice(0,8))}…</span> <button data-rm-prod="${esc(id)}" aria-label="Remove">×</button></span>`
-    ).join('');
-    root.querySelectorAll('button[data-rm-prod]').forEach((b) => {
+    if (!ids.length) {
+      root.innerHTML = '<div class="empty">Open program — members see the full catalog.</div>';
+      return;
+    }
+    // Render chips immediately with UUID fallback; refresh once the cache
+    // is loaded so we can show product names instead.
+    const paint = () => {
+      root.innerHTML = ids.map((id) => {
+        const p = productById(id);
+        const label = p
+          ? `${esc(p.name)}${p.sku ? ' <span style="color:#999;font-size:.74rem">' + esc(p.sku) + '</span>' : ''}`
+          : `<span style="font-family:monospace;font-size:.74rem">${esc(id.slice(0,8))}…</span>`;
+        return `<span class="chip">${label} <button data-rm-prod="${esc(id)}" aria-label="Remove">×</button></span>`;
+      }).join('');
+      root.querySelectorAll('button[data-rm-prod]').forEach((b) => {
+        b.onclick = async () => {
+          await api.authedFetch('/api/account/programs?action=remove-catalog', {
+            method: 'POST', body: JSON.stringify({ id: selectedProgramId, productIds: [b.dataset.rmProd] })
+          });
+          selectProgram(selectedProgramId);
+        };
+      });
+    };
+    paint();
+    // If the cache isn't loaded yet, kick it off and repaint when ready.
+    if (!catalogCache) loadCatalog().then(paint).catch(() => {});
+  }
+
+  // ---- search dropdown ----
+  const catalogInput    = $('catalog-input');
+  const catalogDropdown = $('catalog-dropdown');
+  let catalogDebounce   = null;
+
+  async function renderCatalogDropdown(query) {
+    catalogDropdown.classList.remove('hide');
+    catalogDropdown.innerHTML = '<div style="padding:14px;color:#888;font-size:.86rem">Loading catalog…</div>';
+    let cat;
+    try { cat = await loadCatalog(); }
+    catch (_) { cat = []; }
+    if (!cat || cat.length === 0) {
+      catalogDropdown.innerHTML = '<div style="padding:14px;color:#a01a1a;font-size:.86rem">Could not load catalog. Check that /api/catalog is reachable.</div>';
+      return;
+    }
+    const q = (query || '').trim().toLowerCase();
+    const alreadyIn = new Set(
+      (selectedProgramId && currentDetail?.catalogProductIds) || []
+    );
+    const matches = cat
+      .filter((p) => !alreadyIn.has(p.id))
+      .filter((p) => !q || [p.name, p.sku, p.brand].some((s) => (s || '').toLowerCase().includes(q)))
+      .slice(0, 12);
+    if (matches.length === 0) {
+      catalogDropdown.innerHTML = '<div style="padding:14px;color:#888;font-size:.86rem">No matches' + (q ? ' for "' + esc(q) + '"' : '') + '.</div>';
+      return;
+    }
+    catalogDropdown.innerHTML = matches.map((p) => (
+      '<button type="button" data-add-prod="' + esc(p.id) + '" style="display:flex;width:100%;text-align:left;padding:10px 14px;background:transparent;border:none;border-bottom:1px solid #f4f2eb;cursor:pointer;align-items:center;gap:10px;font-family:inherit">'
+        + (p.thumb ? '<img src="' + esc(p.thumb) + '" alt="" style="width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0">' : '<span style="width:30px;height:30px;border-radius:6px;background:#f4f2eb;flex-shrink:0"></span>')
+        + '<span style="flex:1;min-width:0">'
+        +   '<span style="display:block;font-size:.9rem;font-weight:500;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.name) + '</span>'
+        +   (p.sku || p.brand ? '<span style="display:block;font-size:.74rem;color:#888">' + esc([p.brand, p.sku].filter(Boolean).join(' · ')) + '</span>' : '')
+        + '</span>'
+        + '<span style="color:#1a1a1a;font-weight:700;font-size:1.1rem">+</span>'
+      + '</button>'
+    )).join('');
+    catalogDropdown.querySelectorAll('button[data-add-prod]').forEach((b) => {
       b.onclick = async () => {
-        await api.authedFetch('/api/account/programs?action=remove-catalog', {
-          method: 'POST', body: JSON.stringify({ id: selectedProgramId, productIds: [b.dataset.rmProd] })
+        const id = b.dataset.addProd;
+        b.disabled = true;
+        const r = await api.authedFetch('/api/account/programs?action=add-catalog', {
+          method: 'POST', body: JSON.stringify({ id: selectedProgramId, productIds: [id] })
         });
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          alert(j.error || 'Could not add');
+          b.disabled = false;
+          return;
+        }
+        catalogInput.value = '';
+        catalogDropdown.classList.add('hide');
         selectProgram(selectedProgramId);
       };
     });
   }
-  $('catalog-add').onclick = async function () {
-    const raw = $('catalog-input').value.trim();
-    if (!raw) return;
-    const ids = raw.split(/[,\s]+/).filter(Boolean);
-    const r = await api.authedFetch('/api/account/programs?action=add-catalog', {
-      method: 'POST', body: JSON.stringify({ id: selectedProgramId, productIds: ids })
-    });
-    if (!r.ok) { const j = await r.json().catch(() => ({})); alert(j.error || 'Could not add'); return; }
-    $('catalog-input').value = '';
-    selectProgram(selectedProgramId);
-  };
+
+  catalogInput.addEventListener('focus', () => renderCatalogDropdown(catalogInput.value));
+  catalogInput.addEventListener('input', () => {
+    clearTimeout(catalogDebounce);
+    catalogDebounce = setTimeout(() => renderCatalogDropdown(catalogInput.value), 120);
+  });
+  // Close the dropdown when clicking outside (but not when clicking
+  // inside it — we let the button's own onclick handle add).
+  document.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target === catalogInput) return;
+    if (catalogDropdown.contains(target)) return;
+    catalogDropdown.classList.add('hide');
+  });
+
+  // Stash the latest detail payload so the dropdown knows which products
+  // are already on the whitelist (so they don't show up as add options).
+  let currentDetail = null;
 
   // ---- members ----
   function renderMembers(members) {

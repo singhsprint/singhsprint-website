@@ -39,7 +39,13 @@ const ROW_COLUMNS = [
   'due_date', 'deadline',
   'deposit_paid_at', 'balance_paid_at',
   'stripe_invoice_id',
-  'customer_id'
+  'customer_id',
+  // Added with the first-batch coverage flow (migration 20260520):
+  // paid_by tells the orders.html UI whether to show the Stripe portal
+  // launcher + invoice link, or hide them in favor of a "Paid by your
+  // program" pill. cohort_invoice_id is exposed so the UI can deep-link
+  // to the cohort invoice if/when we build that surface.
+  'paid_by', 'cohort_invoice_id'
 ].join(', ');
 
 module.exports = async function handler(req, res) {

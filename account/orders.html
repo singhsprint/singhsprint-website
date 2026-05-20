@@ -34,6 +34,11 @@
     .pill--contacted{background:#cdeefd;color:#0c4a6e}
     .pill--converted{background:#c7d2fe;color:#312e81}
     .pill--closed{background:#e5e7eb;color:#374151}
+    /* "Paid by your program" pill — shown on org-paid orders so the
+       student knows the school is covering it and there's no Stripe
+       checkout coming their way. */
+    .pill--orgpaid{background:#1a1a1a;color:#e8ff3c;display:inline-flex;align-items:center;gap:4px}
+    .pill--orgpaid::before{content:"✓";font-weight:700}
     .actions{display:flex;gap:8px}
     .btn{padding:9px 14px;border-radius:10px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,background .15s}
     .btn--primary{background:#1a1a1a;color:#fff}
@@ -155,10 +160,15 @@
     renderList('active-list', j.active || [], 'active');
     renderList('past-list',   j.past   || [], 'past');
 
-    // Show the Stripe portal launcher once the user has any past order.
-    // (If they've never paid an invoice, Stripe has no Customer record yet
-    // and the portal won't have anything useful to show.)
-    if ((j.past || []).length > 0) {
+    // Show the Stripe portal launcher once the user has any past order
+    // that THEY paid for. Skip it if every past order is covered by the
+    // student's program — the customer has no Stripe Customer record yet
+    // in that case, and "Manage invoices" would just dead-end on a
+    // "you have no invoices" page from Stripe.
+    const hasCustomerPaidPast = (j.past || []).some(
+      (o) => (o.paid_by || 'customer') === 'customer',
+    );
+    if (hasCustomerPaidPast) {
       $('portal-launch').style.display = 'flex';
     }
   }
@@ -221,6 +231,14 @@
       const status = STATUS_LABEL[order.status] || order.status || '—';
       const trackUrl = order.order_number ? '/order/' + encodeURIComponent(order.order_number) : null;
       const items = itemCount(order.items);
+      // Org-paid orders (first-batch coverage) get a "Paid by your program"
+      // pill so the student knows there's no Stripe invoice coming their
+      // way. The total dollar amount is still shown so they see the value
+      // of what their school is providing.
+      const isOrgPaid = (order.paid_by || 'customer') === 'organization';
+      const orgPaidPill = isOrgPaid
+        ? '<span class="pill pill--orgpaid">Paid by your program</span>'
+        : '';
       el.innerHTML = `
         <div class="lead__main">
           <div class="lead__kind">Order ${esc(order.order_number || '#' + (order.id || '').slice(0,8))}</div>
@@ -228,6 +246,7 @@
           <div class="lead__sub">${esc(fmtDate(order.created_at))}${order.deadline ? ' · deadline ' + esc(fmtDate(order.deadline)) : ''}</div>
           <div class="reorder-msg" data-order-msg="${esc(order.id)}"></div>
         </div>
+        ${orgPaidPill}
         <span class="pill pill--${esc(order.status || 'unknown')}">${esc(status)}</span>
         <div class="actions">
           ${trackUrl ? `<a class="btn btn--ghost" href="${esc(trackUrl)}">Track</a>` : ''}
