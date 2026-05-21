@@ -4988,44 +4988,116 @@
     var INBOUND_API        = 'https://singhsprint-crm.vercel.app/api/inbound';
     var INBOUND_UPLOAD_API = 'https://singhsprint-crm.vercel.app/api/inbound/upload';
 
-    // Upload the customer's design file to the CRM's `designs` storage
-    // bucket BEFORE we post the structured /api/inbound payload, so the
-    // resulting design_path can be persisted on the inbound_requests row.
-    // The 30-min auto-mockup cron needs this — without it the artwork
-    // only reaches us via the Web3Forms email backup, which is useless
-    // for programmatic rendering.
+    // Hard cap matches /api/inbound/upload — keep them in sync. We
+    // surface a friendly error on oversize *before* hitting the network.
+    var UPLOAD_MAX_BYTES = 15 * 1024 * 1024; // 15 MB
+
+    // Tamarah's bug (May 2026): she uploaded a logo, the form
+    // submitted, but the inbound_requests row landed with
+    // design_url=null / design_bytes=0. Root cause was three-fold:
+    //   (a) uploadDesignFile() swallowed errors silently and the
+    //       form submit handler was fire-and-forget — so a slow or
+    //       failing upload got cancelled the moment Web3Forms's
+    //       native POST navigated away.
+    //   (b) Customer got no UI feedback that an upload was in flight,
+    //       and no error if it failed.
+    //   (c) On size / network errors we returned null and the row
+    //       got 'mockup_status=skipped' with no hint to the rep that
+    //       a file was attempted.
     //
-    // Returns the upload response or null on any failure; the form
-    // submit MUST proceed either way (we never block a quote on the
-    // mockup path).
+    // Fix: this function now throws on real failures (so the submit
+    // handler can show an error); the submit handler preventDefaults
+    // the form, awaits the upload, then programmatically submits.
     function uploadDesignFile(file) {
       if (!file) return Promise.resolve(null);
-      try {
-        var fd = new FormData();
-        fd.append('file', file);
-        fd.append('kind', 'design');
-        return fetch(INBOUND_UPLOAD_API, {
-          method: 'POST',
-          body: fd
-          // Don't set Content-Type — let the browser pick the multipart boundary.
-        }).then(function(res){
-          if (!res.ok) return null;
-          return res.json();
-        }).catch(function(){ return null; });
-      } catch (e) {
-        console.warn('[design upload] skipped:', e);
-        return Promise.resolve(null);
+      if (file.size && file.size > UPLOAD_MAX_BYTES) {
+        var mb = (file.size / 1024 / 1024).toFixed(1);
+        return Promise.reject(new Error(
+          'Your design file is ' + mb + ' MB — our upload limit is 15 MB. ' +
+          'Please compress or email it to sales@singhsprint.com.'
+        ));
       }
+      var fd = new FormData();
+      fd.append('file', file);
+      fd.append('kind', 'design');
+      return fetch(INBOUND_UPLOAD_API, { method: 'POST', body: fd })
+        .then(function(res){
+          if (!res.ok) {
+            return res.text().then(function(t){
+              console.warn('[design upload] HTTP ' + res.status + ':', t);
+              throw new Error('Upload failed (' + res.status + '). Try again or email your design to sales@singhsprint.com.');
+            });
+          }
+          return res.json();
+        });
+    }
+
+    // Tiny overlay shown while the design upload + structured POST run.
+    // Built lazily so we don't add DOM weight on pages where the customer
+    // never submits.
+    function spShowUploadOverlay(label) {
+      var existing = document.getElementById('spUploadOverlay');
+      if (existing) {
+        var l = existing.querySelector('.sp-upload-overlay__label');
+        if (l && label) l.textContent = label;
+        existing.style.display = 'flex';
+        return existing;
+      }
+      var el = document.createElement('div');
+      el.id = 'spUploadOverlay';
+      el.style.cssText = [
+        'position:fixed','inset:0','background:rgba(26,26,26,0.78)',
+        'z-index:9999','display:flex','align-items:center','justify-content:center',
+        'font-family:inherit'
+      ].join(';');
+      el.innerHTML =
+        '<div style="background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:28px 32px;text-align:center;max-width:380px;width:90%;">' +
+          '<div style="width:48px;height:48px;border:3px solid #333;border-top-color:#e8ff3c;border-radius:50%;margin:0 auto 16px;animation:spSpin 0.9s linear infinite"></div>' +
+          '<div class="sp-upload-overlay__label" style="color:#fff;font-weight:600;font-size:0.95rem;line-height:1.4">' + (label || 'Uploading your design…') + '</div>' +
+          '<div style="color:#888;font-size:0.78rem;margin-top:8px">This usually takes a few seconds.</div>' +
+        '</div>' +
+        '<style>@keyframes spSpin{to{transform:rotate(360deg)}}</style>';
+      document.body.appendChild(el);
+      return el;
+    }
+    function spHideUploadOverlay() {
+      var el = document.getElementById('spUploadOverlay');
+      if (el) el.style.display = 'none';
+    }
+    function spShowUploadError(message) {
+      var existing = document.getElementById('spUploadOverlay');
+      if (!existing) existing = spShowUploadOverlay('');
+      existing.innerHTML =
+        '<div style="background:#1a1a1a;border:1px solid #4a1f1f;border-radius:16px;padding:28px 32px;max-width:420px;width:90%;text-align:center">' +
+          '<div style="font-size:32px;margin-bottom:8px">⚠️</div>' +
+          '<div style="color:#fff;font-weight:700;font-size:1rem;margin-bottom:8px">Upload didn’t go through</div>' +
+          '<div style="color:#ddd;font-size:0.86rem;line-height:1.5;margin-bottom:18px">' + message + '</div>' +
+          '<div style="display:flex;gap:8px;justify-content:center">' +
+            '<button type="button" id="spUploadRetry" style="background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:10px 18px;font-weight:700;cursor:pointer">Try again</button>' +
+            '<button type="button" id="spUploadSkip"  style="background:transparent;color:#bbb;border:1px solid #444;border-radius:50px;padding:10px 18px;font-weight:600;cursor:pointer">Send without design</button>' +
+          '</div>' +
+        '</div>';
     }
 
     document.addEventListener('DOMContentLoaded', function() {
       var form = document.getElementById('quoteForm');
       if (!form) return;
-      form.addEventListener('submit', function() {
+
+      // Flag: once we've finished the async upload + structured POST,
+      // we set this and call form.submit() to let Web3Forms's native
+      // multipart POST take over. The handler bails on the second pass.
+      form.dataset.spUploadCleared = '0';
+
+      form.addEventListener('submit', function(e) {
+        if (form.dataset.spUploadCleared === '1') {
+          // Second pass — let the native submit through to Web3Forms.
+          return;
+        }
+
         var items = SinghsCart.read().items;
 
         // 1) Hidden fields for the Web3Forms email backup
-        if (items.length > 0) {
+        if (items.length > 0 && !form.querySelector('input[name="cart_items_json"]')) {
           var hidden = document.createElement('input');
           hidden.type = 'hidden';
           hidden.name = 'cart_items_json';
@@ -5064,9 +5136,29 @@
           }
         } catch (e) { /* file collection should never break submit */ }
 
-        // 2) Structured POST to CRM /api/inbound (after design upload)
-        var uploadPromise = uploadDesignFile(firstFile);
-        uploadPromise.then(function(uploaded){
+        // Block the native submit; we'll re-submit after upload + POST.
+        e.preventDefault();
+        spShowUploadOverlay(firstFile ? 'Uploading your design…' : 'Sending your request…');
+
+        function finishAndSubmit() {
+          form.dataset.spUploadCleared = '1';
+          spHideUploadOverlay();
+          // form.submit() doesn't trigger 'submit' handlers, so our
+          // bail-out flag is belt-and-suspenders.
+          form.submit();
+        }
+
+        // Safety timeout: if upload + POST takes longer than 12s
+        // (slow phone network, CRM hiccup), give up on the bonus path
+        // and submit anyway — the Web3Forms email backup carries the
+        // attachment so the rep still gets the design.
+        var bailoutTimer = setTimeout(function(){
+          if (form.dataset.spUploadCleared === '1') return;
+          console.warn('[quote submit] upload took >12s — falling back to email backup');
+          finishAndSubmit();
+        }, 12000);
+
+        function doStructuredPostThenSubmit(uploaded) {
         try {
           var fd = new FormData(form);
           var sizeBreakdown = {};
@@ -5129,18 +5221,62 @@
             },
             source_url: location.href
           };
-          // Fire-and-forget; we don't await so the form submit isn't blocked.
+          // Now that the design file is already in our bucket (or
+          // null if there wasn't one), POST the structured payload.
+          // We DO await this so the row is fully written before the
+          // browser navigates to Web3Forms's thank-you page — without
+          // that, on slow networks the request can get cancelled
+          // during unload and the CRM never sees the inbound row.
           fetch(INBOUND_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             keepalive: true
-          }).catch(function(){ /* email backup will still deliver */ });
+          }).then(function(){
+            clearTimeout(bailoutTimer);
+            finishAndSubmit();
+          }).catch(function(err){
+            console.warn('[inbound POST] failed (email backup will still deliver):', err);
+            clearTimeout(bailoutTimer);
+            finishAndSubmit();
+          });
         } catch (e) {
           // Never block the form submit on our own analytics path.
           console.warn('[inbound dual-post] skipped:', e);
+          clearTimeout(bailoutTimer);
+          finishAndSubmit();
         }
-        });  // uploadPromise.then
+        }  // end doStructuredPostThenSubmit
+
+        // Kick off the upload (or resolve immediately if no file),
+        // then run the structured POST + final submit.
+        uploadDesignFile(firstFile).then(function(uploaded){
+          doStructuredPostThenSubmit(uploaded);
+        }).catch(function(err){
+          // Upload failed loud — show the customer what happened and
+          // let them retry or skip. We DON'T call finishAndSubmit here
+          // because the customer should see the error before navigating.
+          clearTimeout(bailoutTimer);
+          console.warn('[design upload] failed:', err);
+          spShowUploadError((err && err.message) || 'Something went wrong uploading your design.');
+          var retry = document.getElementById('spUploadRetry');
+          var skip  = document.getElementById('spUploadSkip');
+          if (retry) retry.addEventListener('click', function(){
+            spHideUploadOverlay();
+            // Re-trigger submit; flag is still 0 so this re-enters.
+            form.requestSubmit ? form.requestSubmit() : form.submit();
+          });
+          if (skip)  skip.addEventListener('click', function(){
+            // User chose to send without the design. Swap the error UI
+            // back to a spinner, then re-run the structured POST path
+            // with uploaded=null so the rep at least gets the request
+            // (they can ask the customer to email the design later).
+            var overlay = document.getElementById('spUploadOverlay');
+            if (overlay) overlay.remove();
+            spShowUploadOverlay('Sending your request…');
+            doStructuredPostThenSubmit(null);
+          });
+        });
       });
     });
 
