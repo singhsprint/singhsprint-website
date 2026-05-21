@@ -9,6 +9,16 @@
       "permanent": true
     },
     {
+      "source": "/guides/about.html",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/guides/about",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
       "source": "/industries/:slug.html",
       "destination": "/industries/:slug",
       "permanent": true

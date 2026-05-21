@@ -7,11 +7,11 @@
  *      industry pages) stay in their existing priority order.
  *   2. Every generated product page under /p/<slug>/ gets its own <url>
  *      entry with EN + FR hreflang pairs.
- *
- * Why this matters: ~1,000+ /p/ pages exist on disk but only ~5 URLs are
- * in the sitemap, which has parked them in Google Search Console's
- * "Discovered - currently not indexed" bucket. Listing them in the
- * sitemap signals Google to spend crawl budget on them.
+ *   3. Every FR mirror page (`/fr/<marketing>` + `/fr/p/<slug>/`) gets
+ *      its own <url> entry so French URLs are first-class in the index,
+ *      not just hreflang alternates of EN. Previously ~1,036 FR pages
+ *      were "discovered but not indexed" in GSC because they only
+ *      existed as alternates.
  *
  * Run before each deploy (or daily via Vercel cron — see vercel.json):
  *   node scripts/regenerate-sitemap.mjs
@@ -44,7 +44,26 @@ const MARKETING = [
   { path: '/industries/schools-sports-teams',           priority: 0.85, changefreq: 'monthly', hreflang: true },
 ]
 
-function urlNode({ loc, lastmod, changefreq, priority, hreflang }) {
+// Given an EN URL like `/p/foo/`, returns `/fr/p/foo/`. Idempotent:
+// passing in a /fr/ URL returns it unchanged. The "/" → "/fr/"
+// replacement runs on the path portion only (the SITE prefix is
+// stripped, swapped, and re-prepended) to avoid the historical bug
+// where it would create `/fr/fr/...` when called twice.
+function toFrUrl(enLoc) {
+  const path = enLoc.replace(SITE, '')
+  if (path === '/' || path === '') return `${SITE}/fr/`
+  if (path.startsWith('/fr/') || path === '/fr') return enLoc
+  return `${SITE}/fr${path}`
+}
+// Inverse: given a FR URL, return its EN sibling.
+function toEnUrl(frLoc) {
+  const path = frLoc.replace(SITE, '')
+  if (path === '/fr' || path === '/fr/') return `${SITE}/`
+  if (path.startsWith('/fr/')) return `${SITE}${path.slice(3)}`
+  return frLoc
+}
+
+function urlNode({ loc, lastmod, changefreq, priority, hreflang, lang }) {
   const lines = [
     '  <url>',
     `    <loc>${loc}</loc>`,
@@ -53,17 +72,14 @@ function urlNode({ loc, lastmod, changefreq, priority, hreflang }) {
     `    <priority>${priority}</priority>`,
   ]
   if (hreflang) {
-    const enLoc = loc
-    const frLoc = loc.replace(`${SITE}/`, `${SITE}/fr/`).replace(`${SITE}/fr/fr/`, `${SITE}/fr/`)
-    if (enLoc === `${SITE}/`) {
-      lines.push(`    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/"/>`)
-      lines.push(`    <xhtml:link rel="alternate" hreflang="fr" href="${SITE}/fr/"/>`)
-      lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE}/"/>`)
-    } else {
-      lines.push(`    <xhtml:link rel="alternate" hreflang="en" href="${enLoc}"/>`)
-      lines.push(`    <xhtml:link rel="alternate" hreflang="fr" href="${frLoc}"/>`)
-      lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${enLoc}"/>`)
-    }
+    // Build EN/FR URL pair regardless of which one is the primary `loc`
+    // so the same hreflang block appears under both entries (Google
+    // requires both directions, or neither side gets the cluster).
+    const enLoc = lang === 'fr' ? toEnUrl(loc) : loc
+    const frLoc = lang === 'fr' ? loc : toFrUrl(loc)
+    lines.push(`    <xhtml:link rel="alternate" hreflang="en-CA" href="${enLoc}"/>`)
+    lines.push(`    <xhtml:link rel="alternate" hreflang="fr-CA" href="${frLoc}"/>`)
+    lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${enLoc}"/>`)
   }
   lines.push('  </url>')
   return lines.join('\n')
@@ -85,6 +101,21 @@ async function listProductSlugs() {
   return slugs.sort()
 }
 
+async function listFrProductSlugs() {
+  const p = path.join(ROOT, 'fr', 'p')
+  let entries = []
+  try { entries = await fs.readdir(p, { withFileTypes: true }) } catch { return [] }
+  const slugs = []
+  for (const e of entries) {
+    if (!e.isDirectory()) continue
+    try {
+      await fs.access(path.join(p, e.name, 'index.html'))
+      slugs.push(e.name)
+    } catch { /* skip */ }
+  }
+  return slugs.sort()
+}
+
 async function run() {
   console.log(`--- regenerate-sitemap.mjs ${DRY ? '(dry-run)' : ''} ---`)
   const slugs = await listProductSlugs()
@@ -97,19 +128,36 @@ async function run() {
   blocks.push('  xmlns:xhtml="http://www.w3.org/1999/xhtml">')
   blocks.push('')
 
+  // EN marketing pages.
   for (const m of MARKETING) {
     blocks.push(urlNode({
-      loc: `${SITE}${m.path}`,
+      loc: `${SITE}${m.path === '/' ? '/' : m.path}`,
       lastmod: TODAY,
       changefreq: m.changefreq,
       priority: m.priority,
       hreflang: m.hreflang,
+      lang: 'en',
     }))
     blocks.push('')
   }
 
-  // Each product page — EN + FR hreflang.
-  // Product pages get a lower priority (0.5) than marketing pages so
+  // FR marketing pages — list each as its own primary entry so
+  // /fr/quote etc. land in the index instead of just being an
+  // hreflang alternate. Same priority as EN; same changefreq.
+  for (const m of MARKETING) {
+    const frPath = m.path === '/' ? '/fr/' : `/fr${m.path}`
+    blocks.push(urlNode({
+      loc: `${SITE}${frPath}`,
+      lastmod: TODAY,
+      changefreq: m.changefreq,
+      priority: m.priority,
+      hreflang: m.hreflang,
+      lang: 'fr',
+    }))
+    blocks.push('')
+  }
+
+  // EN product pages — lower priority (0.5) than marketing so
   // Google focuses crawl budget on the high-intent surfaces first.
   for (const slug of slugs) {
     blocks.push(urlNode({
@@ -118,6 +166,23 @@ async function run() {
       changefreq: 'weekly',
       priority: 0.5,
       hreflang: true,
+      lang: 'en',
+    }))
+    blocks.push('')
+  }
+
+  // FR product pages — only include slugs that actually have a
+  // /fr/p/<slug>/index.html on disk (the FR mirror generator may
+  // skip some slugs, e.g. ones without translatable content).
+  const frSlugs = await listFrProductSlugs()
+  for (const slug of frSlugs) {
+    blocks.push(urlNode({
+      loc: `${SITE}/fr/p/${slug}/`,
+      lastmod: TODAY,
+      changefreq: 'weekly',
+      priority: 0.5,
+      hreflang: true,
+      lang: 'fr',
     }))
     blocks.push('')
   }
@@ -133,7 +198,10 @@ async function run() {
     return
   }
   await fs.writeFile(path.join(ROOT, 'sitemap.xml'), xml + '\n')
-  console.log(`✓ wrote sitemap.xml (${MARKETING.length} marketing + ${slugs.length} product pages = ${MARKETING.length + slugs.length} URLs)`)
+  const total = MARKETING.length * 2 + slugs.length + frSlugs.length
+  console.log(`✓ wrote sitemap.xml — EN: ${MARKETING.length} marketing + ${slugs.length} products = ${MARKETING.length + slugs.length}`)
+  console.log(`                  FR: ${MARKETING.length} marketing + ${frSlugs.length} products = ${MARKETING.length + frSlugs.length}`)
+  console.log(`                  Total URLs: ${total}`)
 }
 
 run().catch(e => { console.error('failed:', e); process.exit(1) })
