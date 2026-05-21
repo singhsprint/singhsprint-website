@@ -1718,8 +1718,24 @@
       var method = (state.service || 'DTF').toLowerCase();
       // Map service labels → API methods
       if (!['embroidery','dtf','dtg','screen'].includes(method)) method = 'dtf';
+
+      // Collect the customer's actually-selected placements so the
+      // endpoint can apply per-size multipliers (a full back costs more
+      // than a left chest). Falls back to the legacy sides count if no
+      // placements have been picked yet, so the panel still shows a
+      // sensible preview number on first render.
+      var placements = Array.from(
+        document.querySelectorAll('input[name="placements[]"]:checked, input[name="placements"]:checked')
+      ).map(function(el){ return el.value; }).filter(Boolean);
+
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only' +
-                '?qty=' + qty + '&sides=' + sides + '&method=' + method;
+                '?qty=' + qty + '&method=' + method;
+      if (placements.length > 0) {
+        url += '&placements=' + encodeURIComponent(placements.join(','));
+      } else {
+        url += '&sides=' + sides;
+      }
+
       document.getElementById('byoPriceUnit').textContent  = '…';
       document.getElementById('byoPriceTotal').textContent = '…';
       fetch(url).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
@@ -1731,7 +1747,16 @@
         document.getElementById('byoPriceUnit').textContent  = '$' + d.unit_price.toFixed(2);
         document.getElementById('byoPriceTotal').textContent = '$' + (d.unit_price * qty).toFixed(2);
         document.getElementById('byoPriceMethod').textContent = method.charAt(0).toUpperCase() + method.slice(1);
-        document.getElementById('byoPriceSides').textContent  = sides + ' side' + (sides>1?'s':'');
+        // Sides label: prefer real placement count when present so the
+        // header reads "2 locations" instead of the legacy "2 sides".
+        var sidesEl = document.getElementById('byoPriceSides');
+        if (sidesEl) {
+          if (placements.length > 0) {
+            sidesEl.textContent = placements.length + ' location' + (placements.length === 1 ? '' : 's');
+          } else {
+            sidesEl.textContent = sides + ' side' + (sides > 1 ? 's' : '');
+          }
+        }
       });
     }
 
