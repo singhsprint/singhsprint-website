@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My allocated set · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1040px;margin:0 auto;padding:28px 24px 80px}
+    .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+    .back-link:hover{color:#1a1a1a}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:24px}
+
+    /* Program header card — lime accent so it feels like a perk */
+    .prog-header{background:#e8ff3c;border:2px solid #1a1a1a;border-radius:18px;padding:22px;margin-bottom:18px}
+    .prog-header h2{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;font-weight:800;line-height:1.15;margin-bottom:4px}
+    .prog-header .cohort{font-size:.78rem;color:#1a1a1a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px}
+    .prog-header .badge{display:inline-block;background:#1a1a1a;color:#e8ff3c;padding:3px 10px;border-radius:50px;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+    .prog-header .status-row{display:flex;gap:18px;font-size:.84rem;color:#1a1a1a;flex-wrap:wrap}
+    .prog-header .status-row strong{font-weight:800}
+
+    /* Slot card */
+    .slot{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .slot__hd{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+    .slot__title{font-size:1.05rem;font-weight:700}
+    .slot__sub{color:#666;font-size:.84rem;margin-bottom:16px}
+    .slot__hint{font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:10px}
+
+    /* Options grid */
+    .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:18px}
+    .opt{background:#fafaf7;border:1.5px solid #e0ddd1;border-radius:14px;padding:14px;cursor:pointer;transition:border-color .12s,background .12s,transform .12s;position:relative}
+    .opt:hover{border-color:#888;transform:translateY(-1px)}
+    .opt.is-selected{border-color:#1a1a1a;background:#fff;border-width:2px;padding:13px}
+    .opt.is-selected::before{content:"";position:absolute;top:-2px;left:-2px;right:-2px;height:4px;background:#e8ff3c;border-radius:14px 14px 0 0}
+    .opt__img{width:100%;height:90px;background:#f0eee5;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:.74rem;color:#999;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+    .opt__name{font-weight:700;font-size:.94rem;margin-bottom:2px}
+    .opt__sub{color:#888;font-size:.74rem}
+
+    /* Size + customization controls */
+    .controls{display:grid;grid-template-columns:160px 1fr;gap:14px 24px;align-items:start}
+    @media (max-width:640px){.controls{grid-template-columns:1fr}}
+    .controls label{display:block;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:6px}
+    select,input[type=text]{width:100%;padding:10px 12px;border:1px solid #e0ddd1;border-radius:10px;font-family:inherit;font-size:.94rem;color:#1a1a1a;background:#fff;outline:none}
+    select:focus,input[type=text]:focus{border-color:#1a1a1a}
+    .toggles{display:flex;flex-direction:column;gap:8px}
+    .toggle{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fafaf7;border:1px solid #e0ddd1;border-radius:10px;cursor:pointer;transition:border-color .12s,background .12s}
+    .toggle:hover{border-color:#888}
+    .toggle input{width:18px;height:18px;cursor:pointer;accent-color:#1a1a1a}
+    .toggle__lbl{flex:1;font-size:.92rem}
+    .toggle__sub{font-size:.74rem;color:#888;margin-top:2px}
+    .toggle__price{font-variant-numeric:tabular-nums;font-weight:700;font-size:.92rem;color:#1a1a1a}
+    .toggle__price.is-free{color:#22592c}
+
+    /* Footer / claim bar */
+    .slot__footer{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-top:16px;margin-top:16px;border-top:1px solid #f0eee5;flex-wrap:wrap}
+    .slot__total{font-size:.84rem;color:#666}
+    .slot__total strong{color:#1a1a1a;font-weight:800;font-variant-numeric:tabular-nums;font-size:1.05rem;margin-left:6px}
+    .btn{padding:11px 18px;border-radius:10px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,box-shadow .15s}
+    .btn--primary{background:#1a1a1a;color:#fff}
+    .btn--primary:hover{opacity:.94;box-shadow:0 4px 14px rgba(232,255,60,.45)}
+    .btn--ghost{background:#f4f2eb;color:#1a1a1a}
+    .btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+    /* Claimed state */
+    .slot.is-claimed{background:#f4f9f0;border-color:#b5dab5}
+    .claimed-banner{display:flex;align-items:center;gap:10px;background:#eef7e9;border:1px solid #b5dab5;color:#22592c;padding:12px 14px;border-radius:10px;margin-bottom:14px;font-size:.88rem}
+    .claimed-banner svg{flex-shrink:0}
+
+    .msg{padding:12px 14px;border-radius:10px;font-size:.86rem;margin-top:12px}
+    .msg--err{background:#fdecec;color:#a01a1a;border:1px solid #f4c2c2}
+    .msg--ok{background:#eef7e9;color:#22592c;border:1px solid #b5dab5}
+    .hide{display:none !important}
+    .loading{color:#999;font-size:.88rem;padding:20px;text-align:center}
+    .empty{text-align:center;color:#666;padding:40px 20px;background:#fff;border:1px dashed #d8d5c7;border-radius:18px}
+    .empty h2{font-family:'Playfair Display',Georgia,serif;font-size:1.4rem;font-weight:800;margin-bottom:8px;color:#1a1a1a}
+    .empty p{margin-bottom:16px}
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="wrap">
+  <a href="/account/" class="back-link">← Back to account</a>
+  <div id="acct-subnav"></div>
+
+  <div class="hero">
+    <h1>Your allocated set</h1>
+    <p>The items below are pre-designed by your school. Pick your size, choose any paid extras, and your order goes straight to production — no quote, no approval.</p>
+  </div>
+
+  <div id="root">
+    <div class="loading">Loading your allocations…</div>
+  </div>
+</main>
+
+<script src="/account/config.js"></script>
+<script src="/account/auth.js"></script>
+<script src="/components.js"></script>
+<script src="/lang.js"></script>
+<script src="/account/_account-ui.js"></script>
+<script>
+(async function(){
+  const root = document.getElementById('root');
+
+  // Helpers
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmtMoney = (cents) => new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD'}).format((cents||0)/100);
+
+  // Make sure the caller is signed in. window.api is provided by /account/auth.js.
+  if (!window.api || !window.api.authedFetch) {
+    root.innerHTML = '<div class="msg msg--err">Please <a href="/account/signin.html">sign in</a> to view your allocations.</div>';
+    return;
+  }
+
+  // Local UI state — keyed by programId+slotId. We do NOT keep a single
+  // monolithic state object because the page is structured one section
+  // per slot and each is independent.
+  const sel = {}; // sel[slotId] = { optionId, size, customizationIds:Set, busy }
+
+  let res;
+  try {
+    res = await window.api.authedFetch('/api/account/allocations');
+  } catch (e) {
+    root.innerHTML = `<div class="msg msg--err">${esc(e.message || 'Could not load your allocations.')}</div>`;
+    return;
+  }
+  if (!res.ok) {
+    const j = await res.json().catch(()=>({}));
+    if (res.status === 401) {
+      root.innerHTML = '<div class="msg msg--err">Please <a href="/account/signin.html">sign in</a> to view your allocations.</div>';
+      return;
+    }
+    root.innerHTML = `<div class="msg msg--err">${esc(j.error || ('Error: ' + res.status))}</div>`;
+    return;
+  }
+  const { programs } = await res.json();
+
+  if (!programs || programs.length === 0) {
+    root.innerHTML = `
+      <div class="empty">
+        <h2>No allocations yet</h2>
+        <p>You're not enrolled in a cohort with allocated items. If your school gave you an access code, enter it on the join page.</p>
+        <a class="btn btn--primary" href="/account/join.html">Enter access code</a>
+      </div>`;
+    return;
+  }
+
+  // Render each program in turn. A user usually has one program; for
+  // edge cases (faculty in multiple cohorts) we render them stacked.
+  root.innerHTML = programs.map(renderProgram).join('');
+
+  // Wire interactions once for the whole page.
+  root.addEventListener('change', onChange);
+  root.addEventListener('click',  onClick);
+
+  // ---------------------- renderers ----------------------
+
+  function renderProgram(p) {
+    const slotsWithOpts = (p.slots || []).filter((s) => (s.options || []).length > 0);
+    if (slotsWithOpts.length === 0) {
+      return `
+        <div class="prog-header">
+          <span class="badge">Your cohort</span>
+          <h2>${esc(p.name)}</h2>
+          ${p.cohortLabel ? `<div class="cohort">${esc(p.cohortLabel)}</div>` : ''}
+        </div>
+        <div class="empty">
+          <h2>Allocations not set up yet</h2>
+          <p>Your school hasn't configured the items for this cohort. Check back soon — or ping your program admin.</p>
+        </div>`;
+    }
+
+    const totalSlots   = slotsWithOpts.length;
+    const claimedSlots = slotsWithOpts.filter((s) => s.claim).length;
+
+    return `
+      <div class="prog-header">
+        <span class="badge">Your cohort</span>
+        <h2>${esc(p.name)}</h2>
+        ${p.cohortLabel ? `<div class="cohort">${esc(p.cohortLabel)}</div>` : ''}
+        <div class="status-row">
+          <span><strong>${claimedSlots}/${totalSlots}</strong> claimed</span>
+          <span>Order window: <strong>${p.isOpen ? 'open' : 'closed'}</strong></span>
+          ${p.firstBatchCovered ? '<span><strong>School covers</strong> the base · you pay only for extras</span>' : ''}
+        </div>
+      </div>
+      ${slotsWithOpts.map((s) => renderSlot(p, s)).join('')}
+    `;
+  }
+
+  function renderSlot(p, slot) {
+    if (slot.claim) return renderClaimedSlot(p, slot);
+
+    // First-load defaults: pick the option marked is_default (else first), no size, no customizations.
+    if (!sel[slot.id]) {
+      const def = (slot.options || []).find((o) => o.isDefault) || slot.options[0];
+      sel[slot.id] = {
+        optionId:         def ? def.id : null,
+        size:             '',
+        customizationIds: new Set(),
+        busy:             false,
+      };
+    }
+    const state    = sel[slot.id];
+    const selected = (slot.options || []).find((o) => o.id === state.optionId);
+    const extras   = selected
+      ? (selected.customizations || [])
+          .filter((c) => state.customizationIds.has(c.id))
+          .reduce((s, c) => s + (c.priceCents || 0), 0)
+      : 0;
+
+    const optionsHtml = (slot.options || []).map((opt) => `
+      <div class="opt ${opt.id === state.optionId ? 'is-selected' : ''}"
+           data-act="pick-option" data-slot="${esc(slot.id)}" data-option="${esc(opt.id)}">
+        <div class="opt__img">${opt.presetMockupId ? 'Mockup' : esc(opt.productId)}</div>
+        <div class="opt__name">${esc(opt.productId)}</div>
+        <div class="opt__sub">covered by school</div>
+      </div>
+    `).join('');
+
+    const customsHtml = selected && (selected.customizations || []).length
+      ? selected.customizations.map((c) => `
+          <label class="toggle">
+            <input type="checkbox" data-act="toggle-custom" data-slot="${esc(slot.id)}" data-custom="${esc(c.id)}"
+                   ${state.customizationIds.has(c.id) ? 'checked' : ''}>
+            <span class="toggle__lbl">
+              ${esc(c.label)}
+              <div class="toggle__sub">${esc(c.key)}</div>
+            </span>
+            <span class="toggle__price ${(c.priceCents||0)===0?'is-free':''}">
+              ${(c.priceCents||0) === 0 ? 'Free' : '+' + fmtMoney(c.priceCents)}
+            </span>
+          </label>
+        `).join('')
+      : '<div style="color:#888;font-size:.86rem">No paid extras for this option.</div>';
+
+    return `
+      <section class="slot" data-slot="${esc(slot.id)}">
+        <div class="slot__hd">
+          <div class="slot__title">${esc(slot.label)}</div>
+          <div class="slot__sub">Pick one · covered by school</div>
+        </div>
+
+        <div class="slot__hint">Options</div>
+        <div class="opts">${optionsHtml}</div>
+
+        <div class="controls">
+          <div>
+            <label for="size-${esc(slot.id)}">Size</label>
+            <select id="size-${esc(slot.id)}" data-act="size" data-slot="${esc(slot.id)}">
+              <option value="">Pick a size…</option>
+              <option ${state.size === 'XS' ? 'selected' : ''}>XS</option>
+              <option ${state.size === 'S'  ? 'selected' : ''}>S</option>
+              <option ${state.size === 'M'  ? 'selected' : ''}>M</option>
+              <option ${state.size === 'L'  ? 'selected' : ''}>L</option>
+              <option ${state.size === 'XL' ? 'selected' : ''}>XL</option>
+              <option ${state.size === '2XL' ? 'selected' : ''}>2XL</option>
+              <option ${state.size === '3XL' ? 'selected' : ''}>3XL</option>
+            </select>
+          </div>
+          <div>
+            <label>Customizations (you pay)</label>
+            <div class="toggles">${customsHtml}</div>
+          </div>
+        </div>
+
+        <div class="slot__footer">
+          <div class="slot__total">
+            Base: <strong>${fmtMoney(0)}</strong> ·
+            Extras: <strong>${fmtMoney(extras)}</strong>
+          </div>
+          <button class="btn btn--primary"
+                  data-act="claim" data-slot="${esc(slot.id)}" data-program="${esc(p.id)}"
+                  ${state.busy ? 'disabled' : ''}>
+            ${state.busy ? 'Claiming…' : extras > 0 ? `Claim &amp; pay ${fmtMoney(extras)} extras` : 'Claim my set'}
+          </button>
+        </div>
+        <div class="msg msg--err hide" data-err-for="${esc(slot.id)}"></div>
+      </section>
+    `;
+  }
+
+  function renderClaimedSlot(p, slot) {
+    const cl = slot.claim;
+    const opt = (slot.options || []).find((o) => o.id === cl.optionId);
+    const customs = opt
+      ? (opt.customizations || []).filter((c) => (cl.selectedCustomizationIds || []).includes(c.id))
+      : [];
+    return `
+      <section class="slot is-claimed">
+        <div class="slot__hd">
+          <div class="slot__title">${esc(slot.label)}</div>
+          <div class="slot__sub">Claimed · in production</div>
+        </div>
+        <div class="claimed-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>
+          You picked <strong>${esc(opt ? opt.productId : '—')}</strong> in size <strong>${esc(cl.size || '—')}</strong>${customs.length ? ` with ${customs.length} extra${customs.length===1?'':'s'}` : ''}.
+        </div>
+        <div style="font-size:.84rem;color:#666">
+          <a href="/account/orders.html" style="font-weight:700;text-decoration:underline;text-underline-offset:2px">View order →</a>
+        </div>
+      </section>
+    `;
+  }
+
+  // ---------------------- event handlers ----------------------
+
+  function onChange(e) {
+    const t = e.target;
+    const act = t.getAttribute('data-act');
+    if (act === 'size') {
+      const slotId = t.getAttribute('data-slot');
+      sel[slotId].size = t.value;
+      rerender();
+    } else if (act === 'toggle-custom') {
+      const slotId = t.getAttribute('data-slot');
+      const customId = t.getAttribute('data-custom');
+      if (t.checked) sel[slotId].customizationIds.add(customId);
+      else           sel[slotId].customizationIds.delete(customId);
+      rerender();
+    }
+  }
+
+  function onClick(e) {
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    const act = el.getAttribute('data-act');
+    if (act === 'pick-option') {
+      const slotId = el.getAttribute('data-slot');
+      const optionId = el.getAttribute('data-option');
+      sel[slotId].optionId = optionId;
+      sel[slotId].customizationIds = new Set(); // changing option resets toggles
+      rerender();
+    } else if (act === 'claim') {
+      const slotId    = el.getAttribute('data-slot');
+      const programId = el.getAttribute('data-program');
+      claim(programId, slotId);
+    }
+  }
+
+  // Re-fetch & re-render to keep program/state in sync.
+  async function rerender() {
+    // Soft re-render only — we don't refetch from the server, just redraw
+    // with current `sel` state and the existing `programs` data.
+    root.innerHTML = programs.map(renderProgram).join('');
+  }
+
+  async function claim(programId, slotId) {
+    const state = sel[slotId];
+    const errEl = document.querySelector(`[data-err-for="${slotId}"]`);
+    if (errEl) { errEl.classList.add('hide'); errEl.textContent = ''; }
+
+    if (!state.optionId) { return showErr(slotId, 'Pick an option first.'); }
+    if (!state.size)     { return showErr(slotId, 'Pick a size.'); }
+
+    state.busy = true;
+    rerender();
+
+    let r;
+    try {
+      r = await window.api.authedFetch('/api/account/allocations?action=claim', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          programId,
+          slotId,
+          optionId: state.optionId,
+          size:     state.size,
+          customizationIds: Array.from(state.customizationIds),
+        }),
+      });
+    } catch (e) {
+      state.busy = false;
+      showErr(slotId, e.message || 'Network error');
+      rerender();
+      return;
+    }
+
+    if (!r.ok) {
+      const j = await r.json().catch(()=>({}));
+      state.busy = false;
+      showErr(slotId, j.error || `Error ${r.status}`);
+      rerender();
+      return;
+    }
+    const out = await r.json();
+
+    // Extras → Stripe Checkout. Covered-only → just refresh the page.
+    if (out.checkoutUrl) {
+      window.location.href = out.checkoutUrl;
+    } else {
+      window.location.reload();
+    }
+  }
+
+  function showErr(slotId, msg) {
+    const errEl = document.querySelector(`[data-err-for="${slotId}"]`);
+    if (errEl) { errEl.textContent = msg; errEl.classList.remove('hide'); }
+  }
+})();
+</script>
+</body>
+</html>

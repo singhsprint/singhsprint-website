@@ -202,7 +202,7 @@ module.exports = async function handler(req, res) {
       if (pErr) return res.status(500).json({ error: pErr.message });
       if (!prog) return res.status(404).json({ error: 'program not found' });
 
-      const [membersRes, catalogRes, domainsRes, invitesRes] = await Promise.all([
+      const [membersRes, catalogRes, domainsRes, invitesRes, slotsRes, claimsRes] = await Promise.all([
         supabase.from('program_members')
           .select('user_id, cohort_label, spending_allowance_cents, spent_cents, joined_at, joined_via')
           .eq('program_id', id),
@@ -217,12 +217,30 @@ module.exports = async function handler(req, res) {
           .eq('program_id', id)
           .is('consumed_at', null)
           .is('revoked_at',  null)
-          .order('invited_at', { ascending: false })
+          .order('invited_at', { ascending: false }),
+        // Slot configuration for this program (count only — full editor lives in CRM).
+        supabase.from('program_allocation_slots')
+          .select('id, slot_key, label, covered_count')
+          .eq('program_id', id),
+        // Per-member claims so the admin roster can show "2/2 slots".
+        supabase.from('program_member_slot_claims')
+          .select('user_id, slot_id, order_id')
+          .eq('program_id', id),
       ]);
       if (membersRes.error)  return res.status(500).json({ error: membersRes.error.message });
       if (catalogRes.error)  return res.status(500).json({ error: catalogRes.error.message });
       if (domainsRes.error)  return res.status(500).json({ error: domainsRes.error.message });
       if (invitesRes.error)  return res.status(500).json({ error: invitesRes.error.message });
+      if (slotsRes.error)    return res.status(500).json({ error: slotsRes.error.message });
+      if (claimsRes.error)   return res.status(500).json({ error: claimsRes.error.message });
+
+      const totalSlots = (slotsRes.data || []).length;
+      // Build claims-per-user map for the roster.
+      const claimsByUser = {};
+      for (const cl of claimsRes.data || []) {
+        if (!claimsByUser[cl.user_id]) claimsByUser[cl.user_id] = new Set();
+        claimsByUser[cl.user_id].add(cl.slot_id);
+      }
 
       // Hydrate member emails from profiles for the admin table.
       const userIds = (membersRes.data || []).map((m) => m.user_id);
@@ -276,6 +294,12 @@ module.exports = async function handler(req, res) {
         // spent_cents on program_members is a stale cache; the live
         // number comes from summing paid orders.
         spentCents:              spentByUser[m.user_id] || 0,
+        // How many of the cohort's slots this member has claimed. Surfaced
+        // in the admin roster (e.g. "2/2 slots"). totalSlots is also
+        // returned at the program level so the UI can show 0/N for
+        // not-yet-claimed members.
+        slotsClaimed:            (claimsByUser[m.user_id]?.size) || 0,
+        slotsTotal:              totalSlots,
         joinedAt:                m.joined_at,
         joinedVia:               m.joined_via
       }));

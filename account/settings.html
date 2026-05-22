@@ -153,6 +153,37 @@
     <div id="cards-list" class="cards-list"></div>
     <div id="cards-empty" class="empty hide">No saved cards yet.</div>
   </section>
+
+  <!-- Organization billing — only rendered for business-tier accounts.
+       Shows up to one selected organization (the current default_org), with
+       saved payment methods used for cohort invoices. ACH/PAD is the
+       preferred method; card is supported as a fallback. -->
+  <section id="org-billing-card" class="card hide">
+    <h2>Cohort invoice billing
+      <button id="org-add-pm" class="primary" type="button">+ Add payment method</button>
+    </h2>
+    <p style="color:#666;font-size:.88rem;margin-bottom:14px">
+      Used when Singhs Print rolls up your cohort's covered orders into one
+      invoice. Direct deposit (PAD/ACH) is preferred — pay-by-card is supported
+      as a fallback.
+    </p>
+
+    <div class="row" style="border-top:none;padding-top:0">
+      <span class="key">Organization</span>
+      <span class="val" id="org-name">—</span>
+    </div>
+    <div class="row">
+      <span class="key">Billing email</span>
+      <span class="val" style="display:flex;gap:6px;align-items:center;justify-content:flex-end;max-width:none">
+        <input id="org-billing-email" type="email" placeholder="ap@school.edu" style="max-width:260px;padding:6px 10px;border:1px solid #e0ddd1;border-radius:8px;font-family:inherit;font-size:.88rem">
+        <button class="ghost" id="org-billing-email-save" type="button" style="padding:6px 10px">Save</button>
+      </span>
+    </div>
+
+    <div id="org-pm-list" class="cards-list" style="margin-top:14px"></div>
+    <div id="org-pm-empty" class="empty hide">No payment methods on file. Add one so cohort invoices can be charged automatically.</div>
+    <div id="org-billing-msg" class="msg hide"></div>
+  </section>
 </main>
 
 <!-- ------------------------------------------------------------------ -->
@@ -233,7 +264,197 @@
     await refreshDisplayName();
     await refreshPasswordStatus();
     await refreshCardsView();
+    await initOrgBilling();
   })();
+
+  // ------------- organization billing (cohort invoice payment methods) -------------
+  //
+  // Only renders for business-tier accounts. We discover the user's
+  // organization via /api/account/business-request (it returns the
+  // approved status + organization_id when the caller is an owner). For
+  // a user in multiple orgs, settings shows the default_organization_id.
+  let currentOrgId = null;
+  let currentOrgName = null;
+  async function initOrgBilling() {
+    try {
+      const res = await api.authedFetch('/api/account/business-request');
+      if (!res.ok) return; // 404 / 403 = not a business account; leave card hidden
+      const data = await res.json();
+      // The endpoint returns either an approved-business shape or a
+      // pending/none shape. Both safe to peek at.
+      const orgId   = data.organization?.id || data.defaultOrganizationId || null;
+      const orgName = data.organization?.name || data.organizationName || null;
+      if (!orgId) return;
+      currentOrgId   = orgId;
+      currentOrgName = orgName;
+      $('org-billing-card').classList.remove('hide');
+      $('org-name').textContent = orgName || '—';
+      await refreshOrgPaymentMethods();
+    } catch (_) {
+      // Silently skip — non-business accounts shouldn't trip an error.
+    }
+  }
+
+  async function refreshOrgPaymentMethods() {
+    if (!currentOrgId) return;
+    const res = await api.authedFetch('/api/account/payment-methods?organizationId=' + encodeURIComponent(currentOrgId));
+    if (!res.ok) { showMsg('org-billing-msg', 'Could not load payment methods.', 'err'); return; }
+    const data = await res.json();
+    $('org-billing-email').value = data.billingEmail || '';
+
+    const list  = $('org-pm-list');
+    const empty = $('org-pm-empty');
+    list.innerHTML = '';
+    const pms = data.paymentMethods || [];
+    if (pms.length === 0) {
+      empty.classList.remove('hide');
+      return;
+    }
+    empty.classList.add('hide');
+    pms.forEach((pm) => {
+      // Render type-specific label. Direct-deposit types (PAD/ACH) show
+      // bank context; card shows brand + last4.
+      let leftHtml;
+      if (pm.type === 'card') {
+        const brand = (pm.brand || 'card').toLowerCase();
+        leftHtml = `
+          <span class="brand ${brand}">${(pm.brand || 'CARD').slice(0,5).toUpperCase()}</span>
+          <div class="card-row__meta">
+            <div class="card-row__line">···· ···· ···· ${pm.last4 || '••••'}</div>
+            <div class="card-row__sub">exp ${pm.expMonth || '—'}/${String(pm.expYear || '').slice(-2)}</div>
+          </div>`;
+      } else {
+        // acss_debit / us_bank_account
+        const label = pm.type === 'acss_debit' ? 'Direct deposit (PAD)' : 'Direct deposit (ACH)';
+        leftHtml = `
+          <span class="brand" style="background:#22592c">BANK</span>
+          <div class="card-row__meta">
+            <div class="card-row__line">${label}</div>
+            <div class="card-row__sub">${pm.bankName ? pm.bankName + ' · ' : ''}···${pm.last4 || '••••'}</div>
+          </div>`;
+      }
+      const row = document.createElement('div');
+      row.className = 'card-row';
+      row.innerHTML = `
+        <div class="card-row__left">${leftHtml}</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${pm.isDefault ? '<span class="default-pill">Default</span>' : `<button class="ghost" data-set-default="${pm.id}">Use as default</button>`}
+          <button class="danger" data-rm-pm="${pm.id}">Remove</button>
+        </div>`;
+      list.appendChild(row);
+    });
+
+    // Wire row actions.
+    list.querySelectorAll('button[data-set-default]').forEach((b) => {
+      b.onclick = async () => {
+        const r = await api.authedFetch('/api/account/payment-methods?action=set-default', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizationId: currentOrgId, paymentMethodId: b.dataset.setDefault }),
+        });
+        if (!r.ok) { const j = await r.json().catch(()=>({})); showMsg('org-billing-msg', j.error || 'Update failed', 'err'); return; }
+        await refreshOrgPaymentMethods();
+      };
+    });
+    list.querySelectorAll('button[data-rm-pm]').forEach((b) => {
+      b.onclick = async () => {
+        if (!confirm('Remove this payment method? Cohort invoices will fall back to a sent invoice (no auto-charge) until a new method is added.')) return;
+        const r = await api.authedFetch('/api/account/payment-methods', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizationId: currentOrgId, paymentMethodId: b.dataset.rmPm }),
+        });
+        if (!r.ok && r.status !== 204) { const j = await r.json().catch(()=>({})); showMsg('org-billing-msg', j.error || 'Remove failed', 'err'); return; }
+        await refreshOrgPaymentMethods();
+      };
+    });
+  }
+
+  // Save billing email
+  document.addEventListener('click', async (e) => {
+    if (e.target && e.target.id === 'org-billing-email-save') {
+      if (!currentOrgId) return;
+      const r = await api.authedFetch('/api/account/payment-methods?action=set-billing-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizationId: currentOrgId, billingEmail: $('org-billing-email').value.trim() }),
+      });
+      if (!r.ok) { const j = await r.json().catch(()=>({})); showMsg('org-billing-msg', j.error || 'Save failed', 'err'); return; }
+      showMsg('org-billing-msg', 'Saved.', 'ok');
+    }
+  });
+
+  // Add payment method — prompts user to choose direct-deposit vs card,
+  // then opens Stripe Elements to confirm a SetupIntent. We reuse the
+  // <#modal-card> shell since it already has the styling; the inner
+  // wiring is in stripeElementsAttachForOrg() below.
+  document.getElementById('org-add-pm').addEventListener('click', async () => {
+    if (!currentOrgId) return;
+    const choice = prompt('Payment method type:\n  1) Direct deposit (PAD / ACH)\n  2) Credit / debit card\n\nEnter 1 or 2:');
+    const pmType = choice === '2' ? 'card' : 'acss_debit';
+    try {
+      const r = await api.authedFetch('/api/account/payment-methods?action=setup-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizationId: currentOrgId, paymentMethodType: pmType }),
+      });
+      if (!r.ok) { const j = await r.json().catch(()=>({})); showMsg('org-billing-msg', j.error || 'Could not start payment-method flow', 'err'); return; }
+      const { clientSecret, publishableKey } = await r.json();
+      if (!publishableKey) { showMsg('org-billing-msg', 'Stripe is not configured for this site.', 'err'); return; }
+
+      // Open Stripe Elements modal (minimal — reuses the card modal).
+      await stripeElementsAttachForOrg({ clientSecret, publishableKey, pmType });
+      // Element-confirm fires the webhook; poll the GET endpoint once
+      // refresh runs so the new PM appears.
+      setTimeout(refreshOrgPaymentMethods, 2500);
+    } catch (e) {
+      showMsg('org-billing-msg', e.message || 'Network error', 'err');
+    }
+  });
+
+  async function stripeElementsAttachForOrg({ clientSecret, publishableKey, pmType }) {
+    // Reuse the existing #modal-card shell — its inner #card-element div
+    // is empty between sessions. We mount a fresh PaymentElement here,
+    // confirm the intent, and rely on the webhook to persist the PM.
+    const modal = document.getElementById('modal-card');
+    const el    = document.getElementById('card-element');
+    const errBox = document.getElementById('card-msg');
+    el.innerHTML = '';
+    modal.classList.remove('hide');
+    const stripe = Stripe(publishableKey);
+    const elements = stripe.elements({ clientSecret });
+    // For acss_debit + us_bank_account, Stripe handles the multi-step
+    // verification UI inside its own modal once we call confirmSetup.
+    const paymentEl = elements.create('payment', { layout: 'tabs' });
+    paymentEl.mount(el);
+
+    const saveBtn   = document.getElementById('card-save');
+    const cancelBtn = document.getElementById('card-cancel');
+    const handler = async () => {
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      const { error } = await stripe.confirmSetup({
+        elements,
+        confirmParams: { return_url: window.location.href },
+        redirect: 'if_required',
+      });
+      saveBtn.disabled = false; saveBtn.textContent = 'Save';
+      if (error) {
+        errBox.textContent = error.message || 'Save failed';
+        errBox.className = 'msg msg--err';
+        return;
+      }
+      modal.classList.add('hide');
+      saveBtn.removeEventListener('click', handler);
+      cancelBtn.removeEventListener('click', cancelHandler);
+    };
+    const cancelHandler = () => {
+      modal.classList.add('hide');
+      saveBtn.removeEventListener('click', handler);
+      cancelBtn.removeEventListener('click', cancelHandler);
+    };
+    saveBtn.addEventListener('click', handler);
+    cancelBtn.addEventListener('click', cancelHandler);
+  }
 
   // ------------- display name (inline edit) -------------
   // Stored on profiles.display_name. Read piggybacks on the referral GET
