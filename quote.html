@@ -1719,14 +1719,26 @@
       // Map service labels → API methods
       if (!['embroidery','dtf','dtg','screen'].includes(method)) method = 'dtf';
 
-      // Collect the customer's actually-selected placements so the
-      // endpoint can apply per-size multipliers (a full back costs more
-      // than a left chest). Falls back to the legacy sides count if no
-      // placements have been picked yet, so the panel still shows a
-      // sensible preview number on first render.
-      var placements = Array.from(
-        document.querySelectorAll('input[name="placements[]"]:checked, input[name="placements"]:checked')
-      ).map(function(el){ return el.value; }).filter(Boolean);
+      // Collect the customer's actually-selected placement PRESETS
+      // (e.g. "full-front", "back-full") so the endpoint can apply
+      // per-size multipliers — a full back costs more than a left chest.
+      //
+      // The form doesn't expose them as <input name="placements[]">
+      // checkboxes; instead each location holds a preset id in the
+      // `presetByLocation` JS map and a comma-separated mirror in the
+      // hidden #placementPresetInput. We prefer the JS map (always
+      // current) but fall back to the hidden input so this still works
+      // in any reduced-JS edge case.
+      var placements = [];
+      try {
+        if (typeof presetByLocation === 'object' && presetByLocation) {
+          placements = Object.values(presetByLocation).filter(Boolean);
+        }
+        if (placements.length === 0) {
+          var presetVal = (document.getElementById('placementPresetInput') || {}).value || '';
+          placements = presetVal.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        }
+      } catch (e) { placements = []; }
 
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only' +
                 '?qty=' + qty + '&method=' + method;
@@ -1744,8 +1756,12 @@
           document.getElementById('byoPriceTotal').textContent = '—';
           return;
         }
-        document.getElementById('byoPriceUnit').textContent  = '$' + d.unit_price.toFixed(2);
-        document.getElementById('byoPriceTotal').textContent = '$' + (d.unit_price * qty).toFixed(2);
+        var unit  = d.unit_price;
+        var total = (unit * qty);
+
+        // Update the inline BYO panel (Step 1 left-column placement).
+        document.getElementById('byoPriceUnit').textContent  = '$' + unit.toFixed(2);
+        document.getElementById('byoPriceTotal').textContent = '$' + total.toFixed(2);
         document.getElementById('byoPriceMethod').textContent = method.charAt(0).toUpperCase() + method.slice(1);
         // Sides label: prefer real placement count when present so the
         // header reads "2 locations" instead of the legacy "2 sides".
@@ -1756,6 +1772,32 @@
           } else {
             sidesEl.textContent = sides + ' side' + (sides > 1 ? 's' : '');
           }
+        }
+
+        // Mirror into the right-panel #livePriceStrip so the BYO flow
+        // surfaces in the same prominent spot the catalog flow uses —
+        // customer sees one canonical "live estimate" regardless of
+        // whether they're picking from our catalog or shipping us blanks.
+        // We hide the unit suffix swap because BYO is /garment, not /unit.
+        var strip = document.getElementById('livePriceStrip');
+        if (strip) {
+          strip.style.display = 'block';
+          var stripUnit   = document.getElementById('livePriceUnit');
+          var stripSuffix = document.getElementById('livePriceUnitSuffix');
+          var stripQty    = document.getElementById('livePriceQty');
+          var stripTotW   = document.getElementById('livePriceTotalWrap');
+          var stripTotal  = document.getElementById('livePriceTotal');
+          if (stripUnit)   stripUnit.textContent   = '$' + unit.toFixed(2);
+          if (stripSuffix) stripSuffix.textContent = '/garment';
+          var locLabel = placements.length > 0
+            ? (placements.length + ' location' + (placements.length === 1 ? '' : 's'))
+            : (sides + ' side' + (sides > 1 ? 's' : ''));
+          if (stripQty) stripQty.textContent =
+            qty + ' garment' + (qty === 1 ? '' : 's') +
+            ' · ' + method.toUpperCase() +
+            ' · ' + locLabel;
+          if (stripTotW)  stripTotW.style.display = 'block';
+          if (stripTotal) stripTotal.textContent = '$' + total.toFixed(2);
         }
       });
     }
@@ -3763,8 +3805,10 @@
       }
       strip.style.display = 'block';
       // Make sure the "/unit" suffix is visible — cart mode hides it.
+      // Also reset the label to "/unit" in case we just came from BYO
+      // mode (which sets it to "/garment").
       var suf = document.getElementById('livePriceUnitSuffix');
-      if (suf) suf.style.display = '';
+      if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
       var qtyLabel = qty && qty > 0
@@ -5150,13 +5194,40 @@
         // /api/inbound/upload endpoint; the returned storage path
         // travels alongside the structured payload so the 30-min
         // mockup cron has something to render against.
+        //
+        // IMPORTANT: per-placement and per-cart-item file inputs are
+        // re-rendered (innerHTML = …) every time placements or cart
+        // items change — including immediately after `onchange` fires
+        // via attachPlacementFile() / cartAttachItemFile(). That wipes
+        // the `.files` list on the DOM <input>, so by submit time the
+        // form has empty file inputs even though the customer DID
+        // attach artwork. The actual File objects live in the JS maps
+        // `placementFiles` (single-product flow) and `cartItemFiles`
+        // (catalog cart flow). Check those FIRST, fall back to the
+        // DOM only for the legacy #designFile path.
         var firstFile = null;
         try {
-          var fileInputs = form.querySelectorAll('input[type="file"]');
-          for (var i = 0; i < fileInputs.length; i++) {
-            if (fileInputs[i].files && fileInputs[i].files[0]) {
-              firstFile = fileInputs[i].files[0];
-              break;
+          if (typeof placementFiles === 'object' && placementFiles) {
+            var pfKeys = Object.keys(placementFiles);
+            for (var pi = 0; pi < pfKeys.length; pi++) {
+              var pfv = placementFiles[pfKeys[pi]];
+              if (pfv instanceof File) { firstFile = pfv; break; }
+            }
+          }
+          if (!firstFile && typeof cartItemFiles === 'object' && cartItemFiles) {
+            var cfKeys = Object.keys(cartItemFiles);
+            for (var ci = 0; ci < cfKeys.length; ci++) {
+              var cfv = cartItemFiles[cfKeys[ci]];
+              if (cfv instanceof File) { firstFile = cfv; break; }
+            }
+          }
+          if (!firstFile) {
+            var fileInputs = form.querySelectorAll('input[type="file"]');
+            for (var i = 0; i < fileInputs.length; i++) {
+              if (fileInputs[i].files && fileInputs[i].files[0]) {
+                firstFile = fileInputs[i].files[0];
+                break;
+              }
             }
           }
         } catch (e) { /* file collection should never break submit */ }
