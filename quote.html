@@ -231,6 +231,15 @@
     .ci-chip__remove:hover{opacity:1}
     .ci-chip--add{background:#fff;color:#1a1a1a;border:1.5px dashed #d0cdc0;cursor:pointer;font-family:inherit;padding:5px 12px;transition:all .12s}
     .ci-chip--add:hover{border-color:#1a1a1a;background:#fafaf6}
+    /* 2026-05-24 — Per-placement surcharge badge on selected chips +
+       on picker options. The "+$3" reads as additive on top of the
+       base unit price so the customer understands picking Full Front
+       costs more than Left Chest. Picker-side uses amber-yellow on
+       the white chip; selected-chip side stays yellow-on-dark so it
+       coexists with the chip's existing yellow text. */
+    .ci-chip__surcharge{font-weight:700;font-size:.7rem;color:#e8ff3c;background:rgba(232,255,60,.18);padding:1px 6px;border-radius:50px;line-height:1}
+    .ci-picker__surcharge{font-weight:600;color:#a16207;font-size:.7rem;margin-left:2px}
+    .ci-picker__opt.is-selected .ci-picker__surcharge{color:#e8ff3c}
     .ci-picker{display:none;flex-basis:100%;margin-top:10px;padding:14px;border:1.5px solid #e8e6df;border-radius:12px;background:#fafaf6}
     .ci-picker.open{display:block}
     .ci-picker__group{margin-bottom:12px}
@@ -4552,8 +4561,23 @@
     function renderCartPlacementWidget(idx, placements, garmentType) {
       var picked = placements || [];
       var pickerOpen = (_cartPickerOpenIdx === idx);
+      // Per-item method (for surcharge labeling on selected chips). Same
+      // resolution rule as the picker: per-item wins, else global.
+      var perItemMethod = '';
+      try {
+        var it = SinghsCart.read().items[idx];
+        if (it && it.decoration_type) perItemMethod = it.decoration_type;
+      } catch (e) { /* ignore */ }
+      var effectiveMethod = perItemMethod || String((typeof state !== 'undefined' && state.service) || '');
       var chipsHtml = picked.map(function(p) {
-        return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) +
+        // 2026-05-24 — append the per-piece surcharge to the selected
+        // chip so customers see it without having to re-open the
+        // picker. Skipped for $0 placements + for embroidery.
+        var surcharge = placementSurchargeFor(p, effectiveMethod);
+        var surchargeBadge = surcharge > 0
+          ? ' <small class="ci-chip__surcharge">+$' + surcharge + '</small>'
+          : '';
+        return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) + surchargeBadge +
                '<button type="button" class="ci-chip__remove" aria-label="Remove ' + escapeAttr(_placementLabel(p)) +
                '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button></span>';
       }).join('');
@@ -4582,9 +4606,43 @@
       'center-chest': '5×5″ hoop',
       'full-front':   'larger jumbo hoop',
     };
+    // 2026-05-24 — Per-placement DTF/DTG surcharges, mirrored from the
+    // pricing_size_modifiers matrix in the CRM (Settings → Pricing →
+    // Size matrix). Used for in-picker labels like "Full Front · +$3/pc"
+    // so customers see the cost of bigger prints before they click.
+    // Placements not listed have no surcharge (Left Chest, Center Chest,
+    // sleeves, hood, cap panels, etc.). Embroidery uses a different
+    // pricing path (engine's embroidery_placement_multipliers) so the
+    // chip label only renders for DTG/DTF/Not-sure on garments that
+    // support those methods.
+    var DTF_PLACEMENT_SURCHARGE_CAD = {
+      'full-front':  3,
+      'oversized':   4,
+      'back-across': 4,
+      'back-full':   5,
+    };
+    // 2026-05-24 — Resolve the per-piece DTF/DTG surcharge for a given
+    // placement, or 0 when the placement carries none / when the
+    // current method is embroidery (different pricing path). Used by
+    // the picker chip labels so customers see "+$3/pc" on Full Front
+    // before they click.
+    function placementSurchargeFor(presetId, method) {
+      var m = String(method || '').toLowerCase();
+      if (m === 'embroidery') return 0; // embroidery pricing handled by engine multipliers
+      return Number(DTF_PLACEMENT_SURCHARGE_CAD[presetId] || 0);
+    }
     function renderCartPlacementPicker(idx, picked, garmentType) {
       var groups = placementGroupsFor(garmentType);
-      var isEmb  = String((typeof state !== 'undefined' && state.service) || '').toLowerCase() === 'embroidery';
+      // Per-item method (set in each cart row's Print Method picker) —
+      // takes precedence over the legacy global state.service. Falls
+      // back to the global when the item hasn't picked yet.
+      var perItemMethod = '';
+      try {
+        var it = SinghsCart.read().items[idx];
+        if (it && it.decoration_type) perItemMethod = it.decoration_type;
+      } catch (e) { /* ignore */ }
+      var effectiveMethod = perItemMethod || String((typeof state !== 'undefined' && state.service) || '');
+      var isEmb  = String(effectiveMethod).toLowerCase() === 'embroidery';
       var pickedSet = {};
       picked.forEach(function(p){ pickedSet[p] = true; });
       var html = '';
@@ -4599,9 +4657,15 @@
         html += '  <div class="ci-picker__opts">';
         ids.forEach(function(id) {
           var sel = pickedSet[id] ? ' is-selected' : '';
-          var hint = isEmb && EMB_PLACEMENT_HINT[id]
-            ? ' <small style="opacity:.7;font-weight:500">· ' + EMB_PLACEMENT_HINT[id] + '</small>'
-            : '';
+          var hint = '';
+          if (isEmb && EMB_PLACEMENT_HINT[id]) {
+            hint = ' <small style="opacity:.7;font-weight:500">· ' + EMB_PLACEMENT_HINT[id] + '</small>';
+          } else {
+            var surcharge = placementSurchargeFor(id, effectiveMethod);
+            if (surcharge > 0) {
+              hint = ' <small class="ci-picker__surcharge">+$' + surcharge + '/pc</small>';
+            }
+          }
           html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + hint + '</button>';
         });
         html += '  </div>';
