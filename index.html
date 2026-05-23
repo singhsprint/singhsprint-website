@@ -832,8 +832,15 @@
         // initial paint already shows live prices if the fetch is fast.
         (function fetchLiveTiers() {
           try {
-            var url = 'https://singhsprint-crm.vercel.app/api/pricing/homepage-tiers';
-            fetch(url, { cache: 'force-cache' })
+            // Default cache mode (respects the CRM's s-maxage=600
+            // Cache-Control), with a daily cache-bust so customers
+            // always see fresh prices within 24h even if a CDN edge
+            // is holding a stale copy. force-cache used to stick to
+            // whatever the first response was; that hid pricing
+            // updates from returning visitors for hours.
+            var dayKey = new Date().toISOString().slice(0, 10);
+            var url = 'https://singhsprint-crm.vercel.app/api/pricing/homepage-tiers?d=' + dayKey;
+            fetch(url)
               .then(function(r) { return r.ok ? r.json() : null; })
               .then(function(j) {
                 if (!j || !j.tiers) return;
