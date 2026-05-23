@@ -585,6 +585,89 @@
       .size-grid{grid-template-columns:repeat(3,1fr)}
     }
 
+    /* ───── Mobile polish pass — 2026-05-24 ─────────────────────────────
+       Targeted improvements for phones based on real-device testing.
+       Everything here is additive over the existing breakpoints above,
+       and uses !important sparingly (only where the cascade fights us). */
+    @media(max-width:600px){
+      /* 1. iOS-zoom defeat — Safari zooms in on any input whose
+         computed font-size is < 16px when the user taps to focus.
+         That zoom never zooms back out cleanly and is the single
+         worst mobile UX bug. Force 16px on every text/number/email/
+         tel input + textarea + select inside the form sections. */
+      .form-section input[type="text"],
+      .form-section input[type="email"],
+      .form-section input[type="tel"],
+      .form-section input[type="number"],
+      .form-section input[type="date"],
+      .form-section input[type="url"],
+      .form-section textarea,
+      .form-section select{
+        font-size:16px !important;
+      }
+
+      /* 2. Larger touch targets on placement preset cards. 44×44 is
+         Apple's HIG minimum; current cards trended ~38px tall on
+         narrow phones. Bump padding so even big-thumb taps land. */
+      .preset-card{
+        min-height:96px;
+        padding:14px 10px !important;
+      }
+      .preset-card .preset-label{font-size:.86rem !important}
+
+      /* 3. Loc-tab (view switcher above mockup) — wider tap area on
+         phones, was 11px×8px which made adjacent tabs error-prone. */
+      .loc-tab{
+        padding:14px 8px !important;
+        font-size:.78rem !important;
+        min-height:44px;
+      }
+
+      /* 4. Bottom safe-area + keyboard-aware padding on the live-price
+         strip. The strip uses position:fixed bottom:0 on phones (set in
+         components.js); we add safe-area-inset-bottom so it clears the
+         home indicator, AND we leave the body with bottom padding equal
+         to the strip's height so the form's last fields aren't covered. */
+      #livePriceStrip{
+        padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px) !important;
+      }
+      body{
+        padding-bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important;
+      }
+
+      /* 5. The per-placement upload card — 12px×14px padding gave a
+         ~52px tap target including content, fine, but the explicit
+         file-input <label> wraps a hidden input that some Android
+         browsers only fire `change` on if the label has enough area
+         around the visible click region. Lock to ≥56px tall. */
+      .placement-upload{min-height:56px}
+
+      /* 6. Hero CTA + nav buttons — bump every primary action to a
+         comfortable 48px min-height. Tap-target lint passes. */
+      .btn-primary, .btn--primary, .step-buttons .btn{
+        min-height:48px;
+      }
+
+      /* 7. Loc-check chip (the multi-select checkbox for placements
+         inside the cart-item editor) was 12×14px padding which felt
+         cramped two-up; widen now that the grid is single-col on the
+         tightest breakpoints. */
+      .loc-check{padding:14px 14px !important;min-height:48px}
+      .loc-check .loc-label{font-size:.92rem !important}
+    }
+
+    /* Visual-viewport-aware behavior — when the on-screen keyboard
+       slides up, modern browsers expose the squeezed viewport via
+       window.visualViewport. We set a CSS custom property from JS
+       (see body script) so the sticky price strip can offset itself
+       above the keyboard instead of being covered by it. */
+    @supports (height: 100dvh) {
+      #livePriceStrip{
+        bottom: var(--sp-keyboard-offset, 0px) !important;
+        transition: bottom .15s ease;
+      }
+    }
+
     /* ========== CANVAS EDITOR ========== */
     .canvas-wrapper{position:relative;overflow:hidden;background:linear-gradient(145deg,#f2f1ee 0%,#e9e8e4 100%);aspect-ratio:5/6}
     .canvas-wrapper .garment-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
@@ -1051,17 +1134,14 @@
             <h2 data-i18n="quote.step2.h">Your design &amp; sizes</h2>
             <p class="step-desc" data-i18n="quote.step2.desc">Upload your artwork to see it on the mockup. Then enter your size breakdown.</p>
 
-            <!-- Vestigial. The per-placement upload list in Step 1 handles
-                 every case (single-product, catalog cart, bring-your-own).
-                 We keep the hidden <input type="file" id="designFile"> here
-                 so older JS that still references designFile.click() doesn't
-                 explode, but the visual dropzone is permanently hidden. -->
-            <div class="form-group" id="dropZoneWrapper" style="display:none">
-              <label class="file-upload" for="designFile" id="dropZone" style="display:none">
-                <input type="file" id="designFile" name="design" accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg">
-              </label>
-              <p class="hint" id="fileName" style="display:none"></p>
-            </div>
+            <!-- 2026-05-24 — legacy single-input dropzone removed. The
+                 per-placement upload list in Step 1 has handled every
+                 case (single-product, catalog cart, bring-your-own) for
+                 several weeks with no submissions hitting the legacy
+                 fallback. JS references to #designFile / #dropZone /
+                 #fileName are now null-guarded so any straggler code
+                 path no-ops instead of throwing. -->
+
 
             <!-- Size breakdown -->
             <div class="size-section">
@@ -3011,26 +3091,38 @@
       canvas.renderAll();
     }
 
-    // ===== FILE UPLOAD =====
-    document.getElementById('designFile').addEventListener('change', function(e) {
-      handleFile(e.target.files[0]);
-    });
-
-    var dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#1a1a1a'; });
-    dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#ddd'; });
-    dropZone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      dropZone.style.borderColor = '#ddd';
-      if (e.dataTransfer.files.length) {
-        document.getElementById('designFile').files = e.dataTransfer.files;
-        handleFile(e.dataTransfer.files[0]);
+    // ===== FILE UPLOAD (legacy canvas-mockup feeder) =====
+    // The per-placement upload list in Step 1 has replaced this path
+    // since Phase A landed. The #designFile / #dropZone elements were
+    // removed from the HTML on 2026-05-24; the listeners below are
+    // kept (null-guarded) for any future re-introduction of a canvas
+    // preview, and so this script block doesn't throw on null.
+    (function () {
+      var designFileEl = document.getElementById('designFile');
+      if (designFileEl) {
+        designFileEl.addEventListener('change', function(e) {
+          handleFile(e.target.files[0]);
+        });
       }
-    });
+      var dropZone = document.getElementById('dropZone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#1a1a1a'; });
+        dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#ddd'; });
+        dropZone.addEventListener('drop', function(e) {
+          e.preventDefault();
+          dropZone.style.borderColor = '#ddd';
+          if (e.dataTransfer.files.length) {
+            if (designFileEl) designFileEl.files = e.dataTransfer.files;
+            handleFile(e.dataTransfer.files[0]);
+          }
+        });
+      }
+    })();
 
     function handleFile(file) {
       if (!file) return;
-      document.getElementById('fileName').textContent = file.name;
+      var fileNameEl = document.getElementById('fileName');
+      if (fileNameEl) fileNameEl.textContent = file.name;
       // Reflect the upload in the in-section placement upload card too
       var pu      = document.getElementById('placementUpload');
       var puTitle = document.getElementById('placementUploadTitle');
@@ -3114,9 +3206,9 @@
       canvas.remove(designObject);
       designObject = null;
       state.designSrc = null;
-      document.getElementById('downloadMockup').style.display = 'none';
-      document.getElementById('fileName').textContent = '';
-      document.getElementById('designFile').value = '';
+      var dlBtn = document.getElementById('downloadMockup'); if (dlBtn) dlBtn.style.display = 'none';
+      var fnEl  = document.getElementById('fileName');       if (fnEl)  fnEl.textContent = '';
+      var dfEl  = document.getElementById('designFile');     if (dfEl)  dfEl.value = '';
       // Reset placement-upload card back to its empty-state copy
       var pu      = document.getElementById('placementUpload');
       var puTitle = document.getElementById('placementUploadTitle');
@@ -4416,6 +4508,36 @@
       });
     });
 
+    // ───── Mobile keyboard-aware sticky strip ─────────────────────────
+    // On phones the live-price strip is position:fixed bottom:0. When
+    // the on-screen keyboard opens (user tapping into qty/email fields)
+    // iOS Safari leaves position:fixed elements stuck UNDERNEATH the
+    // keyboard, hiding the price. We expose the difference between the
+    // layout viewport and the visual viewport (= keyboard height + any
+    // browser chrome) via a CSS custom property the strip's `bottom`
+    // reads. Hidden by default (--sp-keyboard-offset = 0); only set
+    // when the visualViewport API reports a real height delta.
+    (function initKeyboardOffset() {
+      if (typeof window === 'undefined' || !window.visualViewport) return;
+      function sync() {
+        var vv = window.visualViewport;
+        // height delta vs. the layout viewport. Positive when keyboard
+        // is up. We add a small 4px breathing room so the strip
+        // doesn't touch the keyboard's top edge.
+        var raw = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        // Below 100px we treat as noise (browser chrome shifts) and
+        // collapse to 0 — prevents the strip from "floating" on
+        // address-bar autohide.
+        var offset = raw > 100 ? Math.round(raw + 4) : 0;
+        document.documentElement.style.setProperty('--sp-keyboard-offset', offset + 'px');
+      }
+      window.visualViewport.addEventListener('resize', sync);
+      window.visualViewport.addEventListener('scroll', sync);
+      // Initial sync after layout settles.
+      window.addEventListener('load', sync);
+      sync();
+    })();
+
     // Per-item live-price cache so we don't refetch every render. Keyed by
     // product_id + qty + sides + decoration_method, so switching DTG/DTF →
     // Embroidery in the Print Method picker yields a fresh fetch instead
@@ -5339,7 +5461,9 @@
         //
         //   placementFiles[presetId]              — single-product flow
         //   cartItemFiles[idx + '_' + presetId]   — catalog cart flow
-        //   #designFile                            — legacy single input
+        // (Legacy #designFile path removed 2026-05-24; the fallback at
+        //  the bottom of this block still scans all visible file inputs
+        //  defensively in case some future widget gets re-introduced.)
         //
         // We upload one file per placement (Phase A of per-side mockups),
         // so each placement lands in its own inbound_request_mockups row

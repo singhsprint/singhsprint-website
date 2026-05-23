@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/images/favicon-180.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your quote · Singhs Print</title>
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#1a1a1a">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 24px 80px}
+  .back-link{font-size:.82rem;color:#666;display:inline-flex;align-items:center;gap:4px;margin-bottom:20px}
+  .back-link:hover{color:#1a1a1a}
+
+  /* Hero + revision pills */
+  .hero{margin-bottom:24px}
+  .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.8rem,3.6vw,2.4rem);font-weight:800;line-height:1.1;margin-bottom:8px}
+  .hero .subline{color:#666;font-size:.92rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:50px;font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  .pill--sent{background:#cdeefd;color:#0c4a6e}
+  .pill--draft{background:#f4f2eb;color:#666}
+  .pill--paid{background:#e8ff3c;color:#1a1a1a}
+  .pill--accepted{background:#dcfce7;color:#14532d}
+  /* slice-71b — expired = past valid_until, auto-flipped by daily sweep */
+  .pill--expired{background:#fed7aa;color:#9a3412}
+
+  /* Sections */
+  section{background:#fff;border:1px solid #e9e7df;border-radius:18px;padding:22px 24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+  section h2{font-size:1.05rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  section h2 .meta{font-size:.78rem;color:#888;font-weight:500;text-transform:none;letter-spacing:0}
+
+  /* Line items */
+  .item{border-top:1px solid #f0eee5;padding:14px 0}
+  .item:first-of-type{border-top:none;padding-top:0}
+  .item__head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;margin-bottom:8px}
+  .item__title{font-weight:600;font-size:.96rem}
+  .item__sub{color:#888;font-size:.82rem}
+  .item__price{font-variant-numeric:tabular-nums;color:#1a1a1a;font-weight:600}
+  .item__edit{margin-top:8px;display:none;border-top:1px dashed #ece9e0;padding-top:10px}
+  .item__edit.is-open{display:block}
+  .row{display:grid;grid-template-columns:140px 1fr;gap:6px 14px;font-size:.86rem;color:#444;margin-bottom:6px;align-items:center}
+  .row label{color:#888;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  input[type="number"], input[type="text"], textarea{width:100%;font-family:inherit;font-size:.9rem;padding:7px 10px;border:1px solid #e0ddd2;border-radius:8px;background:#fafaf7;color:#1a1a1a}
+  input:focus, textarea:focus{outline:none;border-color:#888}
+  textarea{resize:vertical;min-height:60px;line-height:1.5}
+  .sizes{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+  .sizes .sz{background:#fafaf7;border:1px solid #e0ddd2;border-radius:8px;padding:6px 8px}
+  .sizes .sz label{font-size:.66rem;color:#888;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .sizes .sz input{padding:3px 6px;text-align:right;font-variant-numeric:tabular-nums;background:#fff}
+  .btn-row{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+  /* Totals row */
+  .totals{margin-top:14px;border-top:1px solid #f0eee5;padding-top:12px;font-size:.92rem}
+  .totals .ln{display:flex;justify-content:space-between;padding:3px 0}
+  .totals .ln.grand{font-size:1.04rem;font-weight:700;padding-top:8px;margin-top:6px;border-top:1px solid #f0eee5}
+
+  /* Buttons */
+  .btn{padding:9px 14px;border-radius:10px;font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s,background .15s,transform .05s}
+  .btn:active{transform:scale(0.98)}
+  .btn--primary{background:#1a1a1a;color:#fff}
+  .btn--primary:hover{opacity:.92}
+  .btn--ghost{background:#f4f2eb;color:#1a1a1a}
+  .btn--ghost:hover{background:#ebe9e0}
+  .btn--sm{padding:6px 10px;font-size:.76rem}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* Messages */
+  .thread{display:flex;flex-direction:column-reverse;gap:8px;max-height:380px;overflow-y:auto;padding:4px 2px;margin-bottom:12px}
+  .msg{max-width:80%;padding:9px 13px;border-radius:14px;font-size:.88rem;line-height:1.5;white-space:pre-wrap}
+  .msg .meta{font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:#888;margin-bottom:3px;font-weight:700}
+  .msg--rep{background:#f4f2eb;align-self:flex-start;border:1px solid #ece9e0}
+  .msg--customer{background:#1a1a1a;color:#fff;align-self:flex-end}
+  .msg--customer .meta{color:#bbb}
+
+  /* Activity log */
+  .audit{font-size:.78rem;color:#666}
+  .audit .e{padding:5px 0;border-bottom:1px solid #f4f2eb}
+  .audit .e:last-child{border-bottom:none}
+  .audit .ts{color:#999;font-variant-numeric:tabular-nums;margin-right:6px}
+
+  /* Design upload widget (per-line "swap design" + preview) */
+  .design-area{margin-top:10px;padding:10px 12px;background:#fafaf7;border:1px solid #ece9e0;border-radius:10px}
+  .design-area .heading{font-size:.74rem;color:#888;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:6px}
+  .design-area .file-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .design-area .file-row .name{font-size:.84rem;color:#444;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .design-area .file-row .status{font-size:.74rem;color:#666;font-style:italic}
+  .design-area .file-row .status--ok{color:#22592c;font-style:normal;font-weight:600}
+  .design-area .file-row .status--err{color:#a01a1a;font-style:normal;font-weight:600}
+  .design-area input[type=file]{display:none}
+  .design-area label.fakebtn{cursor:pointer}
+  .design-thumb{width:48px;height:48px;border-radius:8px;background:#fff;border:1px solid #e0ddd2;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .design-thumb img{width:100%;height:100%;object-fit:contain}
+
+  /* Pending-change badges + history */
+  .pending-list .pc{background:#fdf6e3;border:1px solid #f5e2a4;border-radius:12px;padding:10px 14px;margin-bottom:8px}
+  .pending-list .pc__head{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:.88rem;margin-bottom:4px}
+  .pending-list .pc__body{font-size:.82rem;color:#555}
+  .pending-list .pc__status{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:2px 8px;border-radius:50px}
+  .pending-list .pc__status--pending{background:#fde68a;color:#5b4500}
+  .pending-list .pc__status--accepted{background:#dcfce7;color:#14532d}
+  .pending-list .pc__status--rejected{background:#fee2e2;color:#7f1d1d}
+  .pending-list .pc__status--auto_applied{background:#dbeafe;color:#1e40af}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:11px 16px;border-radius:10px;font-size:.86rem;font-weight:500;box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:50;display:none}
+  .toast.show{display:block}
+  .toast.err{background:#9b1c1c}
+
+  .loading{color:#999;text-align:center;padding:40px;font-size:.86rem}
+  .empty{color:#888;font-size:.86rem;padding:14px 0}
+
+  .pre-banner{background:#fff8e1;border:1px solid #f5e2a4;border-radius:12px;padding:12px 16px;font-size:.86rem;color:#5b4500;margin-bottom:14px}
+  .pre-banner strong{color:#3b2c00}
+</style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="wrap">
+  <a href="/account/orders.html" class="back-link">← Back to quotes &amp; orders</a>
+
+  <div id="content" class="loading">Loading your quote…</div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<!-- Shared site chrome + Supabase client setup. Same order as orders.html. -->
+<script src="/components.js" defer></script>
+<script src="/lang.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/account/config.js" defer></script>
+<script src="/account/auth.js" defer></script>
+<script src="/account/_account-ui.js" defer></script>
+
+<script>
+(function () {
+  'use strict';
+  // ----- Helpers --------------------------------------------------
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function money(n) {
+    if (n == null || n === '') return '—';
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(Number(n));
+  }
+  function fmtWhen(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    var now = new Date();
+    var m = Math.max(1, Math.round((now.getTime() - d.getTime()) / 60000));
+    if (m < 60)   return m + ' min ago';
+    if (m < 1440) return Math.round(m / 60) + ' h ago';
+    return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+  }
+  function toast(msg, isErr) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ t.className = 'toast'; }, 4000);
+  }
+
+  // ----- Auth helpers ----------------------------------------------
+  // The shared api object is set up by /account/_account-ui.js but
+  // we re-init the auth check here in case the page loads with a
+  // stale session — the existing pattern (see orders.html) is to
+  // ask Supabase directly and bounce to signin if no session.
+  async function getUserOrRedirect() {
+    var tries = 0;
+    while (!window.SP_SUPABASE && tries < 40) {
+      await new Promise(function(r){ setTimeout(r, 50); });
+      tries++;
+    }
+    if (!window.SP_SUPABASE) throw new Error('Auth not ready');
+    var sessionRes = await window.SP_SUPABASE.auth.getSession();
+    var user = sessionRes && sessionRes.data && sessionRes.data.session
+      ? sessionRes.data.session.user
+      : null;
+    if (!user) {
+      window.location.href = '/account/signin.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+      throw new Error('redirecting to sign in');
+    }
+    return user;
+  }
+
+  async function authedFetch(path, opts) {
+    var sessionRes = await window.SP_SUPABASE.auth.getSession();
+    var token = sessionRes && sessionRes.data && sessionRes.data.session
+      ? sessionRes.data.session.access_token
+      : null;
+    if (!token) throw new Error('not signed in');
+    var headers = Object.assign({ 'Content-Type': 'application/json' }, (opts && opts.headers) || {});
+    headers['Authorization'] = 'Bearer ' + token;
+    return fetch(path, Object.assign({}, opts || {}, { headers: headers }));
+  }
+
+  // ----- Data layer ------------------------------------------------
+  function getQuoteId() {
+    var p = new URLSearchParams(window.location.search);
+    return p.get('id');
+  }
+
+  async function loadQuote(quoteId) {
+    var r = await authedFetch('/api/account/quote?id=' + encodeURIComponent(quoteId));
+    if (!r.ok) {
+      var j = await r.json().catch(function(){ return {}; });
+      throw new Error(j.error || ('HTTP ' + r.status));
+    }
+    return r.json();
+  }
+
+  async function proposeChange(quoteId, payload) {
+    var r = await authedFetch('/api/account/quote?id=' + encodeURIComponent(quoteId) + '&action=propose-change', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    var j = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+    return j;
+  }
+
+  // ----- Design upload --------------------------------------------
+  // Customer uploads directly to Supabase Storage via the supabase-js
+  // client. RLS on the designs bucket (APPLY_ME_20260522_customer_design_uploads.sql)
+  // gates writes to:
+  //     customer-uploads/<auth.uid()>/<order_id>/<uuid>-<safe-filename>
+  // which is exactly the path shape we mint below.
+  //
+  // Returns { path, mime, bytes, filename } on success — the caller
+  // bundles that into a proposed_change of kind='design'.
+  const DESIGN_MAX_BYTES = 15 * 1024 * 1024;
+  const DESIGN_ALLOWED_MIMES = new Set([
+    'image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif',
+    'image/gif', 'image/svg+xml', 'image/tiff', 'image/bmp',
+    'application/pdf', 'application/postscript', 'application/illustrator',
+    'image/vnd.adobe.photoshop', 'application/octet-stream', '',
+  ]);
+  function safeBasename(name) {
+    if (!name) return 'upload';
+    return String(name)
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9._-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(-80) || 'upload';
+  }
+  function uuidv4() {
+    // Browser-native — Safari 15+, Chrome 92+, FF 95+. Falls back to
+    // a Date-based id so old browsers don't break.
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    return 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+  async function uploadDesignFile(quoteId, file) {
+    if (!file) throw new Error('No file selected');
+    if (file.size > DESIGN_MAX_BYTES) {
+      throw new Error('File is over 15 MB — please compress or email it to sales@singhsprint.com.');
+    }
+    if (file.type && !DESIGN_ALLOWED_MIMES.has(file.type)) {
+      // Browsers report empty MIME for some legitimate file types (e.g. .ai);
+      // accept and let the rep look at it.
+      console.warn('[upload] unusual MIME, allowing:', file.type);
+    }
+    var session = await window.SP_SUPABASE.auth.getSession();
+    var uid = session && session.data && session.data.session
+      ? session.data.session.user.id
+      : null;
+    if (!uid) throw new Error('Not signed in');
+    var path = 'customer-uploads/' + uid + '/' + quoteId + '/' + uuidv4() + '-' + safeBasename(file.name);
+    var up = await window.SP_SUPABASE.storage.from('designs').upload(path, file, {
+      cacheControl: '31536000',
+      upsert: false,
+      contentType: file.type || 'application/octet-stream',
+    });
+    if (up.error) {
+      // Common error: missing storage RLS policy (we shipped one, but
+      // surface it clearly if Supabase config drifts).
+      throw new Error('Upload failed: ' + up.error.message);
+    }
+    return {
+      path: path,
+      mime: file.type || 'application/octet-stream',
+      bytes: file.size,
+      filename: file.name || null,
+    };
+  }
+
+  async function sendMessage(quoteId, text) {
+    var r = await authedFetch('/api/account/quote?id=' + encodeURIComponent(quoteId) + '&action=send-message', {
+      method: 'POST',
+      body: JSON.stringify({ body_text: text }),
+    });
+    var j = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+    return j;
+  }
+
+  // ----- Rendering -------------------------------------------------
+  function renderItem(it, idx, depositPaid, paidInFull) {
+    var qty = Number(it.quantity || 0);
+    var sizes = (it.sizes && typeof it.sizes === 'object') ? it.sizes : {};
+    var sizeKeys = Object.keys(sizes).filter(function(k){ return Number(sizes[k]) > 0; });
+    var unitPrice = it.unit_price != null ? Number(it.unit_price) : 0;
+    var lineTotal = unitPrice * qty;
+    var locationsLabel = Array.isArray(it.print_locations) && it.print_locations.length
+      ? it.print_locations.join(', ')
+      : null;
+
+    var editingDisabled = paidInFull;
+
+    return ''+
+      '<div class="item" data-line-id="' + esc(it.id || idx) + '">' +
+        '<div class="item__head">' +
+          '<div>' +
+            '<div class="item__title">' + esc(it.garment_type || 'Item') + '</div>' +
+            '<div class="item__sub">' +
+              (it.color ? esc(it.color) + ' · ' : '') +
+              (qty ? qty + ' pcs · ' : '') +
+              money(unitPrice) + '/unit' +
+              (locationsLabel ? ' · ' + esc(locationsLabel) : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="item__price">' + money(lineTotal) + '</div>' +
+        '</div>' +
+        (editingDisabled
+          ? ''
+          : '<div class="btn-row"><button class="btn btn--ghost btn--sm" data-toggle-edit>✎ Request a change to this line</button></div>'
+        ) +
+        '<div class="item__edit">' +
+          '<div class="row">' +
+            '<label>Quantity</label>' +
+            '<input type="number" min="0" step="1" class="edit-qty" value="' + esc(qty) + '">' +
+          '</div>' +
+          '<div class="row">' +
+            '<label>Sizes</label>' +
+            '<div class="sizes">' +
+              (sizeKeys.length === 0
+                ? '<div style="color:#888;font-size:.82rem">No sizes specified yet — add some below.</div>'
+                : sizeKeys.map(function(k){
+                    return '<div class="sz">' +
+                             '<label>' + esc(k) + '</label>' +
+                             '<input type="number" min="0" step="1" data-size="' + esc(k) + '" value="' + esc(sizes[k]) + '">' +
+                           '</div>';
+                  }).join('')
+              ) +
+            '</div>' +
+          '</div>' +
+          '<div class="row">' +
+            '<label>Note</label>' +
+            '<textarea class="edit-note" rows="2" placeholder="Anything else — e.g. \'swap to navy\', \'add 5 XL\', \'use the new logo I emailed last week\'."></textarea>' +
+          '</div>' +
+          '<div class="row">' +
+            '<label>Design</label>' +
+            '<div class="design-area">' +
+              '<div class="heading">Swap the design on this line</div>' +
+              '<div class="file-row">' +
+                '<div class="design-thumb" data-design-thumb><span style="font-size:18px;color:#bbb">📎</span></div>' +
+                '<label class="btn btn--ghost btn--sm fakebtn">' +
+                  'Choose file…' +
+                  '<input type="file" data-design-input accept="image/*,application/pdf,application/postscript,image/svg+xml,application/illustrator,image/vnd.adobe.photoshop">' +
+                '</label>' +
+                '<span class="name" data-design-name>No file chosen</span>' +
+                '<span class="status" data-design-status></span>' +
+              '</div>' +
+              '<div style="font-size:.72rem;color:#888;margin-top:6px">Up to 15 MB · PNG, JPG, PDF, SVG, AI, PSD. We\'ll re-render the mockup with your new design.</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="btn-row">' +
+            (depositPaid
+              ? '<div style="color:#5b4500;font-size:.82rem;flex:1">⚠ You\'ve paid the deposit — quantity and sizes can only go UP, not down.</div>'
+              : ''
+            ) +
+            '<button class="btn btn--primary btn--sm" data-submit-edit>Send request →</button>' +
+            '<button class="btn btn--ghost btn--sm" data-cancel-edit>Cancel</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderChanges(changes) {
+    if (!changes.length) return '';
+    var list = changes.slice(0, 15).map(function(c){
+      var statusLabel = c.status === 'pending' ? 'Awaiting review'
+                      : c.status === 'accepted' ? 'Applied'
+                      : c.status === 'rejected' ? 'Declined'
+                      : c.status === 'auto_applied' ? 'Auto-applied'
+                      : c.status;
+      var desc = c.change_kind === 'qty'         ? 'Quantity ' + (c.change && c.change.from) + ' → ' + (c.change && c.change.to)
+              : c.change_kind === 'sizes'        ? 'Size adjustment'
+              : c.change_kind === 'note'         ? 'Note edit'
+              : c.change_kind === 'design'       ? 'New design'
+              : c.change_kind === 'add_line'     ? 'Added a line'
+              : c.change_kind === 'delete_line'  ? 'Removed a line'
+              : c.change_kind;
+      return '' +
+        '<div class="pc">' +
+          '<div class="pc__head">' +
+            '<span>' + esc(desc) + '</span>' +
+            '<span class="pc__status pc__status--' + esc(c.status) + '">' + esc(statusLabel) + '</span>' +
+          '</div>' +
+          '<div class="pc__body">' +
+            esc(fmtWhen(c.submitted_at)) +
+            (c.customer_message ? ' · "' + esc(c.customer_message.slice(0, 140)) + (c.customer_message.length > 140 ? '…' : '') + '"' : '') +
+            (c.status === 'rejected' && c.reviewer_note ? '<br><span style="color:#7f1d1d">Reason: ' + esc(c.reviewer_note) + '</span>' : '') +
+          '</div>' +
+        '</div>';
+    }).join('');
+    return '<section><h2>Your requested changes <span class="meta">' + changes.length + ' total</span></h2><div class="pending-list">' + list + '</div></section>';
+  }
+
+  function renderMessages(messages) {
+    if (!messages.length) {
+      return '<div class="empty">No messages yet. Send us a note below — we usually reply within an hour during business hours.</div>';
+    }
+    return messages.map(function(m){
+      var cls = m.from_kind === 'customer' ? 'msg--customer' : 'msg--rep';
+      var who = m.from_kind === 'customer' ? 'You' : (m.from_email ? esc(m.from_email) : 'Singhs Print');
+      return '<div class="msg ' + cls + '">' +
+               '<div class="meta">' + who + ' · ' + esc(fmtWhen(m.sent_at)) + '</div>' +
+               esc(m.body_text) +
+             '</div>';
+    }).join('');
+  }
+
+  function renderAudit(audit) {
+    if (!audit.length) return '<div class="empty">No activity recorded yet.</div>';
+    return audit.slice(0, 25).map(function(a){
+      var label = a.event.replace(/_/g, ' ');
+      return '<div class="e"><span class="ts">' + esc(fmtWhen(a.ts)) + '</span>' + esc(label) + (a.summary ? ' — ' + esc(a.summary) : '') + '</div>';
+    }).join('');
+  }
+
+  // ----- Page boot -------------------------------------------------
+  async function boot() {
+    try { await getUserOrRedirect(); } catch (e) { return; }
+
+    var quoteId = getQuoteId();
+    if (!quoteId) {
+      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      return;
+    }
+
+    var data;
+    try { data = await loadQuote(quoteId); }
+    catch (e) {
+      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      return;
+    }
+
+    var order = data.order || {};
+    var items = data.items || [];
+    var depositPaid = !!order.deposit_paid_at;
+    var paidInFull  = !!order.paid;
+    var latestSent  = data.latest_sent;
+
+    // Revision pill block.
+    var pills = [];
+    var isExpired = order.status === 'expired';
+    if (paidInFull)        pills.push('<span class="pill pill--paid">Paid</span>');
+    else if (depositPaid)  pills.push('<span class="pill pill--paid">Deposit paid</span>');
+    if (latestSent)        pills.push('<span class="pill pill--sent">Sent v' + esc(latestSent.revision) + ' · ' + esc(fmtWhen(latestSent.sent_at)) + '</span>');
+    if (order.accepted_revision) pills.push('<span class="pill pill--accepted">Accepted v' + esc(order.accepted_revision) + '</span>');
+    if (!latestSent)       pills.push('<span class="pill pill--draft">Draft</span>');
+    // slice-71b — when the daily expire-quotes sweep has flipped this
+    // quote past its valid_until, show an Expired pill so the customer
+    // immediately understands why the pricing might no longer apply.
+    if (isExpired)         pills.push('<span class="pill pill--expired">Expired</span>');
+
+    var html = '' +
+      '<div class="hero">' +
+        '<h1>Quote ' + esc(order.order_number || ('#' + (order.id || '').slice(0, 8))) + '</h1>' +
+        '<div class="subline">' +
+          pills.join(' ') +
+          (order.created_at ? '<span style="color:#999"> · created ' + esc(fmtWhen(order.created_at)) + '</span>' : '') +
+        '</div>' +
+      '</div>';
+
+    // Read-only / locked banner.
+    if (paidInFull) {
+      html += '<div class="pre-banner"><strong>This quote is paid in full.</strong> Send us a message below if you need anything changed — we\'ll take it from there.</div>';
+    } else if (depositPaid) {
+      html += '<div class="pre-banner"><strong>You\'ve paid the deposit.</strong> You can still add sizes / quantity, but you can\'t reduce them. Anything bigger, message us below.</div>';
+    } else if (isExpired) {
+      // slice-71b — expired quote. The original pricing may no longer
+      // be valid (matrix edits, supplier price changes, blank inventory
+      // shifts). We don't auto-block the deposit link — Stripe may
+      // still honor it if the rep wants to revive the quote — but we
+      // flag it visibly so the customer knows to confirm before paying.
+      html += '<div class="pre-banner" style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412"><strong>This quote has expired.</strong> The prices below are from when we originally quoted you. Message us below and we\'ll send you a refreshed quote — or, if you\'d like to proceed with these numbers, let us know and we\'ll re-extend the offer.</div>';
+    }
+
+    // Line items.
+    html += '<section><h2>What you\'re ordering <span class="meta">' + items.length + ' item' + (items.length === 1 ? '' : 's') + '</span></h2>';
+    if (items.length === 0) {
+      html += '<div class="empty">No items yet.</div>';
+    } else {
+      html += items.map(function(it, i){ return renderItem(it, i, depositPaid, paidInFull); }).join('');
+      html += '<div class="totals">' +
+                '<div class="ln"><span>Subtotal</span><span>' + esc(money(order.subtotal)) + '</span></div>' +
+                '<div class="ln"><span>Tax</span><span>' + esc(money(order.tax)) + '</span></div>' +
+                '<div class="ln grand"><span>Total</span><span>' + esc(money(order.total)) + '</span></div>' +
+              '</div>';
+    }
+    html += '</section>';
+
+    // Pending + history of changes.
+    html += renderChanges(data.changes || []);
+
+    // Messages section.
+    html += '' +
+      '<section>' +
+        '<h2>Messages with Singhs Print</h2>' +
+        '<div class="thread" id="thread">' + renderMessages(data.messages || []) + '</div>' +
+        '<div>' +
+          '<textarea id="msg-input" placeholder="Type your message…"></textarea>' +
+          '<div class="btn-row"><button class="btn btn--primary btn--sm" id="msg-send">Send →</button></div>' +
+        '</div>' +
+      '</section>';
+
+    // Activity log.
+    html += '' +
+      '<section>' +
+        '<h2>Activity</h2>' +
+        '<div class="audit">' + renderAudit(data.audit || []) + '</div>' +
+      '</section>';
+
+    $('content').innerHTML = html;
+
+    // Wire up edit toggles + submit per line.
+    document.querySelectorAll('.item').forEach(function(itemEl){
+      var lineId = itemEl.getAttribute('data-line-id');
+      var editEl = itemEl.querySelector('.item__edit');
+      var toggleBtn = itemEl.querySelector('[data-toggle-edit]');
+      var cancelBtn = itemEl.querySelector('[data-cancel-edit]');
+      var submitBtn = itemEl.querySelector('[data-submit-edit]');
+
+      // Local state for an in-progress design upload on THIS line.
+      // Set when the customer picks a file + upload completes; folded
+      // into the proposed_changes payload on submit.
+      var pendingDesign = null;
+
+      // Design picker + upload. Fires on file selection. We upload
+      // immediately so the network spinner happens while the customer
+      // is still tweaking other fields, and "Send request" feels fast.
+      var fileInput   = itemEl.querySelector('[data-design-input]');
+      var statusEl    = itemEl.querySelector('[data-design-status]');
+      var nameEl      = itemEl.querySelector('[data-design-name]');
+      var thumbEl     = itemEl.querySelector('[data-design-thumb]');
+      if (fileInput) {
+        fileInput.addEventListener('change', async function(){
+          var f = fileInput.files && fileInput.files[0];
+          if (!f) return;
+          nameEl.textContent = f.name;
+          statusEl.className = 'status';
+          statusEl.textContent = 'Uploading…';
+          // Show a quick thumbnail preview for raster images. Vector
+          // / PDF / AI just keep the paperclip icon.
+          if (f.type && f.type.indexOf('image/') === 0) {
+            try {
+              var url = URL.createObjectURL(f);
+              thumbEl.innerHTML = '<img src="' + url + '" alt="">';
+            } catch (_) { /* preview is decoration */ }
+          }
+          try {
+            pendingDesign = await uploadDesignFile(quoteId, f);
+            statusEl.className = 'status status--ok';
+            statusEl.textContent = '✓ Uploaded';
+          } catch (e) {
+            pendingDesign = null;
+            statusEl.className = 'status status--err';
+            statusEl.textContent = e.message || 'Upload failed';
+          }
+        });
+      }
+
+      if (toggleBtn) toggleBtn.addEventListener('click', function(){ editEl.classList.add('is-open'); });
+      if (cancelBtn) cancelBtn.addEventListener('click', function(){
+        editEl.classList.remove('is-open');
+        pendingDesign = null;
+        if (fileInput) fileInput.value = '';
+        if (statusEl) { statusEl.className = 'status'; statusEl.textContent = ''; }
+        if (nameEl) nameEl.textContent = 'No file chosen';
+        if (thumbEl) thumbEl.innerHTML = '<span style="font-size:18px;color:#bbb">📎</span>';
+      });
+      if (submitBtn) submitBtn.addEventListener('click', async function(){
+        // Build a proposed_change(s) payload. We split qty + sizes +
+        // note + design into separate proposed-change rows so the rep
+        // can accept/reject them per kind. If the customer changes
+        // everything we POST four times.
+        var origItem = items.find(function(it){ return String(it.id || '') === String(lineId); });
+        if (!origItem) { toast('Line not found', true); return; }
+        var qtyEl  = editEl.querySelector('.edit-qty');
+        var noteEl = editEl.querySelector('.edit-note');
+        var sizeInputs = editEl.querySelectorAll('input[data-size]');
+        var origQty = Number(origItem.quantity || 0);
+        var newQty  = Number(qtyEl.value || 0);
+        var origSizes = (origItem.sizes && typeof origItem.sizes === 'object') ? origItem.sizes : {};
+        var newSizes = {};
+        sizeInputs.forEach(function(inp){
+          newSizes[inp.getAttribute('data-size')] = Number(inp.value || 0);
+        });
+        var noteText = (noteEl.value || '').trim();
+
+        var changesToSubmit = [];
+        if (newQty !== origQty) {
+          changesToSubmit.push({
+            line_item_id: lineId,
+            change_kind: 'qty',
+            change: { from: origQty, to: newQty },
+            customer_message: noteText || null,
+          });
+        }
+        // Compare sizes deeply.
+        var sizesChanged = false;
+        var allKeys = new Set(Object.keys(origSizes).concat(Object.keys(newSizes)));
+        allKeys.forEach(function(k){
+          if (Number(origSizes[k] || 0) !== Number(newSizes[k] || 0)) sizesChanged = true;
+        });
+        if (sizesChanged) {
+          changesToSubmit.push({
+            line_item_id: lineId,
+            change_kind: 'sizes',
+            change: { from: origSizes, to: newSizes },
+            customer_message: changesToSubmit.length === 0 ? (noteText || null) : null,
+          });
+        }
+        // Design swap — only when the customer actually picked a new
+        // file AND the upload completed successfully. The proposed
+        // change carries the storage path + mime + bytes so the
+        // rep-side accept route can update orders.items.design_path
+        // without needing to re-fetch the file.
+        if (pendingDesign && pendingDesign.path) {
+          changesToSubmit.push({
+            line_item_id: lineId,
+            change_kind: 'design',
+            change: {
+              design_path: pendingDesign.path,
+              mime: pendingDesign.mime,
+              bytes: pendingDesign.bytes,
+              filename: pendingDesign.filename,
+            },
+            customer_message: changesToSubmit.length === 0 ? (noteText || null) : null,
+          });
+        }
+        if (noteText && changesToSubmit.length === 0) {
+          changesToSubmit.push({
+            line_item_id: lineId,
+            change_kind: 'note',
+            change: { from: '', to: noteText },
+            customer_message: noteText,
+          });
+        }
+        if (changesToSubmit.length === 0) {
+          toast('Nothing changed yet', true);
+          return;
+        }
+
+        submitBtn.disabled = true; submitBtn.textContent = 'Sending…';
+        try {
+          for (var i = 0; i < changesToSubmit.length; i++) {
+            await proposeChange(quoteId, changesToSubmit[i]);
+          }
+          toast('Change sent — we\'ll review and reply soon.');
+          // Refresh the page data inline so the customer immediately
+          // sees their request in the history.
+          var refreshed = await loadQuote(quoteId);
+          data.changes = refreshed.changes;
+          data.audit   = refreshed.audit;
+          // Re-render the changes block + audit block only — full
+          // re-render would lose the open-edit state on other lines.
+          var anchor = document.querySelector('.pending-list');
+          if (anchor && anchor.parentElement) anchor.parentElement.outerHTML = renderChanges(data.changes);
+          editEl.classList.remove('is-open');
+          // Reset the pending design state so closing + reopening doesn't
+          // re-submit the same file.
+          pendingDesign = null;
+          if (fileInput) fileInput.value = '';
+          if (statusEl) { statusEl.className = 'status'; statusEl.textContent = ''; }
+          if (nameEl) nameEl.textContent = 'No file chosen';
+          if (thumbEl) thumbEl.innerHTML = '<span style="font-size:18px;color:#bbb">📎</span>';
+        } catch (e) {
+          toast(e.message || 'Could not send change', true);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send request →';
+        }
+      });
+    });
+
+    // Wire up message send.
+    var msgSendBtn = $('msg-send');
+    var msgInput   = $('msg-input');
+    if (msgSendBtn && msgInput) {
+      msgSendBtn.addEventListener('click', async function(){
+        var text = (msgInput.value || '').trim();
+        if (!text) return;
+        msgSendBtn.disabled = true;
+        msgSendBtn.textContent = 'Sending…';
+        try {
+          await sendMessage(quoteId, text);
+          msgInput.value = '';
+          // Refresh thread inline.
+          var refreshed = await loadQuote(quoteId);
+          data.messages = refreshed.messages;
+          var threadEl = $('thread');
+          if (threadEl) threadEl.innerHTML = renderMessages(data.messages);
+          toast('Message sent.');
+        } catch (e) {
+          toast(e.message || 'Could not send', true);
+        } finally {
+          msgSendBtn.disabled = false;
+          msgSendBtn.textContent = 'Send →';
+        }
+      });
+      // Cmd/Ctrl + Enter sends.
+      msgInput.addEventListener('keydown', function(e){
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') msgSendBtn.click();
+      });
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
