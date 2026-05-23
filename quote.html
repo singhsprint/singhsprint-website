@@ -1178,8 +1178,11 @@
               <div id="placementUploadList" class="placement-upload-list"></div>
             </div>
 
-            <!-- Printing method (single selector — pick + see what it's best for in one place) -->
-            <div class="form-group">
+            <!-- Printing method (single selector — pick + see what it's best for in one place).
+                 2026-05-24 — hidden when cart mode is active because each
+                 cart row now has its own per-item method picker. The
+                 hide/show happens in renderCartList(); see id below. -->
+            <div class="form-group" id="globalPrintMethodGroup">
               <label data-i18n="quote.method">Printing method</label>
               <div class="method-grid">
                 <div class="method-card" data-value="DTG" onclick="selectService(this)">
@@ -3437,14 +3440,28 @@
     function goToStep(step) {
       var current = document.querySelector('.form-section.active');
       var currentNum = parseInt(current.dataset.step);
+      var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+
+      // 2026-05-24 — Cart mode collapses to 2 visible steps: Step 1
+      // (Product & Design) and Step 3 (Your Details). Step 2's global
+      // sizes + method question is redundant once each cart row carries
+      // its own per-item sizes + method. Auto-route around Step 2:
+      //   • Continue from Step 1 (which targets step 2) → skip to step 3
+      //   • Back from Step 3 (which targets step 2)     → skip to step 1
+      // Legacy single-product flow keeps all 3 steps.
+      if (cartHasItems && step === 2) {
+        step = (currentNum === 1) ? 3 : 1;
+      }
 
       if (step > currentNum) {
         if (currentNum === 1) {
           // Cart mode: valid if there's at least one item in the cart.
-          // Legacy single-product mode: require state.product.
-          var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+          // Legacy single-product mode: require state.product + service.
           if (!cartHasItems && !state.product) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.product')) || 'Please select a product from the catalog.'); return; }
-          if (!state.service) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.method')) || 'Please select a printing method.'); return; }
+          // Method requirement only applies in legacy mode — cart items
+          // carry per-row decoration_type (defaulting to empty/'not-sure'
+          // is fine; the rep recommends the right one at quote-reply).
+          if (!cartHasItems && !state.service) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.method')) || 'Please select a printing method.'); return; }
         }
       }
 
@@ -4896,7 +4913,7 @@
           if (singlePick) singlePick.style.display = 'none';
           // Un-hide the legacy product grid + fields that cart mode hides
           // so the visitor still has a fallback path to fill out the quote.
-          ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+          ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
             .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = ''; });
           document.querySelectorAll('.form-group, .color-section').forEach(function(g){
             var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
@@ -4907,6 +4924,12 @@
           // Re-show the GLOBAL placement section for the legacy single-
           // product flow (we hide it in cart mode below).
           document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = ''; });
+          // 2026-05-24 — restore the 3-step pill bar + Step 2 form-section
+          // for the legacy single-product flow when the cart is empty.
+          var pillStep2 = document.querySelector('.step-pill[data-step="2"]');
+          if (pillStep2) pillStep2.style.display = '';
+          var formStep2 = document.querySelector('.form-section[data-step="2"]');
+          if (formStep2) formStep2.style.display = '';
         }
         // Clear the right-panel cart total too
         var strip = document.getElementById('livePriceStrip');
@@ -4919,8 +4942,10 @@
       if (emptyCta)   emptyCta.style.display = 'none';
       if (singlePick) singlePick.style.display = 'none';
       // Hide legacy product grid and redundant fields (same logic as
-      // single-product prefill).
-      ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+      // single-product prefill). 2026-05-24 — globalPrintMethodGroup
+      // joins this list: per-item method pickers in each cart row mean
+      // the global DTG/DTF/Embroidery selector is duplicate work.
+      ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
         .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = 'none'; });
       document.querySelectorAll('.form-group, .color-section').forEach(function(g){
         var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
@@ -4932,6 +4957,20 @@
       // single-product (non-cart) path; we re-show it in the cart-empty
       // branch above.
       document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = 'none'; });
+      // 2026-05-24 — collapse the step-pill bar from 3 to 2 in cart mode.
+      // Step 2 ("Your design & sizes") was a global question for the
+      // legacy single-product path; cart rows already capture both
+      // pieces (per-placement uploads + per-item sizes), so the step is
+      // redundant. goToStep() also auto-routes around it (1 → 3 forward,
+      // 3 → 1 back) so Continue / Back behave naturally with the pill
+      // hidden.
+      var pillStep2 = document.querySelector('.step-pill[data-step="2"]');
+      if (pillStep2) pillStep2.style.display = 'none';
+      // Also remove Step 2's form-section from layout so any stale "Next"
+      // button still on Step 1 won't briefly flash a blank Step 2 view if
+      // the customer hits it before goToStep's redirect kicks in.
+      var formStep2 = document.querySelector('.form-section[data-step="2"]');
+      if (formStep2) formStep2.style.display = 'none';
 
       var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       var lblColor  = _t('quote.cart.item.color')  || 'Color:';
