@@ -5480,7 +5480,27 @@
               blank_brand:    fd.get('blank_brand') || null,
               canadian_addon: !!fd.get('canadian_blanks'),
               xxl_surcharge_total: sur.surchargeTotal || 0,
-              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; }),
+              // Selected placement preset IDs. Pulled from presetByLocation
+              // (the active map) and the cart items as a fallback. We used
+              // to query `input[name="placements[]"]:checked` but the form
+              // doesn't have placement checkboxes — placements live in the
+              // .loc-check divs + the per-preset card grid — so that
+              // selector always returned an empty array and meta.placements
+              // was always [].
+              placements: (function(){
+                try {
+                  if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+                    var items = SinghsCart.read().items;
+                    var all = [];
+                    items.forEach(function(it){
+                      if (Array.isArray(it.placements)) all = all.concat(it.placements);
+                    });
+                    // De-dupe while preserving order
+                    return all.filter(function(v, i){ return all.indexOf(v) === i; });
+                  }
+                  return Object.values(presetByLocation || {});
+                } catch (e) { return []; }
+              })(),
               // Promo handoff from the homepage offer popup — surfaces on
               // the CRM inbox as a "$20 off (first order)" pill so the rep
               // remembers to apply the discount on the formal quote.
