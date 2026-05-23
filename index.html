@@ -760,7 +760,7 @@
           <div class="sp-calc__result-cell">
             <span class="sp-calc__label" data-i18n="home.calc.perunit">Per unit</span>
             <strong id="sp-calc-perunit">$14.95</strong>
-            <span class="sp-calc__hint" data-i18n="home.calc.oneside">1-side print</span>
+            <span class="sp-calc__hint" id="sp-calc-perhint" data-i18n="home.calc.oneside">1-side print</span>
           </div>
           <div class="sp-calc__result-cell">
             <span class="sp-calc__label" data-i18n="home.calc.total">Estimated total</span>
@@ -863,26 +863,68 @@
           } catch (e) { /* keep fallback */ }
         })();
         var state = { garment: 'tshirt', qty: 50 };
+        // 2026-05-24 — per-garment method awareness. Hats are embroidery-
+        // only (no DTF/DTG capability), so the slider needs to:
+        //   1. Label the per-unit hint as "Embroidered" instead of
+        //      "1-side print" — DTF/DTG don't apply to hats.
+        //   2. Clamp display qty to ≥5 because the engine has no qty<5
+        //      tier for hat (embroidery's 5-piece minimum is a real
+        //      production constraint). The slider thumb can still drag
+        //      lower; we just show the qty=5 price + a "5 piece minimum
+        //      for embroidery" hint so the customer isn't confused by a
+        //      static price as they drag the thumb.
+        var GARMENT_METHODS = {
+          tshirt:     'dtf',
+          hoodie:     'dtf',
+          longsleeve: 'dtf',
+          cap:        'embroidery',
+        };
+        function methodFor(g) { return GARMENT_METHODS[g] || 'dtf'; }
+        function effectiveQty(g, q) {
+          // Hat = embroidery — clamp to engine's qty=5 floor.
+          if (methodFor(g) === 'embroidery' && q < 5) return 5;
+          return q;
+        }
         function findPrice(g, q) {
           var tiers = TIERS[g] || TIERS.tshirt;
-          for (var i=0;i<tiers.length;i++) if (q>=tiers[i][0] && q<=tiers[i][1]) return tiers[i][2];
+          var eq = effectiveQty(g, q);
+          for (var i=0;i<tiers.length;i++) if (eq>=tiers[i][0] && eq<=tiers[i][1]) return tiers[i][2];
           return tiers[tiers.length-1][2];
         }
         function recalc() {
+          var displayQty = effectiveQty(state.garment, state.qty);
           var per = findPrice(state.garment, state.qty);
-          var total = per * state.qty;
+          var total = per * displayQty;
           var pEl = document.getElementById('sp-calc-perunit');
           var tEl = document.getElementById('sp-calc-total');
           var oEl = document.getElementById('sp-calc-qty-out');
+          var hEl = document.getElementById('sp-calc-perhint');
           var cta = document.getElementById('sp-calc-cta');
           if (pEl) pEl.textContent = '$' + per.toFixed(2);
           if (tEl) tEl.textContent = '$' + total.toFixed(2);
-          if (oEl) oEl.textContent = state.qty;
+          if (oEl) oEl.textContent = displayQty;
+          // Method-aware hint under the per-unit number. Hat → embroidery
+          // label; everything else stays "1-side print" (or the i18n
+          // override). Customers below qty=5 on hat get an extra
+          // micro-note about the embroidery minimum.
+          if (hEl && !hEl.dataset.locked) {
+            if (methodFor(state.garment) === 'embroidery') {
+              hEl.textContent = state.qty < 5
+                ? 'Embroidered · 5-piece minimum'
+                : 'Embroidered · 1 location';
+            } else {
+              hEl.textContent = '1-side print';
+            }
+          }
           if (cta) {
             // Map calculator garment → /quote product hint so the
-            // form pre-selects the right tile.
+            // form pre-selects the right tile. Hat also stamps a
+            // method=embroidery hint so the form lands with the right
+            // service tile pre-picked.
             var qProduct = { tshirt:'tshirt', hoodie:'hoodie', longsleeve:'longsleeve', cap:'hat' }[state.garment] || state.garment;
-            cta.setAttribute('href', 'quote.html?garment=' + qProduct + '&qty=' + state.qty);
+            var url = 'quote.html?garment=' + qProduct + '&qty=' + displayQty;
+            if (methodFor(state.garment) === 'embroidery') url += '&method=embroidery';
+            cta.setAttribute('href', url);
           }
         }
         document.addEventListener('DOMContentLoaded', function() {
