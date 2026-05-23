@@ -5309,68 +5309,83 @@
 
       // Per-item unit prices live in _priceCache keyed by
       // product_id + qty + sides + decoration_method + placements.
-      // The placements component was added 2026-05-19 so embroidery on
-      // Center Chest (2× surcharge) doesn't share a cache slot with
-      // embroidery on Left Chest (1×). Use the same key liveUnitPrice
-      // writes with.
-      var method = currentDecorationMethod();
-      var cartUnitSum = 0, cartUnits = 0, knownAll = true;
+      // 2026-05-24 — per-item method is now in it.decoration_type;
+      // fall back to the legacy global state.service for items that
+      // predate the per-item picker.
+      var cartUnitSum = 0, cartUnits = 0, cartLineTotal = 0, knownAll = true;
       items.forEach(function (it) {
         var qty   = Number(it.qty) || 0;
         var sides = it.sides || 1;
         var pk    = (it.placements || []).join(',');
+        var rawM  = (it.decoration_type || '').toLowerCase();
+        var method = rawM === 'embroidery' ? 'embroidery' : (rawM ? 'dtf' : currentDecorationMethod());
         var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk];
         cartUnits += qty;
-        if (typeof p === 'number') cartUnitSum += p;
-        else knownAll = false;
+        if (typeof p === 'number') {
+          cartUnitSum  += p;
+          cartLineTotal += p * qty;
+        } else {
+          knownAll = false;
+        }
       });
       var avgUnitPrice = (items.length > 0 && cartUnitSum > 0) ? (cartUnitSum / items.length) : null;
 
-      // Size grid total — the authoritative count once filled.
-      var sizeTotalEl = document.getElementById('sizeTotal');
-      var sizeTotal = sizeTotalEl ? (parseInt(sizeTotalEl.textContent, 10) || 0) : 0;
+      // 2026-05-24 — Cart mode is now the only source of truth for
+      // quantities (Step 2's global size grid is hidden in cart mode).
+      // Use the cart's own piece count as the authoritative total. If
+      // any item has a per-item sizes map filled in, prefer the sum of
+      // those — otherwise fall back to `it.qty`. Both numbers should
+      // converge once the customer reconciles sizes with qty.
+      var cartSizeTotal = 0;
+      items.forEach(function (it) {
+        var sizes = (it.sizes && typeof it.sizes === 'object') ? it.sizes : {};
+        Object.keys(sizes).forEach(function (k) {
+          var n = Number(sizes[k]);
+          if (Number.isFinite(n) && n > 0) cartSizeTotal += n;
+        });
+      });
       var sur = (typeof computeSizeSurcharge === 'function') ? computeSizeSurcharge() : { surchargeTotal: 0, count: 0 };
 
-      // Header line — items count.
-      document.getElementById('livePriceUnit').textContent =
-        items.length + (items.length === 1 ? ' item' : ' items');
       var suf = document.getElementById('livePriceUnitSuffix');
-      if (suf) suf.style.display = 'none';
-
       var totalWrap = document.getElementById('livePriceTotalWrap');
 
-      if (sizeTotal > 0 && knownAll && avgUnitPrice != null) {
-        // SIZES FILLED → show the real total at the size-grid quantity.
-        // Re-price single-item carts at the actual size total so the
-        // price tier reflects what they're really buying. Multi-item
-        // carts fall back to the cart's mixed unit average × sizeTotal.
-        var liveTotal;
-        var perUnitDisplay = avgUnitPrice;
-        if (items.length === 1 && items[0].product_id) {
-          // Async refetch — meanwhile show the cart-qty estimate so the
-          // strip doesn't blank out.
-          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, items[0].placements || [], function (livePx) {
-            if (typeof livePx === 'number' && livePx > 0) {
-              document.getElementById('livePriceUnit').textContent =
-                '$' + livePx.toFixed(2);
-              document.getElementById('livePriceQty').textContent =
-                sizeTotal + ' units · ' + (items[0].sides || 1) + ' side' + ((items[0].sides || 1) > 1 ? 's' : '');
-              document.getElementById('livePriceTotal').textContent =
-                '$' + ((livePx * sizeTotal) + sur.surchargeTotal).toFixed(2);
-            }
-          });
-          liveTotal = perUnitDisplay * sizeTotal + sur.surchargeTotal;
+      // Effective quantity for the visible total: prefer the size-grid
+      // sum if the customer has started filling it in, otherwise use the
+      // per-item qty totals (which default to 50 on catalog add).
+      var effectiveUnits = cartSizeTotal > 0 ? cartSizeTotal : cartUnits;
+
+      if (knownAll && cartLineTotal > 0) {
+        // Standard cart-mode path — every line has a known unit price.
+        // For a single-item cart the per-unit price is the most
+        // informative headline (customer's anchor is "$X each").
+        // Multi-item carts default to "N items" since unit prices
+        // typically differ across rows.
+        if (items.length === 1 && avgUnitPrice != null) {
+          document.getElementById('livePriceUnit').textContent =
+            '$' + avgUnitPrice.toFixed(2);
+          if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
         } else {
-          liveTotal = avgUnitPrice * sizeTotal + sur.surchargeTotal;
+          document.getElementById('livePriceUnit').textContent =
+            items.length + ' items';
+          if (suf) suf.style.display = 'none';
         }
+        // Below the headline, show pieces count + any size-grid drift.
+        // If the customer's size-grid total diverges from their per-line
+        // qty (e.g. they've filled in 32 sizes for a 50-piece line),
+        // surface that so it doesn't silently mismatch what the rep
+        // sees on the CRM.
         document.getElementById('livePriceQty').textContent =
-          sizeTotal + ' units' + (cartUnits !== sizeTotal ? ' (size grid)' : '');
+          cartUnits + (cartUnits === 1 ? ' piece' : ' pieces') +
+          (cartSizeTotal > 0 && cartSizeTotal !== cartUnits
+            ? ' · sizes filled: ' + cartSizeTotal
+            : '');
         totalWrap.style.display = 'block';
-        document.getElementById('livePriceTotal').textContent = '$' + liveTotal.toFixed(2);
+        document.getElementById('livePriceTotal').textContent =
+          '$' + (cartLineTotal + sur.surchargeTotal).toFixed(2);
       } else if (avgUnitPrice != null) {
-        // NO SIZES YET → show per-unit estimate only. Hide the total
-        // so customers don't feel anchored to a number that's based on
-        // a placeholder qty they haven't committed to.
+        // Some prices are still resolving (async fetches in flight).
+        // Show the running estimate but flag it so the customer knows
+        // it's still settling.
         document.getElementById('livePriceUnit').textContent =
           '$' + avgUnitPrice.toFixed(2);
         if (suf) {
@@ -5378,13 +5393,17 @@
           suf.textContent = '/unit est.';
         }
         document.getElementById('livePriceQty').textContent =
-          'Enter sizes in Step 2 for the total';
-        totalWrap.style.display = 'none';
+          effectiveUnits + ' pieces · pricing in progress…';
+        totalWrap.style.display = 'block';
+        document.getElementById('livePriceTotal').textContent =
+          '$' + (avgUnitPrice * effectiveUnits + sur.surchargeTotal).toFixed(2);
       } else {
-        // Prices haven't loaded yet.
+        // Prices haven't loaded yet — keep the strip visible with a
+        // friendly loading state. No total shown because we have no
+        // unit price to multiply yet.
         document.getElementById('livePriceUnit').textContent = '$—';
         document.getElementById('livePriceQty').textContent =
-          cartUnits + (cartUnits === 1 ? ' unit' : ' units') + ' · loading…';
+          effectiveUnits + (effectiveUnits === 1 ? ' piece' : ' pieces') + ' · loading…';
         totalWrap.style.display = 'none';
       }
     }
