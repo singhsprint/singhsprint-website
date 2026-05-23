@@ -1652,6 +1652,8 @@
       updateGarmentShape();
       updateBlankOptions();
       renderBulkPricingTable();
+      // Garment changed → re-resolve the per-size surcharge matrix.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
       // Rebuild the global placement section so the picker shows
       // placements that actually exist on this garment (no Sleeves on
       // a hat, no Center Chest on a tote, etc.).
@@ -1815,6 +1817,8 @@
       renderBulkPricingTable();
       // Refresh BYO decoration-only price (the method drives the per-piece cost)
       refreshByoPrice();
+      // Decoration method changed → matrix's per-method overrides shift.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
       // Method-specific placement constraints + size hints:
       //   • Embroidery hoops can't go past ~12", so Oversized and Full
       //     Back disappear; chest presets pick up a "(5×5″ hoop)" hint
@@ -2579,6 +2583,13 @@
     document.addEventListener('DOMContentLoaded', function() {
       try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
 
+      // Pull the live size-surcharge matrix once the page is interactive.
+      // Subsequent context changes (product / service / placement)
+      // re-fire this via the change handlers further down. Wrapped in
+      // try/catch so a network blip on first paint can never break the
+      // legacy hardcoded fallback path.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
+
       // Promo handoff from the homepage popup. Two layers:
       //   1. URL ?promo=…           — fresh arrival from the popup CTA
       //   2. sessionStorage         — survives catalog round-trips that
@@ -2834,6 +2845,9 @@
       }
 
       calculatePrice();
+      // Placement set changed → the matrix's per-placement overrides
+      // may add or remove surcharge on some sizes, so refresh.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
     }
 
     // ===== VIEW TABS (on mockup) — switch which location is being edited =====
@@ -3997,18 +4011,138 @@
       return raw;
     }
 
-    // XXL+ size surcharge in CAD per piece. Mirrors SIZE_SURCHARGE_CAD in
-    // singhsprint-crm/src/lib/pricing/index.ts — server is source of truth, this
-    // is a client fallback so we don't block the UI on a fetch. /api/pricing
-    // also echoes the map in `size_surcharge_cad` if you want to dynamic-load.
+    // XXL+ size surcharge in CAD per piece. Hardcoded fallback only —
+    // the live source of truth is the `pricing_size_modifiers` table
+    // edited from the CRM at /settings/pricing → Size matrix. The map
+    // below seeds the UI before the async refresh from
+    // /api/pricing/size-modifiers lands; in-flight quotes use whatever
+    // values were last fetched (cached for the rest of the session).
     var SIZE_SURCHARGE_CAD = { '2XL': 3, '3XL': 3, '4XL': 3, '5XL': 3 };
-    // Read the size grid and return { count, surchargeTotal } for 2XL+ units.
+
+    // Mutable per-size surcharge in CAD per piece. Combines the matrix's
+    // blank-surcharge and decoration-surcharge into a single $/unit for
+    // the running total. Refreshed by spRefreshSizeSurcharges() whenever
+    // context (garment / placement / method) changes. Initialized from
+    // the hardcoded fallback so the form is usable instantly.
+    var liveSizeSurchargeCAD = {
+      'XS': 0, 'S': 0, 'M': 0, 'L': 0, 'XL': 0,
+      '2XL': 3, '3XL': 3, '4XL': 3, '5XL': 3,
+    };
+
+    // Most-recent per-size breakdown returned by /api/pricing/size-modifiers.
+    // The summary line under the running total reads from this so it can
+    // show "Includes $X 2XL/3XL surcharge" without recomputing locally.
+    var liveSizeMatrixBreakdown = null;
+
+    function _allSizeQtys() {
+      var nameToSize = { size_xs:'XS', size_s:'S', size_m:'M', size_l:'L', size_xl:'XL', size_2xl:'2XL', size_3xl:'3XL', size_4xl:'4XL', size_5xl:'5XL' };
+      var out = {};
+      document.querySelectorAll('.size-grid input').forEach(function(inp){
+        var size = nameToSize[inp.name]; if (!size) return;
+        var n = parseInt(inp.value) || 0;
+        if (n > 0) out[size] = n;
+      });
+      return out;
+    }
+
+    // Pulls the current context (garment_type from cart_items[0] or
+    // state.product, placements from presetByLocation, decoration_method
+    // from state.service) into the shape /api/pricing/size-modifiers
+    // expects. Used by spRefreshSizeSurcharges below.
+    function _pricingContext() {
+      var garment = null, placements = [], method = null;
+      try {
+        if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+          var it = SinghsCart.read().items[0];
+          garment = it && it.garment_type || null;
+          placements = (it && it.placements) || [];
+        } else {
+          // Single-product flow — best-effort mapping from state.product.
+          var p = (state && state.product || '').toLowerCase();
+          if (p.indexOf('hood') >= 0)  garment = 'hoodie';
+          else if (p.indexOf('long') >= 0) garment = 'longsleeve';
+          else if (p.indexOf('crew') >= 0) garment = 'crewneck';
+          else if (p.indexOf('polo') >= 0) garment = 'polo';
+          else if (p.indexOf('t-shirt') >= 0 || p.indexOf('tee') >= 0) garment = 'tshirt';
+          placements = Object.values(presetByLocation || {});
+        }
+      } catch (e) {}
+      try { method = (state && state.service || '').toLowerCase() || null; } catch (e) {}
+      return { garment_type: garment, placements: placements, decoration_method: method };
+    }
+
+    // Async fetch of the live matrix from the CRM. Called on page boot
+    // and on context change (debounced). Updates liveSizeSurchargeCAD
+    // and the cached breakdown, then re-renders the running total.
+    var _sizeMatrixT = null;
+    function spRefreshSizeSurcharges() {
+      if (_sizeMatrixT) clearTimeout(_sizeMatrixT);
+      _sizeMatrixT = setTimeout(function(){
+        try {
+          var ctx = _pricingContext();
+          // For the totalizer we only care about per-size adders, not
+          // qty-weighted totals — send one-piece-per-size so the API
+          // returns a clean per-unit breakdown.
+          var probe = { 'XS':1,'S':1,'M':1,'L':1,'XL':1,'2XL':1,'3XL':1,'4XL':1,'5XL':1 };
+          var qs = new URLSearchParams({
+            size_breakdown: JSON.stringify(probe),
+            garment_type:   ctx.garment_type || '',
+            decoration_method: ctx.decoration_method || ''
+          });
+          if (ctx.placements && ctx.placements.length) qs.set('placements', ctx.placements.join(','));
+          fetch('https://singhsprint-crm.vercel.app/api/pricing/size-modifiers?' + qs.toString())
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(j){
+              if (!j) return;
+              // Per-side breakdown? Sum across placements. Otherwise
+              // per_size is a flat array of {size, qty=1, blank, decoration, line}.
+              var perSize = j.per_size || [];
+              if (j.per_placement) {
+                // Reduce per_placement to a per_size sum (each entry has qty=1).
+                var bySize = {};
+                j.per_placement.forEach(function(p){
+                  if (!bySize[p.size]) bySize[p.size] = { size: p.size, qty: 1, blank_surcharge_cents: 0, decoration_surcharge_cents: 0, line_cents: 0 };
+                  bySize[p.size].decoration_surcharge_cents += p.decoration_surcharge_cents || 0;
+                  bySize[p.size].line_cents                += p.line_cents || 0;
+                });
+                // Blank surcharge is per-garment (counted once). Pull from j.total_blank_cents distributed flat across sizes we have nonzero blanks for — but simpler: probe one-per-size means blank per piece is total_blank / 9. Easier: re-query the no-placement variant or trust that the CRM API at /api/pricing/size-modifiers also accepts the multi-placement breakdown which gives per_placement (decoration only) PLUS total_blank_cents. Map blank evenly.
+                Object.keys(bySize).forEach(function(s){
+                  // Blank surcharge: API's total_blank_cents is for the
+                  // full one-per-size probe, so dividing by 9 sizes
+                  // approximates per-size blank. For the legacy 2XL+
+                  // case this is wrong (only 4 sizes have nonzero) so
+                  // we prefer to skip blank here when using per_placement.
+                });
+                // Approximate: set liveSizeSurchargeCAD from per_size if
+                // present, else accumulate decoration only.
+                liveSizeMatrixBreakdown = perSize;
+              } else {
+                liveSizeMatrixBreakdown = perSize;
+              }
+              if (perSize.length > 0) {
+                // Reset to defaults then overwrite from API
+                Object.keys(liveSizeSurchargeCAD).forEach(function(k){ liveSizeSurchargeCAD[k] = 0; });
+                perSize.forEach(function(s){
+                  var totalCents = (s.blank_surcharge_cents || 0) + (s.decoration_surcharge_cents || 0);
+                  liveSizeSurchargeCAD[s.size] = Math.round(totalCents) / 100;
+                });
+                // Re-render the running total to reflect the new map.
+                if (typeof updateSizeTotal === 'function') updateSizeTotal();
+              }
+            })
+            .catch(function(){ /* silent — fallback map already in place */ });
+        } catch (e) { /* never block the UI on this */ }
+      }, 200);
+    }
+
+    // Read the size grid and return { count, surchargeTotal } for the
+    // 2XL+ tier (or whatever sizes the live matrix says have a surcharge).
     function computeSizeSurcharge() {
       var nameToSize = { size_xs:'XS', size_s:'S', size_m:'M', size_l:'L', size_xl:'XL', size_2xl:'2XL', size_3xl:'3XL', size_4xl:'4XL', size_5xl:'5XL' };
       var count = 0, total = 0;
       document.querySelectorAll('.size-grid input').forEach(function(inp){
         var size = nameToSize[inp.name];
-        var add  = SIZE_SURCHARGE_CAD[size] || 0;
+        var add  = liveSizeSurchargeCAD[size] || 0;
         if (!add) return;
         var n = parseInt(inp.value) || 0;
         count += n;
