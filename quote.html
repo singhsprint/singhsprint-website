@@ -3502,18 +3502,24 @@
         }
       } catch(err) { /* tracking should never break the submit */ }
 
-      // Send via Web3Forms
-      var formData = new FormData(form);
-      var action = form.getAttribute('action');
-
-      fetch(action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
-        .then(function(r) {
-          if (r.ok) { showSuccess(); }
-          else { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.submit.failed')) || 'Something went wrong. Please call us at 514-915-1539 or email sales@singhsprint.com.'); }
-        })
-        .catch(function() {
-          alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.submit.connection')) || 'Connection error. Please call us at 514-915-1539 or email sales@singhsprint.com.');
-        });
+      // Web3Forms submission used to live here. As of slice 77 (May 2026)
+      // the Web3Forms POST is owned exclusively by the per-side upload
+      // handler further down — it calls form.submit() (native multipart
+      // POST to the form's action) only as a fallback when /api/inbound
+      // returns non-2xx, errors out, or stalls past the bailout window.
+      //
+      // We kept this legacy listener for everything that ISN'T the
+      // Web3Forms call: pushLeadToCRM (Supabase leads table), spTrack,
+      // Meta Pixel Lead, gtag conversion. Those stayed because they're
+      // analytics breadcrumbs that should fire on every submit attempt,
+      // independent of whether the CRM ingest path succeeded.
+      //
+      // showSuccess() is no longer called here — the per-side handler
+      // calls it on the CRM 2xx path; the Web3Forms fallback in
+      // finishAndSubmit() navigates away to Web3Forms's response page
+      // (this is the only flow where Web3Forms's "marked as spam"
+      // screen could still appear, exactly when we want a fallback
+      // signal that the primary path failed).
     });
 
     function showSuccess() {
