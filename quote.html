@@ -5187,45 +5187,54 @@
           form.appendChild(summaryHidden);
         }
 
-        // 1b) Pick the first design file the customer attached. The
-        // page exposes both a legacy single-design input (#designFile)
-        // and per-placement inputs (#design_<presetId>). We grab the
-        // earliest one with a real file and upload it to the CRM's
-        // /api/inbound/upload endpoint; the returned storage path
-        // travels alongside the structured payload so the 30-min
-        // mockup cron has something to render against.
+        // 1b) Collect EVERY design file the customer attached, keyed by
+        // the placement preset it's tagged to. Per-placement and
+        // per-cart-item file inputs are re-rendered (innerHTML = …)
+        // every time placements or cart items change — including
+        // immediately after `onchange` fires via attachPlacementFile()
+        // / cartAttachItemFile(). That wipes `.files` on the DOM
+        // <input>, so by submit time the form's file inputs are
+        // empty even though the customer DID attach artwork. The real
+        // File objects live in:
         //
-        // IMPORTANT: per-placement and per-cart-item file inputs are
-        // re-rendered (innerHTML = …) every time placements or cart
-        // items change — including immediately after `onchange` fires
-        // via attachPlacementFile() / cartAttachItemFile(). That wipes
-        // the `.files` list on the DOM <input>, so by submit time the
-        // form has empty file inputs even though the customer DID
-        // attach artwork. The actual File objects live in the JS maps
-        // `placementFiles` (single-product flow) and `cartItemFiles`
-        // (catalog cart flow). Check those FIRST, fall back to the
-        // DOM only for the legacy #designFile path.
-        var firstFile = null;
+        //   placementFiles[presetId]              — single-product flow
+        //   cartItemFiles[idx + '_' + presetId]   — catalog cart flow
+        //   #designFile                            — legacy single input
+        //
+        // We upload one file per placement (Phase A of per-side mockups),
+        // so each placement lands in its own inbound_request_mockups row
+        // on the CRM. The 30-min cron then generates them independently;
+        // a Gemini hiccup on the back print no longer kills the front.
+        var pendingFiles = [];   // [{ placement, file }]
         try {
           if (typeof placementFiles === 'object' && placementFiles) {
-            var pfKeys = Object.keys(placementFiles);
-            for (var pi = 0; pi < pfKeys.length; pi++) {
-              var pfv = placementFiles[pfKeys[pi]];
-              if (pfv instanceof File) { firstFile = pfv; break; }
-            }
+            Object.keys(placementFiles).forEach(function(presetId){
+              var f = placementFiles[presetId];
+              if (f instanceof File) pendingFiles.push({ placement: presetId, file: f });
+            });
           }
-          if (!firstFile && typeof cartItemFiles === 'object' && cartItemFiles) {
-            var cfKeys = Object.keys(cartItemFiles);
-            for (var ci = 0; ci < cfKeys.length; ci++) {
-              var cfv = cartItemFiles[cfKeys[ci]];
-              if (cfv instanceof File) { firstFile = cfv; break; }
-            }
+          if (typeof cartItemFiles === 'object' && cartItemFiles) {
+            Object.keys(cartItemFiles).forEach(function(key){
+              var f = cartItemFiles[key];
+              if (!(f instanceof File)) return;
+              // key format: "<itemIdx>_<presetId>". presetIds never
+              // contain underscores (see placementPresets); split on
+              // the first '_' to recover the placement.
+              var split = key.indexOf('_');
+              var placement = split > -1 ? key.slice(split + 1) : null;
+              pendingFiles.push({ placement: placement, file: f });
+            });
           }
-          if (!firstFile) {
+          // Legacy single-input fallback. Tag it as the first selected
+          // placement (or null) so the CRM still attributes it sensibly.
+          if (pendingFiles.length === 0) {
             var fileInputs = form.querySelectorAll('input[type="file"]');
             for (var i = 0; i < fileInputs.length; i++) {
               if (fileInputs[i].files && fileInputs[i].files[0]) {
-                firstFile = fileInputs[i].files[0];
+                pendingFiles.push({
+                  placement: (Object.values(presetByLocation || {})[0]) || null,
+                  file: fileInputs[i].files[0],
+                });
                 break;
               }
             }
@@ -5234,7 +5243,12 @@
 
         // Block the native submit; we'll re-submit after upload + POST.
         e.preventDefault();
-        spShowUploadOverlay(firstFile ? 'Uploading your design…' : 'Sending your request…');
+        var fileCount = pendingFiles.length;
+        spShowUploadOverlay(
+          fileCount === 0 ? 'Sending your request…' :
+          fileCount === 1 ? 'Uploading your design…' :
+          ('Uploading ' + fileCount + ' designs…')
+        );
 
         function finishAndSubmit() {
           form.dataset.spUploadCleared = '1';
@@ -5244,15 +5258,19 @@
           form.submit();
         }
 
-        // Safety timeout: if upload + POST takes longer than 12s
-        // (slow phone network, CRM hiccup), give up on the bonus path
-        // and submit anyway — the Web3Forms email backup carries the
-        // attachment so the rep still gets the design.
+        // Safety timeout: if upload + POST takes longer than the
+        // bailout window, give up on the bonus path and submit anyway
+        // — the Web3Forms email backup carries the attachment so the
+        // rep still gets the design. We grow the budget with the file
+        // count because each upload is a separate round trip; 8s base
+        // + 4s per extra file is comfortable on a 3G phone and still
+        // well under the typical "user gets impatient" threshold.
+        var bailoutMs = 8000 + Math.max(0, fileCount - 1) * 4000;
         var bailoutTimer = setTimeout(function(){
           if (form.dataset.spUploadCleared === '1') return;
-          console.warn('[quote submit] upload took >12s — falling back to email backup');
+          console.warn('[quote submit] upload took >' + bailoutMs + 'ms — falling back to email backup');
           finishAndSubmit();
-        }, 12000);
+        }, bailoutMs);
 
         function doStructuredPostThenSubmit(uploaded) {
         try {
@@ -5295,15 +5313,28 @@
             notes:           fd.get('details') || null,
             cart_items:      items,
             size_breakdown:  sizeBreakdown,
-            // Customer-uploaded design — when present, the CRM's 30-min
-            // mockup cron will fetch this file, composite it onto the
-            // selected blank, and email the customer a preview. When
-            // null, mockup_status is stamped 'skipped' on the row and
-            // a rep handles preview manually.
-            design_path:     (uploaded && uploaded.path)       || null,
-            design_url:      (uploaded && uploaded.signed_url) || null,
-            design_mime:     (uploaded && uploaded.mime)       || null,
-            design_bytes:    (uploaded && uploaded.bytes)      || null,
+            // Customer-uploaded designs — one entry per placement the
+            // customer attached artwork to. The CRM inserts one
+            // inbound_request_mockups row per entry, and the 30-min
+            // sweep generates each side independently so a failure
+            // on one print can't kill the others.
+            //
+            // The legacy single-design fields stay populated from the
+            // FIRST upload (if any) so older CRM read paths that
+            // haven't migrated yet keep showing something.
+            designs:         Array.isArray(uploaded) ? uploaded.map(function(u){
+                               return {
+                                 placement:  u.placement || null,
+                                 path:       u.path,
+                                 signed_url: u.signed_url || null,
+                                 mime:       u.mime  || null,
+                                 bytes:      u.bytes || null,
+                               };
+                             }) : [],
+            design_path:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].path)       || null,
+            design_url:      (Array.isArray(uploaded) && uploaded[0] && uploaded[0].signed_url) || null,
+            design_mime:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].mime)       || null,
+            design_bytes:    (Array.isArray(uploaded) && uploaded[0] && uploaded[0].bytes)      || null,
             meta: {
               purpose:        fd.get('purpose') || null,
               blank_brand:    fd.get('blank_brand') || null,
@@ -5344,9 +5375,30 @@
         }
         }  // end doStructuredPostThenSubmit
 
-        // Kick off the upload (or resolve immediately if no file),
-        // then run the structured POST + final submit.
-        uploadDesignFile(firstFile).then(function(uploaded){
+        // Kick off uploads in parallel — one POST per pending file.
+        // Each resolves to { path, signed_url, mime, bytes, placement }.
+        // We use Promise.all so a single slow upload doesn't block the
+        // others; if any single upload fails hard we surface the error
+        // (as before) but the customer can choose "Send without
+        // designs" to push the request through without artwork.
+        function uploadAll(pending) {
+          if (!pending || pending.length === 0) return Promise.resolve([]);
+          return Promise.all(pending.map(function(p){
+            return uploadDesignFile(p.file).then(function(u){
+              if (!u) return null;
+              // Stamp the placement onto the upload result so the
+              // structured POST can build designs[] with proper tags.
+              u.placement = p.placement || null;
+              return u;
+            });
+          })).then(function(arr){
+            // Filter null entries (uploadDesignFile resolves null for
+            // a falsy input — shouldn't happen here but defend anyway).
+            return arr.filter(function(x){ return x && x.path; });
+          });
+        }
+
+        uploadAll(pendingFiles).then(function(uploaded){
           doStructuredPostThenSubmit(uploaded);
         }).catch(function(err){
           // Upload failed loud — show the customer what happened and
@@ -5363,14 +5415,15 @@
             form.requestSubmit ? form.requestSubmit() : form.submit();
           });
           if (skip)  skip.addEventListener('click', function(){
-            // User chose to send without the design. Swap the error UI
-            // back to a spinner, then re-run the structured POST path
-            // with uploaded=null so the rep at least gets the request
-            // (they can ask the customer to email the design later).
+            // User chose to send without the designs. Swap the error
+            // UI back to a spinner, then re-run the structured POST
+            // path with an empty array so the rep at least gets the
+            // request (they can ask the customer to email the designs
+            // later).
             var overlay = document.getElementById('spUploadOverlay');
             if (overlay) overlay.remove();
             spShowUploadOverlay('Sending your request…');
-            doStructuredPostThenSubmit(null);
+            doStructuredPostThenSubmit([]);
           });
         });
       });
