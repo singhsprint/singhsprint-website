@@ -299,6 +299,22 @@
     .ci-method-chip:hover{border-color:#bbb;color:#1a1a1a}
     .ci-method-chip.is-active{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
 
+    /* 2026-05-24 — Qty input flash. Added by onCartItemSizeChange when
+       the sizes total auto-updates the line's qty. Yellow ring pulse
+       draws the customer's eye so the auto-sync isn't a silent jump.
+       The animation runs once, then a 1.5s setTimeout removes the
+       class so a subsequent size edit can trigger a fresh pulse. */
+    @keyframes cartQtyFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(232,255,60,0); border-color:#e8e6df; transform: scale(1); }
+      15%  { box-shadow: 0 0 0 6px rgba(232,255,60,.55); border-color:#1a1a1a; transform: scale(1.04); }
+      55%  { box-shadow: 0 0 0 4px rgba(232,255,60,.30); border-color:#1a1a1a; transform: scale(1); }
+      100% { box-shadow: 0 0 0 0 rgba(232,255,60,0); border-color:#e8e6df; transform: scale(1); }
+    }
+    .cart-qty-flash {
+      animation: cartQtyFlash 1.4s ease-out 1;
+      background:#fffce0 !important;
+    }
+
     /* Per-item Sizes grid (2026-05-24). 7-cell row for XS-3XL; custom
        sizes overflow to a separate chip row below; +add custom is a
        <details> disclosure so the section stays compact for typical
@@ -4719,7 +4735,50 @@
       var sizes = Object.assign({}, it.sizes || {});
       if (qty > 0) sizes[sizeKey] = qty;
       else         delete sizes[sizeKey];
-      SinghsCart.update(idx, { sizes: sizes });
+
+      // 2026-05-24 — Auto-sync the line's qty to match the sizes total.
+      // Customers consistently typed "I want 100 pieces" via the size
+      // grid but left the qty field at its default of 50, so the
+      // running price + tier reflected 50 not 100. Treat the sizes sum
+      // as the authoritative count whenever it's non-zero: write it
+      // back to the line's qty so:
+      //   • the per-unit price re-fetches against the right tier
+      //   • the cart-row subtotal reflects the real piece count
+      //   • the right-panel live estimate jumps to the new total
+      //
+      // We do NOT downshift to 0 when the sum hits 0 — that's the
+      // "customer is mid-edit / clearing a cell" case; keep the qty
+      // anchored at its current value until they put real numbers
+      // back in. A separate visual cue (cart-qty-flash class added
+      // post-render) draws the customer's eye to the qty field so the
+      // change isn't silent.
+      var sizeSum = 0;
+      Object.keys(sizes).forEach(function (k) {
+        var n = Number(sizes[k]) || 0;
+        if (n > 0) sizeSum += n;
+      });
+      var patch = { sizes: sizes };
+      var flashQty = false;
+      if (sizeSum > 0 && sizeSum !== Number(it.qty)) {
+        patch.qty = sizeSum;
+        flashQty = true;
+      }
+      SinghsCart.update(idx, patch);
+
+      if (flashQty) {
+        // renderCartList rebuilds the DOM, so we need to wait a tick
+        // before grabbing the freshly-rendered input. Add a CSS class
+        // that triggers the keyframe pulse, then remove it 1.5s later
+        // so subsequent updates can re-flash.
+        setTimeout(function () {
+          var row = document.querySelector('.cart-item[data-idx="' + idx + '"]');
+          if (!row) return;
+          var qtyInput = row.querySelector('input[type="number"]');
+          if (!qtyInput) return;
+          qtyInput.classList.add('cart-qty-flash');
+          setTimeout(function () { qtyInput.classList.remove('cart-qty-flash'); }, 1500);
+        }, 50);
+      }
     }
     function onCartItemSizeCustomAdd(idx, btn) {
       var wrap = btn.parentElement;
