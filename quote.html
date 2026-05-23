@@ -298,6 +298,12 @@
     .ci-method-chip{padding:8px 14px;border:1.5px solid #e8e6df;border-radius:50px;background:#fff;font-size:.78rem;font-weight:600;color:#555;cursor:pointer;transition:all .15s;font-family:inherit;min-height:36px}
     .ci-method-chip:hover{border-color:#bbb;color:#1a1a1a}
     .ci-method-chip.is-active{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
+    /* Embroidery-only garments (caps/hats) render a single locked chip.
+       Disabled state signals "this is the only choice" rather than
+       "broken" — keep the dark+yellow active styling but lose the
+       hover cursor + suppress hover color shift. */
+    .ci-method-chip[disabled]{cursor:default}
+    .ci-method-chip[disabled]:hover{border-color:#1a1a1a;color:#e8ff3c}
 
     /* 2026-05-24 — Qty input flash. Added by onCartItemSizeChange when
        the sizes total auto-updates the line's qty. Yellow ring pulse
@@ -4495,6 +4501,16 @@
             // submit pipeline always sees a valid object.
             if (typeof it.decoration_type === 'undefined') it.decoration_type = '';
             if (!it.sizes || typeof it.sizes !== 'object' || Array.isArray(it.sizes)) it.sizes = {};
+            // 2026-05-24 — Caps + hats can only be embroidered on our
+            // press. Snap any non-embroidery selection back to embroidery
+            // at read time so the rest of the pipeline (live price fetch,
+            // per-item picker, submit payload) all agree from the start.
+            // Without this, a hat added from the catalog with no method
+            // chosen would default to '' → /api/pricing returns null →
+            // live total never resolves.
+            if (it.garment_type === 'hat' || it.garment_type === 'cap') {
+              if (it.decoration_type !== 'embroidery') it.decoration_type = 'embroidery';
+            }
           });
         }
         return c;
@@ -4633,20 +4649,66 @@
     // recommendation hook on the CRM side — they pick the right method
     // at quote-reply time.
     // ─────────────────────────────────────────────────────────────────────
-    function renderCartItemMethod(idx, current) {
-      var opts = [
+    // Garment types that can only be decorated via embroidery on our
+    // press. Caps + hats are the obvious case (DTG/DTF can't bond to
+    // structured panels; the pricing engine's config also has
+    // decoration_method='embroidery' for these, so a DTG quote for a
+    // hat would return null from /api/pricing — confusing for the
+    // customer). When the cart row is one of these, the per-item
+    // picker shows only the Embroidery chip + auto-snaps
+    // decoration_type to 'embroidery' so the live price resolves.
+    var EMBROIDERY_ONLY_GARMENTS = { hat: 1, cap: 1 };
+    function renderCartItemMethod(idx, current, garmentType) {
+      var embroideryOnly = !!(garmentType && EMBROIDERY_ONLY_GARMENTS[garmentType]);
+
+      // Auto-snap embroidery-only items to embroidery if they aren't
+      // already. We schedule the write for the next tick to avoid
+      // mutating SinghsCart in the middle of a renderCartList pass
+      // (which would trigger a re-render and re-entrancy). The first
+      // render shows the snap visually; subsequent ones are a no-op.
+      if (embroideryOnly && current !== 'embroidery') {
+        setTimeout(function () {
+          var c = SinghsCart.read();
+          var it = c.items[idx];
+          if (it && it.decoration_type !== 'embroidery') {
+            SinghsCart.updateSilent(idx, { decoration_type: 'embroidery' });
+            renderCartList();
+          }
+        }, 0);
+        current = 'embroidery';
+      }
+
+      var allOpts = [
         { value: 'dtg',        label: 'DTG' },
         { value: 'dtf',        label: 'DTF' },
         { value: 'embroidery', label: 'Embroidery' },
         { value: 'not-sure',   label: 'Not sure' },
       ];
+      // For embroidery-only garments, the picker collapses to a single
+      // chip — no choice for the customer to make, but we still render
+      // the row so the customer sees WHY this hat is priced the way
+      // it is ("oh, hats are embroidery").
+      var opts = embroideryOnly
+        ? allOpts.filter(function (o) { return o.value === 'embroidery'; })
+        : allOpts;
+
       var chips = opts.map(function(o) {
         var active = (current === o.value);
         return '<button type="button" class="ci-method-chip' + (active?' is-active':'') + '"' +
                ' onclick="onCartItemChange(' + idx + ', {decoration_type: \'' + o.value + '\'})"' +
+               (embroideryOnly ? ' disabled aria-disabled="true"' : '') +
                '>' + o.label + '</button>';
       }).join('');
-      var hint = current ? '' : '<span class="ci-method-hint">Pick how each item gets decorated</span>';
+
+      var hint;
+      if (embroideryOnly) {
+        hint = '<span class="ci-method-hint">Caps are embroidery-only on our press</span>';
+      } else if (!current) {
+        hint = '<span class="ci-method-hint">Pick how each item gets decorated</span>';
+      } else {
+        hint = '';
+      }
+
       return '<div class="ci-method" style="flex-basis:100%;min-width:0">' +
              '  <div class="ci-method__head">' +
              '    <span class="ci-section-label">Print method</span>' + hint +
@@ -4815,13 +4877,70 @@
       _cartPickerOpenIdx = (_cartPickerOpenIdx === idx) ? null : idx;
       renderCartList();
     }
+    // ─────────────────────────────────────────────────────────────────────
+    // 2026-05-24 — Placement exclusivity groups.
+    //
+    // Some placements physically overlap and cannot coexist on the same
+    // garment. Front-of-chest is the obvious case: Left Chest, Center
+    // Chest, Full Front, and Oversized Front are different SIZES of a
+    // print covering the same chest area. You can pick one, not all four.
+    // Same logic for the back (Top Back, Across Back, Full Back).
+    //
+    // Pricing impact (the real reason this matters): each placement adds
+    // 1 to it.sides AND carries its own placement-specific surcharge from
+    // pricing_size_modifiers (Full Front +$3/piece, Full Back +$5/piece,
+    // etc.). Letting the customer select all four front options would
+    // 4× the side count and stack four surcharges — but in reality only
+    // ONE print happens (the biggest one). The customer would be
+    // double / quadruple-billed.
+    //
+    // Rule: picking a chip in a group removes any other selection from
+    // the same group. Chips outside any group are independent (e.g.,
+    // Left Sleeve + Right Sleeve, sleeves + back, etc.).
+    // ─────────────────────────────────────────────────────────────────────
+    var PLACEMENT_EXCLUSIVE_GROUPS = {
+      // Front-of-chest — only one print of one size can occupy the chest.
+      'left-chest':   'shirt-front',
+      'center-chest': 'shirt-front',
+      'full-front':   'shirt-front',
+      'oversized':    'shirt-front',
+      // Back of shirt/hoodie — only one back-print size.
+      'back-top':     'shirt-back',
+      'back-across':  'shirt-back',
+      'back-full':    'shirt-back',
+      // Bag — front body vs. front pocket overlap (small pocket sits on
+      // the front face). Treat them as one group.
+      'bag-front':    'bag-front',
+      'bag-pocket':   'bag-front',
+      // Apron — chest / pocket / full all overlap the apron front.
+      'apron-chest':  'apron-front',
+      'apron-pocket': 'apron-front',
+      'apron-full':   'apron-front',
+      // Sleeves, hood, cap panels, leg hips — left intentionally
+      // independent. Customers can mix-and-match those across the
+      // garment without overlap.
+    };
+
     function cartAddPlacement(idx, presetId) {
       var c = SinghsCart.read();
       var it = c.items[idx]; if (!it) return;
       it.placements = Array.isArray(it.placements) ? it.placements.slice() : [];
       var i = it.placements.indexOf(presetId);
-      if (i >= 0) it.placements.splice(i, 1);          // toggle off
-      else        it.placements.push(presetId);        // toggle on
+      if (i >= 0) {
+        // Toggle off
+        it.placements.splice(i, 1);
+      } else {
+        // Toggle on — but first kick out any sibling in the same
+        // exclusive group. This is what makes picking "Full Front"
+        // automatically deselect "Center Chest" / "Left Chest" / etc.
+        var group = PLACEMENT_EXCLUSIVE_GROUPS[presetId];
+        if (group) {
+          it.placements = it.placements.filter(function (p) {
+            return PLACEMENT_EXCLUSIVE_GROUPS[p] !== group;
+          });
+        }
+        it.placements.push(presetId);
+      }
       if (it.placements.length === 0) it.placements = ['center-chest']; // never zero
       it.sides = it.placements.length;
       SinghsCart.update(idx, { placements: it.placements });
@@ -5042,7 +5161,7 @@
         // 2026-05-24 — per-item method + sizes widgets, surfaced below
         // the placement chips. Multi-item carts now express things like
         // "DTG tote + DTF tee + embroidered hat" cleanly.
-        var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '');
+        var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '', it.garment_type);
         var sizesHtml      = renderCartItemSizes(idx, it.sizes || {}, it.qty || 0, it.garment_type);
         return '' +
           // overflow:hidden + max-width:100% + box-sizing prevent the
