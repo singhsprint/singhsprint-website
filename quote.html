@@ -255,6 +255,82 @@
     .ci-upload__copy span{font-size:.7rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .ci-upload__remove{background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.72rem;padding:4px 6px}
 
+    /* Per-cart-item shared section label — small uppercase header used
+       above the method picker and sizes grid inside each cart row. */
+    .ci-section-label{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888}
+
+    /* Promoted "Add another item from catalog" CTA (2026-05-24).
+       Visible at any viewport width — full-width filled button so the
+       multi-method/multi-item flow is discoverable. Used to be a tiny
+       ghost-pill that phones consistently buried; now sits prominent
+       between the cart list and the next form section. */
+    .cart-add-more{margin:14px 0 22px}
+    .cart-add-more__btn{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      width:100%;padding:14px 18px;
+      background:#fafaf6;border:2px dashed #b9b3a3;border-radius:14px;
+      color:#1a1a1a;font-weight:700;font-size:.95rem;text-decoration:none;
+      transition:all .15s ease;min-height:56px;font-family:inherit;
+    }
+    .cart-add-more__btn:hover{background:#fff;border-color:#1a1a1a;border-style:solid;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+    .cart-add-more__btn:active{transform:translateY(0)}
+    .cart-add-more__icon{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;
+      font-size:1.1rem;font-weight:700;line-height:1;
+    }
+    .cart-add-more__label{flex:0 1 auto}
+    .cart-add-more__hint{
+      margin:8px 0 0;text-align:center;font-size:.74rem;color:#888;line-height:1.5;
+    }
+    @media (max-width:600px){
+      .cart-add-more__btn{padding:16px;font-size:1rem}
+      .cart-add-more__hint{font-size:.72rem;padding:0 8px}
+    }
+
+    /* Per-item Print Method picker (2026-05-24). Compact 4-chip selector
+       inside each cart row. Active chip = filled dark with yellow accent
+       text, matching the homepage slider chip language. */
+    .ci-method{margin-top:10px;width:100%}
+    .ci-method__head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+    .ci-method-hint{font-size:.7rem;color:#a16207}
+    .ci-method__chips{display:flex;gap:6px;flex-wrap:wrap}
+    .ci-method-chip{padding:8px 14px;border:1.5px solid #e8e6df;border-radius:50px;background:#fff;font-size:.78rem;font-weight:600;color:#555;cursor:pointer;transition:all .15s;font-family:inherit;min-height:36px}
+    .ci-method-chip:hover{border-color:#bbb;color:#1a1a1a}
+    .ci-method-chip.is-active{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
+
+    /* Per-item Sizes grid (2026-05-24). 7-cell row for XS-3XL; custom
+       sizes overflow to a separate chip row below; +add custom is a
+       <details> disclosure so the section stays compact for typical
+       orders. */
+    .ci-sizes{margin-top:10px;width:100%}
+    .ci-sizes__head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .ci-sizes__total{font-size:.78rem;color:#666;font-variant-numeric:tabular-nums}
+    .ci-sizes__total strong{color:#1a1a1a;font-weight:700}
+    .ci-sizes__total--mismatch strong{color:#a16207}
+    .ci-sizes__match{margin-left:8px;background:transparent;border:none;color:#a16207;text-decoration:underline;font-size:.72rem;cursor:pointer;font-weight:600;padding:0}
+    .ci-sizes__grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+    .ci-sizes__cell{display:flex;flex-direction:column;gap:2px}
+    .ci-sizes__lbl{font-size:.66rem;font-weight:700;color:#999;text-align:center;letter-spacing:.04em}
+    .ci-sizes__cell input{width:100%;padding:8px 4px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;font-weight:600;text-align:center;font-family:inherit;background:#fff;min-height:40px;font-variant-numeric:tabular-nums}
+    .ci-sizes__cell input:focus{outline:none;border-color:#1a1a1a}
+    .ci-sizes__custom-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .ci-sizes__custom-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fafaf6;border:1px solid #e8e6df;border-radius:50px;font-size:.72rem;font-weight:600;color:#1a1a1a;font-variant-numeric:tabular-nums}
+    .ci-sizes__custom-chip button{background:transparent;border:none;color:#888;cursor:pointer;padding:0;font-size:1rem;line-height:1}
+    .ci-sizes__more{margin-top:8px}
+    .ci-sizes__more summary{cursor:pointer;list-style:none;font-size:.7rem;color:#666;padding:4px 0;font-weight:600}
+    .ci-sizes__more summary::-webkit-details-marker{display:none}
+    .ci-sizes__more summary:hover{color:#1a1a1a}
+    .ci-sizes__custom-form{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+    .ci-sizes__custom-form input[type=text]{flex:0 0 80px;padding:6px 8px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;text-transform:uppercase;font-family:inherit}
+    .ci-sizes__custom-form input[type=number]{flex:0 0 70px;padding:6px 8px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;font-family:inherit;font-variant-numeric:tabular-nums}
+    .ci-sizes__custom-form button{padding:6px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px}
+    @media (max-width:600px){
+      /* Below 600px the 7-cell size grid gets too tight; collapse to
+         4 columns. Custom-size chips wrap naturally. */
+      .ci-sizes__grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    }
+
     /* Location bar under mockup — multi-select toggle */
     .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
     .loc-btn{padding:7px 14px;border-radius:50px;font-size:.72rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s;white-space:nowrap}
@@ -786,8 +862,19 @@
                  its own row with editable qty + sides + remove. When this is
                  visible, the single-product catalogPick card below is hidden. -->
             <div id="cartList" style="display:none;flex-direction:column;gap:12px;margin-bottom:18px"></div>
-            <div id="cartAddMore" style="display:none;margin-bottom:18px">
-              <a href="/catalog" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1.5px dashed #d0cdc0;color:#1a1a1a;font-weight:600;padding:10px 16px;border-radius:50px;text-decoration:none;font-size:.86rem" data-i18n="quote.cart.addmore">+ Add another item from catalog</a>
+            <!-- 2026-05-24 — promoted add-another-item CTA. Was a small
+                 ghost-pill that customers missed on phones; now a full-
+                 width filled button that scales to viewport. Customers
+                 doing multi-method orders (DTG tote + DTF tee + embroidered
+                 hat) consistently failed to find the original. -->
+            <div id="cartAddMore" class="cart-add-more" style="display:none">
+              <a href="/catalog" class="cart-add-more__btn" data-i18n="quote.cart.addmore">
+                <span class="cart-add-more__icon" aria-hidden="true">+</span>
+                <span class="cart-add-more__label">Add another item from catalog</span>
+              </a>
+              <p class="cart-add-more__hint" data-i18n="quote.cart.addmore.hint">
+                Each item can have its own print method and sizes — mix DTG, DTF, embroidery freely.
+              </p>
             </div>
 
             <!-- If the user came in via /catalog?product=&color= we render this
@@ -1215,6 +1302,33 @@
                 <option data-i18n="quote.contact.delivery.opt2">Montreal delivery</option>
                 <option data-i18n="quote.contact.delivery.opt3">Shipping (Canada-wide)</option>
               </select>
+            </div>
+
+            <!-- 2026-05-24 — "Need by" date + rush flag.
+                 Customers consistently had no way to express urgency.
+                 The date input is optional (empty = standard 3-5 biz day
+                 lead). The rush checkbox is also optional but flagging
+                 it surfaces a red badge on the CRM inbox so reps know to
+                 prioritize that row. Both flow into inbound_requests.meta
+                 + auto-populate the quote builder's `deadline` field on
+                 convert-to-order, so the rep doesn't have to re-type. -->
+            <div class="form-row" id="needByRow">
+              <div class="form-group">
+                <label for="needByDate" data-i18n="quote.contact.needby">When do you need these by? <span style="color:#888;font-weight:400">(optional)</span></label>
+                <input type="date" id="needByDate" name="need_by_date" min="" />
+                <small class="needby-hint" data-i18n="quote.contact.needby.hint" style="display:block;font-size:.72rem;color:#888;margin-top:4px;line-height:1.4">
+                  Standard turnaround is 3–5 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.
+                </small>
+              </div>
+              <div class="form-group">
+                <label data-i18n="quote.contact.rushlabel" style="margin-bottom:6px">Rush?</label>
+                <label class="rush-toggle" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #e8e6df;border-radius:10px;background:#fafaf7;cursor:pointer;font-size:.88rem;font-weight:500;min-height:48px;line-height:1.2">
+                  <input type="checkbox" id="rushFlag" name="is_rush" value="1" style="width:18px;height:18px;flex-shrink:0;accent-color:#a01a1a">
+                  <span data-i18n="quote.contact.rush" style="color:#1a1a1a">
+                    This is a rush order — please prioritize
+                  </span>
+                </label>
+              </div>
             </div>
             <div class="form-group">
               <label for="hearAbout" data-i18n="quote.contact.hear">How did you hear about us?</label>
@@ -4315,12 +4429,25 @@
         }
         return picks.length ? picks : ['center-chest'];
       },
-      // Migration on read — ensures every item has a `placements` array.
-      // Existing items only had a numeric `sides`; new ones from the catalog
-      // come with placements pre-set (see cart-add in catalog.html) but we
-      // also defend here so the form never sees a half-shaped item. The
-      // migration is also garment-aware so old carts containing hats get
-      // a Cap-Front default instead of an invalid Center-Chest.
+      // Migration on read — ensures every item has the new per-item
+      // fields the multi-method/per-size pipeline needs. Older carts
+      // saved before this slice only had a numeric `sides`; new ones
+      // from the catalog come with placements pre-set (see cart-add in
+      // catalog.html). We also defend here so the form never sees a
+      // half-shaped item.
+      //
+      // Per-item fields (2026-05-24 multi-method/sizes pass):
+      //   - decoration_type: '' | 'dtg' | 'dtf' | 'embroidery' | 'not-sure'
+      //     Default '' so the rep can spot "customer didn't choose yet"
+      //     vs. a real DTF default. The price strip + matrix coerces ''
+      //     to 'dtf' for estimation purposes (cheapest base price).
+      //   - sizes: Record<sizeKey,qty>. Empty {} until the customer
+      //     fills in the per-item size grid. The cart-item subtotal still
+      //     uses `qty` as the total piece count; sizes is just the
+      //     per-size breakdown the CRM consumes for the size-matrix
+      //     surcharge math.
+      // The migration is also garment-aware so old carts containing
+      // hats get a Cap-Front default instead of an invalid Center-Chest.
       read: function() {
         var c;
         try { c = JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ c = {items:[]}; }
@@ -4331,6 +4458,10 @@
               it.placements = self._defaultPlacementsForSides(it.sides || 1, it.garment_type);
             }
             it.sides = it.placements.length;  // canonical: sides === placements.length
+            // New per-item fields. Set defaults if missing so the
+            // submit pipeline always sees a valid object.
+            if (typeof it.decoration_type === 'undefined') it.decoration_type = '';
+            if (!it.sizes || typeof it.sizes !== 'object' || Array.isArray(it.sizes)) it.sizes = {};
           });
         }
         return c;
@@ -4454,6 +4585,155 @@
       return '<div class="ci-uploads">' + inner + '</div>';
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Per-item Print Method picker — 2026-05-24 multi-method pass.
+    //
+    // Multi-item carts used to share ONE global method (state.service).
+    // That broke the very common case of "DTG tote + DTF shirt +
+    // embroidered hat" — the customer could only express one method
+    // for the whole order. Each cart row now gets its own picker; the
+    // global state.service stays as the legacy-single-product fallback
+    // and as the seed when a row's method is empty.
+    //
+    // Chips intentionally compact (text-only, no icons) so they don't
+    // dominate the cart row visually. "Not sure" pre-fills the rep's
+    // recommendation hook on the CRM side — they pick the right method
+    // at quote-reply time.
+    // ─────────────────────────────────────────────────────────────────────
+    function renderCartItemMethod(idx, current) {
+      var opts = [
+        { value: 'dtg',        label: 'DTG' },
+        { value: 'dtf',        label: 'DTF' },
+        { value: 'embroidery', label: 'Embroidery' },
+        { value: 'not-sure',   label: 'Not sure' },
+      ];
+      var chips = opts.map(function(o) {
+        var active = (current === o.value);
+        return '<button type="button" class="ci-method-chip' + (active?' is-active':'') + '"' +
+               ' onclick="onCartItemChange(' + idx + ', {decoration_type: \'' + o.value + '\'})"' +
+               '>' + o.label + '</button>';
+      }).join('');
+      var hint = current ? '' : '<span class="ci-method-hint">Pick how each item gets decorated</span>';
+      return '<div class="ci-method" style="flex-basis:100%;min-width:0">' +
+             '  <div class="ci-method__head">' +
+             '    <span class="ci-section-label">Print method</span>' + hint +
+             '  </div>' +
+             '  <div class="ci-method__chips">' + chips + '</div>' +
+             '</div>';
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Per-item Sizes grid. Inline 7-cell row for the standard adult range
+    // (XS–3XL) with an optional + custom row reveal. The TOTAL across
+    // sizes is shown next to the qty; mismatches between sizes total and
+    // the row's qty get a soft amber warning (no hard block — customer
+    // can fix later or rep can in the CRM).
+    //
+    // The total is informational only — pricing still uses `qty` as the
+    // canonical piece count. The sizes map is consumed by the CRM's
+    // size-matrix surcharge math (per-size up-charges for 2XL+).
+    // ─────────────────────────────────────────────────────────────────────
+    var CART_SIZES = ['XS','S','M','L','XL','2XL','3XL'];
+    function renderCartItemSizes(idx, sizes, qty, garmentType) {
+      // Hide for hats / caps — sizes are typically OSFA. Customer can
+      // still specify quantities via the standard `qty` field above.
+      if (garmentType === 'hat' || garmentType === 'cap') return '';
+      var total = 0;
+      CART_SIZES.forEach(function(s){ total += Number((sizes && sizes[s]) || 0); });
+      Object.keys(sizes || {}).forEach(function(k) {
+        if (CART_SIZES.indexOf(k) < 0) total += Number(sizes[k] || 0);
+      });
+      var mismatch = qty > 0 && total !== qty;
+      var matchHint = '';
+      if (mismatch) {
+        matchHint = ' <button type="button" class="ci-sizes__match" ' +
+                    'onclick="onCartItemSizesAutoFill(' + idx + ')" ' +
+                    'title="Spread the remaining qty evenly across the sizes you\'ve started filling in">' +
+                    'match qty →</button>';
+      }
+      var cells = CART_SIZES.map(function(s) {
+        var v = Number((sizes && sizes[s]) || 0);
+        var vAttr = v > 0 ? v : '';
+        return '<label class="ci-sizes__cell">' +
+               '  <span class="ci-sizes__lbl">' + s + '</span>' +
+               '  <input type="number" min="0" inputmode="numeric" value="' + vAttr + '"' +
+               '  onchange="onCartItemSizeChange(' + idx + ', \'' + s + '\', parseInt(this.value)||0)"/>' +
+               '</label>';
+      }).join('');
+      var custom = Object.keys(sizes || {})
+        .filter(function(k){ return CART_SIZES.indexOf(k) < 0 && Number(sizes[k]) > 0; });
+      var customRow = '';
+      if (custom.length) {
+        customRow = '<div class="ci-sizes__custom-row">' +
+          custom.map(function(k) {
+            return '<span class="ci-sizes__custom-chip">' + k + ': ' + Number(sizes[k]) +
+              ' <button type="button" aria-label="Remove ' + k + '" ' +
+              'onclick="onCartItemSizeChange(' + idx + ', \'' + k + '\', 0)">×</button>' +
+              '</span>';
+          }).join('') +
+          '</div>';
+      }
+      var totalCls = mismatch ? 'ci-sizes__total ci-sizes__total--mismatch' : 'ci-sizes__total';
+      return '<div class="ci-sizes" style="flex-basis:100%;min-width:0">' +
+        '<div class="ci-sizes__head">' +
+        '  <span class="ci-section-label">Sizes</span>' +
+        '  <span class="' + totalCls + '">' +
+        '    <strong>' + total + '</strong>' + (qty > 0 ? ' / ' + qty : '') +
+        matchHint +
+        '  </span>' +
+        '</div>' +
+        '<div class="ci-sizes__grid">' + cells + '</div>' +
+        customRow +
+        '<details class="ci-sizes__more">' +
+        '  <summary>+ add a custom size (4XL, OSFA, youth, …)</summary>' +
+        '  <div class="ci-sizes__custom-form">' +
+        '    <input type="text" placeholder="e.g. 4XL" maxlength="10" data-ci-custom-key/>' +
+        '    <input type="number" min="0" placeholder="qty" data-ci-custom-qty/>' +
+        '    <button type="button" onclick="onCartItemSizeCustomAdd(' + idx + ', this)">Add</button>' +
+        '  </div>' +
+        '</details>' +
+        '</div>';
+    }
+
+    // Mutators paired with the size grid.
+    function onCartItemSizeChange(idx, sizeKey, qty) {
+      var c = SinghsCart.read();
+      var it = c.items[idx]; if (!it) return;
+      var sizes = Object.assign({}, it.sizes || {});
+      if (qty > 0) sizes[sizeKey] = qty;
+      else         delete sizes[sizeKey];
+      SinghsCart.update(idx, { sizes: sizes });
+    }
+    function onCartItemSizeCustomAdd(idx, btn) {
+      var wrap = btn.parentElement;
+      var keyEl = wrap.querySelector('[data-ci-custom-key]');
+      var qtyEl = wrap.querySelector('[data-ci-custom-qty]');
+      var key = String(keyEl.value || '').trim().toUpperCase().slice(0, 10);
+      var qty = parseInt(qtyEl.value || '0', 10) || 0;
+      if (!key || qty <= 0) return;
+      onCartItemSizeChange(idx, key, qty);
+      keyEl.value = '';
+      qtyEl.value = '';
+    }
+    function onCartItemSizesAutoFill(idx) {
+      var c = SinghsCart.read();
+      var it = c.items[idx]; if (!it) return;
+      var sizes = Object.assign({}, it.sizes || {});
+      var filled = Object.keys(sizes).filter(function(k){ return Number(sizes[k]) > 0; });
+      var qty = Number(it.qty) || 0;
+      if (!qty) return;
+      if (filled.length === 0) { sizes.M = qty; SinghsCart.update(idx, { sizes: sizes }); return; }
+      var total = filled.reduce(function(s,k){ return s + Number(sizes[k] || 0); }, 0);
+      var delta = qty - total;
+      if (delta === 0) return;
+      var per = Math.floor(delta / filled.length);
+      var leftover = delta - per * filled.length;
+      filled.forEach(function(k, i) {
+        sizes[k] = Math.max(0, (Number(sizes[k]) || 0) + per + (i < leftover ? 1 : 0));
+      });
+      SinghsCart.update(idx, { sizes: sizes });
+    }
+
     // ----- Mutations ------------------------------------------------------
     function cartTogglePicker(idx) {
       _cartPickerOpenIdx = (_cartPickerOpenIdx === idx) ? null : idx;
@@ -4506,6 +4786,16 @@
         var el = document.getElementById(id);
         if (el) el.addEventListener('change', _queueCartSync);
       });
+      // Initialize the "Need by" date input's min to today so customers
+      // can't pick a date in the past. Date strings are ISO-local.
+      var needBy = document.getElementById('needByDate');
+      if (needBy) {
+        var today = new Date();
+        var iso = today.getFullYear() + '-' +
+                  String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                  String(today.getDate()).padStart(2, '0');
+        needBy.min = iso;
+      }
     });
 
     // ───── Mobile keyboard-aware sticky strip ─────────────────────────
@@ -4651,6 +4941,11 @@
         var label = (it.color_name || '').replace(/_\d+$/, '');
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
         var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
+        // 2026-05-24 — per-item method + sizes widgets, surfaced below
+        // the placement chips. Multi-item carts now express things like
+        // "DTG tote + DTF tee + embroidered hat" cleanly.
+        var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '');
+        var sizesHtml      = renderCartItemSizes(idx, it.sizes || {}, it.qty || 0, it.garment_type);
         return '' +
           // overflow:hidden + max-width:100% + box-sizing prevent the
           // 9-column tier table inside the row from forcing the cart-item
@@ -4677,6 +4972,8 @@
           '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
           '  </div>' +
           placementsHtml +
+          methodHtml +
+          sizesHtml +
           uploadsHtml +
           // Live per-item pricing table — populated async by paintCartItemLiveMatrix.
           // Sits on its own flex line via flex-basis:100% so it spans the full row.
@@ -5628,7 +5925,15 @@
               // Promo handoff from the homepage offer popup — surfaces on
               // the CRM inbox as a "$20 off (first order)" pill so the rep
               // remembers to apply the discount on the formal quote.
-              promo_slug:     promoSlug || null
+              promo_slug:     promoSlug || null,
+              // 2026-05-24 — customer-supplied urgency. needed_by is a
+              // YYYY-MM-DD string (or null when blank); is_rush is true
+              // when the rush checkbox was ticked. CRM inbox shows a red
+              // badge for is_rush, and convert-to-order pre-fills the
+              // quote builder's `deadline` from needed_by so the rep
+              // doesn't re-type.
+              needed_by:      fd.get('need_by_date') || null,
+              is_rush:        !!fd.get('is_rush')
             },
             source_url: location.href
           };
