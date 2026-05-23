@@ -5046,11 +5046,30 @@
     // embroidery (should be 3× cost, was showing 1×). Cache key includes
     // the placement list so DTF/Embroidery + Center/Full quotes each get
     // their own slot.
-    function liveUnitPrice(productId, qty, sides, placements, cb) {
+    // 2026-05-24 — `methodOverride` accepts a per-item decoration_type
+    // (dtg/dtf/embroidery/not-sure/'') so multi-method carts cache + look
+    // up under the right key. Without it, an embroidered hat would
+    // cache under the global state.service ('dtf' by default), then
+    // updateCartTotal's per-item lookup (key contains 'embroidery')
+    // would miss → headline shows $— even though the API returned a
+    // real price. Legacy callers omitting the param fall back to the
+    // global current method (unchanged behavior).
+    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride) {
       // Backwards-compat: older callers pass (productId, qty, sides, cb)
       // with no placements arg. Detect and shift.
       if (typeof placements === 'function') { cb = placements; placements = []; }
-      var method = currentDecorationMethod();
+      // Normalize the per-item method onto the engine's two-method
+      // axis: 'embroidery' stays as-is; anything else (dtg/dtf/
+      // not-sure/'') maps to 'dtf' for pricing purposes (DTG + DTF
+      // share the same base ladder; not-sure defaults to dtf so the
+      // customer sees a number while we recommend at quote-reply).
+      var method;
+      if (methodOverride) {
+        var raw = String(methodOverride).toLowerCase();
+        method = raw === 'embroidery' ? 'embroidery' : 'dtf';
+      } else {
+        method = currentDecorationMethod();
+      }
       var placementsArr = Array.isArray(placements) ? placements.slice() : [];
       var placementsKey = placementsArr.join(',');
       var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey;
@@ -5212,6 +5231,11 @@
             paintCartItemSwatches(idx, p.colors || [], it.color_id);
           });
 
+        // 2026-05-24 — pass it.decoration_type as the methodOverride
+        // (6th arg) so the cache key matches updateCartTotal's lookup.
+        // Without it, an embroidered hat would cache under 'dtf' (the
+        // global current method) and miss the 'embroidery' lookup
+        // below, showing $— in the right-panel headline.
         liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, it.placements || [], function(price) {
           var el = document.getElementById('ci-price-' + idx);
           if (!el) return;
@@ -5222,7 +5246,7 @@
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        });
+        }, it.decoration_type);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
         // Hits /api/pricing/live-matrix which returns engine-derived prices
