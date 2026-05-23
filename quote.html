@@ -5348,22 +5348,51 @@
             },
             source_url: location.href
           };
-          // Now that the design file is already in our bucket (or
-          // null if there wasn't one), POST the structured payload.
-          // We DO await this so the row is fully written before the
-          // browser navigates to Web3Forms's thank-you page — without
-          // that, on slow networks the request can get cancelled
-          // during unload and the CRM never sees the inbound row.
+          // Now that the design file(s) are already in our bucket (or
+          // none if the customer skipped artwork), POST the structured
+          // payload. We await it so the row is fully written before
+          // we either show the inline success state OR (on failure)
+          // fall through to Web3Forms as a backup.
+          //
+          // Submission policy (May 2026):
+          //   - CRM POST 2xx  →  show the inline #formSuccess panel.
+          //                      Web3Forms is NOT called — it's just
+          //                      redundant work and its spam classifier
+          //                      sometimes rejects the dup payload,
+          //                      which used to flash a confusing
+          //                      "submission failed" page to the
+          //                      customer even when their request had
+          //                      already landed in our CRM.
+          //   - CRM POST !ok / network err → call form.submit() so
+          //                      Web3Forms backstops the request via
+          //                      its native multipart POST. The rep
+          //                      still gets the rep-alert email; we
+          //                      lose the structured cart on that
+          //                      single submission and have to re-enter
+          //                      it manually in /inbox/requests.
+          //   - Bailout timer fired → same as failure path: Web3Forms
+          //                      catches it. The CRM may also still be
+          //                      writing the row in the background
+          //                      (keepalive: true), so duplicate-detect
+          //                      on the inbox handles the rare double.
           fetch(INBOUND_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             keepalive: true
-          }).then(function(){
+          }).then(function(r){
             clearTimeout(bailoutTimer);
-            finishAndSubmit();
+            if (r && r.ok) {
+              // Inline success — short-circuits Web3Forms entirely.
+              form.dataset.spUploadCleared = '1';
+              spHideUploadOverlay();
+              try { showSuccess(); } catch (e) { /* showSuccess is defined below; fall back if not yet */ }
+            } else {
+              console.warn('[inbound POST] non-2xx from CRM (status ' + (r && r.status) + ') — falling back to Web3Forms');
+              finishAndSubmit();
+            }
           }).catch(function(err){
-            console.warn('[inbound POST] failed (email backup will still deliver):', err);
+            console.warn('[inbound POST] failed — falling back to Web3Forms:', err);
             clearTimeout(bailoutTimer);
             finishAndSubmit();
           });
