@@ -25,10 +25,19 @@ import path from 'node:path';
 
 const ROOT      = path.resolve(new URL('.', import.meta.url).pathname, '..');
 const OUT_DIR   = path.join(ROOT, 'p');
-const API_URL   = process.env.API_URL || 'https://singhsprint-crm.vercel.app/api/catalog?limit=500';
+// 2026-05-24 — default limit raised from 500 → 10000 so the regen covers
+// the full catalog (~6.5k products from S&S + Blanks). The catalog
+// endpoint supports up to HARD_LIMIT=20000 internally; 10000 is
+// comfortable headroom. The old 500 cap meant alphabetically-late brands
+// (Carhartt, Columbia, Gildan, North End, Port Authority) never made it
+// into the regen and their static pages stayed pinned to the original
+// USD-buggy numbers.
+const API_URL   = process.env.API_URL || 'https://singhsprint-crm.vercel.app/api/catalog?limit=10000';
 const IMG_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
 const SITE      = 'https://www.singhsprint.com';
-const TOP_N     = parseInt(process.env.TOP_N || '25', 10);
+// Default raised 25 → 10000 for the same reason. Caller can still pass
+// TOP_N=N to generate just the first N for a quick test run.
+const TOP_N     = parseInt(process.env.TOP_N || '10000', 10);
 
 // ---------------------------------------------------------------------------
 // SEO structured-data constants. Used by every generated Product entity to
