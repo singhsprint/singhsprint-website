@@ -1,0 +1,263 @@
+/* =========================================================================
+ * GET /api/shop/page?slug=<slug>
+ *
+ * Server-rendered HTML for /shop/{slug}. Reached via the vercel.json
+ * rewrite { "/shop/:slug" → "/api/shop/page?slug=:slug" }.
+ *
+ * Server-rendered (not static or client-fetch) so that Meta link previews
+ * pick up the correct Open Graph image and title when the URL is shared
+ * or used in an ad. The page itself is intentionally simple — one image,
+ * one title, one price, one "Buy now" button that POSTs to /api/shop/checkout.
+ *
+ * Returns:
+ *   200 → full HTML page
+ *   404 → drop not found / not live
+ * ========================================================================= */
+
+const { adminClient } = require('../_lib/supabase');
+
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatPrice(cents, currency) {
+  const major = (cents / 100).toFixed(2);
+  return `$${major} ${currency || 'CAD'}`;
+}
+
+function notFoundHtml() {
+  return `<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><title>Drop not found · Singhs Print</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{font-family:Inter,system-ui,sans-serif;max-width:560px;margin:120px auto;padding:0 24px;color:#1a1a1a;text-align:center}
+a{color:#1a1a1a}</style></head><body>
+<h1>Drop not found</h1>
+<p>This drop isn't live, or the link is wrong. <a href="/shop">See active drops →</a></p>
+</body></html>`;
+}
+
+function pageHtml(drop, siteUrl) {
+  const url   = `${siteUrl}/shop/${encodeURIComponent(drop.slug)}`;
+  const price = formatPrice(drop.retail_price_cents, drop.currency);
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${esc(drop.title)} · Singhs Print</title>
+  <meta name="description" content="${esc(drop.description || drop.title + ' — limited drop from Singhs Print.')}">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+
+  <!-- Open Graph / Meta link preview -->
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="${esc(drop.title)}">
+  <meta property="og:description" content="${esc(drop.description || drop.title + ' — limited drop from Singhs Print.')}">
+  <meta property="og:url" content="${esc(url)}">
+  <meta property="og:image" content="${esc(drop.mockup_url)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${esc(drop.title)}">
+  <meta name="twitter:image" content="${esc(drop.mockup_url)}">
+
+  <!-- Product structured data -->
+  <script type="application/ld+json">${JSON.stringify({
+    "@context":   "https://schema.org",
+    "@type":      "Product",
+    name:         drop.title,
+    image:        drop.mockup_url,
+    description:  drop.description || `${drop.title} — limited drop from Singhs Print.`,
+    sku:          drop.slug,
+    brand:        { "@type": "Brand", name: "Singhs Print" },
+    offers: {
+      "@type":         "Offer",
+      url,
+      priceCurrency:   drop.currency || "CAD",
+      price:           (drop.retail_price_cents / 100).toFixed(2),
+      availability:    "https://schema.org/InStock",
+      itemCondition:   "https://schema.org/NewCondition",
+    },
+  })}</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Meta Pixel base — same pattern as /industries/*.html and /businesses/rfp.html.
+       Pixel ID is the production "Singhs Print Quote" dataset. Server-side CAPI
+       Purchase events fire from api/account/stripe-webhook.js with deterministic
+       event_id derived from the Stripe session, so dedup works even if the
+       customer never returns to /shop/{slug}?paid=1. -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1198620955711122');
+    fbq('track', 'PageView');
+    fbq('track', 'ViewContent', { content_ids: ['${esc(drop.slug)}'], content_type: 'product', content_name: ${JSON.stringify(drop.title)}, value: ${(drop.retail_price_cents / 100).toFixed(2)}, currency: '${esc(drop.currency || 'CAD')}' });
+  </script>
+
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+    img{max-width:100%;height:auto;display:block}
+    a{text-decoration:none;color:inherit}
+
+    .topbar{background:#0a0a0a;color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+    .topbar a{font-weight:600;font-size:.95rem}
+    .topbar .left{display:flex;gap:24px;align-items:center}
+    .topbar .brand{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;letter-spacing:-.5px}
+    .topbar .pill{background:#e8ff3c;color:#0a0a0a;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:1px}
+
+    .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+    @media (max-width:780px){.grid{grid-template-columns:1fr;gap:32px}.wrap{padding:24px}}
+
+    .media{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .media img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f0f0f0}
+
+    .info h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,2.75rem);font-weight:800;line-height:1.1;margin-bottom:16px}
+    .info .price{font-size:1.5rem;font-weight:700;margin-bottom:24px}
+    .info .desc{font-size:1.05rem;color:#444;margin-bottom:32px;white-space:pre-wrap}
+    .info .blank{font-size:.85rem;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+
+    .buy{background:#1a1a1a;color:#fff;border:0;padding:18px 36px;border-radius:50px;font-size:1.05rem;font-weight:600;cursor:pointer;transition:all .25s;width:100%;max-width:320px;font-family:inherit}
+    .buy:hover:not(:disabled){background:#333;transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .buy:disabled{opacity:.6;cursor:wait}
+
+    .meta{margin-top:32px;font-size:.85rem;color:#666;display:flex;flex-wrap:wrap;gap:16px}
+    .meta span::before{content:"✓ ";color:#0a7f3f;font-weight:700}
+
+    .paid-banner{background:#e6f7ed;border:1px solid #0a7f3f;color:#0a4720;padding:20px 24px;border-radius:14px;margin-bottom:32px}
+    .paid-banner strong{display:block;margin-bottom:4px;font-size:1.1rem}
+    .cancel-banner{background:#fff7e0;border:1px solid #b88a00;color:#5a4400;padding:16px 20px;border-radius:14px;margin-bottom:32px;font-size:.95rem}
+
+    .err{color:#b00020;font-size:.9rem;margin-top:12px;min-height:1.2em}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="left">
+      <a class="brand" href="/">Singhs Print</a>
+      <a href="/shop">Drops</a>
+    </div>
+    <a href="/">Back to site →</a>
+  </div>
+
+  <main class="wrap">
+    <div id="paidBanner" class="paid-banner" style="display:none">
+      <strong>Thanks — your order is in.</strong>
+      We'll email you a confirmation and a tracking number once it ships.
+    </div>
+    <div id="cancelBanner" class="cancel-banner" style="display:none">
+      Checkout was cancelled. No charge was made.
+    </div>
+
+    <div class="grid">
+      <div class="media">
+        <img src="${esc(drop.mockup_url)}" alt="${esc(drop.title)}">
+      </div>
+      <div class="info">
+        ${drop.blank_label ? `<div class="blank">${esc(drop.blank_label)}</div>` : ''}
+        <h1>${esc(drop.title)}</h1>
+        <div class="price">${esc(price)}</div>
+        ${drop.description ? `<div class="desc">${esc(drop.description)}</div>` : ''}
+        <button id="buyBtn" class="buy" data-drop-id="${esc(drop.id)}">Buy now</button>
+        <div id="err" class="err"></div>
+        <div class="meta">
+          <span>Ships from Montréal</span>
+          <span>3–7 business days</span>
+          <span>Secure checkout</span>
+        </div>
+        <div style="margin-top:18px;font-size:.85rem;color:#888">
+          Final sale. Defects reprinted at no charge — see <a href="/shop/policies" style="color:#1a1a1a;text-decoration:underline">shipping &amp; refund policy</a>.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('paid') === '1') {
+        document.getElementById('paidBanner').style.display = 'block';
+        // NOTE: client-side Purchase fire intentionally omitted. The server
+        // fires Purchase via /api/meta-capi from the Stripe webhook with a
+        // deterministic event_id derived from the Stripe session. That fires
+        // reliably even if the customer never makes it back to this page
+        // (closed tab, slow redirect, etc.). iOS-14+ users benefit most.
+      }
+      if (url.searchParams.get('cancel') === '1') {
+        document.getElementById('cancelBanner').style.display = 'block';
+      }
+      const btn = document.getElementById('buyBtn');
+      const err = document.getElementById('err');
+      btn.addEventListener('click', async () => {
+        err.textContent = '';
+        btn.disabled = true;
+        btn.textContent = 'Loading…';
+        try {
+          const resp = await fetch('/api/shop/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ drop_id: btn.dataset.dropId })
+          });
+          const json = await resp.json();
+          if (!resp.ok || !json.url) throw new Error(json.error || 'checkout failed');
+          if (window.fbq) {
+            try { window.fbq('track', 'InitiateCheckout', { value: ${(drop.retail_price_cents / 100).toFixed(2)}, currency: '${esc(drop.currency || 'CAD')}', content_ids: ['${esc(drop.slug)}'] }); } catch(e) {}
+          }
+          window.location.href = json.url;
+        } catch (e) {
+          err.textContent = e.message || 'Something went wrong. Please try again.';
+          btn.disabled = false;
+          btn.textContent = 'Buy now';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>`;
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  const slug = (req.query?.slug || '').toString().trim().toLowerCase();
+  if (!slug) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(404).send(notFoundHtml());
+  }
+
+  try {
+    const supabase = adminClient();
+    const { data: drop, error } = await supabase
+      .from('drops')
+      .select('id, slug, title, description, mockup_url, blank_label, retail_price_cents, currency, status')
+      .eq('slug', slug)
+      .eq('status', 'live')
+      .maybeSingle();
+    if (error) throw error;
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    if (!drop) {
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(404).send(notFoundHtml());
+    }
+    const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || `https://${req.headers.host || 'singhsprint.com'}`;
+    // Short cache: drop edits (price, description) should appear within a minute.
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+    return res.status(200).send(pageHtml(drop, base));
+  } catch (e) {
+    console.error('[/api/shop/page]', e);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(500).send(notFoundHtml());
+  }
+};

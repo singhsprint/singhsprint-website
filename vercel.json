@@ -54,6 +54,10 @@
     {
       "source": "/api/account/my-program",
       "destination": "/api/account/programs?action=my-program"
+    },
+    {
+      "source": "/shop/:slug",
+      "destination": "/api/shop/page?slug=:slug"
     }
   ]
 }

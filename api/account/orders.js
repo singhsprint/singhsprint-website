@@ -105,5 +105,26 @@ module.exports = async function handler(req, res) {
     (isPaid ? past : active).push(o);
   }
 
-  return res.status(200).json({ active, past });
+  // DTC drop purchases — linked by customer_email since drop buyers are
+  // typically anonymous (no `customer_id` to join on). If a user later
+  // signs up with the same email they used at a drop checkout, this
+  // surfaces those past purchases in their portal.
+  let drops = [];
+  if (user.email) {
+    const { data: dropRows, error: dErr } = await supabase
+      .from('drop_orders')
+      .select(`
+        id, paid_at, fulfilled_at, status,
+        amount_total_cents, amount_subtotal_cents, tax_cents, currency,
+        stripe_session_id,
+        shipping_name,
+        drop:drops!inner ( slug, title, mockup_url, blank_label )
+      `)
+      .eq('customer_email', user.email)
+      .order('paid_at', { ascending: false })
+      .limit(50);
+    if (!dErr) drops = dropRows || [];
+  }
+
+  return res.status(200).json({ active, past, drops });
 };

@@ -152,30 +152,131 @@ module.exports = async function handler(req, res) {
     }
 
     // ----------------------------------------------------------------
-    // checkout.session.completed — student paid their allocation extras.
+    // checkout.session.completed — branches by metadata.purpose:
+    //   'allocation_extras' → student paid their allocation extras
+    //   'drop_purchase'     → DTC buyer paid for a /shop/{slug} drop
     // ----------------------------------------------------------------
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const purpose = session.metadata?.purpose;
-      const orderId = session.metadata?.order_id;
 
-      if (purpose !== 'allocation_extras' || !orderId) {
-        return res.status(200).json({ received: true, skipped: 'not an allocation_extras session' });
-      }
       // payment_status === 'paid' is the gate per Stripe docs; session.completed
       // also fires for synchronous-zero-amount sessions, so we re-check here.
       if (session.payment_status !== 'paid') {
         return res.status(200).json({ received: true, skipped: 'session not paid' });
       }
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          paid_status:               'paid_extras',
-          customer_extras_paid_at:   new Date().toISOString(),
-        })
-        .eq('id', orderId);
-      if (error) throw error;
-      return res.status(200).json({ received: true, scope: 'allocation_extras' });
+
+      if (purpose === 'allocation_extras') {
+        const orderId = session.metadata?.order_id;
+        if (!orderId) {
+          return res.status(200).json({ received: true, skipped: 'allocation_extras without order_id' });
+        }
+        const { error } = await supabase
+          .from('orders')
+          .update({
+            paid_status:               'paid_extras',
+            customer_extras_paid_at:   new Date().toISOString(),
+          })
+          .eq('id', orderId);
+        if (error) throw error;
+        return res.status(200).json({ received: true, scope: 'allocation_extras' });
+      }
+
+      if (purpose === 'drop_purchase') {
+        const dropId = session.metadata?.drop_id;
+        if (!dropId) {
+          return res.status(200).json({ received: true, skipped: 'drop_purchase without drop_id' });
+        }
+        // Idempotent: stripe_session_id is UNIQUE on drop_orders. Stripe
+        // retries on 5xx, so an upsert with onConflict='stripe_session_id'
+        // keeps us safe from duplicate writes.
+        const customerDetails = session.customer_details || {};
+        const totalDetails = session.total_details || {};
+        const orderRow = {
+          drop_id:                   dropId,
+          stripe_session_id:         session.id,
+          stripe_payment_intent_id:  session.payment_intent || null,
+          customer_email:            customerDetails.email || session.customer_email || null,
+          amount_total_cents:        session.amount_total ?? null,
+          amount_subtotal_cents:     session.amount_subtotal ?? null,
+          tax_cents:                 totalDetails.amount_tax ?? null,
+          currency:                  (session.currency || 'cad').toUpperCase(),
+          status:                    'paid',
+          shipping_name:             session.shipping_details?.name || customerDetails.name || null,
+          shipping_address:          session.shipping_details?.address || customerDetails.address || null,
+          raw_session:               session,
+          paid_at:                   new Date().toISOString(),
+        };
+        const { error } = await supabase
+          .from('drop_orders')
+          .upsert(orderRow, { onConflict: 'stripe_session_id' });
+        if (error) throw error;
+
+        // Server-side CAPI Purchase event. Fires reliably regardless of
+        // whether the customer returns to /shop/{slug}?paid=1. Uses the
+        // Stripe session.id as a deterministic event_id so if the client
+        // page DID get there and fired its own Purchase (it shouldn't —
+        // we removed that branch), Meta dedups via matching event_id.
+        try {
+          const proto = req.headers['x-forwarded-proto'] || 'https';
+          const host  = req.headers.host || 'singhsprint.com';
+          const value = (session.amount_total ?? session.amount_subtotal ?? 0) / 100;
+          await fetch(`${proto}://${host}/api/meta-capi`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event_name:       'Purchase',
+              event_id:         `drop_purchase_${session.id}`,    // deterministic
+              event_time:       Math.floor(Date.now() / 1000),
+              event_source_url: `${proto}://${host}/shop/${session.metadata?.drop_slug || ''}`,
+              action_source:    'website',
+              user_data: {
+                em:      customerDetails.email || session.customer_email || undefined,
+                ph:      customerDetails.phone || undefined,
+                fn:      (customerDetails.name || '').split(' ').slice(0, 1).join(' ') || undefined,
+                ln:      (customerDetails.name || '').split(' ').slice(1).join(' ') || undefined,
+                ct:      customerDetails.address?.city || undefined,
+                st:      customerDetails.address?.state || undefined,
+                zp:      customerDetails.address?.postal_code || undefined,
+                country: customerDetails.address?.country || undefined,
+              },
+              custom_data: {
+                value,
+                currency:     (session.currency || 'cad').toUpperCase(),
+                content_ids:  [session.metadata?.drop_slug].filter(Boolean),
+                content_type: 'product',
+                content_name: session.metadata?.drop_slug || undefined,
+                num_items:    1,
+              },
+            }),
+          });
+        } catch (capiErr) {
+          console.error('[stripe-webhook] CAPI Purchase POST failed:', capiErr);
+        }
+
+        // Fire-and-forget confirmation email via the CRM. Optional — Stripe
+        // sends its own receipt regardless. If CRM_BASE_URL or the secret
+        // aren't set, we silently skip (no need to break the webhook).
+        const crmUrl  = process.env.CRM_BASE_URL;
+        const crmSec  = process.env.CRM_WEBHOOK_SECRET;
+        if (crmUrl && crmSec) {
+          try {
+            await fetch(`${crmUrl}/api/drops-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type':  'application/json',
+                'x-singhs-secret': crmSec,
+              },
+              body: JSON.stringify({ drop_id: dropId, order: orderRow }),
+            });
+          } catch (mailErr) {
+            console.error('[stripe-webhook] drops-email POST failed:', mailErr);
+          }
+        }
+        return res.status(200).json({ received: true, scope: 'drop_purchase' });
+      }
+
+      return res.status(200).json({ received: true, skipped: `unrecognized purpose: ${purpose}` });
     }
 
     // ----------------------------------------------------------------

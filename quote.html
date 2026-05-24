@@ -1346,10 +1346,20 @@
                  prioritize that row. Both flow into inbound_requests.meta
                  + auto-populate the quote builder's `deadline` field on
                  convert-to-order, so the rep doesn't have to re-type. -->
+            <!-- 2026-05-24 — iOS native <input type=date> renders at
+                 its own intrinsic width (the date+button row), often
+                 wider than the form column on phones. Operator
+                 reported it spilling past the right edge. Inline
+                 width:100% + max-width:100% + box-sizing + appearance:
+                 textfield forces the input to respect its container
+                 and renders as a plain styled box (the picker still
+                 opens natively on tap). min-width:0 lets it shrink
+                 below its "intrinsic" width inside a grid/flex parent. -->
             <div class="form-row" id="needByRow">
-              <div class="form-group">
+              <div class="form-group" style="min-width:0">
                 <label for="needByDate" data-i18n="quote.contact.needby">When do you need these by? <span style="color:#888;font-weight:400">(optional)</span></label>
-                <input type="date" id="needByDate" name="need_by_date" min="" />
+                <input type="date" id="needByDate" name="need_by_date" min=""
+                       style="width:100%;max-width:100%;min-width:0;box-sizing:border-box;-webkit-appearance:none;appearance:none" />
                 <small class="needby-hint" data-i18n="quote.contact.needby.hint" style="display:block;font-size:.72rem;color:#888;margin-top:4px;line-height:1.4">
                   Standard turnaround is 3–5 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.
                 </small>

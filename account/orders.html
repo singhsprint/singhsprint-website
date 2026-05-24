@@ -73,6 +73,13 @@
     <div id="active-list" class="loading">Loading…</div>
   </section>
 
+  <!-- DTC drops bought from /shop. Only shown when the signed-in email
+       matches at least one drop_order row. -->
+  <section id="drops-section" style="display:none">
+    <h2>Drop purchases</h2>
+    <div id="drops-list"></div>
+  </section>
+
   <section id="past-section">
     <h2 id="past" data-i18n="account.orders.past">Past orders</h2>
     <div id="past-list" class="loading">Loading…</div>
@@ -159,6 +166,7 @@
     const j = await r.json();
     renderList('active-list', j.active || [], 'active');
     renderList('past-list',   j.past   || [], 'past');
+    renderDrops(j.drops || []);
 
     // Show the Stripe portal launcher once the user has any past order
     // that THEY paid for. Skip it if every past order is covered by the
@@ -193,6 +201,53 @@
       btn.textContent = original;
     }
   });
+
+  function renderDrops(rows) {
+    const section = $('drops-section');
+    const root    = $('drops-list');
+    if (!rows.length) {
+      section.style.display = 'none';
+      root.innerHTML = '';
+      return;
+    }
+    section.style.display = '';
+    // drop_orders.amount_total_cents is INTEGER cents (vs orders.total which
+    // is dollars). Render with /100 + currency from the row.
+    function dropMoney(cents, currency) {
+      if (cents == null) return '—';
+      return new Intl.NumberFormat('en-CA', { style: 'currency', currency: currency || 'CAD' })
+        .format(cents / 100);
+    }
+    root.innerHTML = rows.map((o) => {
+      const d = o.drop || {};
+      const url = '/shop/' + encodeURIComponent(d.slug || '');
+      const statusLabel = o.status === 'fulfilled' ? 'Shipped'
+                       : o.status === 'refunded' ? 'Refunded'
+                       : 'Order received';
+      const statusCls   = o.status === 'fulfilled' ? 'past'
+                       : o.status === 'refunded' ? 'past'
+                       : 'active';
+      return `
+        <article class="order-card order-card--${esc(statusCls)}">
+          <a class="order-card__media" href="${esc(url)}">
+            ${d.mockup_url ? `<img src="${esc(d.mockup_url)}" alt="" loading="lazy">` : ''}
+          </a>
+          <div class="order-card__body">
+            <div class="order-card__head">
+              <a class="order-card__title" href="${esc(url)}">${esc(d.title || 'Drop')}</a>
+              <span class="badge">${esc(statusLabel)}</span>
+            </div>
+            <div class="order-card__meta">
+              <span>${dropMoney(o.amount_total_cents, o.currency)}</span>
+              ${d.blank_label ? `<span> · ${esc(d.blank_label)}</span>` : ''}
+              <span> · Ordered ${fmtDate(o.paid_at)}</span>
+              ${o.fulfilled_at ? `<span> · Shipped ${fmtDate(o.fulfilled_at)}</span>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
 
   function renderList(rootId, rows, bucket) {
     const root = $(rootId);
@@ -250,6 +305,9 @@
         <span class="pill pill--${esc(order.status || 'unknown')}">${esc(status)}</span>
         <div class="actions">
           ${trackUrl ? `<a class="btn btn--ghost" href="${esc(trackUrl)}">Track</a>` : ''}
+          ${bucket === 'active'
+            ? `<a class="btn btn--primary" href="/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
+            : ''}
           ${bucket === 'past' ? `<button class="btn btn--primary" data-reorder="${esc(order.id)}">Reorder</button>` : ''}
         </div>`;
       root.appendChild(el);
