@@ -472,7 +472,13 @@
     .cart-bar__label{font-size:.86rem;white-space:nowrap}
     .cart-bar__label strong{font-weight:600}
     .cart-bar__label-suffix-short{display:none}
-    .cart-bar__cta{background:var(--hi);color:var(--ink);border:none;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:50px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+    /* 2026-05-24 — CTA is now an <a> (was a <button> with onclick).
+       text-decoration:none + display:inline-flex preserves the
+       button-style look; -webkit-tap-highlight-color gives iOS the
+       visual confirmation it needs that the tap landed; touch-action:
+       manipulation tells Safari this is a single-tap target, no
+       double-tap zoom delay. */
+    .cart-bar__cta{background:var(--hi);color:var(--ink);border:none;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:50px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;text-decoration:none;display:inline-flex;align-items:center;-webkit-tap-highlight-color:rgba(0,0,0,.1);touch-action:manipulation}
     .cart-bar__cta:hover{filter:brightness(.95)}
     /* Phones: the 4-word "units in your quote" label wraps onto 4 lines
        inside the centered pill once the CTA takes its share of width.
@@ -503,6 +509,13 @@
       .card .add-cart{opacity:1}
     }
   </style>
+  <!-- 2026-05-24 — Was a <button onclick="goToQuote()">. Reports of
+       iOS Safari taps on this CTA registering visually but not
+       navigating; converting to a real <a href> is the most reliable
+       fix because the browser handles navigation natively without
+       depending on JS evaluation of the inline onclick. The JS
+       fallback below catches the iOS edge case where even <a> taps
+       don't navigate inside fixed-position containers. -->
   <div id="cartBar" class="cart-bar">
     <span class="cart-bar__count" id="cartCount">0</span>
     <span class="cart-bar__label">
@@ -510,10 +523,10 @@
       <span class="cart-bar__label-suffix" data-i18n="cat.cart.units">units in your quote</span>
       <span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">in cart</span>
     </span>
-    <button type="button" class="cart-bar__cta" onclick="goToQuote()" aria-label="Continue to quote">
+    <a href="/quote" id="cartBarCta" class="cart-bar__cta" aria-label="Continue to quote">
       <span class="cta-long" data-i18n="cat.cart.cta">Continue to quote →</span>
       <span class="cta-short" data-i18n="cat.cart.cta.short">Quote →</span>
-    </button>
+    </a>
   </div>
   <div id="cartToast" class="cart-toast" aria-live="polite"></div>
 
@@ -755,6 +768,28 @@
   }
 
   function goToQuote() { window.location.href = '/quote'; }
+
+  // 2026-05-24 — Cart-bar CTA touch fallback.
+  // The button was reportedly unresponsive on iOS when tapped after
+  // adding an item from the catalog. Native <a href> alone has always
+  // been the most reliable nav primitive on iOS, but Safari can still
+  // fail to fire the click when an anchor sits inside a position:fixed
+  // container and the tap arrives during an in-flight CSS transition.
+  // The touchend handler below explicitly preventDefaults whatever
+  // touch-related rule iOS would otherwise apply and force-navigates.
+  // Idempotent with the native <a> behaviour — if both fire, the
+  // second is a no-op against the first's in-flight navigation.
+  document.addEventListener('DOMContentLoaded', function () {
+    var cta = document.getElementById('cartBarCta');
+    if (!cta) return;
+    cta.addEventListener('touchend', function (ev) {
+      if (ev.cancelable) ev.preventDefault();
+      // Honour modifier-tap (rare on touch, but defensive)
+      if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+      try { window.location.assign(cta.getAttribute('href') || '/quote'); }
+      catch (e) { window.location.href = '/quote'; }
+    }, { passive: false });
+  });
 
   // =====================================================================
   // Product detail modal — opened by the "View details ↗" link on each
