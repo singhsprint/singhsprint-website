@@ -466,7 +466,11 @@
        so they can keep browsing the catalog and add more without losing
        track of what they've already picked. -->
   <style>
-    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px)}
+    /* 2026-05-24 — cart-bar is now an <a>. Adding text-decoration:none
+       (anchor default), and lifting touch-action / tap-highlight up to
+       the wrapper since the whole pill is one tap target. cursor:pointer
+       for the small set of users on a hybrid touch/mouse device. */
+    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px);text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,.15);touch-action:manipulation}
     .cart-bar.open{display:flex}
     .cart-bar__count{background:var(--hi);color:var(--ink);font-weight:700;border-radius:50px;padding:3px 9px;font-size:.78rem;font-variant-numeric:tabular-nums;flex-shrink:0}
     .cart-bar__label{font-size:.86rem;white-space:nowrap}
@@ -509,25 +513,26 @@
       .card .add-cart{opacity:1}
     }
   </style>
-  <!-- 2026-05-24 — Was a <button onclick="goToQuote()">. Reports of
-       iOS Safari taps on this CTA registering visually but not
-       navigating; converting to a real <a href> is the most reliable
-       fix because the browser handles navigation natively without
-       depending on JS evaluation of the inline onclick. The JS
-       fallback below catches the iOS edge case where even <a> taps
-       don't navigate inside fixed-position containers. -->
-  <div id="cartBar" class="cart-bar">
+  <!-- 2026-05-24 — Entire pill is now a single <a href> tap target.
+       Earlier iteration kept the count/label as plain spans and only
+       made the rightmost CTA clickable; that left ~70% of the pill
+       visually-looks-tappable but actually inert, which is exactly
+       how a customer would tap and see "nothing happens". Wrapping
+       everything in one anchor means any pixel of the pill navigates.
+       The inner spans keep their data-i18n hooks so translation
+       still works. -->
+  <a id="cartBar" class="cart-bar" href="/quote" aria-label="Continue to quote">
     <span class="cart-bar__count" id="cartCount">0</span>
     <span class="cart-bar__label">
       <strong id="cartUnits">0</strong>
       <span class="cart-bar__label-suffix" data-i18n="cat.cart.units">units in your quote</span>
       <span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">in cart</span>
     </span>
-    <a href="/quote" id="cartBarCta" class="cart-bar__cta" aria-label="Continue to quote">
+    <span id="cartBarCta" class="cart-bar__cta" aria-hidden="true">
       <span class="cta-long" data-i18n="cat.cart.cta">Continue to quote →</span>
       <span class="cta-short" data-i18n="cat.cart.cta.short">Quote →</span>
-    </a>
-  </div>
+    </span>
+  </a>
   <div id="cartToast" class="cart-toast" aria-live="polite"></div>
 
   <!-- Filter slide-over -->
@@ -769,24 +774,21 @@
 
   function goToQuote() { window.location.href = '/quote'; }
 
-  // 2026-05-24 — Cart-bar CTA touch fallback.
-  // The button was reportedly unresponsive on iOS when tapped after
-  // adding an item from the catalog. Native <a href> alone has always
-  // been the most reliable nav primitive on iOS, but Safari can still
-  // fail to fire the click when an anchor sits inside a position:fixed
-  // container and the tap arrives during an in-flight CSS transition.
-  // The touchend handler below explicitly preventDefaults whatever
-  // touch-related rule iOS would otherwise apply and force-navigates.
-  // Idempotent with the native <a> behaviour — if both fire, the
-  // second is a no-op against the first's in-flight navigation.
+  // 2026-05-24 — Cart-bar touch fallback.
+  // The entire pill (`#cartBar`) is now an <a href="/quote">, but iOS
+  // Safari can still drop the native click when the anchor sits inside
+  // a position:fixed container that just transitioned (display:none →
+  // display:flex via the `.open` class). The touchend listener below
+  // is the safety net: explicitly preventDefault any iOS touch
+  // heuristic, then force-navigate. Idempotent — if the native click
+  // already fired, location.assign on the same URL is a no-op.
   document.addEventListener('DOMContentLoaded', function () {
-    var cta = document.getElementById('cartBarCta');
-    if (!cta) return;
-    cta.addEventListener('touchend', function (ev) {
+    var bar = document.getElementById('cartBar');
+    if (!bar) return;
+    bar.addEventListener('touchend', function (ev) {
       if (ev.cancelable) ev.preventDefault();
-      // Honour modifier-tap (rare on touch, but defensive)
       if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
-      try { window.location.assign(cta.getAttribute('href') || '/quote'); }
+      try { window.location.assign(bar.getAttribute('href') || '/quote'); }
       catch (e) { window.location.href = '/quote'; }
     }, { passive: false });
   });
