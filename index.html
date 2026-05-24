@@ -81,8 +81,42 @@
     /* ===== HERO ===== */
     .hero{padding:60px 0 80px;background:linear-gradient(135deg,#f8f7f4 0%,#fff 50%,#f0f5e8 100%);position:relative;overflow:hidden}
     .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
-    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #e0e0e0;border-radius:50px;padding:8px 16px;font-size:.85rem;font-weight:500;margin-bottom:20px}
-    .hero-badge .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+    /* 2026-05-24 — Hero "stamp" status mark (replaces generic
+       rounded-pill .hero-badge). Looks like a hand-applied sticker
+       on a shopfront window: tilted black-on-yellow tag + inline
+       hours/address text. Two-axis treatment (small uppercase tag
+       + larger sentence-case detail) keeps it from reading as
+       another off-the-shelf badge. */
+    .hero-stamp{
+      display:inline-flex; align-items:center; gap:12px;
+      margin-bottom:20px; flex-wrap:wrap;
+    }
+    .hero-stamp__tag{
+      display:inline-block; padding:5px 11px;
+      background:#1a1a1a; color:#e8ff3c;
+      font-size:.66rem; font-weight:800;
+      letter-spacing:.16em; text-transform:uppercase;
+      border-radius:3px; line-height:1.4;
+      /* Slight tilt + shadow read as "applied by hand" rather than
+         "rendered by a UI framework". The shadow direction matches
+         the tilt so it feels physical. */
+      transform: rotate(-2deg);
+      box-shadow: 1px 2px 0 rgba(0,0,0,.10);
+      /* Subtle pulse-free state — we already say OPEN, no need to
+         add a generic animation on top. */
+    }
+    .hero-stamp__detail{
+      font-size:.86rem; color:#444; font-weight:500;
+      line-height:1.45;
+    }
+    .hero-stamp__sep{ color:#aaa; margin:0 6px; }
+    /* When the day-of-week / status flips to "closed" the JS swaps
+       the tag color so the visual cue matches the copy. */
+    .hero-stamp__tag.is-closed{
+      background:#fafaf6; color:#1a1a1a;
+      border:1.5px solid #1a1a1a;
+      box-shadow:none;
+    }
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
     .hero h1{margin-bottom:16px}
     .hero h1 .accent{color:#555}
@@ -320,22 +354,28 @@
          3:4 portrait wrapper was 520 px tall — that's what forced
          text-first in the earlier revision).
          What we trade off:
-           - `.hero-badge` (Open 7 days · West Island) hides; the
-             proof line below already carries "West Island, Montreal"
-             and the rest of the site mentions hours.
            - `.hero-guarantee` (the floating 100%-Satisfaction pill)
              hides — when the video sits above content the pill would
              land inside the headline area; not worth re-positioning
              for a single-viewport stack.
          What we preserve:
-           - H1, subhead, primary CTA, secondary text link, proof line. */
+           - H1, subhead, primary CTA, secondary text link, proof line,
+             and (2026-05-24) the `.hero-stamp` — the old generic
+             badge hid on mobile, but the new stamp carries actual
+             utility (hours + address), so we keep it visible at a
+             smaller size instead. */
       .hero-visual{order:1;max-width:none;margin:0}
       .hero-content{order:2}
       .hero-photo{aspect-ratio:4/3;max-height:320px}
       .hero-guarantee{display:none}
       .hero h1{font-size:clamp(1.7rem,6.5vw,2.1rem) !important;line-height:1.1 !important;margin-bottom:12px !important}
       .hero .subhead{font-size:.92rem !important;line-height:1.5 !important;margin-bottom:16px !important}
-      .hero-badge{display:none}
+      /* Stamp scales down on mobile but stays present. The detail
+         text wraps onto its own line when the tag eats horizontal
+         space — flex-wrap is already on .hero-stamp. */
+      .hero-stamp{gap:10px;margin-bottom:14px}
+      .hero-stamp__tag{font-size:.6rem !important;padding:4px 9px !important;letter-spacing:.14em !important}
+      .hero-stamp__detail{font-size:.76rem !important}
       .hero-proof{font-size:.78rem;margin-bottom:0;margin-top:14px}
       .hero-buttons{gap:8px;margin-bottom:4px}
       .hero-stats{gap:20px}
@@ -360,7 +400,11 @@
          mobile the `order:` reverse already happened above, so this
          just tightens the content side. */
       .hero{padding:20px 0 28px !important}
-      .hero-badge{font-size:.7rem !important;padding:5px 11px !important;margin-bottom:10px !important}
+      /* Tighten the stamp further at very-narrow widths — keeps the
+         hours line readable without forcing it onto a third row. */
+      .hero-stamp{margin-bottom:10px !important;gap:8px}
+      .hero-stamp__tag{font-size:.58rem !important;padding:3px 8px !important}
+      .hero-stamp__detail{font-size:.72rem !important}
       .hero-content h1{margin-bottom:10px !important}
       .hero-content .subhead{margin-bottom:14px !important;font-size:.92rem !important;line-height:1.5}
       .hero-buttons{margin-bottom:10px !important}
@@ -471,9 +515,23 @@
     <div class="container">
       <div class="hero-grid">
         <div class="hero-content">
-          <!-- Dot lives OUTSIDE the data-i18n span so lang.js's
-               `el.innerHTML = val` doesn't wipe it on language flip. -->
-          <div class="hero-badge"><span class="dot"></span> <span data-i18n="home.badge">Open 7 days | West Island, Montreal</span></div>
+          <!-- 2026-05-24 — Hero status STAMP. Replaces the previous
+               generic green-dot-in-a-rounded-pill (the most "AI-coded
+               landing page" component in tech). The new mark reads
+               like a hand-stamped sticker on a shopfront window:
+               slightly tilted black-on-yellow OPEN TODAY tag, with
+               inline plain text for the hours + Sainte-Anne address.
+               Time-aware: the status word + closing hint update via
+               the IIFE at the bottom of <head> so visitors after 9 pm
+               see "Opens 9 AM" instead of misleading "open till 9 pm". -->
+          <div class="hero-stamp">
+            <span class="hero-stamp__tag" data-i18n="home.stamp.tag" id="heroStampTag">Open today</span>
+            <span class="hero-stamp__detail">
+              <span id="heroStampHours" data-i18n="home.stamp.hours">9 AM &mdash; 9 PM</span>
+              <span class="hero-stamp__sep">·</span>
+              <span data-i18n="home.stamp.addr">81A Sainte&#8209;Anne St, West Island</span>
+            </span>
+          </div>
           <h1 data-i18n="home.hero.h1">West Island's<br>custom apparel<br>printing <span class="accent">studio.</span></h1>
           <p class="subhead" data-i18n="home.hero.sub">DTG, DTF &amp; Embroidery done in-house in Montreal's West Island. Low minimums, 3&ndash;5 day turnaround with rush options, and a real sample before every run. $20 off your first order of $100+.</p>
           <div class="hero-buttons">
@@ -944,6 +1002,34 @@
               recalc();
             });
           });
+
+          // 2026-05-24 — Time-aware hero stamp copy. Tag flips to
+          // "Closed now" outside business hours and the hours line
+          // becomes "Opens 9 AM" so the stamp never lies about being
+          // open at 11pm. Re-runs every 60s so a visitor sitting on
+          // the page at 9:00pm sees the transition without refreshing.
+          // Business hours: 9am–9pm, 7 days a week (matches the rest
+          // of the site copy).
+          (function setupHeroStamp() {
+            var tag   = document.getElementById('heroStampTag');
+            var hours = document.getElementById('heroStampHours');
+            if (!tag || !hours) return;
+            function sync() {
+              var h = new Date().getHours();
+              var open = h >= 9 && h < 21;
+              if (open) {
+                tag.textContent = 'Open today';
+                tag.classList.remove('is-closed');
+                hours.innerHTML = '9 AM — 9 PM';
+              } else {
+                tag.textContent = 'Closed now';
+                tag.classList.add('is-closed');
+                hours.textContent = h < 9 ? 'Opens 9 AM' : 'Opens 9 AM tomorrow';
+              }
+            }
+            sync();
+            setInterval(sync, 60000);
+          })();
           // Slider domain is 0..100 (positional). 7 visible labels
           // (1/10/25/50/100/200/500) sit at 0/16.67/33.33/50/66.67/83.33/100%
           // of the bar; we map slider position to quantity via piecewise-
