@@ -162,7 +162,16 @@ function loadNav() {
         '.sp-cta{display:none}',
         '.sp-burger{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;color:#1a1a1a;border:1px solid #e6e3d8;background:#fff;border-radius:50%;cursor:pointer;flex-shrink:0}',
         '.sp-burger svg{width:20px;height:20px}',
-        '.sp-mobile-quote{display:inline-flex;align-items:center;justify-content:center;background:#1a1a1a;color:#fff !important;font-size:.78rem;font-weight:600;padding:8px 14px;border-radius:50px;text-decoration:none;flex-shrink:0}',
+        // 2026-05-24 — adds explicit cursor:pointer, tap-highlight, and
+        // touch-action:manipulation. iOS Safari was reportedly ignoring
+        // taps on this pill on at least one user device; the symptom is
+        // "tap registers but no navigation". The likely culprit is a
+        // touch-action interaction with the sticky parent header — making
+        // touch-action explicit and giving the tap a visible feedback
+        // colour both confirms-to-user-and-engine that the tap fired.
+        // position:relative + z-index:5 also lifts it above any quirky
+        // sibling that might be sitting at the same stacking layer.
+        '.sp-mobile-quote{display:inline-flex;align-items:center;justify-content:center;background:#1a1a1a;color:#fff !important;font-size:.78rem;font-weight:600;padding:8px 14px;border-radius:50px;text-decoration:none;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,.2);touch-action:manipulation;position:relative;z-index:5}',
         '.sp-logo img{height:36px}',
         '.sp-spacer{display:none}',
         '.sp-logo{flex:1;justify-content:center}',
@@ -510,6 +519,43 @@ function loadNav() {
     d.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   };
+
+  // 2026-05-24 — Mobile Quote-pill belt-and-suspenders.
+  //
+  // A user reported tapping the black "Quote" pill in the mobile nav
+  // does nothing — tap registers visually but no navigation. We could
+  // not reproduce in desktop emulation; markup, CSS, and pointer-
+  // events all check out. Most likely cause is an iOS Safari touch
+  // interaction with the sticky+backdrop-filter parent header.
+  //
+  // The fix: register touchstart + click listeners that explicitly
+  // call window.location.assign('/quote'). If the native <a> click
+  // works, this is a harmless no-op (browser navigates first, JS
+  // never runs). If the native click is swallowed, the JS fallback
+  // forces the navigation.
+  //
+  // We bind on touchstart with passive:false so we can preventDefault
+  // any conflicting parent touch handler that might be silently
+  // eating the tap. Click is the fallback path for keyboard / mouse.
+  var mq = document.querySelector('a.sp-mobile-quote');
+  if (mq) {
+    var goToQuote = function (ev) {
+      // Honour modifier-click / middle-click (open in new tab)
+      if (ev && (ev.metaKey || ev.ctrlKey || ev.shiftKey || (ev.button && ev.button !== 0))) return;
+      // Belt-and-suspenders: even if the native href works first,
+      // location.assign is idempotent — navigating to /quote when
+      // already-navigating-to-/quote is a no-op.
+      try { window.location.assign(mq.getAttribute('href') || '/quote'); }
+      catch (e) { window.location.href = '/quote'; }
+    };
+    mq.addEventListener('click', goToQuote);
+    // Touch fallback for iOS Safari edge cases where the click event
+    // never fires (e.g., touch-action confusion with sticky parent).
+    mq.addEventListener('touchend', function (ev) {
+      if (ev.cancelable) ev.preventDefault();
+      goToQuote(ev);
+    }, { passive: false });
+  }
   // ----- Inline search dropdown (no full-screen overlay) -----
   // We bind both the desktop search field and the in-drawer mobile one to
   // the same typeahead logic. Each has its own results panel.
