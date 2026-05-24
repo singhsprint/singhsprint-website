@@ -1380,17 +1380,32 @@
             <!-- Account opt-in checkbox — hidden for already-signed-in users, shown for
                  anonymous visitors so they can opt to create an account in one step.
                  Default: unchecked, so the anonymous flow is unaffected unless the user
-                 actively opts in. -->
+                 actively opts in.
+
+                 2026-05-24 — Mobile layout fixes:
+                  - width:100% + box-sizing on the label so flex doesn't
+                    shrink the row narrower than the form column
+                  - min-width:0 on the span so it can wrap on short
+                    breakpoints without forcing the label wider than the
+                    container (was wrapping one-word-per-line on iPhone)
+                  - Copy shortened from 157 chars → 70 chars per
+                    operator feedback ("shouldn't present this long").
+                    Full pitch lives in the post-submit confirmation
+                    panel and the OTP email. -->
             <div class="form-group" id="sp-quote-signup-block" style="margin-top:8px">
-              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:#fafaf7;border:1px solid #e6e3d8;padding:14px;border-radius:10px;font-weight:400">
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:#fafaf7;border:1px solid #e6e3d8;padding:14px;border-radius:10px;font-weight:400;width:100%;box-sizing:border-box">
                 <input type="checkbox" id="sp-quote-signup-optin" style="margin-top:3px;flex-shrink:0">
-                <span style="font-size:.88rem;line-height:1.5;color:#1a1a1a" data-i18n="quote.account.signup">
-                  <strong>Create an account</strong> to track this quote, reorder anything you print with us, and earn referral credits. We'll email you a sign-in link right after we receive your quote.
+                <span style="font-size:.88rem;line-height:1.5;color:#1a1a1a;min-width:0;flex:1 1 auto" data-i18n="quote.account.signup">
+                  <strong>Create an account</strong> to track this quote and reorder later — we'll email you a sign-in link.
                 </span>
               </label>
             </div>
 
-            <div class="form-buttons">
+            <!-- 2026-05-24 — padding-bottom adds clearance for the pinned
+                 #livePriceStrip on mobile (position:fixed at bottom of
+                 viewport). Without it the Submit button gets visually
+                 swallowed by the live-estimate bar at small heights. -->
+            <div class="form-buttons" style="padding-bottom:120px">
               <button type="button" class="btn btn-outline" onclick="goToStep(2)" data-i18n="quote.back">&larr; Back</button>
               <button type="submit" class="btn btn-accent" style="padding:16px 36px;font-size:1rem" data-i18n="quote.submit">Submit Quote Request &rarr;</button>
             </div>

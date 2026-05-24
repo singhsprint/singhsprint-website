@@ -1210,9 +1210,13 @@ var SP_LANG = (function() {
     // ===== QUOTE PAGE — ACCOUNT INTEGRATION =====
     'quote.account.signedin':  { en: 'Signed in as', fr: 'Connecté en tant que' },
     'quote.account.changeacct':{ en: 'Use a different account', fr: 'Utiliser un autre compte' },
+    // 2026-05-24 — Shortened from a 157-char paragraph per operator
+    // feedback on mobile rendering. Full pitch now lives in the
+    // post-submit confirmation panel + the OTP email so the form stays
+    // scannable on iPhone.
     'quote.account.signup':    {
-      en: '<strong>Create an account</strong> to track this quote, reorder anything you print with us, and earn referral credits. We\'ll email you a sign-in link right after we receive your quote.',
-      fr: '<strong>Créer un compte</strong> pour suivre cette soumission, recommander tout ce que vous imprimez chez nous, et accumuler des crédits de parrainage. Nous vous enverrons un lien de connexion par courriel dès que nous recevons votre demande.'
+      en: '<strong>Create an account</strong> to track this quote and reorder later — we\'ll email you a sign-in link.',
+      fr: '<strong>Créer un compte</strong> pour suivre cette soumission et recommander plus tard — nous vous enverrons un lien de connexion par courriel.'
     }
   };
 
