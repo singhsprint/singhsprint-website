@@ -1382,20 +1382,49 @@
                  Default: unchecked, so the anonymous flow is unaffected unless the user
                  actively opts in.
 
-                 2026-05-24 — Mobile layout fixes:
-                  - width:100% + box-sizing on the label so flex doesn't
-                    shrink the row narrower than the form column
-                  - min-width:0 on the span so it can wrap on short
-                    breakpoints without forcing the label wider than the
-                    container (was wrapping one-word-per-line on iPhone)
-                  - Copy shortened from 157 chars → 70 chars per
-                    operator feedback ("shouldn't present this long").
-                    Full pitch lives in the post-submit confirmation
-                    panel and the OTP email. -->
+                 2026-05-24 v3 — Mobile layout rewrite. Previous flex
+                 attempts (v1, v2) shipped width:100% + min-width:0 +
+                 flex:1 1 auto on the children, but iOS Safari still
+                 rendered the text wrapping one-word-per-line in a
+                 narrow strip to the right of the checkbox. Switched
+                 to CSS Grid with explicit "auto 1fr" columns — far
+                 more predictable for icon+text layouts and immune to
+                 whatever iOS flex quirk was biting us.
+
+                 The dedicated <style> block beneath the label is a
+                 scoped backstop: even if some external rule tries to
+                 override the inline display:grid, the !important rules
+                 below force the layout to hold. -->
+            <style>
+              #sp-quote-signup-block label.sp-signup-card{
+                display:grid !important;
+                grid-template-columns:22px 1fr !important;
+                gap:12px !important;
+                align-items:start !important;
+                width:100% !important;
+                max-width:100% !important;
+                box-sizing:border-box !important;
+                cursor:pointer;
+                background:#fafaf7;
+                border:1px solid #e6e3d8;
+                padding:14px;
+                border-radius:10px;
+                font-weight:400;
+              }
+              #sp-quote-signup-block label.sp-signup-card > input[type=checkbox]{
+                width:18px;height:18px;margin:2px 0 0 0;
+              }
+              #sp-quote-signup-block label.sp-signup-card > span{
+                min-width:0;
+                font-size:.88rem;line-height:1.5;color:#1a1a1a;
+                /* word-wrap defaults are fine in a grid cell — the
+                   1fr column gives the text proper width. */
+              }
+            </style>
             <div class="form-group" id="sp-quote-signup-block" style="margin-top:8px">
-              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:#fafaf7;border:1px solid #e6e3d8;padding:14px;border-radius:10px;font-weight:400;width:100%;box-sizing:border-box">
-                <input type="checkbox" id="sp-quote-signup-optin" style="margin-top:3px;flex-shrink:0">
-                <span style="font-size:.88rem;line-height:1.5;color:#1a1a1a;min-width:0;flex:1 1 auto" data-i18n="quote.account.signup">
+              <label class="sp-signup-card">
+                <input type="checkbox" id="sp-quote-signup-optin">
+                <span data-i18n="quote.account.signup">
                   <strong>Create an account</strong> to track this quote and reorder later — we'll email you a sign-in link.
                 </span>
               </label>
