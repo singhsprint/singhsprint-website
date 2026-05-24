@@ -120,4 +120,73 @@
   } else {
     SP_PIXEL.trackPageView();
   }
+
+  // -- Phone-click tracking (slice 79, May 2026) -----------------------------
+  //    Phone calls are ~20% of total conversions for our B2B audience.
+  //    Meta currently can't see them — they're invisible signal. Fire a
+  //    Meta `Contact` event whenever someone taps tel:514-915-1539 so the
+  //    ad-set algorithm can optimize toward call-likely visitors too.
+  //
+  //    Gating:
+  //      - Touch devices only (desktop clicks don't open a dialer = noise)
+  //      - Once per session (defensive against accidental double-taps)
+  //      - Capture phase so it runs before stopPropagation from any other
+  //        handler can swallow the click.
+  //
+  //    `Contact` is a Meta standard event — semantically right for "user
+  //    reached out via phone" and keeps the Lead signal pure for form-fills.
+  //    See CAPI-SETUP.md for the matching server-side event mapping.
+  function initPhoneClickTracking() {
+    var isTouch = (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
+                || ('ontouchstart' in window);
+
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest && e.target.closest('a[href^="tel:"]');
+      if (!a) return;
+      if (!isTouch) return; // desktop clicks on tel: links don't open a dialer
+
+      // Once-per-session guard — sessionStorage scoped per tab.
+      try {
+        if (sessionStorage.getItem('sp_phone_click_fired') === '1') return;
+        sessionStorage.setItem('sp_phone_click_fired', '1');
+      } catch (e) { /* private mode / disabled storage — fail open */ }
+
+      var phone = (a.getAttribute('href') || '').replace(/^tel:/i, '');
+
+      // Meta: standard `Contact` event with CAPI dedup (via SP_PIXEL).
+      try {
+        SP_PIXEL.track('Contact', {
+          content_name: 'Phone Click',
+          content_category: 'Phone',
+          contact_method: 'phone',
+          phone_number: phone
+        });
+      } catch (err) { /* tracking should never break the dial-out */ }
+
+      // GA4 / Google Ads mirror — matches the Lead/quote_submit pattern
+      // used in quote.html so reports line up across platforms.
+      try {
+        if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
+          window.SP_GTAG.trackConversion('phone_call_click', {
+            phone_number: phone,
+            transaction_id: 'phone-' + Date.now()
+          });
+        } else if (typeof window.gtag === 'function') {
+          // Plain GA4 event as fallback so the data shows up in GA reports
+          // even before Google Ads conversion is fully wired up.
+          window.gtag('event', 'phone_call_click', {
+            event_category: 'engagement',
+            event_label: phone,
+            phone_number: phone
+          });
+        }
+      } catch (err) { /* tracking should never break the dial-out */ }
+    }, true); // capture phase so we fire before stopPropagation can swallow
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhoneClickTracking);
+  } else {
+    initPhoneClickTracking();
+  }
 })();
