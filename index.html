@@ -879,16 +879,20 @@
         // shows broken state. The fetch + replace happens inside the
         // DOMContentLoaded handler below.
         // Fallback TIERS — used if the live fetch to /api/pricing/
-        // homepage-tiers fails. Numbers mirror the published pricing
-        // chart 1-side prices exactly so an offline homepage still
-        // quotes the right thing. Six bands per garment matching the
-        // chart breakpoints: 1-9 (base = 5-9 tier) / 10-24 / 25-49 /
-        // 50-99 / 100-249 / 250+. Updated 2026-05-24.
+        // homepage-tiers fails. Seven bands per garment matching the
+        // chart breakpoints: 1-4 (base + micro-run premium) / 5-9 /
+        // 10-24 / 25-49 / 50-99 / 100-249 / 250+. The qty 1-4 row is
+        // the qty=5 tier price plus the per-garment
+        // micro_run_premium_cad ($6 tshirt, $7 hoodie, $4 longsleeve).
+        // Hat has no sub-5 premium (embroidery 5-piece minimum), so
+        // the [1-4] row repeats the [5-9] number for the slider's
+        // sake — the live API + display layer clamp display qty to 5.
+        // Updated 2026-05-24.
         var TIERS = {
-          tshirt:    [[1,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,249,11.95],[250,99999,9.95]],
-          hoodie:    [[1,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,249,26.95],[250,99999,24.95]],
-          longsleeve:[[1,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,249,17.95],[250,99999,14.95]],
-          cap:       [[1,9,32.95],[10,24,29.95],[25,49,24.95],[50,99,21.95],[100,249,19.95],[250,99999,15.95]]
+          tshirt:    [[1,4,24.95],[5,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,249,11.95],[250,99999,9.95]],
+          hoodie:    [[1,4,44.95],[5,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,249,26.95],[250,99999,24.95]],
+          longsleeve:[[1,4,30.95],[5,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,249,17.95],[250,99999,14.95]],
+          cap:       [[1,4,32.95],[5,9,32.95],[10,24,29.95],[25,49,24.95],[50,99,21.95],[100,249,19.95],[250,99999,15.95]]
         };
         // Hit the live tier endpoint once and overwrite TIERS in place
         // so subsequent recalc() calls use the fresh numbers. Done
@@ -909,7 +913,12 @@
               .then(function(j) {
                 if (!j || !j.tiers) return;
                 ['tshirt','hoodie','longsleeve','cap'].forEach(function(g) {
-                  if (Array.isArray(j.tiers[g]) && j.tiers[g].length === 6) {
+                  // Accept 6 or 7 bands so this stays compatible with
+                  // either side of the 2026-05-24 split (the old
+                  // schema collapsed qty 1-4 and 5-9 into a single
+                  // band; the new one separates them so the slider
+                  // can show the micro-run premium).
+                  if (Array.isArray(j.tiers[g]) && j.tiers[g].length >= 6) {
                     TIERS[g] = j.tiers[g];
                   }
                 });
