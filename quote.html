@@ -3729,7 +3729,9 @@
 
       // Funnel-tracker submit event — richer than the auto-fired
       // `form_submit` from components.js because we attach the
-      // estimated value, qty and product.
+      // estimated value, qty and product. This is internal funnel
+      // analytics and stays on submit-attempt so we can measure the
+      // attempt→success ratio.
       if (window.spTrack) window.spTrack('quote_submit', {
         product: product || null,
         service: service || null,
@@ -3739,36 +3741,18 @@
         has_company: !!document.getElementById('company').value
       });
 
-      // Fire Meta Pixel Lead event so the ad set can optimize toward this conversion
-      try {
-        if (typeof fbq === 'function') {
-          fbq('track', 'Lead', {
-            content_name: product || 'Quote Request',
-            content_category: service || 'Print',
-            value: estValue,
-            currency: 'CAD',
-            num_items: totalQty
-          });
-        }
-      } catch(err) { /* tracking should never break the submit */ }
-
-      // Fire Google Ads conversion + GA4 quote_submit so Google's bidding
-      // algorithm can optimize toward Quote requests. Mirrors the fbq('Lead')
-      // payload — same value/currency so ROAS reports line up between
-      // Meta and Google. SP_GTAG.trackConversion handles the AW-/label
-      // wiring (gtag-config.js) and is a no-op until verification clears.
-      try {
-        if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
-          window.SP_GTAG.trackConversion('quote_submit', {
-            value: estValue,
-            currency: 'CAD',
-            transaction_id: 'quote-' + Date.now(), // dedupe key for Ads
-            product: product || null,
-            service: service || null,
-            num_items: totalQty
-          });
-        }
-      } catch(err) { /* tracking should never break the submit */ }
+      // Stash the conversion payload so showSuccess() can fire the
+      // Meta Pixel + Google Ads conversion AFTER the CRM ingest path
+      // confirms a real submission. This replaces the previous
+      // approach (firing on every submit-attempt) which was double-
+      // counting failed/spam/test submissions and giving Meta a
+      // garbage signal to optimize against. See slice 78 (May 2026).
+      window.__sp_pendingConversion = {
+        product: product,
+        service: service,
+        estValue: estValue,
+        totalQty: totalQty
+      };
 
       // Web3Forms submission used to live here. As of slice 77 (May 2026)
       // the Web3Forms POST is owned exclusively by the per-side upload
@@ -3776,11 +3760,11 @@
       // POST to the form's action) only as a fallback when /api/inbound
       // returns non-2xx, errors out, or stalls past the bailout window.
       //
-      // We kept this legacy listener for everything that ISN'T the
-      // Web3Forms call: pushLeadToCRM (Supabase leads table), spTrack,
-      // Meta Pixel Lead, gtag conversion. Those stayed because they're
-      // analytics breadcrumbs that should fire on every submit attempt,
-      // independent of whether the CRM ingest path succeeded.
+      // We kept this legacy listener for: pushLeadToCRM (Supabase leads
+      // table) and spTrack (internal funnel). Those genuinely should
+      // fire on every submit attempt. Meta Pixel Lead + Google Ads
+      // conversion moved to showSuccess() (slice 78) so they only fire
+      // after the CRM confirms a real submission.
       //
       // showSuccess() is no longer called here — the per-side handler
       // calls it on the CRM 2xx path; the Web3Forms fallback in
@@ -3794,6 +3778,44 @@
       document.getElementById('quoteForm').style.display = 'none';
       document.querySelector('.steps-bar').style.display = 'none';
       document.getElementById('formSuccess').style.display = 'block';
+
+      // Fire conversion pixels ONLY on confirmed success (CRM 2xx).
+      // Moved here from the submit-attempt listener (slice 78, May 2026)
+      // so failed/spam/test submissions don't pollute the ad-platform
+      // optimization signal. Payload was stashed by the submit handler.
+      var trk = window.__sp_pendingConversion || {};
+      // Clear immediately to defend against accidental re-render double-fires
+      window.__sp_pendingConversion = null;
+
+      // Meta Pixel Lead — Meta uses this to optimize Leads-objective ad sets
+      try {
+        if (typeof fbq === 'function') {
+          fbq('track', 'Lead', {
+            content_name: trk.product || 'Quote Request',
+            content_category: trk.service || 'Print',
+            value: trk.estValue || 0,
+            currency: 'CAD',
+            num_items: trk.totalQty || 0
+          });
+        }
+      } catch(err) { /* tracking should never break the success state */ }
+
+      // Google Ads conversion + GA4 quote_submit — mirrors the fbq Lead
+      // payload so ROAS reports line up between Meta and Google.
+      // SP_GTAG.trackConversion handles AW-/label wiring (gtag-config.js)
+      // and is a no-op until verification clears.
+      try {
+        if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
+          window.SP_GTAG.trackConversion('quote_submit', {
+            value: trk.estValue || 0,
+            currency: 'CAD',
+            transaction_id: 'quote-' + Date.now(), // dedupe key for Ads
+            product: trk.product || null,
+            service: trk.service || null,
+            num_items: trk.totalQty || 0
+          });
+        }
+      } catch(err) { /* tracking should never break the success state */ }
     }
 
     // ===== PRICING CALCULATOR =====
