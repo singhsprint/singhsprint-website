@@ -878,11 +878,17 @@
         // we keep these conservative numbers so the homepage never
         // shows broken state. The fetch + replace happens inside the
         // DOMContentLoaded handler below.
+        // Fallback TIERS — used if the live fetch to /api/pricing/
+        // homepage-tiers fails. Numbers mirror the published pricing
+        // chart 1-side prices exactly so an offline homepage still
+        // quotes the right thing. Six bands per garment matching the
+        // chart breakpoints: 1-9 (base = 5-9 tier) / 10-24 / 25-49 /
+        // 50-99 / 100-249 / 250+. Updated 2026-05-24.
         var TIERS = {
-          tshirt:    [[1,4,29.95],[5,24,24.95],[25,49,18.95],[50,99,14.95],[100,199,11.95],[200,99999,9.95]],
-          hoodie:    [[1,4,49.95],[5,24,42.95],[25,49,34.95],[50,99,29.95],[100,199,26.95],[200,99999,24.95]],
-          longsleeve:[[1,4,36.95],[5,24,29.95],[25,49,22.95],[50,99,18.95],[100,199,15.95],[200,99999,13.95]],
-          cap:       [[1,4,32.95],[5,24,24.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,15.95]]
+          tshirt:    [[1,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,249,11.95],[250,99999,9.95]],
+          hoodie:    [[1,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,249,26.95],[250,99999,24.95]],
+          longsleeve:[[1,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,249,17.95],[250,99999,14.95]],
+          cap:       [[1,9,32.95],[10,24,29.95],[25,49,24.95],[50,99,21.95],[100,249,19.95],[250,99999,15.95]]
         };
         // Hit the live tier endpoint once and overwrite TIERS in place
         // so subsequent recalc() calls use the fresh numbers. Done
