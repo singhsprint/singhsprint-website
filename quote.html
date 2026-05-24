@@ -6112,12 +6112,29 @@
         // so each placement lands in its own inbound_request_mockups row
         // on the CRM. The 30-min cron then generates them independently;
         // a Gemini hiccup on the back print no longer kills the front.
-        var pendingFiles = [];   // [{ placement, file }]
+        // 2026-05-24 — cart_item_index added so per-item uploads from
+        // the catalog cart flow ("Bella Aqua: Left Chest design A",
+        // "Bella Black: Left Chest design B") are preserved through
+        // upload + inbound and the CRM's mockup orchestrator can
+        // generate a separate mockup per item.
+        //
+        // Index semantics:
+        //   - cartItemFiles keys carry "<itemIdx>_<presetId>" — pull
+        //     itemIdx out and stamp it on the entry.
+        //   - placementFiles (single-product / non-cart flow) doesn't
+        //     have an item index; leave it null so the CRM fans out
+        //     to all cart items carrying that placement (or anchors
+        //     to item 0 when there are none).
+        var pendingFiles = [];   // [{ placement, cart_item_index, file }]
         try {
           if (typeof placementFiles === 'object' && placementFiles) {
             Object.keys(placementFiles).forEach(function(presetId){
               var f = placementFiles[presetId];
-              if (f instanceof File) pendingFiles.push({ placement: presetId, file: f });
+              if (f instanceof File) pendingFiles.push({
+                placement: presetId,
+                cart_item_index: null,   // global/single-product upload
+                file: f
+              });
             });
           }
           if (typeof cartItemFiles === 'object' && cartItemFiles) {
@@ -6126,10 +6143,16 @@
               if (!(f instanceof File)) return;
               // key format: "<itemIdx>_<presetId>". presetIds never
               // contain underscores (see placementPresets); split on
-              // the first '_' to recover the placement.
+              // the first '_' to recover both halves.
               var split = key.indexOf('_');
+              var idxStr = split > -1 ? key.slice(0, split) : '';
+              var idxNum = parseInt(idxStr, 10);
               var placement = split > -1 ? key.slice(split + 1) : null;
-              pendingFiles.push({ placement: placement, file: f });
+              pendingFiles.push({
+                placement: placement,
+                cart_item_index: Number.isFinite(idxNum) ? idxNum : null,
+                file: f
+              });
             });
           }
           // Legacy single-input fallback. Tag it as the first selected
@@ -6140,6 +6163,7 @@
               if (fileInputs[i].files && fileInputs[i].files[0]) {
                 pendingFiles.push({
                   placement: (Object.values(presetByLocation || {})[0]) || null,
+                  cart_item_index: null,
                   file: fileInputs[i].files[0],
                 });
                 break;
@@ -6231,11 +6255,18 @@
             // haven't migrated yet keep showing something.
             designs:         Array.isArray(uploaded) ? uploaded.map(function(u){
                                return {
-                                 placement:  u.placement || null,
-                                 path:       u.path,
-                                 signed_url: u.signed_url || null,
-                                 mime:       u.mime  || null,
-                                 bytes:      u.bytes || null,
+                                 placement:       u.placement || null,
+                                 // 2026-05-24 — tells the CRM which cart
+                                 // item this upload belongs to so the
+                                 // mockup orchestrator generates a
+                                 // separate mockup per item. null means
+                                 // "global" — CRM fans out to every
+                                 // cart item carrying this placement.
+                                 cart_item_index: (typeof u.cart_item_index === 'number') ? u.cart_item_index : null,
+                                 path:            u.path,
+                                 signed_url:      u.signed_url || null,
+                                 mime:            u.mime  || null,
+                                 bytes:           u.bytes || null,
                                };
                              }) : [],
             design_path:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].path)       || null,
@@ -6350,9 +6381,12 @@
           return Promise.all(pending.map(function(p){
             return uploadDesignFile(p.file).then(function(u){
               if (!u) return null;
-              // Stamp the placement onto the upload result so the
-              // structured POST can build designs[] with proper tags.
+              // Stamp the placement AND cart_item_index onto the upload
+              // result so the structured POST can build designs[] with
+              // both tags. cart_item_index lets the CRM's mockup
+              // orchestrator generate a separate mockup per item.
               u.placement = p.placement || null;
+              u.cart_item_index = (typeof p.cart_item_index === 'number') ? p.cart_item_index : null;
               return u;
             });
           })).then(function(arr){
