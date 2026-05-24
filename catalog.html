@@ -469,8 +469,49 @@
     /* 2026-05-24 — cart-bar is now an <a>. Adding text-decoration:none
        (anchor default), and lifting touch-action / tap-highlight up to
        the wrapper since the whole pill is one tap target. cursor:pointer
-       for the small set of users on a hybrid touch/mouse device. */
-    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px);text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,.15);touch-action:manipulation}
+       for the small set of users on a hybrid touch/mouse device.
+
+       Transition is set so the :hover (desktop) and :active (touch/click)
+       transforms are smooth. transform-origin keeps the centered
+       translateX(-50%) honest while scaling. */
+    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);transform-origin:bottom center;background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px);text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform .18s cubic-bezier(.4,0,.2,1),box-shadow .18s ease}
+    /* Hover only on devices that actually hover (skip touch — otherwise
+       iOS sticks in the hover state after the first tap). */
+    @media (hover:hover){
+      .cart-bar:hover{transform:translateX(-50%) translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,.22)}
+    }
+    /* Press-in tactile state — fires on mouse-down OR touch-start.
+       Faster transition than the resting one so the press feels snappy. */
+    .cart-bar:active{transform:translateX(-50%) scale(.95);box-shadow:0 4px 12px rgba(0,0,0,.20);transition-duration:.08s}
+    /* JS-driven flash when the user actually clicks/taps. Pulses a yellow
+       ring around the bar so the tap reads as "received, navigating".
+       Animation outlasts the press-down state so feedback is visible
+       even on devices that release fast. */
+    @keyframes cartBarFlash{
+      0%  {box-shadow:0 10px 30px rgba(0,0,0,.18),0 0 0 0 rgba(232,255,60,.6)}
+      40% {box-shadow:0 10px 30px rgba(0,0,0,.18),0 0 0 10px rgba(232,255,60,0)}
+      100%{box-shadow:0 10px 30px rgba(0,0,0,.18),0 0 0 0 rgba(232,255,60,0)}
+    }
+    @keyframes cartBarBadgePop{
+      0%  {transform:scale(1)}
+      50% {transform:scale(1.18)}
+      100%{transform:scale(1)}
+    }
+    @keyframes cartBarArrowGlide{
+      0%  {transform:translateX(0)}
+      50% {transform:translateX(4px)}
+      100%{transform:translateX(0)}
+    }
+    .cart-bar.is-tapped{animation:cartBarFlash .42s ease-out}
+    .cart-bar.is-tapped .cart-bar__count{animation:cartBarBadgePop .32s cubic-bezier(.34,1.56,.64,1)}
+    .cart-bar.is-tapped .cart-bar__cta{animation:cartBarArrowGlide .32s ease-out}
+    /* Reduce-motion respect — preserve press-down for tactile clarity
+       but skip the keyframe burst for users who prefer fewer animations. */
+    @media (prefers-reduced-motion:reduce){
+      .cart-bar.is-tapped,
+      .cart-bar.is-tapped .cart-bar__count,
+      .cart-bar.is-tapped .cart-bar__cta{animation:none}
+    }
     .cart-bar.open{display:flex}
     .cart-bar__count{background:var(--hi);color:var(--ink);font-weight:700;border-radius:50px;padding:3px 9px;font-size:.78rem;font-variant-numeric:tabular-nums;flex-shrink:0}
     .cart-bar__label{font-size:.86rem;white-space:nowrap}
@@ -774,17 +815,43 @@
 
   function goToQuote() { window.location.href = '/quote'; }
 
-  // 2026-05-24 — Cart-bar touch fallback.
-  // The entire pill (`#cartBar`) is now an <a href="/quote">, but iOS
-  // Safari can still drop the native click when the anchor sits inside
-  // a position:fixed container that just transitioned (display:none →
-  // display:flex via the `.open` class). The touchend listener below
-  // is the safety net: explicitly preventDefault any iOS touch
-  // heuristic, then force-navigate. Idempotent — if the native click
-  // already fired, location.assign on the same URL is a no-op.
+  // 2026-05-24 — Cart-bar touch fallback + tap-feedback animation.
+  //
+  // Touch fallback: the entire pill (`#cartBar`) is an <a href="/quote">,
+  // but iOS Safari can still drop the native click when the anchor sits
+  // inside a position:fixed container that just transitioned
+  // (display:none → display:flex via the `.open` class). The touchend
+  // handler is the safety net — explicitly preventDefault any iOS
+  // touch heuristic and force-navigate. Idempotent with native click.
+  //
+  // Tap feedback: on pointerdown we add `.is-tapped` so the CSS
+  // keyframe (yellow ring + count-badge pop + arrow glide) plays.
+  // We start it on pointerdown rather than click so the animation
+  // begins THE INSTANT the user touches — by the time the browser
+  // navigates, the user has already seen the response. The class is
+  // auto-removed after 500ms so re-taps re-trigger cleanly.
   document.addEventListener('DOMContentLoaded', function () {
     var bar = document.getElementById('cartBar');
     if (!bar) return;
+
+    function flashTap() {
+      bar.classList.remove('is-tapped');
+      // Force a reflow so re-adding the class restarts the animation
+      // even if a previous one is still playing.
+      void bar.offsetWidth;
+      bar.classList.add('is-tapped');
+      clearTimeout(flashTap._tid);
+      flashTap._tid = setTimeout(function () {
+        bar.classList.remove('is-tapped');
+      }, 500);
+    }
+
+    // Pointerdown fires immediately on touch OR mouse-down — earliest
+    // possible visual ack. addEventListener so it composes with the
+    // native :active pseudo-class without conflict.
+    bar.addEventListener('pointerdown', flashTap);
+
+    // Touch fallback nav for iOS edge case (see comment above).
     bar.addEventListener('touchend', function (ev) {
       if (ev.cancelable) ev.preventDefault();
       if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
