@@ -331,6 +331,12 @@ function loadNav() {
         { en: 'Schools & sports',        fr: 'Écoles & équipes sportives', href: BASE + '/industries/schools-sports-teams' }
       ]
     },
+    // 2026-05-25 — Drops added to the editorial rail so customers
+    // who landed for B2B quoting discover the DTC drops line. Placed
+    // second in the rail (right after For Businesses) for prominence
+    // — Drops is a new revenue channel and deserves the eyeball-
+    // grabbing position, not buried after the niche programs.
+    { en: 'Drops',     fr: 'Drops',     i18n: 'nav.drops',     href: BASE + '/shop' },
     { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' },
     { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
     { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },

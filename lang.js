@@ -46,6 +46,7 @@ var SP_LANG = (function() {
     'nav.services': { en: 'Services', fr: 'Services' },
     'nav.howitworks': { en: 'How It Works', fr: 'Comment ça marche' },
     'nav.portfolio': { en: 'Portfolio', fr: 'Portfolio' },
+    'nav.drops': { en: 'Drops', fr: 'Drops' },
     'nav.inkwear': { en: 'Inkwear', fr: 'Inkwear' },
     'nav.youth': { en: 'Youth Initiative', fr: 'Initiative Jeunesse' },
     'nav.businesses': { en: 'For Businesses', fr: 'Pour entreprises' },
