@@ -163,17 +163,16 @@
         });
       } catch (err) { /* tracking should never break the dial-out */ }
 
-      // GA4 / Google Ads mirror — matches the Lead/quote_submit pattern
-      // used in quote.html so reports line up across platforms.
+      // GA4 only — fire a plain phone_call_click event so it shows up in
+      // GA reports. We intentionally do NOT call SP_GTAG.trackConversion()
+      // here: that helper always fires the QUOTE Google Ads conversion label
+      // (SP_GADS_QUOTE_LABEL), so routing phone clicks through it would
+      // miscount them as quote submissions in Google Ads. When/if we want
+      // phone calls as a dedicated Google Ads conversion, create a separate
+      // "Phone call lead" conversion action, add a SP_GADS_PHONE_LABEL, and
+      // fire gtag('event','conversion',{send_to: AW-XXX/PHONE_LABEL}) here.
       try {
-        if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
-          window.SP_GTAG.trackConversion('phone_call_click', {
-            phone_number: phone,
-            transaction_id: 'phone-' + Date.now()
-          });
-        } else if (typeof window.gtag === 'function') {
-          // Plain GA4 event as fallback so the data shows up in GA reports
-          // even before Google Ads conversion is fully wired up.
+        if (typeof window.gtag === 'function') {
           window.gtag('event', 'phone_call_click', {
             event_category: 'engagement',
             event_label: phone,

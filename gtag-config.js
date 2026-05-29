@@ -26,17 +26,16 @@
 window.SP_GA4_MEASUREMENT_ID = 'G-JB622HXG06';
 
 // Google Ads conversion linker / account-level ID.
-// FILL IN AFTER advertiser verification clears and the "Request quote" conversion
-// action is re-configured. Get it from:
-//   Google Ads → Goals → Conversions → Summary → click "Request quote"
-//   → "Tag setup" → "Use the Google tag" → copy the AW-XXXXXXXXX id at top
-// Until then, gtag.js will still load GA4 but will silently skip the AW config.
-window.SP_GOOGLE_ADS_ID = 'AW-REPLACE_ME';
+// Account 597-296-7449. Wired up 2026-05-30 from the "Quote Submit — Website
+// (gtag)" conversion action (Goals → Conversions). send_to was
+// 'AW-17792396715/e5RNCKD857UcEKvbiaRC'.
+window.SP_GOOGLE_ADS_ID = 'AW-17792396715';
 
 // Per-conversion-action send_to label for the Quote form submit conversion.
-// Same screen as above, copy the value AFTER the "/" in send_to:
-//   send_to: 'AW-1234567890/AbCdEfGhIj'  →  paste 'AbCdEfGhIj' below.
-window.SP_GADS_QUOTE_LABEL = 'REPLACE_ME';
+// This is the part AFTER the "/" in the event snippet's send_to value.
+// Fires from SP_GTAG.trackConversion('quote_submit', ...) inside showSuccess()
+// on quote.html — i.e. only on a confirmed successful submission (slice 78 fix).
+window.SP_GADS_QUOTE_LABEL = 'e5RNCKD857UcEKvbiaRC';
 
 // Helper: returns true when the Google Ads ID has been wired up. Used by
 // gtag.js to decide whether to skip the AW config + conversion firings
