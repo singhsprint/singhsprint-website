@@ -1662,7 +1662,8 @@ document.addEventListener('DOMContentLoaded', function() {
       '.sp-tw-consent{font-size:11px;color:#999;margin-top:8px;line-height:1.4}' +
       '.sp-tw-alt{display:block;text-align:center;font-size:12px;color:#111;margin-top:10px;text-decoration:underline}' +
       '.sp-tw-hp{position:absolute!important;left:-9999px!important}' +
-      '.sp-tw-ok{padding:22px 16px;text-align:center;font-size:14px;color:#111}';
+      '.sp-tw-ok{padding:22px 16px;text-align:center;font-size:14px;color:#111}' +
+      '@media (max-width:760px){.sp-tw-btn{bottom:calc(80px + env(safe-area-inset-bottom))}.sp-tw-panel{bottom:calc(136px + env(safe-area-inset-bottom))}}';
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     var btn = document.createElement('button');
     btn.className = 'sp-tw-btn'; btn.type = 'button';
