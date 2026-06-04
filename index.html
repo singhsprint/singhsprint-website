@@ -1166,7 +1166,7 @@
         <div><span class="label" data-i18n="home.recent.label">Recent Work</span><h3 style="font-size:1.3rem" data-i18n="home.recent.h">Fresh off the press</h3></div>
         <a href="portfolio" class="btn btn-outline btn-sm" data-i18n="home.recent.viewall">View all &rarr;</a>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
+      <div id="recent-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
         <div style="border-radius:12px;overflow:hidden;aspect-ratio:1"><img src="images/product-tshirt-white.jpg" alt="Custom DTG tee" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>
         <div style="border-radius:12px;overflow:hidden;aspect-ratio:1"><img src="images/product-hat-artwood.jpg" alt="Embroidered cap" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>
         <div style="border-radius:12px;overflow:hidden;aspect-ratio:1"><img src="images/product-tshirt-concordia.jpg" alt="DTG tee" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>
@@ -1414,6 +1414,52 @@
   })();
   </script>
   -->
+
+  <!-- CRM-managed "Trusted by..." strip + "Recent Work" mini-gallery.
+       Progressive enhancement: the hardcoded markup above is the SEO/no-JS
+       fallback; when the CRM returns published rows we rebuild from them so
+       operators can edit both from the dashboard (/portfolio). -->
+  <script>
+  (function () {
+    var CRM = 'https://singhsprint-crm.vercel.app';
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+
+    // "Trusted by..." marquee — rebuild both tracks from portfolio_clients.
+    fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var cs = j && j.clients;
+        if (!Array.isArray(cs) || !cs.length) return; // keep hardcoded fallback
+        var html = cs.map(function (c) {
+          return '<span class="trust-logo-text">' + esc(c.name) + '</span>';
+        }).join('');
+        document.querySelectorAll('.trust-logos__track').forEach(function (t) {
+          t.innerHTML = html;
+        });
+      })
+      .catch(function () { /* keep hardcoded fallback */ });
+
+    // "Recent Work" mini-gallery — first 6 published portfolio_items.
+    fetch(CRM + '/api/portfolio', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var items = (j && j.items) || [];
+        if (!items.length) return; // keep hardcoded fallback
+        var grid = document.getElementById('recent-grid');
+        if (!grid) return;
+        grid.innerHTML = items.slice(0, 6).map(function (it) {
+          return '<div style="border-radius:12px;overflow:hidden;aspect-ratio:1">'
+            + '<img src="' + esc(it.image_url) + '" alt="' + esc(it.title || '') + '" '
+            + 'style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>';
+        }).join('');
+      })
+      .catch(function () { /* keep hardcoded fallback */ });
+  })();
+  </script>
 
 </body>
 </html>

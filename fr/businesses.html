@@ -199,7 +199,7 @@
   <meta name="twitter:title" content="Volume Apparel Programs — Singhs Print">
   <meta name="twitter:description" content="Uniform programs, employee swag, and event apparel for businesses 50+ headcount. Pricing tiers, RFP intake, account management.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/lifestyle-jacket.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://www.singhsprint.com/fr/"},{"@type":"ListItem","position":2,"name":"Entreprises","item":"https://www.singhsprint.com/fr/businesses"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.singhsprint.com/"},{"@type":"ListItem","position":2,"name":"For Businesses","item":"https://www.singhsprint.com/businesses"}]}</script>
 </head>
 <body>
 
@@ -218,8 +218,9 @@
     </div>
   </section>
 
-  <!-- INDUSTRIES — voir EN businesses.html. Industries cliquables au-dessus
-       du bandeau credentials pour plus d'engagement au-dessus du pli. -->
+  <!-- INDUSTRIES — quick links to vertical landing pages. Moved ABOVE the
+       credentials strip so the first thing under the hero is something
+       clickable the visitor can engage with, not a passive trust row. -->
   <section style="padding:50px 0;background:#fff;border-bottom:1px solid #eee">
     <div class="container">
       <div style="text-align:center;margin-bottom:24px">
@@ -228,6 +229,11 @@
         <p style="color:#666;font-size:.95rem;max-width:560px;margin:0 auto">We&rsquo;ve built specific programs for the industries where reorder discipline and turnaround matter most.</p>
       </div>
       <style>
+        /* Vertical-program tiles: flat cream cards with a chevron pill on
+           the right. Default state shows a dark pill; hover lifts the
+           card, darkens the border, and flips the pill to the accent
+           yellow with the chevron sliding right. Replaces the inline "→"
+           text arrow which broke the visual rhythm. */
         .vp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
         .vp-tile{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;background:#f8f7f4;border-radius:14px;border:1px solid #eee;font-weight:600;font-size:.95rem;color:#1a1a1a;text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
         .vp-tile:hover{border-color:#1a1a1a;transform:translateY(-2px);box-shadow:0 10px 22px -10px rgba(0,0,0,.18)}
@@ -241,11 +247,11 @@
         }
       </style>
       <div class="vp-grid">
-        <a class="vp-tile" href="/fr/industries/construction-workwear"><span class="vp-tile__label">Construction &amp; métiers</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
-        <a class="vp-tile" href="/fr/industries/restaurant-hospitality-uniforms"><span class="vp-tile__label">Restauration &amp; hôtellerie</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
-        <a class="vp-tile" href="/fr/industries/corporate-tech-swag"><span class="vp-tile__label">Entreprises &amp; tech</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
-        <a class="vp-tile" href="/fr/industries/charity-events-fundraisers"><span class="vp-tile__label">Œuvres &amp; événements</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
-        <a class="vp-tile" href="/fr/industries/schools-sports-teams"><span class="vp-tile__label">Écoles &amp; équipes sportives</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/fr/industries/construction-workwear"><span class="vp-tile__label">Construction &amp; trades</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/fr/industries/restaurant-hospitality-uniforms"><span class="vp-tile__label">Restaurant &amp; hospitality</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/fr/industries/corporate-tech-swag"><span class="vp-tile__label">Corporate &amp; tech swag</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/fr/industries/charity-events-fundraisers"><span class="vp-tile__label">Charity &amp; events</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
+        <a class="vp-tile" href="/fr/industries/schools-sports-teams"><span class="vp-tile__label">Schools &amp; sports</span><span class="vp-tile__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span></a>
       </div>
     </div>
   </section>
@@ -461,7 +467,8 @@
         </table>
       </div>
 
-      <!-- Hi-Vis Vests --><div class="pricing-table-wrap" id="table-crewnecks">
+      <!-- Crewnecks (id misnamed previously — this is the crewneck price table) -->
+      <div class="pricing-table-wrap" id="table-crewnecks">
         <table class="pricing-table">
           <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
           <tbody>
@@ -476,7 +483,8 @@
         <p class="table-footnote">Crewneck pricing follows a similar structure to hoodies. Contact us for exact quotes on specialty blanks.</p>
       </div>
 
-      <!-- Hi-Vis Tees — pricing consolidé depuis la page construction-workwear -->
+      <!-- Hi-Vis Tees — consolidated here from the construction-workwear
+           industry page so there's one canonical pricing surface. -->
       <div class="pricing-table-wrap" id="table-hivis">
         <table class="pricing-table">
           <thead><tr><th>Quantity</th><th>1-Side</th><th>2-Sides</th><th>3-Sides</th><th>4-Sides</th></tr></thead>
@@ -489,7 +497,7 @@
             <tr><td>5-9</td><td>$18.95</td><td>$22.95</td><td>$26.95</td><td>$29.95</td></tr>
           </tbody>
         </table>
-        <p class="table-footnote">Tissus 100% canadiens +2 $/unité. Hi-vis certifié CSA-Z96 disponible sur demande.</p>
+        <p class="table-footnote">All-Canadian hi-vis blanks +$2/unit. CSA-Z96 certified hi-vis available on request.</p>
       </div>
 
       <!-- Polos -->
@@ -601,8 +609,8 @@
 
   <div id="footer-placeholder"></div>
 
-  <script src="/components.js" defer></script>
-  <script src="/lang.js"></script>
+  <script src="components.js" defer></script>
+  <script src="lang.js"></script>
   <script>
     // Pricing tab switcher
     document.querySelectorAll('.pricing-tab').forEach(function(tab) {
@@ -688,9 +696,14 @@
     updateQtyHighlight();
 
     // ===== LIVE PRICING TABLE HYDRATION =====
-    // Hydrate pricing tables from /api/pricing-matrix so CRM edits propagate.
-    // See EN businesses.html for the full rationale comment.
+    // The static <tr> rows below are a fallback so the page renders during
+    // first paint, but the source of truth is the CRM-edited
+    // `pricing_configs` Supabase table. /api/pricing-matrix exposes it
+    // verbatim. We fetch on load and rewrite each table's tbody so any
+    // change made at /settings/pricing in the CRM reaches the public site
+    // within the 5-minute edge cache.
     (function hydratePricingTables() {
+      // id → garment_type key in /api/pricing-matrix response
       var MAP = {
         'table-tshirts':     'tshirt',
         'table-hoodies':     'hoodie',
@@ -702,44 +715,52 @@
         'table-joggers':     'joggers',
         'table-totes':       'tote',
       };
+      var BEST_ID = 'table-tshirts'; // tshirts table gets the best-value highlight on its top tier
+
       fetch('https://singhsprint-crm.vercel.app/api/pricing-matrix', { cache: 'force-cache' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (data) {
           if (!data || !data.matrices) return;
           Object.keys(MAP).forEach(function (id) {
-            var gt = MAP[id], m = data.matrices[gt];
+            var gt = MAP[id];
+            var m = data.matrices[gt];
             var wrap = document.getElementById(id);
             if (!m || !wrap) return;
             var table = wrap.querySelector('table.pricing-table');
             if (!table) return;
+            // Header: Quantity + one column per side count
             var thead = table.querySelector('thead');
             if (thead) {
-              thead.innerHTML = '<tr><th>Quantité</th>' +
+              thead.innerHTML = '<tr><th>Quantity</th>' +
                 m.sides.map(function (s) {
-                  return '<th>' + s + '-côté' + (s > 1 ? 's' : '') + '</th>';
+                  return '<th>' + s + '-Side' + (s > 1 ? 's' : '') + '</th>';
                 }).join('') + '</tr>';
             }
+            // Body: reverse the qty_tiers so the highest qty (best price) is on top
             var tiers = m.qty_tiers.slice().reverse();
             var tbody = table.querySelector('tbody');
             if (tbody) {
               tbody.innerHTML = tiers.map(function (t, rowIdx) {
-                var origIdx = m.qty_tiers.findIndex(function (x) {
+                var origIdx = m.qty_tiers.indexOf(m.qty_tiers.find(function (x) {
                   return x.min === t.min && x.max === t.max;
-                });
-                var isBest = rowIdx === 0;
+                }));
+                var isBest = rowIdx === 0;   // top row = top tier
                 var prices = m.sides.map(function (s) {
                   var ladder = m.prices[String(s)] || [];
                   var p = ladder[origIdx];
                   return '<td>' + (typeof p === 'number' ? '$' + p.toFixed(2) : '—') + '</td>';
                 }).join('');
                 return '<tr' + (isBest ? ' class="best-value"' : '') + '>' +
-                       '<td>' + t.label + '</td>' + prices + '</tr>';
+                       '<td>' + t.label + '</td>' + prices +
+                       '</tr>';
               }).join('');
             }
           });
+          // Re-trigger the qty-slider highlight so the "~ $X.XX at $Y/unit" line
+          // under the slider reflects the freshly-hydrated cells.
           if (typeof updateQtyHighlight === 'function') updateQtyHighlight();
         })
-        .catch(function () { /* fallback static */ });
+        .catch(function () { /* keep the static fallback */ });
     })();
 
     // ===== PRICING PDF DOWNLOAD — capture as lead, source=pricing_pdf =====

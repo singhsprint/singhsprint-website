@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <link rel="canonical" href="https://www.singhsprint.com/account/signin">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/account/signin">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/account/signin">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/account/signin">
   <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/account/signin">
@@ -58,55 +58,52 @@
 <body>
 
 <main class="wrap">
-  <a href="/" class="back-link" data-i18n="account.back.home">← Back to homepage</a>
+  <a href="/fr/" class="back-link"  data-i18n="account.back.home">← Retour à l'accueil</a>
 
   <div class="wordmark"><span class="dot" aria-hidden="true"></span> Singhs Print</div>
 
   <div class="hero">
-    <h1 data-i18n="account.signin.h1">Sign in</h1>
-    <p data-i18n="account.signin.sub">We'll send you a 6-digit code — no password needed.</p>
+    <h1  data-i18n="account.signin.h1">Connexion</h1>
+    <p  data-i18n="account.signin.sub">Nous vous enverrons un code à 6 chiffres — aucun mot de passe requis.</p>
   </div>
 
   <div class="card">
     <!-- Step 1: choose method + enter contact info -->
     <div id="step-request">
       <div class="tabs" role="tablist">
-        <button class="tab active" id="tab-email" type="button" data-i18n="account.signin.tab.email">Email</button>
-        <button class="tab"        id="tab-phone" type="button" data-i18n="account.signin.tab.phone">Phone</button>
+        <button class="tab active" id="tab-email" type="button"  data-i18n="account.signin.tab.email">Courriel</button>
+        <button class="tab"        id="tab-phone" type="button"  data-i18n="account.signin.tab.phone">Téléphone</button>
       </div>
 
       <div id="pane-email">
-        <label for="email" data-i18n="account.signin.label.email">Email address</label>
+        <label for="email"  data-i18n="account.signin.label.email">Adresse courriel</label>
         <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
       </div>
 
       <div id="pane-phone" class="hide">
-        <label for="phone" data-i18n="account.signin.label.phone">Phone number</label>
+        <label for="phone"  data-i18n="account.signin.label.phone">Numéro de téléphone</label>
         <input id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(514) 555-1234">
       </div>
 
-      <button id="send-code" class="primary" type="button" data-i18n="account.signin.send">Send code</button>
+      <button id="send-code" class="primary" type="button"  data-i18n="account.signin.send">Envoyer le code</button>
       <div id="msg-request" class="msg hide"></div>
     </div>
 
     <!-- Step 2: enter the OTP -->
     <div id="step-verify" class="hide">
-      <label for="code" data-i18n="account.signin.code">Enter the 6-digit code</label>
+      <label for="code"  data-i18n="account.signin.code">Entrez le code à 6 chiffres</label>
       <input id="code" class="code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
 
-      <button id="verify" class="primary" type="button" data-i18n="account.signin.verify">Verify and sign in</button>
+      <button id="verify" class="primary" type="button"  data-i18n="account.signin.verify">Vérifier et se connecter</button>
       <div id="msg-verify" class="msg hide"></div>
 
       <div class="row-between">
-        <button class="link-button" id="back-to-request" type="button" data-i18n="account.signin.different">← Use a different address</button>
-        <button class="link-button" id="resend" type="button" data-i18n="account.signin.resend">Resend code</button>
+        <button class="link-button" id="back-to-request" type="button"  data-i18n="account.signin.different">← Utiliser une autre adresse</button>
+        <button class="link-button" id="resend" type="button"  data-i18n="account.signin.resend">Renvoyer le code</button>
       </div>
     </div>
 
-    <p class="help" data-i18n="account.signin.help">
-      Saving a card later? You'll be asked to set a payment password so only
-      you can use it at checkout.
-    </p>
+    <p class="help"  data-i18n="account.signin.help">Vous voulez enregistrer une carte plus tard ? Nous vous demanderons un mot de passe de paiement pour qu'elle ne soit utilisable que par vous au moment du paiement.</p>
   </div>
 </main>
 

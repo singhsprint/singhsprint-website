@@ -105,6 +105,8 @@
     .swatch.swatch--oos{opacity:.3;position:relative}
     .swatch.swatch--oos::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:inherit}
     .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
+    /* White bg matches the suppliers' white product-photo backgrounds so
+       the contained image blends into the card with no visible frame. */
     .card .photo{aspect-ratio:1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
     .card .photo img{width:100%;height:100%;object-fit:contain;padding:4%;transition:opacity .25s ease}
     /* Skeleton cards — shown immediately on first paint so the page
@@ -161,7 +163,7 @@
 
     /* BYO card */
     .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
-    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#f0eee5;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
     .card-byo strong{font-size:.95rem}
     .card-byo span{font-size:.78rem;color:var(--muted);line-height:1.4}
 
@@ -239,6 +241,9 @@
     .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
     .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
     .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
+    /* Paragraph fallback — when the supplier ships a single text blob
+       instead of bullet-structured specs, hide the round bullet dot
+       and let it read as prose. */
     .detail-modal__specs li[data-flat="1"]::before{display:none}
     .detail-modal__qty{display:inline-flex;align-items:center;gap:8px}
     .detail-modal__qty-btn{width:30px;height:30px;border:1.5px solid #d8d5cb;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;color:#1a1a1a;line-height:1;transition:background .12s,border-color .12s;font-family:inherit;padding:0}
@@ -280,7 +285,7 @@
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/fr/catalog">
   <meta property="og:title" content="Apparel Catalog — Singhs Print">
-  <meta property="og:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
+  <meta property="og:description" content="Browse 4,500+ blanks from S&S Activewear, SanMar Canada & Blanks.ca — ready to decorate. Live pricing, stock status, all colors.">
   <meta property="og:locale" content="fr_CA">
   <meta property="og:locale:alternate" content="en_CA">
   <meta property="og:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
@@ -288,7 +293,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Apparel Catalog — Singhs Print">
-  <meta name="twitter:description" content="Browse 1,100+ blanks from S&S Activewear, ready to decorate. Live pricing, stock status, all colors.">
+  <meta name="twitter:description" content="Browse 4,500+ blanks from S&S Activewear, SanMar Canada & Blanks.ca — ready to decorate. Live pricing, stock status, all colors.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <script>
   // Early-fire the catalog fetch so it overlaps with the rest of
@@ -310,13 +315,21 @@
   })();
   </script>
 
-  <!-- Algolia bridge — see EN catalog.html for the full rationale. -->
+  <!-- ====================================================================
+       Algolia bridge — feeds /catalog the slim 30-hits-at-a-time search
+       layer that replaces direct /api/catalog scans of 6,400 products.
+       When SP_ALGOLIA_CONFIG is set with valid credentials, fetchPage()
+       routes through window.SPCatalog. Clear the credentials below to
+       force the legacy /api/catalog path back on.
+       ==================================================================== -->
   <script>
     window.SP_ALGOLIA_CONFIG = {
       appId:     '56LKULJHAL',
       searchKey: '12723f9b2a3308fab3d748a6fc3189b7',
       indexName: 'singhsprint_catalog'
     };
+    // Drop the config entirely if the placeholders are still in place, so
+    // we don't fire pointless requests with bogus credentials.
     if (/REPLACE_WITH_/.test(window.SP_ALGOLIA_CONFIG.appId + window.SP_ALGOLIA_CONFIG.searchKey)) {
       window.SP_ALGOLIA_CONFIG = null;
     }
@@ -329,7 +342,7 @@
 
   <section class="cat-hero">
     <h1  data-i18n="cat.hero.h1">Notre catalogue de vêtements</h1>
-    <p  data-i18n="cat.hero.p">Parcourez <strong id="catCount">1 100+</strong> vêtements de S&amp;S Activewear — Bella+Canvas, Gildan, Berne, Adidas, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d'une minute.</p>
+    <p  data-i18n="cat.hero.p">Parcourez <strong id="catCount">4 500+</strong> vêtements de S&amp;S Activewear, SanMar Canada et Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d'une minute.</p>
     <!-- Auto-translation badge — only visible when FR is active. The
          supplier feeds (S&S Activewear) only provide English copy, so we
          machine-translate product/color/spec text on the fly. -->
@@ -341,7 +354,7 @@
       <span>·</span>
       <span  data-i18n="cat.hero.meta2">Délai habituel de <strong>3 à 5 jours</strong></span>
       <span>·</span>
-      <span  data-i18n="cat.hero.meta3">Intégrations SanMar et fournisseurs canadiens bientôt disponibles</span>
+      <span  data-i18n="cat.hero.meta3">Intégration fournisseur canadien bientôt disponible</span>
     </div>
   </section>
 
@@ -454,21 +467,77 @@
        so they can keep browsing the catalog and add more without losing
        track of what they've already picked. -->
   <style>
-    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px)}
+    /* 2026-05-24 — cart-bar is now an <a>. Adding text-decoration:none
+       (anchor default), and lifting touch-action / tap-highlight up to
+       the wrapper since the whole pill is one tap target. cursor:pointer
+       for the small set of users on a hybrid touch/mouse device.
+
+       Transition is set so the :hover (desktop) and :active (touch/click)
+       transforms are smooth. transform-origin keeps the centered
+       translateX(-50%) honest while scaling. */
+    .cart-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);transform-origin:bottom center;background:var(--ink);color:#fff;border-radius:50px;padding:10px 14px 10px 18px;display:none;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:60;max-width:calc(100vw - 36px);text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform .18s cubic-bezier(.4,0,.2,1),box-shadow .18s ease}
+    /* Hover only on devices that actually hover (skip touch — otherwise
+       iOS sticks in the hover state after the first tap). */
+    @media (hover:hover){
+      .cart-bar:hover{transform:translateX(-50%) translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,.22)}
+    }
+    /* Press-in tactile state — fires on mouse-down OR touch-start.
+       Faster transition than the resting one so the press feels snappy. */
+    .cart-bar:active{transform:translateX(-50%) scale(.95);box-shadow:0 4px 12px rgba(0,0,0,.20);transition-duration:.08s}
+    /* JS-driven flash when the user actually clicks/taps. Pulses a yellow
+       ring around the bar so the tap reads as "received, navigating".
+       Animation outlasts the press-down state so feedback is visible
+       even on devices that release fast. */
+    @keyframes cartBarFlash{
+      0%  {box-shadow:0 10px 30px rgba(0,0,0,.18),0 0 0 0 rgba(232,255,60,.6)}
+      40% {box-shadow:0 10px 30px rgba(0,0,0,.18),0 0 0 10px rgba(232,255,60,0)}
+      100%{box-shadow:0 10px 30px rgba(0,0,0,.18),0 0 0 0 rgba(232,255,60,0)}
+    }
+    @keyframes cartBarBadgePop{
+      0%  {transform:scale(1)}
+      50% {transform:scale(1.18)}
+      100%{transform:scale(1)}
+    }
+    @keyframes cartBarArrowGlide{
+      0%  {transform:translateX(0)}
+      50% {transform:translateX(4px)}
+      100%{transform:translateX(0)}
+    }
+    .cart-bar.is-tapped{animation:cartBarFlash .42s ease-out}
+    .cart-bar.is-tapped .cart-bar__count{animation:cartBarBadgePop .32s cubic-bezier(.34,1.56,.64,1)}
+    .cart-bar.is-tapped .cart-bar__cta{animation:cartBarArrowGlide .32s ease-out}
+    /* Reduce-motion respect — preserve press-down for tactile clarity
+       but skip the keyframe burst for users who prefer fewer animations. */
+    @media (prefers-reduced-motion:reduce){
+      .cart-bar.is-tapped,
+      .cart-bar.is-tapped .cart-bar__count,
+      .cart-bar.is-tapped .cart-bar__cta{animation:none}
+    }
     .cart-bar.open{display:flex}
     .cart-bar__count{background:var(--hi);color:var(--ink);font-weight:700;border-radius:50px;padding:3px 9px;font-size:.78rem;font-variant-numeric:tabular-nums;flex-shrink:0}
     .cart-bar__label{font-size:.86rem;white-space:nowrap}
     .cart-bar__label strong{font-weight:600}
     .cart-bar__label-suffix-short{display:none}
-    .cart-bar__cta{background:var(--hi);color:var(--ink);border:none;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:50px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+    /* 2026-05-24 — CTA is now an <a> (was a <button> with onclick).
+       text-decoration:none + display:inline-flex preserves the
+       button-style look; -webkit-tap-highlight-color gives iOS the
+       visual confirmation it needs that the tap landed; touch-action:
+       manipulation tells Safari this is a single-tap target, no
+       double-tap zoom delay. */
+    .cart-bar__cta{background:var(--hi);color:var(--ink);border:none;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:50px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;text-decoration:none;display:inline-flex;align-items:center;-webkit-tap-highlight-color:rgba(0,0,0,.1);touch-action:manipulation}
     .cart-bar__cta:hover{filter:brightness(.95)}
-    /* Phones: compact pill so the label doesn't wrap onto 4 lines. */
+    /* Phones: the 4-word "units in your quote" label wraps onto 4 lines
+       inside the centered pill once the CTA takes its share of width.
+       Hide the verbose suffix on narrow screens and show the short
+       version ("in cart"), keep the CTA label as a single arrow icon
+       so the whole pill stays tight and one-line. */
     @media (max-width:520px){
       .cart-bar{gap:8px;padding:8px 10px 8px 14px;max-width:calc(100vw - 16px)}
       .cart-bar__label{font-size:.82rem}
       .cart-bar__label-suffix{display:none}
       .cart-bar__label-suffix-short{display:inline}
       .cart-bar__cta{padding:8px 14px;font-size:.82rem}
+      /* Shorter CTA copy on phones via the data-attr — same href, lighter chrome. */
       .cart-bar__cta .cta-long{display:none}
       .cart-bar__cta .cta-short{display:inline}
     }
@@ -486,18 +555,26 @@
       .card .add-cart{opacity:1}
     }
   </style>
-  <div id="cartBar" class="cart-bar">
+  <!-- 2026-05-24 — Entire pill is now a single <a href> tap target.
+       Earlier iteration kept the count/label as plain spans and only
+       made the rightmost CTA clickable; that left ~70% of the pill
+       visually-looks-tappable but actually inert, which is exactly
+       how a customer would tap and see "nothing happens". Wrapping
+       everything in one anchor means any pixel of the pill navigates.
+       The inner spans keep their data-i18n hooks so translation
+       still works. -->
+  <a id="cartBar" class="cart-bar" href="/fr/quote" aria-label="Continue to quote">
     <span class="cart-bar__count" id="cartCount">0</span>
     <span class="cart-bar__label">
       <strong id="cartUnits">0</strong>
-      <span class="cart-bar__label-suffix" data-i18n="cat.cart.units">unités dans votre soumission</span>
-      <span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">au panier</span>
+      <span class="cart-bar__label-suffix"  data-i18n="cat.cart.units">unités dans votre soumission</span>
+      <span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">in cart</span>
     </span>
-    <button type="button" class="cart-bar__cta" onclick="goToQuote()" aria-label="Continuer vers la soumission">
-      <span class="cta-long" data-i18n="cat.cart.cta">Continuer vers la soumission →</span>
-      <span class="cta-short" data-i18n="cat.cart.cta.short">Soumission →</span>
-    </button>
-  </div>
+    <span id="cartBarCta" class="cart-bar__cta" aria-hidden="true">
+      <span class="cta-long"  data-i18n="cat.cart.cta">Continuer vers la soumission →</span>
+      <span class="cta-short" data-i18n="cat.cart.cta.short">Quote →</span>
+    </span>
+  </a>
   <div id="cartToast" class="cart-toast" aria-live="polite"></div>
 
   <!-- Filter slide-over -->
@@ -577,17 +654,22 @@
   </aside>
 
 
-  <!-- ===== SEO: complete catalog index (FR) ===== -->
+  <!-- ===== SEO: complete catalog index =====
+       Static link to /catalog/all/ — a flat alphabetical list of every
+       product page. Gives Googlebot a discoverable path to all 1,000+
+       product URLs that the dynamic JS-rendered catalog doesn't expose
+       in the initial HTML. Visible to users too (people occasionally
+       want to browse the whole catalog A-Z). -->
   <section style="padding:32px 24px;background:#f7f5ee;border-top:1px solid #e8e6df">
     <div style="max-width:1100px;margin:0 auto;text-align:center">
-      <p style="font-size:.92rem;color:#666;margin:0 0 8px">Vous cherchez quelque chose en particulier ?</p>
-      <a href="/fr/catalog/all/" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 22px;border-radius:50px;font-weight:600;font-size:.92rem" data-i18n="cat.browseall">Parcourir les 1 000+ produits par ordre alphabétique →</a>
+      <p style="font-size:.92rem;color:#666;margin:0 0 8px">Looking for something specific?</p>
+      <a href="/fr/catalog/all/" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 22px;border-radius:50px;font-weight:600;font-size:.92rem"  data-i18n="cat.browseall">Parcourir les 1 000+ produits par ordre alphabétique →</a>
     </div>
   </section>
 
   <div id="footer-placeholder"></div>
 
-  <script src="/components.js" defer></script>
+  <script src="components.js" defer></script>
   <script>
   // =========================================================================
   // Catalog state
@@ -734,6 +816,51 @@
 
   function goToQuote() { window.location.href = '/quote'; }
 
+  // 2026-05-24 — Cart-bar touch fallback + tap-feedback animation.
+  //
+  // Touch fallback: the entire pill (`#cartBar`) is an <a href="/fr/quote">,
+  // but iOS Safari can still drop the native click when the anchor sits
+  // inside a position:fixed container that just transitioned
+  // (display:none → display:flex via the `.open` class). The touchend
+  // handler is the safety net — explicitly preventDefault any iOS
+  // touch heuristic and force-navigate. Idempotent with native click.
+  //
+  // Tap feedback: on pointerdown we add `.is-tapped` so the CSS
+  // keyframe (yellow ring + count-badge pop + arrow glide) plays.
+  // We start it on pointerdown rather than click so the animation
+  // begins THE INSTANT the user touches — by the time the browser
+  // navigates, the user has already seen the response. The class is
+  // auto-removed after 500ms so re-taps re-trigger cleanly.
+  document.addEventListener('DOMContentLoaded', function () {
+    var bar = document.getElementById('cartBar');
+    if (!bar) return;
+
+    function flashTap() {
+      bar.classList.remove('is-tapped');
+      // Force a reflow so re-adding the class restarts the animation
+      // even if a previous one is still playing.
+      void bar.offsetWidth;
+      bar.classList.add('is-tapped');
+      clearTimeout(flashTap._tid);
+      flashTap._tid = setTimeout(function () {
+        bar.classList.remove('is-tapped');
+      }, 500);
+    }
+
+    // Pointerdown fires immediately on touch OR mouse-down — earliest
+    // possible visual ack. addEventListener so it composes with the
+    // native :active pseudo-class without conflict.
+    bar.addEventListener('pointerdown', flashTap);
+
+    // Touch fallback nav for iOS edge case (see comment above).
+    bar.addEventListener('touchend', function (ev) {
+      if (ev.cancelable) ev.preventDefault();
+      if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+      try { window.location.assign(bar.getAttribute('href') || '/quote'); }
+      catch (e) { window.location.href = '/quote'; }
+    }, { passive: false });
+  });
+
   // =====================================================================
   // Product detail modal — opened by the "View details ↗" link on each
   // card. Shows the full color grid (sized swatches + names), per-color
@@ -753,72 +880,33 @@
     const lis = tmp.querySelectorAll('li');
     return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
   }
-  // See EN catalog for full rationale — bullet → ad-hoc split → paragraph
-  // fallback so suppliers with plain-text descriptions still display.
-  function _adhocSpecLines(text) {
-    if (!text) return [];
-    var cleaned = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!cleaned) return [];
-    if (/\n/.test(text)) {
-      return text.split('\n').map(function(s){ return s.replace(/<[^>]+>/g,' ').trim(); }).filter(Boolean);
-    }
-    var parts = cleaned.split(/(?<=\.)\s+(?=[A-Z])/);
-    if (parts.length >= 2) return parts.map(function(s){ return s.trim(); }).filter(Boolean);
-    return [cleaned];
-  }
-  function renderDetailModalSpecs() {
-    const p = _detailProduct; if (!p) return;
-    let specs = parseSpecBullets(p.description);
-    let kind  = 'bullets';
-    if (specs.length === 0) {
-      specs = _adhocSpecLines(p.description);
-      kind  = specs.length === 1 ? 'paragraph' : 'bullets';
-    }
-    const specsWrap = document.getElementById('detailModalSpecsWrap');
-    const specsList = document.getElementById('detailModalSpecs');
-    const specsToggle = document.getElementById('detailModalSpecsToggle');
-    if (!specsWrap || !specsList || !specsToggle) return;
-    if (specs.length === 0) { specsWrap.style.display = 'none'; return; }
-    specsWrap.style.display = 'block';
-    if (kind === 'paragraph') {
-      specsList.innerHTML = '<li style="padding-left:0;color:#444;line-height:1.55" data-flat="1">' + specs[0].replace(/</g, '&lt;') + '</li>';
-      specsToggle.style.display = 'none';
-      return;
-    }
-    const PREVIEW = 4;
-    specsList.innerHTML = specs.map((s, i) =>
-      `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
-    ).join('');
-    if (specs.length > PREVIEW) {
-      specsToggle.style.display = 'inline-block';
-      var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
-      specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
-      specsToggle.dataset.expanded = '0';
-    } else {
-      specsToggle.style.display = 'none';
-    }
-  }
   function openProductDetail(p, initialColorIdx) {
     _detailProduct = p;
     _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
       ? initialColorIdx : 0;
     _detailGalleryIdx = 0;  // always start gallery on front view when opening a new product
 
-    // Refetch the full product payload so back/side mockups + complete
-    // color data populate. See EN catalog.html for the long rationale.
+    // The product object we have right now is the SLIM Algolia hit — it
+    // lacks mockup_back_url, mockup_side_url, the full size arrays per
+    // color, etc. Refetch the full row by product_id so the gallery thumb
+    // strip (front / back / side) and the detail color grid have real
+    // data. We render twice: once with the slim data for instant first
+    // paint, then a second paintDetailHero() once the fat payload lands.
     if (p && p.product_id) {
       fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
             encodeURIComponent(p.product_id) + '&limit=1', { cache: 'force-cache' })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) {
           var full = (d && d.products && d.products[0]) || null;
-          if (!full || _detailProduct !== p) return;
+          if (!full || _detailProduct !== p) return;     // modal closed / moved on
+          // Preserve the user's currently-selected color across the swap.
           var selectedName = ((p.colors || [])[_detailColorIdx] || {}).color_name;
           _detailProduct = full;
           if (selectedName) {
             var ni = (full.colors || []).findIndex(function(c){ return c.color_name === selectedName; });
             if (ni >= 0) _detailColorIdx = ni;
           }
+          // Re-render whatever the modal exposes from the fatter payload.
           paintDetailHero();
           if (typeof renderDetailModalSwatches === 'function') renderDetailModalSwatches();
           if (typeof renderDetailModalSpecs    === 'function') renderDetailModalSpecs();
@@ -840,6 +928,10 @@
     document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
     document.getElementById('detailModalCount').textContent = (p.colors || []).length;
 
+    // Tech specs panel — called twice: once with slim Algolia data
+    // (description is plain text, no <li> tags so this hides the panel),
+    // and again after the /api/catalog?product_id=… refetch lands with
+    // the raw HTML description from the supplier.
     renderDetailModalSpecs();
 
     // Seed the qty stepper from the catalog page's current slider value.
@@ -847,33 +939,10 @@
     qtyInput.value = state.qty || 25;
     syncDetailAddBtn();
 
-    // Full color grid with names underneath.
-    const host = document.getElementById('detailModalSwatches');
-    host.innerHTML = (p.colors || []).map((c, i) => {
-      // Same fallback as the card swatches — multi-tone colors have no hex
-      // but always have a swatch image; show that image as the dot bg.
-      // Route through imgUrl() so S&S URLs go through /api/image-proxy.
-      // No hex? Try swatch image → mockup front → grey.
-      const hex     = c.hex_code;
-      const swatch  = c.swatch_image_url || c.mockup_front_url;
-      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
-      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
-      const cleanName = (c.color_name || '').replace(/_\d+$/, '');
-      const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
-      return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${i === 0 ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
-        <span class="detail-modal__swatch-dot" style="background:${bg}"></span>
-        <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
-      </button>`;
-    }).join('');
-    host.querySelectorAll('.detail-modal__swatch').forEach(s => {
-      s.addEventListener('click', () => {
-        _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
-        _detailGalleryIdx = 0; // reset to front view when color changes — new color may not have the previous view
-        host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
-        s.setAttribute('aria-selected', 'true');
-        paintDetailHero();
-      });
-    });
+    // Full color grid with names underneath. Wrapped in a function so we
+    // can re-render after the fat product_id fetch lands with the full
+    // color array + back/side mockups.
+    renderDetailModalSwatches();
     paintDetailHero();
     document.getElementById('detailOverlay').classList.add('open');
     document.getElementById('detailModal').classList.add('open');
@@ -899,6 +968,109 @@
     if (c && c.mockup_side_url)  out.push({ key: 'side',  label: 'Side',  url: imgUrl(c.mockup_side_url) });
     if (out.length === 0 && fallback) out.push({ key: 'hero', label: 'Front', url: imgUrl(fallback) });
     return out;
+  }
+
+  // Render the tech-specs panel from _detailProduct.description. Two
+  // shapes from suppliers:
+  //   1. Structured: <ul><li>5.3 oz/yd²</li><li>Classic fit</li>…</ul>
+  //      → parseSpecBullets() lifts each <li> as a bullet.
+  //   2. Plain text: "5.3 oz./yd² (US), 8.0 oz/L (CA), 100% cotton…"
+  //      → split on sentence-like boundaries to make ad-hoc bullets, OR
+  //      fall back to a single paragraph if nothing splits cleanly. Goal
+  //      is that EVERY product with description text shows something —
+  //      no more invisible specs panel.
+  function _adhocSpecLines(text) {
+    if (!text) return [];
+    var cleaned = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!cleaned) return [];
+    // Try newlines first — some suppliers wedge \n between facts.
+    if (/\n/.test(text)) {
+      return text.split('\n').map(function(s){ return s.replace(/<[^>]+>/g,' ').trim(); }).filter(Boolean);
+    }
+    // Heuristic: split on common bullet separators. We won't blindly
+    // split on every period (would break "5.3 oz"). Look for capital
+    // letter starts after a period+space.
+    var parts = cleaned.split(/(?<=\.)\s+(?=[A-Z])/);
+    if (parts.length >= 2) return parts.map(function(s){ return s.trim(); }).filter(Boolean);
+    // Last resort: one big paragraph.
+    return [cleaned];
+  }
+
+  function renderDetailModalSpecs() {
+    const p = _detailProduct; if (!p) return;
+    let specs = parseSpecBullets(p.description);
+    let kind  = 'bullets';
+    if (specs.length === 0) {
+      specs = _adhocSpecLines(p.description);
+      kind  = specs.length === 1 ? 'paragraph' : 'bullets';
+    }
+    const specsWrap = document.getElementById('detailModalSpecsWrap');
+    const specsList = document.getElementById('detailModalSpecs');
+    const specsToggle = document.getElementById('detailModalSpecsToggle');
+    if (!specsWrap || !specsList || !specsToggle) return;
+    if (specs.length === 0) {
+      specsWrap.style.display = 'none';
+      return;
+    }
+    specsWrap.style.display = 'block';
+    if (kind === 'paragraph') {
+      // No bullet structure exists — render as a single muted paragraph.
+      const esc = specs[0].replace(/</g, '&lt;');
+      specsList.innerHTML = '<li style="padding-left:0;color:#444;line-height:1.55" data-flat="1">' + esc + '</li>';
+      specsList.querySelectorAll('li[data-flat="1"]').forEach(li => {
+        // Hide the round bullet for the paragraph case.
+        li.style.setProperty('list-style', 'none');
+      });
+      specsToggle.style.display = 'none';
+      return;
+    }
+    const PREVIEW = 4;
+    specsList.innerHTML = specs.map((s, i) =>
+      `<li${i >= PREVIEW ? ' data-extra="1" style="display:none"' : ''}>${s.replace(/</g, '&lt;')}</li>`
+    ).join('');
+    if (specs.length > PREVIEW) {
+      specsToggle.style.display = 'inline-block';
+      var _ts = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      specsToggle.textContent = (_ts('cat.detail.showall') || 'Show all') + ' ' + specs.length + ' ' + (_ts('cat.detail.specs-suffix') || 'specs ▾');
+      specsToggle.dataset.expanded = '0';
+    } else {
+      specsToggle.style.display = 'none';
+    }
+  }
+
+  // Render (or re-render) the color grid inside the detail modal. Called
+  // by openProductDetail with the slim Algolia data, then called again
+  // when the full /api/catalog?product_id=… payload arrives so the
+  // entire colorway (with names, swatch images, full size arrays) lands.
+  function renderDetailModalSwatches() {
+    const p = _detailProduct; if (!p) return;
+    const host = document.getElementById('detailModalSwatches');
+    if (!host) return;
+    host.innerHTML = (p.colors || []).map((c, i) => {
+      // No hex? Try the swatch thumbnail first, then the front mockup
+      // (Blanks.ca colors often have only the latter), then grey as a
+      // last resort. Route via imgUrl() so S&S URLs go through proxy.
+      const hex     = c.hex_code;
+      const swatch  = c.swatch_image_url || c.mockup_front_url;
+      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
+      const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
+      const cleanName = (c.color_name || '').replace(/_\d+$/, '');
+      const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
+      const isSelected = i === _detailColorIdx;
+      return `<button type="button" class="detail-modal__swatch ${oosCls}" data-idx="${i}" aria-selected="${isSelected ? 'true' : 'false'}" title="${cleanName}${hasStock ? '' : ' (out of stock)'}">
+        <span class="detail-modal__swatch-dot" style="background:${bg}"></span>
+        <span class="detail-modal__swatch-name">${cleanName || '—'}</span>
+      </button>`;
+    }).join('');
+    host.querySelectorAll('.detail-modal__swatch').forEach(s => {
+      s.addEventListener('click', () => {
+        _detailColorIdx = parseInt(s.dataset.idx, 10) || 0;
+        _detailGalleryIdx = 0;
+        host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
+        s.setAttribute('aria-selected', 'true');
+        paintDetailHero();
+      });
+    });
   }
 
   function paintDetailHero() {
@@ -1134,14 +1306,20 @@
       brand: [],
       canadian: false,
       csa: false,
-      // Hydrate from `?q=` so deep links from the nav search pre-filter.
+      // Hydrate from `?q=` so deep links from the nav's search dropdown
+      // (e.g. /catalog?q=hoodies) actually pre-filter the catalog instead
+      // of landing on the unfiltered list with the search param ignored.
       q: getQueryParam('q') || '',
-      inStockOnly: true,
+      inStockOnly: true,             // default ON — hide fully OOS items
+      // Derived facet filters (2026-05-19). Each is an array because the
+      // panel UI is multi-select within a category (e.g. show me red OR blue
+      // products). Empty arrays = no constraint.
       colorFamilies:   [],
       genders:         [],
       fabricFamilies:  [],
       weightClasses:   [],
       sizes:           [],
+      // Price range (CAD per piece, at qty=50). null = unbounded that side.
       priceMin:        null,
       priceMax:        null,
     },
@@ -1238,8 +1416,12 @@
   // every supplier image is routed through our /api/image-proxy endpoint
   // (server-side fetch with auth + 24h edge cache). Local /images/* URLs and
   // anything already on singhsprint.com is passed through untouched.
-  // S&S + Blanks.ca both 403 direct hotlinks now — proxy both.
-  const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca'];
+  // Both S&S and Blanks.ca started 403'ing direct hotlinks from external
+  // referrers, so every supplier image gets routed through our
+  // /api/image-proxy (server-side fetch with auth + 24h edge cache).
+  // Local /images/* paths and anything already on singhsprint.com get
+  // passed through untouched.
+  const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
   function imgUrl(raw) {
     if (!raw) return '/images/product-tshirt-white.jpg';
     if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
@@ -1262,7 +1444,14 @@
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
 
-    // Algolia path — see catalog.html (EN) for the long-form rationale.
+    // ----------------------------------------------------------------------
+    // ALGOLIA PATH — when /catalog-algolia.js has loaded with valid config,
+    // route through Algolia's hosted index. Each request pulls 30 hits
+    // server-side-filtered, so the browser never holds more than a couple
+    // hundred products in memory even on the deepest scroll. The scroll
+    // handler at the bottom of this file already calls fetchPage() on
+    // approach to the bottom, which acts as natural infinite-scroll.
+    // ----------------------------------------------------------------------
     if (window.SPCatalog) {
       try {
         const isFirstPage = state.page === 0;
@@ -1273,6 +1462,7 @@
           csa:            state.filters.csa,
           inStockOnly:    state.filters.inStockOnly,
           q:              state.filters.q,
+          // New derived facet filters.
           colorFamilies:  state.filters.colorFamilies,
           genders:        state.filters.genders,
           fabricFamilies: state.filters.fabricFamilies,
@@ -1282,7 +1472,7 @@
           priceMax:       state.filters.priceMax,
           page:           state.page,
           hitsPerPage:    30,
-          qty:            state.qty,
+          qty:            state.qty,    // bridge resolves prices_by_qty[qty]
         });
         const fresh = r.products || [];
         state.products = isFirstPage ? fresh : state.products.concat(fresh);
@@ -1302,7 +1492,14 @@
       return;
     }
 
-    // Two-phase fetch — voir EN catalog.html pour les détails.
+    // ----------------------------------------------------------------------
+    // LEGACY PATH — direct /api/catalog two-phase fetch. Kept as a fallback
+    // when /catalog-algolia.js fails to load or window.SP_ALGOLIA_CONFIG is
+    // intentionally cleared.
+    //   phase 1 — limit=120 (~520 KB) renders the first ~5 rows quickly
+    //   phase 2 — fires in the background after first paint completes,
+    //             pulls the full set (limit=20000, paginated server-side) and appends.
+    // ----------------------------------------------------------------------
     const params = new URLSearchParams();
     if (state.filters.type)        params.set('type', state.filters.type);
     if (state.filters.q)           params.set('q', state.filters.q);
@@ -1311,10 +1508,13 @@
     state.filters.brand.forEach(b => params.append('brand', b));
     const FIRST_PAGE = 120;
     params.set('limit', String(FIRST_PAGE));
+    // Drive the "From $X" cards by the customer-chosen qty (default 50).
     if (state.qty && state.qty !== 50) params.set('qty', String(state.qty));
 
     try {
-      // Voir EN catalog.html — réutilise la requête lancée depuis <head>.
+      // Prefer the early-fired fetch kicked off from <head>. Only valid
+      // on the very first paint (state.page===0). Saves ~150-300 ms vs
+      // starting the fetch after the main script parses.
       let data;
       if (state.page === 0 && window.__SP_EARLY_CATALOG__) {
         data = await window.__SP_EARLY_CATALOG__;
@@ -1327,9 +1527,15 @@
       }
       const fresh = data.products || [];
       state.products = fresh;
+      // If we got the full set in one shot (filtered view smaller than
+      // the page), mark done. Otherwise schedule the backfill.
       state.done = fresh.length < FIRST_PAGE;
       render();
 
+      // Phase 2: backfill the rest in the background. Only when there's
+      // likely more (we hit the page limit). Doesn't block first paint —
+      // schedule via requestIdleCallback when available, setTimeout
+      // otherwise.
       if (!state.done) {
         const bgToken = (state._bgFetchToken = (state._bgFetchToken || 0) + 1);
         const runBackfill = () => {
@@ -1338,6 +1544,7 @@
           fetch(`${CATALOG_API}?${p2.toString()}`)
             .then(r => r.ok ? r.json() : null)
             .then(d2 => {
+              // Discard if a newer fetch has started since (filter change).
               if (state._bgFetchToken !== bgToken) return;
               const all = (d2 && d2.products) || [];
               if (all.length > state.products.length) {
@@ -1346,7 +1553,7 @@
                 render();
               }
             })
-            .catch(() => {});
+            .catch(() => { /* best-effort */ });
         };
         if (typeof requestIdleCallback === 'function') {
           requestIdleCallback(runBackfill, { timeout: 2000 });
@@ -1489,6 +1696,16 @@
     const empty = document.getElementById('catEmpty');
     grid.innerHTML = '';
 
+    // Chip strip always re-renders so toggle state reflects current
+    // filters even when the result set is empty. Previously this lived
+    // below the early-return for empty.products, which left the
+    // Canadian-made / Hi-Vis-CSA / brand chips visually stuck on
+    // their previous state when a filter narrowed to zero hits.
+    renderChips();
+    document.getElementById('resultCount').textContent = (state._algoliaTotal != null
+      ? state._algoliaTotal
+      : state.products.length).toLocaleString();
+
     if (state.products.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
@@ -1509,8 +1726,8 @@
       grid.appendChild(byoCard());
     }
 
-    document.getElementById('resultCount').textContent = visible.length.toLocaleString();
-    renderChips();
+    // resultCount + chips were already painted at the top of render() so
+    // they reflect state on the empty-state path too — no duplicate call.
     if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
     maybeTranslateCatalog();
 
@@ -1599,11 +1816,18 @@
     card.className = 'card card--clickable';
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
+    // Tagged so the program-catalog filter (in /account/program-catalog-filter.js)
+    // can hide / show cards based on the signed-in user's program whitelist.
+    if (p.product_id) card.setAttribute('data-product-id', p.product_id);
     if (p.in_stock === false) card.classList.add('card--oos');
 
-    // Track the selected color INDEX per card (default: first in-stock).
-    // Prefer a colorway matching the active Color filter, then first in-stock.
-    const filterIdx       = pickColorByFilter(p, state.filters.colorFamilies);
+    // Track the selected color INDEX per card.
+    //   1) If a Color filter is active, prefer a colorway whose family matches
+    //      one of the selected filters — so picking "Red" makes every card
+    //      actually show its red colorway, not whatever happened to be first.
+    //   2) Otherwise, default to the first in-stock color.
+    //   3) Otherwise, index 0.
+    const filterIdx     = pickColorByFilter(p, state.filters.colorFamilies);
     const firstInStockIdx = (p.colors || []).findIndex(c => Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0);
     card._selectedColorIdx = filterIdx >= 0
       ? filterIdx
@@ -1621,13 +1845,20 @@
     // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
     // colorways like Gildan 18500 (75 colors) still get accurate signal —
     // before this we capped at 8 and a 75-color blank showed "8 + 67".
-    // 8 swatches on the card + "+N more". Detail modal shows the full
-    // colorway grid with names.
+    // Card view shows a tidy row of 8 swatches with a "+N more" indicator
+    // past that — turning a 75-color Gildan 5000 card into a wall of
+    // chips drowns out the product photo and price. The detail modal
+    // (click the card) shows EVERY color in a proper grid with names,
+    // which is the right UX for browsing colorways anyway.
     const SWATCH_LIMIT = 8;
     const renderSwatches = () => {
       return (p.colors || []).slice(0, SWATCH_LIMIT).map((c, i) => {
-        // Multi-tone colorways fall back to the swatch image / front
-        // mockup so chips never end up as a grey blank. See EN catalog.
+        // Multi-tone colorways ("BLACK/GRAPHITE", "Black/Red", most
+        // Blanks.ca complex shades, all hi-vis stripe patterns) have no
+        // parseable single hex — but they always have a swatch_image_url
+        // or mockup_front_url we can drop in as a background image.
+        // Falling back to that keeps the chip looking like the actual
+        // colorway instead of a generic grey #ccc placeholder.
         const hex     = c.hex_code;
         const swatch  = c.swatch_image_url || c.mockup_front_url;
         const useImg  = !hex && swatch;
@@ -1732,9 +1963,13 @@
     return (r*299 + g*587 + b*114) / 1000 > 200;
   }
 
-  // Client-side color-family bucketing — see catalog.html for the same
-  // helper. Used to pre-select a matching colorway when a Color filter
-  // is active so the card hero shows the customer's chosen color.
+  // ---------------------------------------------------------------------------
+  // Client-side color-family bucketing — mirrors the sync-time helper in
+  // scripts/sync-algolia.mjs. Used to find a colorway whose hex maps to the
+  // currently-active Color filter so we can pre-select the matching swatch
+  // (and use its mockup as the card hero) instead of just showing whatever
+  // color happened to come first in the colors[] array.
+  // ---------------------------------------------------------------------------
   function hexToColorFamily(hex) {
     if (typeof hex !== 'string') return null;
     const m = hex.trim().match(/^#?([0-9a-f]{6})$/i);
@@ -1785,10 +2020,13 @@
     if (/(grey|gray|charcoal|silver|graphite|heather|smoke|steel)/.test(n)) return 'grey';
     return null;
   }
+  // Given a product and a set of selected color-family filters, find the
+  // first in-stock colorway whose family matches. Returns -1 if none.
   function pickColorByFilter(p, filters) {
     if (!filters || !filters.length) return -1;
     const colors = p.colors || [];
     const want = new Set(filters);
+    // Prefer in-stock matches; fall back to any match if none have stock.
     let firstAnyMatch = -1;
     for (let i = 0; i < colors.length; i++) {
       const fam = colorFamilyOf(colors[i]);
@@ -1846,9 +2084,9 @@
     }
     function brandLabelScore(s) {
       let sc = 0;
-      if (/[®™©]/.test(s))            sc -= 3;
-      if (s === s.toUpperCase() && s.length > 3) sc -= 2;
-      if (/^[A-Z][a-z]/.test(s))      sc += 2;
+      if (/[®™©]/.test(s))            sc -= 3;   // trademark marks: ugly
+      if (s === s.toUpperCase() && s.length > 3) sc -= 2; // ALL CAPS: shouty
+      if (/^[A-Z][a-z]/.test(s))      sc += 2;   // Title Case: clean
       return sc;
     }
     const brandMap = new Map();
@@ -1864,12 +2102,16 @@
         if (brandLabelScore(p.brand) > brandLabelScore(cur.label)) cur.label = p.brand;
       }
     });
+
     const typeCounts = {};
     state.products.forEach(p => {
       if (!p.garment_type) return;
       typeCounts[p.garment_type] = (typeCounts[p.garment_type] || 0) + 1;
     });
 
+    // Sort types by count desc, then alphabetically — most populous shows
+    // first. Sort brands by count desc too (already does — but capped at
+    // 200 so the search-box filter below has room to shine).
     const orderedTypes = GARMENT_TYPES
       .filter(([gt]) => typeCounts[gt])
       .sort((a, b) => (typeCounts[b[0]] || 0) - (typeCounts[a[0]] || 0));
@@ -1898,10 +2140,10 @@
 
         <div class="filter-group" style="margin-bottom:24px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft)">Marque</div>
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft)">Brand</div>
             <span style="font-size:.74rem;color:var(--soft)">${orderedBrands.length} total</span>
           </div>
-          <input type="text" id="brandSearch" placeholder="Rechercher une marque…" oninput="filterBrandList(this.value)"
+          <input type="text" id="brandSearch" placeholder="Search brands…" oninput="filterBrandList(this.value)"
             style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;margin-bottom:10px;background:#fafaf7"/>
           <div id="brandList" style="display:flex;flex-direction:column;max-height:300px;overflow-y:auto;border-top:1px solid var(--line)">
             ${orderedBrands.map(([b, n]) => `
@@ -1916,18 +2158,18 @@
         </div>
 
         <div class="filter-group" style="margin-bottom:8px">
-          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Spécial</div>
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Special</div>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
-            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; render()" style="accent-color:var(--ink);width:15px;height:15px"/>
-            <span>En stock seulement</span>
+            <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; resetAndFetch()" style="accent-color:var(--ink);width:15px;height:15px"/>
+            <span>In stock only</span>
           </label>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
             <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked" style="accent-color:var(--ink);width:15px;height:15px"/>
-            <span>🇨🇦 Vierges fabriqués au Canada</span>
+            <span>🇨🇦 Canadian-made blanks</span>
           </label>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0">
             <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked" style="accent-color:var(--ink);width:15px;height:15px"/>
-            <span>Certifié CSA / Haute visibilité</span>
+            <span>CSA / Hi-vis certified</span>
           </label>
         </div>
 
@@ -1942,8 +2184,15 @@
   }
 
   // =========================================================================
-  // Filter panel — derived facet sections (mirrors EN /catalog.html).
+  // Filter panel — derived facet sections.
+  //
+  // Each renderer pulls counts from state._algoliaFacets when it's available
+  // (set on every Algolia response in fetchPage), so chip rows show "(214)"
+  // next to each option for the currently-active filter set. When facets
+  // haven't been fetched yet, the counts are dropped quietly rather than
+  // showing 0s.
   // =========================================================================
+  // Visual swatch hex per color family — same buckets the sync emits.
   const COLOR_FAMILY_SWATCHES = {
     red:    '#d63a3a', orange: '#e8862a', yellow: '#efc52b',
     green:  '#2f9e44', teal:   '#0c9d96', blue:   '#1f6fd6',
@@ -1951,15 +2200,10 @@
     black:  '#111111', white:  '#fafafa', grey:   '#9a9a9a',
   };
   const COLOR_FAMILY_ORDER = ['red','orange','yellow','green','teal','blue','purple','pink','brown','black','white','grey'];
-  const COLOR_FAMILY_LABELS_FR = {
-    red:'Rouge', orange:'Orange', yellow:'Jaune', green:'Vert', teal:'Sarcelle',
-    blue:'Bleu', purple:'Violet', pink:'Rose', brown:'Brun',
-    black:'Noir', white:'Blanc', grey:'Gris',
-  };
 
   function facetCounts(field) {
     const f = (state._algoliaFacets || {})[field] || {};
-    return f;
+    return f;  // { value: count }
   }
 
   function chipRow(field, options, isActiveFn, toggleFn) {
@@ -1989,37 +2233,39 @@
   }
 
   function renderColorFamilyGroup() {
-    const opts = COLOR_FAMILY_ORDER.map(c => [c, COLOR_FAMILY_LABELS_FR[c] || c, COLOR_FAMILY_SWATCHES[c]]);
-    return filterSection('Couleur',
+    const opts = COLOR_FAMILY_ORDER.map(c => [c, c, COLOR_FAMILY_SWATCHES[c]]);
+    return filterSection('Color',
       chipRow('color_families', opts, v => state.filters.colorFamilies.includes(v), 'toggleColor')
     );
   }
   function renderGenderGroup() {
-    const opts = [['mens','Hommes'], ['womens','Femmes'], ['unisex','Unisexe'], ['youth','Jeunesse']];
-    return filterSection('Genre',
+    const opts = [['mens','Men'], ['womens','Women'], ['unisex','Unisex'], ['youth','Youth']];
+    return filterSection('Gender',
       chipRow('gender', opts, v => state.filters.genders.includes(v), 'toggleGender')
     );
   }
   function renderFabricGroup() {
     const opts = [
-      ['cotton','100% coton'], ['cotton-blend','Mélange coton'],
-      ['tri-blend','Tri-mélange'], ['polyester','Polyester'],
-      ['performance','Performance / évacuation'], ['fleece','Molleton'], ['canvas','Toile'],
+      ['cotton','100% cotton'], ['cotton-blend','Cotton blend'],
+      ['tri-blend','Tri-blend'], ['polyester','Polyester'],
+      ['performance','Performance / wicking'], ['fleece','Fleece'], ['canvas','Canvas'],
     ];
-    return filterSection('Tissu',
+    return filterSection('Fabric',
       chipRow('fabric_family', opts, v => state.filters.fabricFamilies.includes(v), 'toggleFabric')
     );
   }
   function renderWeightGroup() {
     const opts = [
-      ['light','Léger (≤4.5 oz)'], ['mid','Poids moyen'],
-      ['heavy','Lourd'], ['outerwear','Vêtement extérieur'],
+      ['light','Light (≤4.5 oz)'], ['mid','Mid-weight'],
+      ['heavy','Heavyweight'], ['outerwear','Outerwear'],
     ];
-    return filterSection('Poids',
+    return filterSection('Weight',
       chipRow('weight_class', opts, v => state.filters.weightClasses.includes(v), 'toggleWeight')
     );
   }
   function renderSizesGroup() {
+    // Pull every size that appears in any loaded product, sorted by the
+    // canonical SIZE_ORDER (mirrors the one used in the sync helper).
     const SIZE_ORDER = ['NB','3M','6M','12M','18M','24M','2T','3T','4T','5T',
       'YXS','YS','YM','YL','YXL','XS','S','M','L','XL','2XL','3XL','4XL','5XL','6XL','7XL',
       '28','29','30','31','32','33','34','35','36','38','40','42','44','46','48','50','52','OS'];
@@ -2033,7 +2279,7 @@
       if (bi === -1) return -1;
       return ai - bi;
     });
-    return filterSection('Tailles disponibles',
+    return filterSection('Sizes available',
       chipRow('sizes_available', all, v => state.filters.sizes.includes(v), 'toggleSize')
     );
   }
@@ -2041,20 +2287,22 @@
     const min = state.filters.priceMin ?? '';
     const max = state.filters.priceMax ?? '';
     return `<div class="filter-group" style="margin-bottom:24px">
-      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Prix par unité (CAD)</div>
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Price per unit (CAD)</div>
       <div style="display:flex;gap:10px;align-items:center">
         <input type="number" min="0" step="1" placeholder="Min" value="${min}"
           oninput="state.filters.priceMin = this.value ? Number(this.value) : null"
           style="width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;background:#fafaf7"/>
-        <span style="color:var(--soft);font-size:.86rem">à</span>
+        <span style="color:var(--soft);font-size:.86rem">to</span>
         <input type="number" min="0" step="1" placeholder="Max" value="${max}"
           oninput="state.filters.priceMax = this.value ? Number(this.value) : null"
           style="width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;background:#fafaf7"/>
-        <span style="color:var(--soft);font-size:.78rem">à qté 50</span>
+        <span style="color:var(--soft);font-size:.78rem">at qty 50</span>
       </div>
     </div>`;
   }
 
+  // Multi-select toggle helpers — flip the chosen value in/out of the
+  // matching state.filters array. resetAndFetch reloads with the new set.
   function multiToggle(arrName, val) {
     const cur = state.filters[arrName] || [];
     state.filters[arrName] = cur.includes(val) ? cur.filter(x => x !== val) : cur.concat([val]);
@@ -2065,6 +2313,8 @@
   window.toggleWeight  = function (v) { multiToggle('weightClasses',  v); renderFilterPanel(); };
   window.toggleSize    = function (v) { multiToggle('sizes',          v); renderFilterPanel(); };
 
+  // Brand search inside the filter panel — purely client-side; toggles
+  // visibility of the label rows by substring match on lowercased brand name.
   window.filterBrandList = function (q) {
     const needle = (q || '').toLowerCase().trim();
     document.querySelectorAll('[data-brand-row]').forEach(el => {
@@ -2088,10 +2338,15 @@
     row.innerHTML = '';
     // Type chips sit in a STABLE order. Active state transforms the chip in
     // place rather than jumping it to the front — way less disorienting.
+    // No "Hi-Vis" type chip — the "Hi-Vis / CSA" qualifier chip below
+    // (which filters on the broader is_hivis_or_csa Algolia facet)
+    // already covers everything the strict garment_type=hivis bucket
+    // would catch, plus the products whose hi-vis flag wasn't set at
+    // import time but whose name contains hi-vis/csa/ansi.
     const types = [
       ['tshirt','T-Shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
       ['polo','Polos'], ['longsleeve','Long Sleeves'], ['hat','Hats / Caps'],
-      ['tote','Tote Bags'], ['hivis','Hi-Vis']
+      ['tote','Tote Bags']
     ];
     types.forEach(([t, label]) => {
       const isActive = state.filters.type === t;
@@ -2101,6 +2356,7 @@
       }));
     });
 
+    // Qualifier toggles — Canadian / Hi-Vis
     row.appendChild(makeChip('🇨🇦 Canadian-made', state.filters.canadian ? 'active' : 'passive', () => {
       state.filters.canadian = !state.filters.canadian; resetAndFetch();
     }));
@@ -2108,6 +2364,7 @@
       state.filters.csa = !state.filters.csa; resetAndFetch();
     }));
 
+    // Brand chips when a brand filter is selected from the panel.
     state.filters.brand.forEach(b => {
       row.appendChild(makeChip(b, 'active', () => {
         state.filters.brand = state.filters.brand.filter(x => x !== b);
@@ -2115,16 +2372,27 @@
       }));
     });
 
+    // Stock toggle — last position, distinct label depending on state so
+    // it reads as a state rather than a filter.
+    //
+    // Both branches must call resetAndFetch(), not render(). render() only
+    // re-renders the products already in state.products; the in-stock
+    // filter is applied SERVER-SIDE in the Algolia query (catalog-algolia.js
+    // line 92), so flipping the toggle has to re-fetch to surface the
+    // previously-filtered-out items. Earlier this called render() and
+    // toggling off the chip silently did nothing — bug surfaced when a
+    // user searched "scrub" (1 in-stock, 22 OOS) and couldn't expand.
     if (state.filters.inStockOnly) {
       row.appendChild(makeChip('In stock only', 'active', () => {
-        state.filters.inStockOnly = false; render();
+        state.filters.inStockOnly = false; resetAndFetch();
       }));
     } else {
       row.appendChild(makeChip('Show out of stock', 'passive', () => {
-        state.filters.inStockOnly = true; render();
+        state.filters.inStockOnly = true; resetAndFetch();
       }));
     }
 
+    // "Clear filters" link on the right — only when something's active.
     const anyActive =
       state.filters.type ||
       state.filters.canadian ||
@@ -2196,7 +2464,9 @@
     resetAndFetch();
   }, 250));
 
-  // Pre-fill the input from `?q=...` so the customer sees what's searched.
+  // Pre-fill the search input from `?q=...` so the customer can see exactly
+  // what's being searched (and edit it inline) when they arrive via the
+  // nav's "See all results" CTA / Enter key.
   (function hydrateSearchFromUrl() {
     if (!state.filters.q) return;
     var input = document.getElementById('searchInput');
@@ -2282,7 +2552,8 @@
   });
   </script>
 
-  <script src="/lang.js" defer></script>
-  <script src="/ai-translate.js" defer></script>
+  <script src="lang.js" defer></script>
+  <script src="/account/program-catalog-filter.js" defer></script>
+  <script src="ai-translate.js" defer></script>
 </body>
 </html>

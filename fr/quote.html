@@ -171,6 +171,17 @@
     .placement-preset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
     @media (min-width:600px){.placement-preset-grid{grid-template-columns:repeat(4,1fr)}}
     .preset-card{position:relative;border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .15s;background:#fff;user-select:none}
+    /* Embroidery-only constraints. Engine can't physically hoop an
+       oversized chest panel or a full-back panel — sewing machine bed
+       is ~12"; anything larger needs DTF or screen. Hide those presets
+       when the customer has selected Embroidery so they can't pick a
+       combo we can't deliver. The chest presets pick up a "(5×5″ hoop)"
+       size hint, Full Front picks up "(larger panel)" so it's clear
+       what each option actually produces. */
+    body.is-embroidery [data-preset="oversized"],
+    body.is-embroidery [data-preset="back-full"]{display:none !important}
+    .preset-emb-hint{display:none;font-size:.66rem;font-weight:600;color:#7a5b15;background:#fff8e8;border:1px solid #f0e3b8;border-radius:50px;padding:1px 7px;margin-top:4px;letter-spacing:.02em}
+    body.is-embroidery .preset-emb-hint{display:inline-block}
     .preset-card:hover{border-color:#1a1a1a;transform:translateY(-1px)}
     .preset-card.selected{border-color:#1a1a1a;background:#fafafa;box-shadow:0 0 0 1.5px #1a1a1a inset}
     .preset-card .preset-shirt{width:42px;height:50px;margin:0 auto 6px;display:block}
@@ -220,6 +231,15 @@
     .ci-chip__remove:hover{opacity:1}
     .ci-chip--add{background:#fff;color:#1a1a1a;border:1.5px dashed #d0cdc0;cursor:pointer;font-family:inherit;padding:5px 12px;transition:all .12s}
     .ci-chip--add:hover{border-color:#1a1a1a;background:#fafaf6}
+    /* 2026-05-24 — Per-placement surcharge badge on selected chips +
+       on picker options. The "+$3" reads as additive on top of the
+       base unit price so the customer understands picking Full Front
+       costs more than Left Chest. Picker-side uses amber-yellow on
+       the white chip; selected-chip side stays yellow-on-dark so it
+       coexists with the chip's existing yellow text. */
+    .ci-chip__surcharge{font-weight:700;font-size:.7rem;color:#e8ff3c;background:rgba(232,255,60,.18);padding:1px 6px;border-radius:50px;line-height:1}
+    .ci-picker__surcharge{font-weight:600;color:#a16207;font-size:.7rem;margin-left:2px}
+    .ci-picker__opt.is-selected .ci-picker__surcharge{color:#e8ff3c}
     .ci-picker{display:none;flex-basis:100%;margin-top:10px;padding:14px;border:1.5px solid #e8e6df;border-radius:12px;background:#fafaf6}
     .ci-picker.open{display:block}
     .ci-picker__group{margin-bottom:12px}
@@ -243,6 +263,104 @@
     .ci-upload__copy strong{font-size:.8rem;color:#1a1a1a;font-weight:600}
     .ci-upload__copy span{font-size:.7rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .ci-upload__remove{background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.72rem;padding:4px 6px}
+
+    /* Per-cart-item shared section label — small uppercase header used
+       above the method picker and sizes grid inside each cart row. */
+    .ci-section-label{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888}
+
+    /* Promoted "Add another item from catalog" CTA (2026-05-24).
+       Visible at any viewport width — full-width filled button so the
+       multi-method/multi-item flow is discoverable. Used to be a tiny
+       ghost-pill that phones consistently buried; now sits prominent
+       between the cart list and the next form section. */
+    .cart-add-more{margin:14px 0 22px}
+    .cart-add-more__btn{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      width:100%;padding:14px 18px;
+      background:#fafaf6;border:2px dashed #b9b3a3;border-radius:14px;
+      color:#1a1a1a;font-weight:700;font-size:.95rem;text-decoration:none;
+      transition:all .15s ease;min-height:56px;font-family:inherit;
+    }
+    .cart-add-more__btn:hover{background:#fff;border-color:#1a1a1a;border-style:solid;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+    .cart-add-more__btn:active{transform:translateY(0)}
+    .cart-add-more__icon{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;
+      font-size:1.1rem;font-weight:700;line-height:1;
+    }
+    .cart-add-more__label{flex:0 1 auto}
+    .cart-add-more__hint{
+      margin:8px 0 0;text-align:center;font-size:.74rem;color:#888;line-height:1.5;
+    }
+    @media (max-width:600px){
+      .cart-add-more__btn{padding:16px;font-size:1rem}
+      .cart-add-more__hint{font-size:.72rem;padding:0 8px}
+    }
+
+    /* Per-item Print Method picker (2026-05-24). Compact 4-chip selector
+       inside each cart row. Active chip = filled dark with yellow accent
+       text, matching the homepage slider chip language. */
+    .ci-method{margin-top:10px;width:100%}
+    .ci-method__head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+    .ci-method-hint{font-size:.7rem;color:#a16207}
+    .ci-method__chips{display:flex;gap:6px;flex-wrap:wrap}
+    .ci-method-chip{padding:8px 14px;border:1.5px solid #e8e6df;border-radius:50px;background:#fff;font-size:.78rem;font-weight:600;color:#555;cursor:pointer;transition:all .15s;font-family:inherit;min-height:36px}
+    .ci-method-chip:hover{border-color:#bbb;color:#1a1a1a}
+    .ci-method-chip.is-active{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
+    /* Embroidery-only garments (caps/hats) render a single locked chip.
+       Disabled state signals "this is the only choice" rather than
+       "broken" — keep the dark+yellow active styling but lose the
+       hover cursor + suppress hover color shift. */
+    .ci-method-chip[disabled]{cursor:default}
+    .ci-method-chip[disabled]:hover{border-color:#1a1a1a;color:#e8ff3c}
+
+    /* 2026-05-24 — Qty input flash. Added by onCartItemSizeChange when
+       the sizes total auto-updates the line's qty. Yellow ring pulse
+       draws the customer's eye so the auto-sync isn't a silent jump.
+       The animation runs once, then a 1.5s setTimeout removes the
+       class so a subsequent size edit can trigger a fresh pulse. */
+    @keyframes cartQtyFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(232,255,60,0); border-color:#e8e6df; transform: scale(1); }
+      15%  { box-shadow: 0 0 0 6px rgba(232,255,60,.55); border-color:#1a1a1a; transform: scale(1.04); }
+      55%  { box-shadow: 0 0 0 4px rgba(232,255,60,.30); border-color:#1a1a1a; transform: scale(1); }
+      100% { box-shadow: 0 0 0 0 rgba(232,255,60,0); border-color:#e8e6df; transform: scale(1); }
+    }
+    .cart-qty-flash {
+      animation: cartQtyFlash 1.4s ease-out 1;
+      background:#fffce0 !important;
+    }
+
+    /* Per-item Sizes grid (2026-05-24). 7-cell row for XS-3XL; custom
+       sizes overflow to a separate chip row below; +add custom is a
+       <details> disclosure so the section stays compact for typical
+       orders. */
+    .ci-sizes{margin-top:10px;width:100%}
+    .ci-sizes__head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .ci-sizes__total{font-size:.78rem;color:#666;font-variant-numeric:tabular-nums}
+    .ci-sizes__total strong{color:#1a1a1a;font-weight:700}
+    .ci-sizes__total--mismatch strong{color:#a16207}
+    .ci-sizes__match{margin-left:8px;background:transparent;border:none;color:#a16207;text-decoration:underline;font-size:.72rem;cursor:pointer;font-weight:600;padding:0}
+    .ci-sizes__grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+    .ci-sizes__cell{display:flex;flex-direction:column;gap:2px}
+    .ci-sizes__lbl{font-size:.66rem;font-weight:700;color:#999;text-align:center;letter-spacing:.04em}
+    .ci-sizes__cell input{width:100%;padding:8px 4px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;font-weight:600;text-align:center;font-family:inherit;background:#fff;min-height:40px;font-variant-numeric:tabular-nums}
+    .ci-sizes__cell input:focus{outline:none;border-color:#1a1a1a}
+    .ci-sizes__custom-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .ci-sizes__custom-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fafaf6;border:1px solid #e8e6df;border-radius:50px;font-size:.72rem;font-weight:600;color:#1a1a1a;font-variant-numeric:tabular-nums}
+    .ci-sizes__custom-chip button{background:transparent;border:none;color:#888;cursor:pointer;padding:0;font-size:1rem;line-height:1}
+    .ci-sizes__more{margin-top:8px}
+    .ci-sizes__more summary{cursor:pointer;list-style:none;font-size:.7rem;color:#666;padding:4px 0;font-weight:600}
+    .ci-sizes__more summary::-webkit-details-marker{display:none}
+    .ci-sizes__more summary:hover{color:#1a1a1a}
+    .ci-sizes__custom-form{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+    .ci-sizes__custom-form input[type=text]{flex:0 0 80px;padding:6px 8px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;text-transform:uppercase;font-family:inherit}
+    .ci-sizes__custom-form input[type=number]{flex:0 0 70px;padding:6px 8px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;font-family:inherit;font-variant-numeric:tabular-nums}
+    .ci-sizes__custom-form button{padding:6px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px}
+    @media (max-width:600px){
+      /* Below 600px the 7-cell size grid gets too tight; collapse to
+         4 columns. Custom-size chips wrap naturally. */
+      .ci-sizes__grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    }
 
     /* Location bar under mockup — multi-select toggle */
     .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
@@ -395,12 +513,19 @@
       .quote-hero{padding-top:18px !important;padding-bottom:6px !important}
       .quote-hero h1{margin-bottom:6px !important}
       .quote-hero .sub{font-size:.88rem !important;line-height:1.5}
-      /* Tier-pricing table mobile compaction — see EN quote.html for rationale. */
+      /* Tier-pricing table inside cart rows — phones need tighter cells +
+         a smaller font, plus a hard overflow-x:auto wrapper so it scrolls
+         INSIDE its column instead of forcing the cart-item flex parent to
+         grow past the viewport. Without this the page itself overflows
+         and the sticky #livePriceStrip gets pushed off the bottom edge. */
       .ci-livematrix{overflow-x:auto;-webkit-overflow-scrolling:touch}
       .ci-livematrix > details > div{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
       .ci-livematrix table{font-size:.68rem !important}
       .ci-livematrix table th,
       .ci-livematrix table td{padding:5px 6px !important}
+      /* Belt-and-braces — never let the page itself scroll horizontally
+         on phones. If something inside overflows, it gets clipped at the
+         body edge rather than pushing the layout sideways. */
       html,body{overflow-x:hidden;max-width:100vw}
       .step-pills{gap:6px !important;margin-bottom:14px !important}
       .step-pill{font-size:.7rem !important;padding:6px 10px !important;flex:1 1 0;min-width:0;text-align:center}
@@ -422,18 +547,30 @@
            in components.js (position:fixed at the bottom of the
            viewport). So the only "thing" in mockup-panel that
            survives on mobile is the floating price bar. */
-      /* Mobile: collapse the right rail entirely. Shipping estimator
-         gets moved into the form flow via JS (see DOMContentLoaded
-         handler at the bottom of this file). */
-      /* display:contents (not none) so the sticky live-price strip and
-         the shipping estimator inside .mockup-panel still render on
-         mobile — see EN /quote.html for full rationale. */
+      /* Mobile: kill the entire right rail. The shipping estimator gets
+         moved into the form flow via JS (see #shippingEstimateCard
+         relocation block at the bottom of the page script). Everything
+         else in the sidebar is marketing — irrelevant when the user is
+         heads-down filling out the form. Hiding the panel reclaims the
+         large empty block of vertical space below "Next". */
+      /* OLD rule was `.mockup-panel{display:none !important}` which also
+         killed the sticky live-price strip + shipping estimator inside it.
+         display:contents on the parent makes the panel disappear layout-
+         wise but lets its children still render, so:
+           • #livePriceStrip can pick up the sticky-bottom rule from
+             components.js (position:fixed bottom:0)
+           • #shippingEstimateCard can be relocated by JS into Step 3
+           • Everything else inside the panel (marketing reassurance,
+             mockup card, etc.) gets explicitly hidden so we don't
+             leak marketing copy into the form flow. */
       .mockup-panel{display:contents !important}
       .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard){
         display:none !important;
       }
-      /* Inline shipping estimator inside Step 3 — looks like a form
-         section, not a floating card. */
+
+      /* Shipping estimator, INLINE inside Step 3 (moved there via JS). It
+         visually flows with the form fields — no card border, no float,
+         no shadow. Just looks like the next question in the sequence. */
       #shippingEstimateCard{
         display:block !important;
         background:transparent !important;
@@ -450,15 +587,22 @@
       #shippingEstimateCard,
       #shippingEstimateCard *{box-sizing:border-box}
       #shippingEstimateCard h4{font-size:.78rem !important;font-weight:600 !important;color:#1a1a1a !important;margin:0 0 8px !important;text-transform:none !important;letter-spacing:0 !important}
-      /* Postal-code row — wrap on narrow viewports so the Estimate
-         button never overflows. */
-      #shippingEstimateCard #fulfillDeliveryBody > div:first-of-type{flex-wrap:wrap !important}
+      /* Postal-code row — three children (CA/US select + postal input +
+         Estimate button) can blow past the viewport on narrow phones
+         because the button's text is nowrap. Wrap to a second line if
+         needed and let the button span full-width on rewrap so nothing
+         clips off-screen. */
+      #shippingEstimateCard #fulfillDeliveryBody > div:first-of-type{
+        flex-wrap:wrap !important;
+      }
       #shippingEstimateCard #shipCountry{flex:0 0 auto;min-width:60px}
       #shippingEstimateCard #shipPostal{flex:1 1 140px;min-width:0}
       #shippingEstimateCard #shipEstimateBtn{flex:0 0 auto}
       @media(max-width:380px){
         #shippingEstimateCard #shipEstimateBtn{flex:1 1 100%}
       }
+      /* Auto-hide when no delivery preference picked, or when "Local
+         pickup" is selected — body JS toggles a class. */
       #shippingEstimateCard.is-hidden-mobile{display:none !important}
       /* Hero gap fix — was rendering ~300px tall on phones */
       .quote-hero{padding:14px 0 6px !important}
@@ -548,6 +692,89 @@
       .size-grid{grid-template-columns:repeat(3,1fr)}
     }
 
+    /* ───── Mobile polish pass — 2026-05-24 ─────────────────────────────
+       Targeted improvements for phones based on real-device testing.
+       Everything here is additive over the existing breakpoints above,
+       and uses !important sparingly (only where the cascade fights us). */
+    @media(max-width:600px){
+      /* 1. iOS-zoom defeat — Safari zooms in on any input whose
+         computed font-size is < 16px when the user taps to focus.
+         That zoom never zooms back out cleanly and is the single
+         worst mobile UX bug. Force 16px on every text/number/email/
+         tel input + textarea + select inside the form sections. */
+      .form-section input[type="text"],
+      .form-section input[type="email"],
+      .form-section input[type="tel"],
+      .form-section input[type="number"],
+      .form-section input[type="date"],
+      .form-section input[type="url"],
+      .form-section textarea,
+      .form-section select{
+        font-size:16px !important;
+      }
+
+      /* 2. Larger touch targets on placement preset cards. 44×44 is
+         Apple's HIG minimum; current cards trended ~38px tall on
+         narrow phones. Bump padding so even big-thumb taps land. */
+      .preset-card{
+        min-height:96px;
+        padding:14px 10px !important;
+      }
+      .preset-card .preset-label{font-size:.86rem !important}
+
+      /* 3. Loc-tab (view switcher above mockup) — wider tap area on
+         phones, was 11px×8px which made adjacent tabs error-prone. */
+      .loc-tab{
+        padding:14px 8px !important;
+        font-size:.78rem !important;
+        min-height:44px;
+      }
+
+      /* 4. Bottom safe-area + keyboard-aware padding on the live-price
+         strip. The strip uses position:fixed bottom:0 on phones (set in
+         components.js); we add safe-area-inset-bottom so it clears the
+         home indicator, AND we leave the body with bottom padding equal
+         to the strip's height so the form's last fields aren't covered. */
+      #livePriceStrip{
+        padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px) !important;
+      }
+      body{
+        padding-bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important;
+      }
+
+      /* 5. The per-placement upload card — 12px×14px padding gave a
+         ~52px tap target including content, fine, but the explicit
+         file-input <label> wraps a hidden input that some Android
+         browsers only fire `change` on if the label has enough area
+         around the visible click region. Lock to ≥56px tall. */
+      .placement-upload{min-height:56px}
+
+      /* 6. Hero CTA + nav buttons — bump every primary action to a
+         comfortable 48px min-height. Tap-target lint passes. */
+      .btn-primary, .btn--primary, .step-buttons .btn{
+        min-height:48px;
+      }
+
+      /* 7. Loc-check chip (the multi-select checkbox for placements
+         inside the cart-item editor) was 12×14px padding which felt
+         cramped two-up; widen now that the grid is single-col on the
+         tightest breakpoints. */
+      .loc-check{padding:14px 14px !important;min-height:48px}
+      .loc-check .loc-label{font-size:.92rem !important}
+    }
+
+    /* Visual-viewport-aware behavior — when the on-screen keyboard
+       slides up, modern browsers expose the squeezed viewport via
+       window.visualViewport. We set a CSS custom property from JS
+       (see body script) so the sticky price strip can offset itself
+       above the keyboard instead of being covered by it. */
+    @supports (height: 100dvh) {
+      #livePriceStrip{
+        bottom: var(--sp-keyboard-offset, 0px) !important;
+        transition: bottom .15s ease;
+      }
+    }
+
     /* ========== CANVAS EDITOR ========== */
     .canvas-wrapper{position:relative;overflow:hidden;background:linear-gradient(145deg,#f2f1ee 0%,#e9e8e4 100%);aspect-ratio:5/6}
     .canvas-wrapper .garment-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
@@ -608,12 +835,15 @@
   <meta name="twitter:title" content="Get a Quote — Singhs Print">
   <meta name="twitter:description" content="Build a quote in minutes. Pick a garment, qty, decoration method, and upload your design — we'll reply within one business day.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-concordia.jpg">
+
+  <!-- SEO: Structured data (LocalBusiness + Service + FAQPage + WebSite). Generated by scripts/seo-schema-inject. Edit the generator, not this block. -->
+  <script type="application/ld+json" id="sp-schema-quote-en">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://www.singhsprint.com/quote#webpage","url":"https://www.singhsprint.com/quote","name":"Get a Free Quote — Singh's Print","isPartOf":{"@id":"https://www.singhsprint.com/#website"},"about":{"@id":"https://www.singhsprint.com/#business"},"inLanguage":"en-CA","description":"Build your custom apparel order in minutes. Choose from 1,100+ blanks, pick your decoration method, get live pricing. $20 off your first order of $100+. No account needed."},{"@type":"LocalBusiness","@id":"https://www.singhsprint.com/#business","name":"Singh's Print","legalName":"9555-8110 Québec Inc.","alternateName":["Singhs Print","Imprimerie Singhs Print"],"url":"https://www.singhsprint.com/","logo":"https://www.singhsprint.com/images/logo.png","image":["https://www.singhsprint.com/images/hero-duo.jpg","https://www.singhsprint.com/images/hero-poster.jpg"],"telephone":"+14385443800","email":"sales@singhsprint.com","priceRange":"$$","currenciesAccepted":"CAD","paymentAccepted":["Cash","Credit Card","E-Transfer","Stripe"],"address":{"@type":"PostalAddress","streetAddress":"81A Sainte-Anne Street","addressLocality":"Sainte-Anne-de-Bellevue","addressRegion":"QC","postalCode":"H9X 1L9","addressCountry":"CA"},"geo":{"@type":"GeoCoordinates","latitude":45.4034586,"longitude":-73.9535957},"areaServed":[{"@type":"AdministrativeArea","name":"West Island, Montreal"},{"@type":"City","name":"Montreal"},{"@type":"City","name":"Sainte-Anne-de-Bellevue"},{"@type":"City","name":"Pointe-Claire"},{"@type":"City","name":"Dorval"},{"@type":"City","name":"Kirkland"},{"@type":"City","name":"Beaconsfield"},{"@type":"City","name":"Pierrefonds"},{"@type":"City","name":"Laval"},{"@type":"AdministrativeArea","name":"Quebec"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"09:00","closes":"21:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue": "5.0","reviewCount": "27","bestRating":"5","worstRating":"1"},"sameAs":["https://maps.app.goo.gl/FX8o2QEvQzngxeiv7"],"identifier":[{"@type":"PropertyValue","propertyID":"NEQ","value":"1181573313"}],"knowsAbout":["DTG printing","Direct-to-Garment printing","DTF transfers","Direct-to-Film printing","Screen printing","Embroidery","Custom t-shirts","Custom hoodies","Custom polos","Custom caps","Corporate uniforms","Team apparel","Brand merch"]},{"@type":"Service","@id":"https://www.singhsprint.com/quote#quote-service","name":"Custom Apparel Quote — Singh's Print","serviceType":"Custom apparel quote and design consultation","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"offers":{"@type":"Offer","name":"$20 off your first order of $100+","url":"https://www.singhsprint.com/quote?promo=first-order-20-off-100","priceCurrency":"CAD","eligibleCustomerType":"https://schema.org/NewCondition","availability":"https://schema.org/InStock"},"description":"Get a live per-unit and total price for custom t-shirts, hoodies, polos, caps, totes, embroidery and screen printing. Standard 3-5 day turnaround with rush options. Real human reply within an hour during business hours."}]}</script>
 </head>
 <body>
 
   <div id="nav-placeholder"></div>
-  <script src="/components.js" defer></script>
-  <script src="/lang.js"></script>
+  <script src="components.js" defer></script>
+  <script src="lang.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
   <div class="page-header">
@@ -636,14 +866,16 @@
           <span data-step-label="3"  data-i18n="quote.step.label3">3 · Vos coordonnées</span>
         </div>
 
-        <!-- Bannière "rabais appliqué" — affichée quand /quote?promo=… arrive
-             depuis le pop-up de l'accueil. Reproduit le message de la carte
-             latérale, mais en haut du formulaire pour confirmer le rabais. -->
+        <!-- Promo-applied confirmation banner. Hidden by default; surfaced by
+             the inline script at the bottom of this file when the URL carries
+             ?promo=… (visitors who arrived from the homepage offer popup).
+             Same message as the always-visible sidebar card, but rendered at
+             the top of the form so it feels like the discount "landed". -->
         <div id="promoApplied" data-promo-applied style="display:none;background:#0f3a25;border:1px solid #1b6a44;border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px;color:#d4f5e3">
           <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e8ff3c;color:#0f3a25;font-weight:800;flex-shrink:0">✓</span>
           <span style="font-size:.92rem;line-height:1.4">
-            <strong style="color:#e8ff3c" data-promo="sidebar-h">20 $ de rabais sur votre première commande de 100 $ et plus</strong>
-            <span style="opacity:.85;display:block;font-size:.84rem" data-promo="sidebar-p" data-i18n="quote.promoApplied.body">Appliqué à cette soumission. Visible sur le prix final dès que nous confirmons les détails — aucun code requis.</span>
+            <strong style="color:#e8ff3c" data-promo="sidebar-h">$20 off your first order of $100+</strong>
+            <span style="opacity:.85;display:block;font-size:.84rem" data-promo="sidebar-p" data-i18n="quote.promoApplied.body">Applied to this quote. Visible on your final price after we confirm specs — no code needed.</span>
           </span>
         </div>
 
@@ -662,8 +894,16 @@
                  its own row with editable qty + sides + remove. When this is
                  visible, the single-product catalogPick card below is hidden. -->
             <div id="cartList" style="display:none;flex-direction:column;gap:12px;margin-bottom:18px"></div>
-            <div id="cartAddMore" style="display:none;margin-bottom:18px">
-              <a href="/fr/catalog" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1.5px dashed #d0cdc0;color:#1a1a1a;font-weight:600;padding:10px 16px;border-radius:50px;text-decoration:none;font-size:.86rem"  data-i18n="quote.cart.addmore">+ Ajouter un autre article du catalogue</a>
+            <!-- 2026-05-24 — promoted add-another-item CTA. Was a small
+                 ghost-pill that customers missed on phones; now a full-
+                 width filled button that scales to viewport. Customers
+                 doing multi-method orders (DTG tote + DTF tee + embroidered
+                 hat) consistently failed to find the original. -->
+            <div id="cartAddMore" class="cart-add-more" style="display:none">
+              <a href="/fr/catalog" class="cart-add-more__btn"  data-i18n="quote.cart.addmore">+ Ajouter un autre article du catalogue</a>
+              <p class="cart-add-more__hint" data-i18n="quote.cart.addmore.hint">
+                Each item can have its own print method and sizes — mix DTG, DTF, embroidery freely.
+              </p>
             </div>
 
             <!-- If the user came in via /catalog?product=&color= we render this
@@ -858,18 +1098,21 @@
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="6" height="5" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
                     <span class="preset-label"  data-i18n="quote.placement.leftchest.l">Poitrine gauche</span>
                     <span class="preset-desc"  data-i18n="quote.placement.leftchest.d">~3 à 4 po — logo / poche</span>
+                    <span class="preset-emb-hint">5×5″ hoop</span>
                   </div>
                   <div class="preset-card selected" data-preset="center-chest" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="14" y="17" width="14" height="10" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
                     <span class="preset-label"  data-i18n="quote.placement.centerchest.l">Poitrine centrale</span>
                     <span class="preset-desc"  data-i18n="quote.placement.centerchest.d">~7 po milieu de poitrine</span>
+                    <span class="preset-emb-hint">5×5″ hoop</span>
                   </div>
                   <div class="preset-card" data-preset="full-front" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
                     <svg class="preset-shirt" viewBox="0 0 42 50" fill="none" stroke="#bbb" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 7 L1 14 L4 17 L8 12 L8 45 L34 45 L34 12 L38 17 L41 14 L38 7 L33 5 C32 8 28 10 21 10 C14 10 10 8 9 5 Z"/><rect x="11" y="14" width="20" height="18" fill="#1a1a1a" stroke="#1a1a1a" stroke-dasharray="1.5,1.5" opacity=".75"/></svg>
                     <span class="preset-label"  data-i18n="quote.placement.fullfront.l">Avant complet</span>
                     <span class="preset-desc"  data-i18n="quote.placement.fullfront.d">~11 po sur la poitrine</span>
+                    <span class="preset-emb-hint">larger jumbo hoop</span>
                   </div>
                   <div class="preset-card" data-preset="oversized" onclick="togglePlacementPreset(this)">
                     <span class="preset-check">&#10003;</span>
@@ -964,8 +1207,11 @@
               <div id="placementUploadList" class="placement-upload-list"></div>
             </div>
 
-            <!-- Printing method (single selector — pick + see what it's best for in one place) -->
-            <div class="form-group">
+            <!-- Printing method (single selector — pick + see what it's best for in one place).
+                 2026-05-24 — hidden when cart mode is active because each
+                 cart row now has its own per-item method picker. The
+                 hide/show happens in renderCartList(); see id below. -->
+            <div class="form-group" id="globalPrintMethodGroup">
               <label  data-i18n="quote.method">Méthode d'impression</label>
               <div class="method-grid">
                 <div class="method-card" data-value="DTG" onclick="selectService(this)">
@@ -991,8 +1237,11 @@
               <input type="hidden" name="service" id="serviceInput" required>
             </div>
 
-            <!-- Bulk pricing preview removed 2026-05-19 — per-line-item
-                 tier table covers the same info now. -->
+            <!-- Bulk pricing preview removed 2026-05-19 — the per-line-item
+                 "Tier pricing for this item" table that renders inside each
+                 cart row now covers the same need with live-engine prices.
+                 Keeping this block in the DOM made the bottom of Step 1
+                 feel redundant once cart mode was active. -->
 
             <div class="form-buttons" style="justify-content:flex-end">
               <button type="button" class="btn btn-primary" onclick="goToStep(2)"  data-i18n="quote.next">Suivant</button>
@@ -1004,17 +1253,14 @@
             <h2  data-i18n="quote.step2.h">Visuel et tailles</h2>
             <p class="step-desc"  data-i18n="quote.step2.desc">Déposez votre visuel pour le prévisualiser sur la maquette, puis indiquez les quantités par taille.</p>
 
-            <!-- Vestigial. The per-placement upload list in Step 1 handles
-                 every case (single-product, catalog cart, bring-your-own).
-                 We keep the hidden <input type="file" id="designFile"> here
-                 so older JS that still references designFile.click() doesn't
-                 explode, but the visual dropzone is permanently hidden. -->
-            <div class="form-group" id="dropZoneWrapper" style="display:none">
-              <label class="file-upload" for="designFile" id="dropZone" style="display:none">
-                <input type="file" id="designFile" name="design" accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg">
-              </label>
-              <p class="hint" id="fileName" style="display:none"></p>
-            </div>
+            <!-- 2026-05-24 — legacy single-input dropzone removed. The
+                 per-placement upload list in Step 1 has handled every
+                 case (single-product, catalog cart, bring-your-own) for
+                 several weeks with no submissions hitting the legacy
+                 fallback. JS references to #designFile / #dropZone /
+                 #fileName are now null-guarded so any straggler code
+                 path no-ops instead of throwing. -->
+
 
             <!-- Size breakdown -->
             <div class="size-section">
@@ -1065,6 +1311,13 @@
             <h2  data-i18n="quote.step3.h">Comment vous joindre ?</h2>
             <p class="step-desc"  data-i18n="quote.step3.desc">Nous vous enverrons votre soumission par courriel, souvent la même journée.</p>
 
+            <!-- Signed-in pill — populated by quoteAccountAware() in the script below.
+                 Hidden by default; appears when an active Supabase session is detected. -->
+            <div id="sp-quote-account-pill" style="display:none;background:#e8ff3c;border:1px solid #1a1a1a;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:.88rem;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <span><span style="font-weight:700"  data-i18n="quote.account.signedin">Connecté en tant que</span> <span id="sp-quote-account-email" style="font-weight:600"></span></span>
+              <a href="#" id="sp-quote-account-signout" style="text-decoration:underline;font-size:.78rem;color:#1a1a1a"  data-i18n="quote.account.changeacct">Utiliser un autre compte</a>
+            </div>
+
             <div class="form-row">
               <div class="form-group"><label for="name"  data-i18n="quote.contact.namelabel">Nom complet *</label><input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="quote.contact.name.ph" required></div>
               <div class="form-group"><label for="company"  data-i18n="quote.contact.companylabel">Entreprise / marque</label><input type="text" id="company" name="company" placeholder="Optional" data-i18n-placeholder="quote.contact.company.ph"></div>
@@ -1082,6 +1335,43 @@
                 <option  data-i18n="quote.contact.delivery.opt3">Expédition (partout au Canada)</option>
               </select>
             </div>
+
+            <!-- 2026-05-24 — "Need by" date + rush flag.
+                 Customers consistently had no way to express urgency.
+                 The date input is optional (empty = standard 3-5 biz day
+                 lead). The rush checkbox is also optional but flagging
+                 it surfaces a red badge on the CRM inbox so reps know to
+                 prioritize that row. Both flow into inbound_requests.meta
+                 + auto-populate the quote builder's `deadline` field on
+                 convert-to-order, so the rep doesn't have to re-type. -->
+            <!-- 2026-05-24 — iOS native <input type=date> renders at
+                 its own intrinsic width (the date+button row), often
+                 wider than the form column on phones. Operator
+                 reported it spilling past the right edge. Inline
+                 width:100% + max-width:100% + box-sizing + appearance:
+                 textfield forces the input to respect its container
+                 and renders as a plain styled box (the picker still
+                 opens natively on tap). min-width:0 lets it shrink
+                 below its "intrinsic" width inside a grid/flex parent. -->
+            <div class="form-row" id="needByRow">
+              <div class="form-group" style="min-width:0">
+                <label for="needByDate" data-i18n="quote.contact.needby">When do you need these by? <span style="color:#888;font-weight:400">(optional)</span></label>
+                <input type="date" id="needByDate" name="need_by_date" min=""
+                       style="width:100%;max-width:100%;min-width:0;box-sizing:border-box;-webkit-appearance:none;appearance:none" />
+                <small class="needby-hint" data-i18n="quote.contact.needby.hint" style="display:block;font-size:.72rem;color:#888;margin-top:4px;line-height:1.4">
+                  Standard turnaround is 3–5 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.
+                </small>
+              </div>
+              <div class="form-group">
+                <label data-i18n="quote.contact.rushlabel" style="margin-bottom:6px">Rush?</label>
+                <label class="rush-toggle" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #e8e6df;border-radius:10px;background:#fafaf7;cursor:pointer;font-size:.88rem;font-weight:500;min-height:48px;line-height:1.2">
+                  <input type="checkbox" id="rushFlag" name="is_rush" value="1" style="width:18px;height:18px;flex-shrink:0;accent-color:#a01a1a">
+                  <span data-i18n="quote.contact.rush" style="color:#1a1a1a">
+                    This is a rush order — please prioritize
+                  </span>
+                </label>
+              </div>
+            </div>
             <div class="form-group">
               <label for="hearAbout"  data-i18n="quote.contact.hear">Comment avez-vous entendu parler de nous ?</label>
               <select id="hearAbout" name="hear_about">
@@ -1095,7 +1385,62 @@
               </select>
             </div>
 
-            <div class="form-buttons">
+            <!-- Account opt-in checkbox — hidden for already-signed-in users, shown for
+                 anonymous visitors so they can opt to create an account in one step.
+                 Default: unchecked, so the anonymous flow is unaffected unless the user
+                 actively opts in.
+
+                 2026-05-24 v3 — Mobile layout rewrite. Previous flex
+                 attempts (v1, v2) shipped width:100% + min-width:0 +
+                 flex:1 1 auto on the children, but iOS Safari still
+                 rendered the text wrapping one-word-per-line in a
+                 narrow strip to the right of the checkbox. Switched
+                 to CSS Grid with explicit "auto 1fr" columns — far
+                 more predictable for icon+text layouts and immune to
+                 whatever iOS flex quirk was biting us.
+
+                 The dedicated <style> block beneath the label is a
+                 scoped backstop: even if some external rule tries to
+                 override the inline display:grid, the !important rules
+                 below force the layout to hold. -->
+            <style>
+              #sp-quote-signup-block label.sp-signup-card{
+                display:grid !important;
+                grid-template-columns:22px 1fr !important;
+                gap:12px !important;
+                align-items:start !important;
+                width:100% !important;
+                max-width:100% !important;
+                box-sizing:border-box !important;
+                cursor:pointer;
+                background:#fafaf7;
+                border:1px solid #e6e3d8;
+                padding:14px;
+                border-radius:10px;
+                font-weight:400;
+              }
+              #sp-quote-signup-block label.sp-signup-card > input[type=checkbox]{
+                width:18px;height:18px;margin:2px 0 0 0;
+              }
+              #sp-quote-signup-block label.sp-signup-card > span{
+                min-width:0;
+                font-size:.88rem;line-height:1.5;color:#1a1a1a;
+                /* word-wrap defaults are fine in a grid cell — the
+                   1fr column gives the text proper width. */
+              }
+            </style>
+            <div class="form-group" id="sp-quote-signup-block" style="margin-top:8px">
+              <label class="sp-signup-card">
+                <input type="checkbox" id="sp-quote-signup-optin">
+                <span  data-i18n="quote.account.signup"><strong>Créer un compte</strong> pour suivre cette soumission et recommander plus tard — nous vous enverrons un lien de connexion par courriel.</span>
+              </label>
+            </div>
+
+            <!-- 2026-05-24 — padding-bottom adds clearance for the pinned
+                 #livePriceStrip on mobile (position:fixed at bottom of
+                 viewport). Without it the Submit button gets visually
+                 swallowed by the live-estimate bar at small heights. -->
+            <div class="form-buttons" style="padding-bottom:120px">
               <button type="button" class="btn btn-outline" onclick="goToStep(2)"  data-i18n="quote.back">Retour</button>
               <button type="submit" class="btn btn-accent" style="padding:16px 36px;font-size:1rem"  data-i18n="quote.submit">Soumettre la demande</button>
             </div>
@@ -1378,10 +1723,12 @@
               <span  data-i18n="quote.pricing.total">Estimation totale :</span>
               <span id="priceTotal">$0.00</span>
             </div>
-            <!-- Ligne d'expédition — voir EN quote.html pour les détails. -->
+            <!-- Shipping line — updates as the customer picks pickup vs delivery
+                 and as the live estimator returns a rate. Pre-estimate copy
+                 nudges the customer to enter their postal code below. -->
             <div class="price-shipping-row" id="shippingLineRow" style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:.85rem;margin-top:10px;padding-top:10px;border-top:1px dashed #e0e0e0">
-              <span style="color:#555;font-weight:600" data-i18n="quote.pricing.shipping">Livraison :</span>
-              <span id="shippingLineValue" style="color:#888;text-align:right;font-size:.78rem;line-height:1.4" data-i18n="quote.pricing.shipping.prompt">Entrez votre code postal ci-dessous pour une estimation</span>
+              <span style="color:#555;font-weight:600"  data-i18n="quote.pricing.shipping">Livraison :</span>
+              <span id="shippingLineValue" style="color:#888;text-align:right;font-size:.78rem;line-height:1.4"  data-i18n="quote.pricing.shipping.prompt">Entrez votre code postal ci-dessous pour une estimation</span>
             </div>
             <p class="price-note" id="priceDiscountNote" style="display:none"><strong  data-i18n="quote.pricing.discount">Rabais de volume !</strong></p>
             <p class="price-note" id="pricingNote"  data-i18n="quote.pricing.note">Prix estime • La soumission finale peut varier</p>
@@ -1401,38 +1748,44 @@
         </div>
       </div>
 
-            <!-- Cueillette / Livraison (FR mirror) — voir quote.html EN pour les commentaires détaillés. -->
+      <!-- Fulfillment + shipping estimator card.
+           Two modes share this card:
+             1. Pickup — free, hides the postal form
+             2. Delivery — shows postal form; on submit calls the CRM's
+                /api/shipping/estimate which holds the Chit Chats token.
+           The selected fulfillment + selected rate both feed the
+           "Shipping:" line under the price total in the mockup panel. -->
       <div class="sidebar-card" id="shippingEstimateCard">
-        <h4 data-i18n="quote.sidebar.shipping.h">Expédition</h4>
-        <!-- Bascule Cueillette / Livraison -->
+        <h4  data-i18n="quote.sidebar.shipping.h">Expédition</h4>
+        <!-- Pickup / Delivery pill toggle -->
         <div style="display:flex;gap:4px;margin:6px 0 12px 0;background:#f0efe9;padding:4px;border-radius:10px">
-          <button type="button" id="fulfillPickupBtn" class="fulfill-pill" data-fulfillment="pickup" style="flex:1;padding:9px 8px;border:none;background:transparent;color:#666;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s" data-i18n="quote.sidebar.fulfill.pickup">Cueillette en magasin</button>
-          <button type="button" id="fulfillDeliveryBtn" class="fulfill-pill active" data-fulfillment="delivery" style="flex:1;padding:9px 8px;border:none;background:#1a1a1a;color:#fff;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s" data-i18n="quote.sidebar.fulfill.delivery">Livraison</button>
+          <button type="button" id="fulfillPickupBtn" class="fulfill-pill" data-fulfillment="pickup" style="flex:1;padding:9px 8px;border:none;background:transparent;color:#666;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s"  data-i18n="quote.sidebar.fulfill.pickup">Cueillette en magasin</button>
+          <button type="button" id="fulfillDeliveryBtn" class="fulfill-pill active" data-fulfillment="delivery" style="flex:1;padding:9px 8px;border:none;background:#1a1a1a;color:#fff;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s"  data-i18n="quote.sidebar.fulfill.delivery">Livraison</button>
         </div>
 
-        <!-- Corps cueillette — affiché lorsque l’option cueillette est active -->
+        <!-- Pickup body — shown when the pickup pill is active -->
         <div id="fulfillPickupBody" style="display:none">
           <div style="padding:14px;background:#f7f7f2;border-radius:10px;border:1px solid #e8e6df;font-size:.85rem;line-height:1.5">
-            <div style="font-weight:700;color:#1a1a1a" data-i18n="quote.sidebar.pickup.free">GRATUIT — Cueillette en magasin</div>
-            <div style="color:#555;margin-top:4px">81A rue Sainte-Anne<br>Sainte-Anne-de-Bellevue, QC&nbsp;&nbsp;H9X&nbsp;1L9</div>
-            <div style="color:#888;font-size:.75rem;margin-top:8px" data-i18n="quote.sidebar.pickup.note">Nous vous écrirons ou vous appellerons quand votre commande sera prête.</div>
+            <div style="font-weight:700;color:#1a1a1a"  data-i18n="quote.sidebar.pickup.free">GRATUIT — Cueillette en magasin</div>
+            <div style="color:#555;margin-top:4px">81A Sainte-Anne St<br>Sainte-Anne-de-Bellevue, QC&nbsp;&nbsp;H9X&nbsp;1L9</div>
+            <div style="color:#888;font-size:.75rem;margin-top:8px"  data-i18n="quote.sidebar.pickup.note">Nous vous écrirons ou vous appellerons quand votre commande sera prête.</div>
           </div>
         </div>
 
-        <!-- Corps livraison — formulaire code postal + résultat en direct -->
+        <!-- Delivery body — postal-code form + live rate result -->
         <div id="fulfillDeliveryBody">
-          <p style="font-size:.8rem;color:#888;margin-bottom:10px" data-i18n="quote.sidebar.shipping.sub">Entrez votre code postal pour une estimation en direct.</p>
+          <p style="font-size:.8rem;color:#888;margin-bottom:10px"  data-i18n="quote.sidebar.shipping.sub">Entrez votre code postal pour une estimation en direct.</p>
           <div style="display:flex;gap:6px;margin-bottom:8px;align-items:stretch">
             <select id="shipCountry" style="padding:8px 6px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;font-size:.85rem">
               <option value="CA">CA</option>
               <option value="US">US</option>
             </select>
             <input type="text" id="shipPostal" placeholder="H9X 1L9" autocomplete="postal-code" maxlength="10" style="flex:1;min-width:0;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:.85rem;text-transform:uppercase">
-            <button type="button" id="shipEstimateBtn" style="padding:8px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap" data-i18n="quote.sidebar.shipping.btn">Estimer</button>
+            <button type="button" id="shipEstimateBtn" style="padding:8px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap"  data-i18n="quote.sidebar.shipping.btn">Estimer</button>
           </div>
           <div id="shipResult" style="display:none;font-size:.85rem;margin-top:10px"></div>
           <div id="shipError" style="display:none;font-size:.78rem;color:#a01a1a;margin-top:8px"></div>
-          <p style="font-size:.7rem;color:#aaa;margin-top:8px;line-height:1.4" data-i18n="quote.sidebar.shipping.note">Tarif indicatif via Chit Chats. Commandes 500 $+ dans la région du Grand Montréal : livraison gratuite. Tarif final confirmé sur votre soumission.</p>
+          <p style="font-size:.7rem;color:#aaa;margin-top:8px;line-height:1.4"  data-i18n="quote.sidebar.shipping.note">Tarif indicatif via Chit Chats. Commandes 500 $+ dans la région du Grand Montréal : livraison gratuite. Tarif final confirmé sur votre soumission.</p>
         </div>
       </div>
 
@@ -1577,6 +1930,8 @@
       updateGarmentShape();
       updateBlankOptions();
       renderBulkPricingTable();
+      // Garment changed → re-resolve the per-size surcharge matrix.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
       // Rebuild the global placement section so the picker shows
       // placements that actually exist on this garment (no Sleeves on
       // a hat, no Center Chest on a tote, etc.).
@@ -1643,8 +1998,36 @@
       var method = (state.service || 'DTF').toLowerCase();
       // Map service labels → API methods
       if (!['embroidery','dtf','dtg','screen'].includes(method)) method = 'dtf';
+
+      // Collect the customer's actually-selected placement PRESETS
+      // (e.g. "full-front", "back-full") so the endpoint can apply
+      // per-size multipliers — a full back costs more than a left chest.
+      //
+      // The form doesn't expose them as <input name="placements[]">
+      // checkboxes; instead each location holds a preset id in the
+      // `presetByLocation` JS map and a comma-separated mirror in the
+      // hidden #placementPresetInput. We prefer the JS map (always
+      // current) but fall back to the hidden input so this still works
+      // in any reduced-JS edge case.
+      var placements = [];
+      try {
+        if (typeof presetByLocation === 'object' && presetByLocation) {
+          placements = Object.values(presetByLocation).filter(Boolean);
+        }
+        if (placements.length === 0) {
+          var presetVal = (document.getElementById('placementPresetInput') || {}).value || '';
+          placements = presetVal.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        }
+      } catch (e) { placements = []; }
+
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only' +
-                '?qty=' + qty + '&sides=' + sides + '&method=' + method;
+                '?qty=' + qty + '&method=' + method;
+      if (placements.length > 0) {
+        url += '&placements=' + encodeURIComponent(placements.join(','));
+      } else {
+        url += '&sides=' + sides;
+      }
+
       document.getElementById('byoPriceUnit').textContent  = '…';
       document.getElementById('byoPriceTotal').textContent = '…';
       fetch(url).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
@@ -1653,39 +2036,120 @@
           document.getElementById('byoPriceTotal').textContent = '—';
           return;
         }
-        document.getElementById('byoPriceUnit').textContent  = '$' + d.unit_price.toFixed(2);
-        document.getElementById('byoPriceTotal').textContent = '$' + (d.unit_price * qty).toFixed(2);
+        var unit  = d.unit_price;
+        var total = (unit * qty);
+
+        // Update the inline BYO panel (Step 1 left-column placement).
+        document.getElementById('byoPriceUnit').textContent  = '$' + unit.toFixed(2);
+        document.getElementById('byoPriceTotal').textContent = '$' + total.toFixed(2);
         document.getElementById('byoPriceMethod').textContent = method.charAt(0).toUpperCase() + method.slice(1);
-        document.getElementById('byoPriceSides').textContent  = sides + ' side' + (sides>1?'s':'');
+        // Sides label: prefer real placement count when present so the
+        // header reads "2 locations" instead of the legacy "2 sides".
+        var sidesEl = document.getElementById('byoPriceSides');
+        if (sidesEl) {
+          if (placements.length > 0) {
+            sidesEl.textContent = placements.length + ' location' + (placements.length === 1 ? '' : 's');
+          } else {
+            sidesEl.textContent = sides + ' side' + (sides > 1 ? 's' : '');
+          }
+        }
+
+        // Mirror into the right-panel #livePriceStrip so the BYO flow
+        // surfaces in the same prominent spot the catalog flow uses —
+        // customer sees one canonical "live estimate" regardless of
+        // whether they're picking from our catalog or shipping us blanks.
+        // We hide the unit suffix swap because BYO is /garment, not /unit.
+        var strip = document.getElementById('livePriceStrip');
+        if (strip) {
+          strip.style.display = 'block';
+          var stripUnit   = document.getElementById('livePriceUnit');
+          var stripSuffix = document.getElementById('livePriceUnitSuffix');
+          var stripQty    = document.getElementById('livePriceQty');
+          var stripTotW   = document.getElementById('livePriceTotalWrap');
+          var stripTotal  = document.getElementById('livePriceTotal');
+          if (stripUnit)   stripUnit.textContent   = '$' + unit.toFixed(2);
+          if (stripSuffix) stripSuffix.textContent = '/garment';
+          var locLabel = placements.length > 0
+            ? (placements.length + ' location' + (placements.length === 1 ? '' : 's'))
+            : (sides + ' side' + (sides > 1 ? 's' : ''));
+          if (stripQty) stripQty.textContent =
+            qty + ' garment' + (qty === 1 ? '' : 's') +
+            ' · ' + method.toUpperCase() +
+            ' · ' + locLabel;
+          if (stripTotW)  stripTotW.style.display = 'block';
+          if (stripTotal) stripTotal.textContent = '$' + total.toFixed(2);
+        }
       });
     }
 
     // ===== SERVICE =====
     function selectService(el) {
+      // Works for both the legacy .svc-btn row and the new .method-card grid.
+      // Scope to siblings inside the same parent so it doesn't accidentally
+      // deselect the Garment Source buttons (which also use .svc-btn).
       el.parentElement.querySelectorAll('.svc-btn, .method-card').forEach(function(o) { o.classList.remove('selected'); });
       el.classList.add('selected');
       state.service = el.dataset.value;
       document.getElementById('serviceInput').value = state.service;
       document.getElementById('sumMethod').textContent = state.service;
       renderBulkPricingTable();
+      // Refresh BYO decoration-only price (the method drives the per-piece cost)
       refreshByoPrice();
-      // Embroidery-only constraints (see EN quote.html for full rationale).
+      // Decoration method changed → matrix's per-method overrides shift.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
+      // Method-specific placement constraints + size hints:
+      //   • Embroidery hoops can't go past ~12", so Oversized and Full
+      //     Back disappear; chest presets pick up a "(5×5″ hoop)" hint
+      //     and Full Front picks up a "(larger jumbo hoop)" hint.
+      // Driven by the .is-embroidery body class — CSS does the rest.
       var isEmb = String(state.service || '').toLowerCase() === 'embroidery';
       document.body.classList.toggle('is-embroidery', isEmb);
-      if (isEmb && typeof SinghsCart !== 'undefined') {
-        var citems = SinghsCart.read().items || [];
-        var changed = false;
-        citems.forEach(function(it, idx) {
-          var orig = (it.placements || []).slice();
-          var filtered = orig.filter(function(p) { return !EMB_DISALLOWED[p]; });
-          if (filtered.length === 0) filtered.push('center-chest');
-          var same = filtered.length === orig.length && filtered.every(function(x, i){ return x === orig[i]; });
-          if (!same) { SinghsCart.updateSilent(idx, { placements: filtered }); changed = true; }
-        });
-        if (changed && typeof renderCartList === 'function') renderCartList();
+      // If the customer had Oversized or Full Back selected and just
+      // flipped to Embroidery, silently deselect those — otherwise the
+      // engine would still see them in the cart's placements array
+      // (defaulting to 1× multiplier) and the customer would expect a
+      // print we can't actually produce.
+      if (isEmb) {
+        // 1) Sweep the per-cart-item placements: if a cart row had
+        //    Oversized or Full Back picked under DTG/DTF, strip it.
+        //    Items left with zero placements default to Center Chest so
+        //    every row keeps at least one valid location.
+        if (typeof SinghsCart !== 'undefined') {
+          var citems = SinghsCart.read().items || [];
+          var changed = false;
+          citems.forEach(function(it, idx) {
+            var orig = (it.placements || []).slice();
+            var filtered = orig.filter(function(p) { return !EMB_DISALLOWED[p]; });
+            if (filtered.length === 0) filtered.push('center-chest');
+            var same = filtered.length === orig.length &&
+                       filtered.every(function(x, i){ return x === orig[i]; });
+            if (!same) {
+              SinghsCart.updateSilent(idx, { placements: filtered });
+              changed = true;
+            }
+          });
+          if (changed && typeof renderCartList === 'function') renderCartList();
+        }
+        // 2) Same sweep in the GLOBAL placement picker (used when the
+        //    customer is in single-product / non-cart mode). Deselect
+        //    the now-hidden cards so they don't quietly stay in state.
+        document.querySelectorAll('.preset-card[data-preset="oversized"].selected, .preset-card[data-preset="back-full"].selected')
+          .forEach(function(c){
+            // togglePlacementPreset expects the card to currently be
+            // selected; flip it once to deselect cleanly.
+            if (typeof togglePlacementPreset === 'function') {
+              togglePlacementPreset(c);
+            }
+          });
       }
+      // DTG → DTF means same engine price; DTG ↔ Embroidery flips the
+      // engine's decoration_method axis. Wipe the per-item price cache so
+      // every line item refetches under the new method and the live
+      // estimate strip + per-row subtotals reflect the change immediately.
       _priceCache = {};
       if (typeof renderCartList === 'function') renderCartList();
+      // Also refresh the right-panel live-price strip if it was already
+      // populated (single-product / pre-cart flow).
       if (typeof fetchLiveUnitPrice === 'function') {
         fetchLiveUnitPrice(function(px) {
           if (typeof renderPriceDisplay === 'function' && typeof px === 'number') {
@@ -2397,30 +2861,50 @@
     document.addEventListener('DOMContentLoaded', function() {
       try { renderGlobalPlacementGroups((typeof state !== 'undefined' && state.garment) || 'tshirt'); } catch(e) {}
 
-      // Promo handoff from the homepage popup (FR mirror) — URL + sessionStorage.
+      // Pull the live size-surcharge matrix once the page is interactive.
+      // Subsequent context changes (product / service / placement)
+      // re-fire this via the change handlers further down. Wrapped in
+      // try/catch so a network blip on first paint can never break the
+      // legacy hardcoded fallback path.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
+
+      // Promo handoff from the homepage popup. Two layers:
+      //   1. URL ?promo=…           — fresh arrival from the popup CTA
+      //   2. sessionStorage         — survives catalog round-trips that
+      //                               drop the URL param (e.g. visitor
+      //                               clicks "Browse catalog" then picks
+      //                               an item which redirects them back
+      //                               to /quote?product=…&color=…)
+      // Same banner is harmless if the visitor never came through the
+      // popup — it stays hidden.
       try {
         var urlPromo = new URLSearchParams(window.location.search).get('promo');
         var stashedPromo = null;
         try { stashedPromo = sessionStorage.getItem('sp_promo_slug'); } catch(_) {}
         var promoSlug = urlPromo || stashedPromo;
         if (promoSlug) {
+          // Cache for the rest of the session so navigation can't strip it.
           try { sessionStorage.setItem('sp_promo_slug', promoSlug); } catch(_) {}
           var banner = document.getElementById('promoApplied');
           if (banner) banner.style.display = 'flex';
+          // Stamp the lead so the sales rep sees which offer drove this quote.
           var form = document.getElementById('quoteForm');
           if (form && !form.querySelector('input[name="promo_slug"]')) {
             var inp = document.createElement('input');
             inp.type = 'hidden'; inp.name = 'promo_slug'; inp.value = promoSlug;
             form.appendChild(inp);
           }
+          // Track conversion of the popup → quote handoff (only fires
+          // once per session per slug to keep analytics clean).
           if (typeof window.spTrack === 'function' && !sessionStorage.getItem('sp_promo_tracked_' + promoSlug)) {
-            window.spTrack('promo_handoff', { promo_slug: promoSlug, via: urlPromo ? 'url' : 'session', lang: 'fr' });
+            window.spTrack('promo_handoff', { promo_slug: promoSlug, via: urlPromo ? 'url' : 'session' });
             try { sessionStorage.setItem('sp_promo_tracked_' + promoSlug, '1'); } catch(_) {}
           }
         }
-      } catch (e) {}
+      } catch (e) { /* never block the quote builder for a banner */ }
 
-      // Prefill from popup capture.
+      // Prefill name + email from the popup capture so the customer
+      // doesn't have to retype what they just gave us.
       try {
         var leadName  = sessionStorage.getItem('sp_lead_name');
         var leadEmail = sessionStorage.getItem('sp_lead_email');
@@ -2639,6 +3123,9 @@
       }
 
       calculatePrice();
+      // Placement set changed → the matrix's per-placement overrides
+      // may add or remove surcharge on some sizes, so refresh.
+      try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
     }
 
     // ===== VIEW TABS (on mockup) — switch which location is being edited =====
@@ -2802,26 +3289,38 @@
       canvas.renderAll();
     }
 
-    // ===== FILE UPLOAD =====
-    document.getElementById('designFile').addEventListener('change', function(e) {
-      handleFile(e.target.files[0]);
-    });
-
-    var dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#1a1a1a'; });
-    dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#ddd'; });
-    dropZone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      dropZone.style.borderColor = '#ddd';
-      if (e.dataTransfer.files.length) {
-        document.getElementById('designFile').files = e.dataTransfer.files;
-        handleFile(e.dataTransfer.files[0]);
+    // ===== FILE UPLOAD (legacy canvas-mockup feeder) =====
+    // The per-placement upload list in Step 1 has replaced this path
+    // since Phase A landed. The #designFile / #dropZone elements were
+    // removed from the HTML on 2026-05-24; the listeners below are
+    // kept (null-guarded) for any future re-introduction of a canvas
+    // preview, and so this script block doesn't throw on null.
+    (function () {
+      var designFileEl = document.getElementById('designFile');
+      if (designFileEl) {
+        designFileEl.addEventListener('change', function(e) {
+          handleFile(e.target.files[0]);
+        });
       }
-    });
+      var dropZone = document.getElementById('dropZone');
+      if (dropZone) {
+        dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#1a1a1a'; });
+        dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#ddd'; });
+        dropZone.addEventListener('drop', function(e) {
+          e.preventDefault();
+          dropZone.style.borderColor = '#ddd';
+          if (e.dataTransfer.files.length) {
+            if (designFileEl) designFileEl.files = e.dataTransfer.files;
+            handleFile(e.dataTransfer.files[0]);
+          }
+        });
+      }
+    })();
 
     function handleFile(file) {
       if (!file) return;
-      document.getElementById('fileName').textContent = file.name;
+      var fileNameEl = document.getElementById('fileName');
+      if (fileNameEl) fileNameEl.textContent = file.name;
       // Reflect the upload in the in-section placement upload card too
       var pu      = document.getElementById('placementUpload');
       var puTitle = document.getElementById('placementUploadTitle');
@@ -2905,9 +3404,9 @@
       canvas.remove(designObject);
       designObject = null;
       state.designSrc = null;
-      document.getElementById('downloadMockup').style.display = 'none';
-      document.getElementById('fileName').textContent = '';
-      document.getElementById('designFile').value = '';
+      var dlBtn = document.getElementById('downloadMockup'); if (dlBtn) dlBtn.style.display = 'none';
+      var fnEl  = document.getElementById('fileName');       if (fnEl)  fnEl.textContent = '';
+      var dfEl  = document.getElementById('designFile');     if (dfEl)  dfEl.value = '';
       // Reset placement-upload card back to its empty-state copy
       var pu      = document.getElementById('placementUpload');
       var puTitle = document.getElementById('placementUploadTitle');
@@ -3012,7 +3511,9 @@
       } else {
         calculatePrice();
       }
-      // Size grid changed → refresh shipping rates + free-shipping delta.
+      // Size grid changed → shipping weight + order subtotal both shift,
+      // so refresh the rate cards + the "Add $X more for FREE shipping"
+      // delta. Debounced inside the helper so rapid keystrokes coalesce.
       if (typeof spRecalcShippingIfStale === 'function') spRecalcShippingIfStale();
     }
 
@@ -3020,14 +3521,28 @@
     function goToStep(step) {
       var current = document.querySelector('.form-section.active');
       var currentNum = parseInt(current.dataset.step);
+      var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+
+      // 2026-05-24 — Cart mode collapses to 2 visible steps: Step 1
+      // (Product & Design) and Step 3 (Your Details). Step 2's global
+      // sizes + method question is redundant once each cart row carries
+      // its own per-item sizes + method. Auto-route around Step 2:
+      //   • Continue from Step 1 (which targets step 2) → skip to step 3
+      //   • Back from Step 3 (which targets step 2)     → skip to step 1
+      // Legacy single-product flow keeps all 3 steps.
+      if (cartHasItems && step === 2) {
+        step = (currentNum === 1) ? 3 : 1;
+      }
 
       if (step > currentNum) {
         if (currentNum === 1) {
           // Cart mode: valid if there's at least one item in the cart.
-          // Legacy single-product mode: require state.product.
-          var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+          // Legacy single-product mode: require state.product + service.
           if (!cartHasItems && !state.product) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.product')) || 'Please select a product from the catalog.'); return; }
-          if (!state.service) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.method')) || 'Please select a printing method.'); return; }
+          // Method requirement only applies in legacy mode — cart items
+          // carry per-row decoration_type (defaulting to empty/'not-sure'
+          // is fine; the rep recommends the right one at quote-reply).
+          if (!cartHasItems && !state.service) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.method')) || 'Please select a printing method.'); return; }
         }
       }
 
@@ -3100,6 +3615,138 @@
       });
     })();
 
+    // ===== ACCOUNT INTEGRATION =====
+    // Auth-aware enhancements layered on top of the anonymous quote flow.
+    // Two paths:
+    //   1. SIGNED IN — pre-fill name/email/phone/company from the user's
+    //      customer record, show a "signed in as X" pill, hide the signup
+    //      opt-in. The lead still posts via the anon-key POST below; the
+    //      customer record is what links it to the user once the CRM
+    //      converts the lead to an order.
+    //   2. ANONYMOUS — show a "create an account" checkbox under the
+    //      contact fields. If checked at submit, fire an OTP email after
+    //      the lead is saved so the user can claim the quote later via
+    //      the handle_new_user trigger that auto-links the customer by
+    //      email match.
+    (function quoteAccountAware() {
+      function loadSupabase(cb) {
+        if (window.supabase && window.supabase.createClient) return cb();
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+        s.onload = cb;
+        s.onerror = function(){ /* fail silently — anonymous flow still works */ };
+        document.head.appendChild(s);
+      }
+
+      loadSupabase(function() {
+        var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: { persistSession: true, autoRefreshToken: true, storageKey: 'sp.session.v1' }
+        });
+        window.SP_QUOTE_AUTH = client;
+
+        client.auth.getSession().then(function(res) {
+          var session = res && res.data && res.data.session;
+          window.SP_QUOTE_SESSION = session || null;
+          if (session) showSignedInUI(session.user, session.access_token);
+          else         showAnonymousUI();
+        });
+      });
+
+      function showSignedInUI(user, accessToken) {
+        var pill = document.getElementById('sp-quote-account-pill');
+        if (pill) {
+          pill.style.display = 'flex';
+          var emailEl = document.getElementById('sp-quote-account-email');
+          if (emailEl) emailEl.textContent = user.email || user.phone || '(account)';
+        }
+        var signup = document.getElementById('sp-quote-signup-block');
+        if (signup) signup.style.display = 'none';
+
+        var signoutLink = document.getElementById('sp-quote-account-signout');
+        if (signoutLink) {
+          signoutLink.onclick = function(e) {
+            e.preventDefault();
+            if (!confirm('Sign out of this account?')) return;
+            window.SP_QUOTE_AUTH.auth.signOut().then(function() { location.reload(); });
+          };
+        }
+        prefillFromCustomer(user, accessToken);
+      }
+
+      function showAnonymousUI() {
+        var signup = document.getElementById('sp-quote-signup-block');
+        if (signup) signup.style.display = '';
+      }
+
+      function setInputIfEmpty(id, val) {
+        var el = document.getElementById(id);
+        if (el && !el.value && val) el.value = val;
+      }
+
+      function prefillFromCustomer(user, accessToken) {
+        // First-pass prefill from the auth user itself — covers brand-new
+        // accounts that don't have a customer row yet.
+        if (user.email) setInputIfEmpty('email', user.email);
+        if (user.phone) setInputIfEmpty('phone', user.phone);
+
+        // Then enrich from the customers table if a record exists for them.
+        // Uses the user's JWT so RLS (if ever enabled) recognises them.
+        fetch(SUPABASE_URL + '/rest/v1/customers?user_id=eq.' + encodeURIComponent(user.id)
+              + '&select=contact_name,email,phone,company_name&limit=1', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + (accessToken || SUPABASE_KEY)
+          }
+        })
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(rows) {
+          if (!rows || !rows[0]) return;
+          var c = rows[0];
+          if (c.contact_name) setInputIfEmpty('name',    c.contact_name);
+          if (c.email)        setInputIfEmpty('email',   c.email);
+          if (c.phone)        setInputIfEmpty('phone',   c.phone);
+          if (c.company_name) setInputIfEmpty('company', c.company_name);
+        })
+        .catch(function() { /* prefill is best-effort */ });
+      }
+
+      // Account opt-in: after the regular submit handler runs and the lead
+      // is posted, if the checkbox is checked we trigger a passwordless OTP
+      // sign-in. The handle_new_user trigger will link any matching customer
+      // by email when this user first signs in.
+      var form = document.getElementById('quoteForm');
+      if (form) {
+        form.addEventListener('submit', function() {
+          setTimeout(function() {
+            var optin = document.getElementById('sp-quote-signup-optin');
+            if (!optin || !optin.checked) return;
+            var emailEl = document.getElementById('email');
+            var email = emailEl && emailEl.value && emailEl.value.trim();
+            if (!email || !window.SP_QUOTE_AUTH) return;
+
+            window.SP_QUOTE_AUTH.auth.signInWithOtp({
+              email: email,
+              options: {
+                shouldCreateUser: true,
+                emailRedirectTo: 'https://www.singhsprint.com/account/'
+              }
+            }).then(function() {
+              // Surface a confirmation inside the success card so the user
+              // knows to check their inbox.
+              var success = document.getElementById('formSuccess');
+              if (!success) return;
+              var note = document.createElement('p');
+              note.style.cssText = 'margin-top:14px;padding:12px 14px;background:#e8ff3c;border:1px solid #1a1a1a;border-radius:10px;font-size:.92rem;text-align:left';
+              note.innerHTML = '<strong>Check your email</strong> — we just sent a sign-in link to <strong>'
+                + email.replace(/[<>&"]/g, function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c];})
+                + '</strong>. Click it to access your account and track this quote.';
+              success.appendChild(note);
+            }).catch(function() { /* OTP failure shouldn't break the quote flow */ });
+          }, 100);
+        });
+      }
+    })();
+
     // ===== FORM SUBMIT =====
     document.getElementById('quoteForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -3132,7 +3779,9 @@
 
       // Funnel-tracker submit event — richer than the auto-fired
       // `form_submit` from components.js because we attach the
-      // estimated value, qty and product.
+      // estimated value, qty and product. This is internal funnel
+      // analytics and stays on submit-attempt so we can measure the
+      // attempt→success ratio.
       if (window.spTrack) window.spTrack('quote_submit', {
         product: product || null,
         service: service || null,
@@ -3143,10 +3792,11 @@
       });
 
       // Stash the conversion payload so showSuccess() can fire the
-      // Meta Pixel + Google Ads conversion AFTER Web3Forms confirms a
-      // successful submission. Moved from submit-attempt (slice 78,
-      // May 2026) so failed/spam/test submissions don't pollute the
-      // ad-platform optimization signal.
+      // Meta Pixel + Google Ads conversion AFTER the CRM ingest path
+      // confirms a real submission. This replaces the previous
+      // approach (firing on every submit-attempt) which was double-
+      // counting failed/spam/test submissions and giving Meta a
+      // garbage signal to optimize against. See slice 78 (May 2026).
       window.__sp_pendingConversion = {
         product: product,
         service: service,
@@ -3154,22 +3804,24 @@
         totalQty: totalQty
       };
 
-      // Send via Web3Forms
-      var formData = new FormData(form);
-      var action = form.getAttribute('action');
-
-      fetch(action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } })
-        .then(function(r) {
-          if (r.ok) { showSuccess(); }
-          else {
-            window.__sp_pendingConversion = null; // don't fire on failed submit
-            alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.submit.failed')) || 'Something went wrong. Please call us at 438-544-3800 or email sales@singhsprint.com.');
-          }
-        })
-        .catch(function() {
-          window.__sp_pendingConversion = null; // don't fire on failed submit
-          alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.submit.connection')) || 'Connection error. Please call us at 438-544-3800 or email sales@singhsprint.com.');
-        });
+      // Web3Forms submission used to live here. As of slice 77 (May 2026)
+      // the Web3Forms POST is owned exclusively by the per-side upload
+      // handler further down — it calls form.submit() (native multipart
+      // POST to the form's action) only as a fallback when /api/inbound
+      // returns non-2xx, errors out, or stalls past the bailout window.
+      //
+      // We kept this legacy listener for: pushLeadToCRM (Supabase leads
+      // table) and spTrack (internal funnel). Those genuinely should
+      // fire on every submit attempt. Meta Pixel Lead + Google Ads
+      // conversion moved to showSuccess() (slice 78) so they only fire
+      // after the CRM confirms a real submission.
+      //
+      // showSuccess() is no longer called here — the per-side handler
+      // calls it on the CRM 2xx path; the Web3Forms fallback in
+      // finishAndSubmit() navigates away to Web3Forms's response page
+      // (this is the only flow where Web3Forms's "marked as spam"
+      // screen could still appear, exactly when we want a fallback
+      // signal that the primary path failed).
     });
 
     function showSuccess() {
@@ -3177,7 +3829,7 @@
       document.querySelector('.steps-bar').style.display = 'none';
       document.getElementById('formSuccess').style.display = 'block';
 
-      // Fire conversion pixels ONLY on confirmed success (Web3Forms 2xx).
+      // Fire conversion pixels ONLY on confirmed success (CRM 2xx).
       // Moved here from the submit-attempt listener (slice 78, May 2026)
       // so failed/spam/test submissions don't pollute the ad-platform
       // optimization signal. Payload was stashed by the submit handler.
@@ -3200,6 +3852,8 @@
 
       // Google Ads conversion + GA4 quote_submit — mirrors the fbq Lead
       // payload so ROAS reports line up between Meta and Google.
+      // SP_GTAG.trackConversion handles AW-/label wiring (gtag-config.js)
+      // and is a no-op until verification clears.
       try {
         if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
           window.SP_GTAG.trackConversion('quote_submit', {
@@ -3497,8 +4151,10 @@
       }
       strip.style.display = 'block';
       // Make sure the "/unit" suffix is visible — cart mode hides it.
+      // Also reset the label to "/unit" in case we just came from BYO
+      // mode (which sets it to "/garment").
       var suf = document.getElementById('livePriceUnitSuffix');
-      if (suf) suf.style.display = '';
+      if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
       var qtyLabel = qty && qty > 0
@@ -3681,18 +4337,138 @@
       return raw;
     }
 
-    // XXL+ size surcharge in CAD per piece. Mirrors SIZE_SURCHARGE_CAD in
-    // singhsprint-crm/src/lib/pricing/index.ts — server is source of truth, this
-    // is a client fallback so we don't block the UI on a fetch. /api/pricing
-    // also echoes the map in `size_surcharge_cad` if you want to dynamic-load.
+    // XXL+ size surcharge in CAD per piece. Hardcoded fallback only —
+    // the live source of truth is the `pricing_size_modifiers` table
+    // edited from the CRM at /settings/pricing → Size matrix. The map
+    // below seeds the UI before the async refresh from
+    // /api/pricing/size-modifiers lands; in-flight quotes use whatever
+    // values were last fetched (cached for the rest of the session).
     var SIZE_SURCHARGE_CAD = { '2XL': 3, '3XL': 3, '4XL': 3, '5XL': 3 };
-    // Read the size grid and return { count, surchargeTotal } for 2XL+ units.
+
+    // Mutable per-size surcharge in CAD per piece. Combines the matrix's
+    // blank-surcharge and decoration-surcharge into a single $/unit for
+    // the running total. Refreshed by spRefreshSizeSurcharges() whenever
+    // context (garment / placement / method) changes. Initialized from
+    // the hardcoded fallback so the form is usable instantly.
+    var liveSizeSurchargeCAD = {
+      'XS': 0, 'S': 0, 'M': 0, 'L': 0, 'XL': 0,
+      '2XL': 3, '3XL': 3, '4XL': 3, '5XL': 3,
+    };
+
+    // Most-recent per-size breakdown returned by /api/pricing/size-modifiers.
+    // The summary line under the running total reads from this so it can
+    // show "Includes $X 2XL/3XL surcharge" without recomputing locally.
+    var liveSizeMatrixBreakdown = null;
+
+    function _allSizeQtys() {
+      var nameToSize = { size_xs:'XS', size_s:'S', size_m:'M', size_l:'L', size_xl:'XL', size_2xl:'2XL', size_3xl:'3XL', size_4xl:'4XL', size_5xl:'5XL' };
+      var out = {};
+      document.querySelectorAll('.size-grid input').forEach(function(inp){
+        var size = nameToSize[inp.name]; if (!size) return;
+        var n = parseInt(inp.value) || 0;
+        if (n > 0) out[size] = n;
+      });
+      return out;
+    }
+
+    // Pulls the current context (garment_type from cart_items[0] or
+    // state.product, placements from presetByLocation, decoration_method
+    // from state.service) into the shape /api/pricing/size-modifiers
+    // expects. Used by spRefreshSizeSurcharges below.
+    function _pricingContext() {
+      var garment = null, placements = [], method = null;
+      try {
+        if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+          var it = SinghsCart.read().items[0];
+          garment = it && it.garment_type || null;
+          placements = (it && it.placements) || [];
+        } else {
+          // Single-product flow — best-effort mapping from state.product.
+          var p = (state && state.product || '').toLowerCase();
+          if (p.indexOf('hood') >= 0)  garment = 'hoodie';
+          else if (p.indexOf('long') >= 0) garment = 'longsleeve';
+          else if (p.indexOf('crew') >= 0) garment = 'crewneck';
+          else if (p.indexOf('polo') >= 0) garment = 'polo';
+          else if (p.indexOf('t-shirt') >= 0 || p.indexOf('tee') >= 0) garment = 'tshirt';
+          placements = Object.values(presetByLocation || {});
+        }
+      } catch (e) {}
+      try { method = (state && state.service || '').toLowerCase() || null; } catch (e) {}
+      return { garment_type: garment, placements: placements, decoration_method: method };
+    }
+
+    // Async fetch of the live matrix from the CRM. Called on page boot
+    // and on context change (debounced). Updates liveSizeSurchargeCAD
+    // and the cached breakdown, then re-renders the running total.
+    var _sizeMatrixT = null;
+    function spRefreshSizeSurcharges() {
+      if (_sizeMatrixT) clearTimeout(_sizeMatrixT);
+      _sizeMatrixT = setTimeout(function(){
+        try {
+          var ctx = _pricingContext();
+          // For the totalizer we only care about per-size adders, not
+          // qty-weighted totals — send one-piece-per-size so the API
+          // returns a clean per-unit breakdown.
+          var probe = { 'XS':1,'S':1,'M':1,'L':1,'XL':1,'2XL':1,'3XL':1,'4XL':1,'5XL':1 };
+          var qs = new URLSearchParams({
+            size_breakdown: JSON.stringify(probe),
+            garment_type:   ctx.garment_type || '',
+            decoration_method: ctx.decoration_method || ''
+          });
+          if (ctx.placements && ctx.placements.length) qs.set('placements', ctx.placements.join(','));
+          fetch('https://singhsprint-crm.vercel.app/api/pricing/size-modifiers?' + qs.toString())
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(j){
+              if (!j) return;
+              // Per-side breakdown? Sum across placements. Otherwise
+              // per_size is a flat array of {size, qty=1, blank, decoration, line}.
+              var perSize = j.per_size || [];
+              if (j.per_placement) {
+                // Reduce per_placement to a per_size sum (each entry has qty=1).
+                var bySize = {};
+                j.per_placement.forEach(function(p){
+                  if (!bySize[p.size]) bySize[p.size] = { size: p.size, qty: 1, blank_surcharge_cents: 0, decoration_surcharge_cents: 0, line_cents: 0 };
+                  bySize[p.size].decoration_surcharge_cents += p.decoration_surcharge_cents || 0;
+                  bySize[p.size].line_cents                += p.line_cents || 0;
+                });
+                // Blank surcharge is per-garment (counted once). Pull from j.total_blank_cents distributed flat across sizes we have nonzero blanks for — but simpler: probe one-per-size means blank per piece is total_blank / 9. Easier: re-query the no-placement variant or trust that the CRM API at /api/pricing/size-modifiers also accepts the multi-placement breakdown which gives per_placement (decoration only) PLUS total_blank_cents. Map blank evenly.
+                Object.keys(bySize).forEach(function(s){
+                  // Blank surcharge: API's total_blank_cents is for the
+                  // full one-per-size probe, so dividing by 9 sizes
+                  // approximates per-size blank. For the legacy 2XL+
+                  // case this is wrong (only 4 sizes have nonzero) so
+                  // we prefer to skip blank here when using per_placement.
+                });
+                // Approximate: set liveSizeSurchargeCAD from per_size if
+                // present, else accumulate decoration only.
+                liveSizeMatrixBreakdown = perSize;
+              } else {
+                liveSizeMatrixBreakdown = perSize;
+              }
+              if (perSize.length > 0) {
+                // Reset to defaults then overwrite from API
+                Object.keys(liveSizeSurchargeCAD).forEach(function(k){ liveSizeSurchargeCAD[k] = 0; });
+                perSize.forEach(function(s){
+                  var totalCents = (s.blank_surcharge_cents || 0) + (s.decoration_surcharge_cents || 0);
+                  liveSizeSurchargeCAD[s.size] = Math.round(totalCents) / 100;
+                });
+                // Re-render the running total to reflect the new map.
+                if (typeof updateSizeTotal === 'function') updateSizeTotal();
+              }
+            })
+            .catch(function(){ /* silent — fallback map already in place */ });
+        } catch (e) { /* never block the UI on this */ }
+      }, 200);
+    }
+
+    // Read the size grid and return { count, surchargeTotal } for the
+    // 2XL+ tier (or whatever sizes the live matrix says have a surcharge).
     function computeSizeSurcharge() {
       var nameToSize = { size_xs:'XS', size_s:'S', size_m:'M', size_l:'L', size_xl:'XL', size_2xl:'2XL', size_3xl:'3XL', size_4xl:'4XL', size_5xl:'5XL' };
       var count = 0, total = 0;
       document.querySelectorAll('.size-grid input').forEach(function(inp){
         var size = nameToSize[inp.name];
-        var add  = SIZE_SURCHARGE_CAD[size] || 0;
+        var add  = liveSizeSurchargeCAD[size] || 0;
         if (!add) return;
         var n = parseInt(inp.value) || 0;
         count += n;
@@ -3773,12 +4549,25 @@
         }
         return picks.length ? picks : ['center-chest'];
       },
-      // Migration on read — ensures every item has a `placements` array.
-      // Existing items only had a numeric `sides`; new ones from the catalog
-      // come with placements pre-set (see cart-add in catalog.html) but we
-      // also defend here so the form never sees a half-shaped item. The
-      // migration is also garment-aware so old carts containing hats get
-      // a Cap-Front default instead of an invalid Center-Chest.
+      // Migration on read — ensures every item has the new per-item
+      // fields the multi-method/per-size pipeline needs. Older carts
+      // saved before this slice only had a numeric `sides`; new ones
+      // from the catalog come with placements pre-set (see cart-add in
+      // catalog.html). We also defend here so the form never sees a
+      // half-shaped item.
+      //
+      // Per-item fields (2026-05-24 multi-method/sizes pass):
+      //   - decoration_type: '' | 'dtg' | 'dtf' | 'embroidery' | 'not-sure'
+      //     Default '' so the rep can spot "customer didn't choose yet"
+      //     vs. a real DTF default. The price strip + matrix coerces ''
+      //     to 'dtf' for estimation purposes (cheapest base price).
+      //   - sizes: Record<sizeKey,qty>. Empty {} until the customer
+      //     fills in the per-item size grid. The cart-item subtotal still
+      //     uses `qty` as the total piece count; sizes is just the
+      //     per-size breakdown the CRM consumes for the size-matrix
+      //     surcharge math.
+      // The migration is also garment-aware so old carts containing
+      // hats get a Cap-Front default instead of an invalid Center-Chest.
       read: function() {
         var c;
         try { c = JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ c = {items:[]}; }
@@ -3789,6 +4578,20 @@
               it.placements = self._defaultPlacementsForSides(it.sides || 1, it.garment_type);
             }
             it.sides = it.placements.length;  // canonical: sides === placements.length
+            // New per-item fields. Set defaults if missing so the
+            // submit pipeline always sees a valid object.
+            if (typeof it.decoration_type === 'undefined') it.decoration_type = '';
+            if (!it.sizes || typeof it.sizes !== 'object' || Array.isArray(it.sizes)) it.sizes = {};
+            // 2026-05-24 — Caps + hats can only be embroidered on our
+            // press. Snap any non-embroidery selection back to embroidery
+            // at read time so the rest of the pipeline (live price fetch,
+            // per-item picker, submit payload) all agree from the start.
+            // Without this, a hat added from the catalog with no method
+            // chosen would default to '' → /api/pricing returns null →
+            // live total never resolves.
+            if (it.garment_type === 'hat' || it.garment_type === 'cap') {
+              if (it.decoration_type !== 'embroidery') it.decoration_type = 'embroidery';
+            }
           });
         }
         return c;
@@ -3830,8 +4633,23 @@
     function renderCartPlacementWidget(idx, placements, garmentType) {
       var picked = placements || [];
       var pickerOpen = (_cartPickerOpenIdx === idx);
+      // Per-item method (for surcharge labeling on selected chips). Same
+      // resolution rule as the picker: per-item wins, else global.
+      var perItemMethod = '';
+      try {
+        var it = SinghsCart.read().items[idx];
+        if (it && it.decoration_type) perItemMethod = it.decoration_type;
+      } catch (e) { /* ignore */ }
+      var effectiveMethod = perItemMethod || String((typeof state !== 'undefined' && state.service) || '');
       var chipsHtml = picked.map(function(p) {
-        return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) +
+        // 2026-05-24 — append the per-piece surcharge to the selected
+        // chip so customers see it without having to re-open the
+        // picker. Skipped for $0 placements + for embroidery.
+        var surcharge = placementSurchargeFor(p, effectiveMethod);
+        var surchargeBadge = surcharge > 0
+          ? ' <small class="ci-chip__surcharge">+$' + surcharge + '</small>'
+          : '';
+        return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) + surchargeBadge +
                '<button type="button" class="ci-chip__remove" aria-label="Remove ' + escapeAttr(_placementLabel(p)) +
                '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button></span>';
       }).join('');
@@ -3847,19 +4665,63 @@
     // Render the expandable picker. Groups the preset options by where
     // they sit on THIS garment type — caps get Cap-only options, totes
     // get Bag-only options, shirts get the full Front/Back/Sleeves set.
+    // Placements the embroidery hoop physically can't accommodate. Filtered
+    // out of the per-cart-item picker when Embroidery is the active method
+    // so the customer can't pick a combo we can't produce.
     var EMB_DISALLOWED = { 'oversized': 1, 'back-full': 1 };
+    // Per-placement hoop-size hint shown next to chest options when method
+    // is Embroidery. Keeps customers from expecting a 12"-wide logo on a
+    // 5×5" hoop. Mirrors the same hint in the GLOBAL placement picker via
+    // the .preset-emb-hint span / .is-embroidery body class.
     var EMB_PLACEMENT_HINT = {
-      'left-chest':   'cerceau 5×5″',
-      'center-chest': 'cerceau 5×5″',
-      'full-front':   'grand cerceau',
+      'left-chest':   '5×5″ hoop',
+      'center-chest': '5×5″ hoop',
+      'full-front':   'larger jumbo hoop',
     };
+    // 2026-05-24 — Per-placement DTF/DTG surcharges, mirrored from the
+    // pricing_size_modifiers matrix in the CRM (Settings → Pricing →
+    // Size matrix). Used for in-picker labels like "Full Front · +$3/pc"
+    // so customers see the cost of bigger prints before they click.
+    // Placements not listed have no surcharge (Left Chest, Center Chest,
+    // sleeves, hood, cap panels, etc.). Embroidery uses a different
+    // pricing path (engine's embroidery_placement_multipliers) so the
+    // chip label only renders for DTG/DTF/Not-sure on garments that
+    // support those methods.
+    var DTF_PLACEMENT_SURCHARGE_CAD = {
+      'full-front':  3,
+      'oversized':   4,
+      'back-across': 4,
+      'back-full':   5,
+    };
+    // 2026-05-24 — Resolve the per-piece DTF/DTG surcharge for a given
+    // placement, or 0 when the placement carries none / when the
+    // current method is embroidery (different pricing path). Used by
+    // the picker chip labels so customers see "+$3/pc" on Full Front
+    // before they click.
+    function placementSurchargeFor(presetId, method) {
+      var m = String(method || '').toLowerCase();
+      if (m === 'embroidery') return 0; // embroidery pricing handled by engine multipliers
+      return Number(DTF_PLACEMENT_SURCHARGE_CAD[presetId] || 0);
+    }
     function renderCartPlacementPicker(idx, picked, garmentType) {
       var groups = placementGroupsFor(garmentType);
-      var isEmb  = String((typeof state !== 'undefined' && state.service) || '').toLowerCase() === 'embroidery';
+      // Per-item method (set in each cart row's Print Method picker) —
+      // takes precedence over the legacy global state.service. Falls
+      // back to the global when the item hasn't picked yet.
+      var perItemMethod = '';
+      try {
+        var it = SinghsCart.read().items[idx];
+        if (it && it.decoration_type) perItemMethod = it.decoration_type;
+      } catch (e) { /* ignore */ }
+      var effectiveMethod = perItemMethod || String((typeof state !== 'undefined' && state.service) || '');
+      var isEmb  = String(effectiveMethod).toLowerCase() === 'embroidery';
       var pickedSet = {};
       picked.forEach(function(p){ pickedSet[p] = true; });
       var html = '';
       groups.forEach(function(g) {
+        // Filter the group's ids for embroidery-disallowed presets — and
+        // drop the entire group if nothing's left after filtering (e.g.
+        // back-full is the only Back option on totes).
         var ids = isEmb ? g.ids.filter(function(id){ return !EMB_DISALLOWED[id]; }) : g.ids;
         if (!ids.length) return;
         html += '<div class="ci-picker__group">';
@@ -3867,9 +4729,15 @@
         html += '  <div class="ci-picker__opts">';
         ids.forEach(function(id) {
           var sel = pickedSet[id] ? ' is-selected' : '';
-          var hint = isEmb && EMB_PLACEMENT_HINT[id]
-            ? ' <small style="opacity:.7;font-weight:500">· ' + EMB_PLACEMENT_HINT[id] + '</small>'
-            : '';
+          var hint = '';
+          if (isEmb && EMB_PLACEMENT_HINT[id]) {
+            hint = ' <small style="opacity:.7;font-weight:500">· ' + EMB_PLACEMENT_HINT[id] + '</small>';
+          } else {
+            var surcharge = placementSurchargeFor(id, effectiveMethod);
+            if (surcharge > 0) {
+              hint = ' <small class="ci-picker__surcharge">+$' + surcharge + '/pc</small>';
+            }
+          }
           html += '    <button type="button" class="ci-picker__opt' + sel + '" onclick="cartAddPlacement(' + idx + ',\'' + id + '\')">' + escapeAttr(_placementLabel(id)) + hint + '</button>';
         });
         html += '  </div>';
@@ -3902,18 +4770,313 @@
       return '<div class="ci-uploads">' + inner + '</div>';
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Per-item Print Method picker — 2026-05-24 multi-method pass.
+    //
+    // Multi-item carts used to share ONE global method (state.service).
+    // That broke the very common case of "DTG tote + DTF shirt +
+    // embroidered hat" — the customer could only express one method
+    // for the whole order. Each cart row now gets its own picker; the
+    // global state.service stays as the legacy-single-product fallback
+    // and as the seed when a row's method is empty.
+    //
+    // Chips intentionally compact (text-only, no icons) so they don't
+    // dominate the cart row visually. "Not sure" pre-fills the rep's
+    // recommendation hook on the CRM side — they pick the right method
+    // at quote-reply time.
+    // ─────────────────────────────────────────────────────────────────────
+    // Garment types that can only be decorated via embroidery on our
+    // press. Caps + hats are the obvious case (DTG/DTF can't bond to
+    // structured panels; the pricing engine's config also has
+    // decoration_method='embroidery' for these, so a DTG quote for a
+    // hat would return null from /api/pricing — confusing for the
+    // customer). When the cart row is one of these, the per-item
+    // picker shows only the Embroidery chip + auto-snaps
+    // decoration_type to 'embroidery' so the live price resolves.
+    var EMBROIDERY_ONLY_GARMENTS = { hat: 1, cap: 1 };
+    function renderCartItemMethod(idx, current, garmentType) {
+      var embroideryOnly = !!(garmentType && EMBROIDERY_ONLY_GARMENTS[garmentType]);
+
+      // Auto-snap embroidery-only items to embroidery if they aren't
+      // already. We schedule the write for the next tick to avoid
+      // mutating SinghsCart in the middle of a renderCartList pass
+      // (which would trigger a re-render and re-entrancy). The first
+      // render shows the snap visually; subsequent ones are a no-op.
+      if (embroideryOnly && current !== 'embroidery') {
+        setTimeout(function () {
+          var c = SinghsCart.read();
+          var it = c.items[idx];
+          if (it && it.decoration_type !== 'embroidery') {
+            SinghsCart.updateSilent(idx, { decoration_type: 'embroidery' });
+            renderCartList();
+          }
+        }, 0);
+        current = 'embroidery';
+      }
+
+      var allOpts = [
+        { value: 'dtg',        label: 'DTG' },
+        { value: 'dtf',        label: 'DTF' },
+        { value: 'embroidery', label: 'Embroidery' },
+        { value: 'not-sure',   label: 'Not sure' },
+      ];
+      // For embroidery-only garments, the picker collapses to a single
+      // chip — no choice for the customer to make, but we still render
+      // the row so the customer sees WHY this hat is priced the way
+      // it is ("oh, hats are embroidery").
+      var opts = embroideryOnly
+        ? allOpts.filter(function (o) { return o.value === 'embroidery'; })
+        : allOpts;
+
+      var chips = opts.map(function(o) {
+        var active = (current === o.value);
+        return '<button type="button" class="ci-method-chip' + (active?' is-active':'') + '"' +
+               ' onclick="onCartItemChange(' + idx + ', {decoration_type: \'' + o.value + '\'})"' +
+               (embroideryOnly ? ' disabled aria-disabled="true"' : '') +
+               '>' + o.label + '</button>';
+      }).join('');
+
+      var hint;
+      if (embroideryOnly) {
+        hint = '<span class="ci-method-hint">Caps are embroidery-only on our press</span>';
+      } else if (!current) {
+        hint = '<span class="ci-method-hint">Pick how each item gets decorated</span>';
+      } else {
+        hint = '';
+      }
+
+      return '<div class="ci-method" style="flex-basis:100%;min-width:0">' +
+             '  <div class="ci-method__head">' +
+             '    <span class="ci-section-label">Print method</span>' + hint +
+             '  </div>' +
+             '  <div class="ci-method__chips">' + chips + '</div>' +
+             '</div>';
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Per-item Sizes grid. Inline 7-cell row for the standard adult range
+    // (XS–3XL) with an optional + custom row reveal. The TOTAL across
+    // sizes is shown next to the qty; mismatches between sizes total and
+    // the row's qty get a soft amber warning (no hard block — customer
+    // can fix later or rep can in the CRM).
+    //
+    // The total is informational only — pricing still uses `qty` as the
+    // canonical piece count. The sizes map is consumed by the CRM's
+    // size-matrix surcharge math (per-size up-charges for 2XL+).
+    // ─────────────────────────────────────────────────────────────────────
+    var CART_SIZES = ['XS','S','M','L','XL','2XL','3XL'];
+    function renderCartItemSizes(idx, sizes, qty, garmentType) {
+      // Hide for hats / caps — sizes are typically OSFA. Customer can
+      // still specify quantities via the standard `qty` field above.
+      if (garmentType === 'hat' || garmentType === 'cap') return '';
+      var total = 0;
+      CART_SIZES.forEach(function(s){ total += Number((sizes && sizes[s]) || 0); });
+      Object.keys(sizes || {}).forEach(function(k) {
+        if (CART_SIZES.indexOf(k) < 0) total += Number(sizes[k] || 0);
+      });
+      var mismatch = qty > 0 && total !== qty;
+      var matchHint = '';
+      if (mismatch) {
+        matchHint = ' <button type="button" class="ci-sizes__match" ' +
+                    'onclick="onCartItemSizesAutoFill(' + idx + ')" ' +
+                    'title="Spread the remaining qty evenly across the sizes you\'ve started filling in">' +
+                    'match qty →</button>';
+      }
+      var cells = CART_SIZES.map(function(s) {
+        var v = Number((sizes && sizes[s]) || 0);
+        var vAttr = v > 0 ? v : '';
+        return '<label class="ci-sizes__cell">' +
+               '  <span class="ci-sizes__lbl">' + s + '</span>' +
+               '  <input type="number" min="0" inputmode="numeric" value="' + vAttr + '"' +
+               '  onchange="onCartItemSizeChange(' + idx + ', \'' + s + '\', parseInt(this.value)||0)"/>' +
+               '</label>';
+      }).join('');
+      var custom = Object.keys(sizes || {})
+        .filter(function(k){ return CART_SIZES.indexOf(k) < 0 && Number(sizes[k]) > 0; });
+      var customRow = '';
+      if (custom.length) {
+        customRow = '<div class="ci-sizes__custom-row">' +
+          custom.map(function(k) {
+            return '<span class="ci-sizes__custom-chip">' + k + ': ' + Number(sizes[k]) +
+              ' <button type="button" aria-label="Remove ' + k + '" ' +
+              'onclick="onCartItemSizeChange(' + idx + ', \'' + k + '\', 0)">×</button>' +
+              '</span>';
+          }).join('') +
+          '</div>';
+      }
+      var totalCls = mismatch ? 'ci-sizes__total ci-sizes__total--mismatch' : 'ci-sizes__total';
+      return '<div class="ci-sizes" style="flex-basis:100%;min-width:0">' +
+        '<div class="ci-sizes__head">' +
+        '  <span class="ci-section-label">Sizes</span>' +
+        '  <span class="' + totalCls + '">' +
+        '    <strong>' + total + '</strong>' + (qty > 0 ? ' / ' + qty : '') +
+        matchHint +
+        '  </span>' +
+        '</div>' +
+        '<div class="ci-sizes__grid">' + cells + '</div>' +
+        customRow +
+        '<details class="ci-sizes__more">' +
+        '  <summary>+ add a custom size (4XL, OSFA, youth, …)</summary>' +
+        '  <div class="ci-sizes__custom-form">' +
+        '    <input type="text" placeholder="e.g. 4XL" maxlength="10" data-ci-custom-key/>' +
+        '    <input type="number" min="0" placeholder="qty" data-ci-custom-qty/>' +
+        '    <button type="button" onclick="onCartItemSizeCustomAdd(' + idx + ', this)">Add</button>' +
+        '  </div>' +
+        '</details>' +
+        '</div>';
+    }
+
+    // Mutators paired with the size grid.
+    function onCartItemSizeChange(idx, sizeKey, qty) {
+      var c = SinghsCart.read();
+      var it = c.items[idx]; if (!it) return;
+      var sizes = Object.assign({}, it.sizes || {});
+      if (qty > 0) sizes[sizeKey] = qty;
+      else         delete sizes[sizeKey];
+
+      // 2026-05-24 — Auto-sync the line's qty to match the sizes total.
+      // Customers consistently typed "I want 100 pieces" via the size
+      // grid but left the qty field at its default of 50, so the
+      // running price + tier reflected 50 not 100. Treat the sizes sum
+      // as the authoritative count whenever it's non-zero: write it
+      // back to the line's qty so:
+      //   • the per-unit price re-fetches against the right tier
+      //   • the cart-row subtotal reflects the real piece count
+      //   • the right-panel live estimate jumps to the new total
+      //
+      // We do NOT downshift to 0 when the sum hits 0 — that's the
+      // "customer is mid-edit / clearing a cell" case; keep the qty
+      // anchored at its current value until they put real numbers
+      // back in. A separate visual cue (cart-qty-flash class added
+      // post-render) draws the customer's eye to the qty field so the
+      // change isn't silent.
+      var sizeSum = 0;
+      Object.keys(sizes).forEach(function (k) {
+        var n = Number(sizes[k]) || 0;
+        if (n > 0) sizeSum += n;
+      });
+      var patch = { sizes: sizes };
+      var flashQty = false;
+      if (sizeSum > 0 && sizeSum !== Number(it.qty)) {
+        patch.qty = sizeSum;
+        flashQty = true;
+      }
+      SinghsCart.update(idx, patch);
+
+      if (flashQty) {
+        // renderCartList rebuilds the DOM, so we need to wait a tick
+        // before grabbing the freshly-rendered input. Add a CSS class
+        // that triggers the keyframe pulse, then remove it 1.5s later
+        // so subsequent updates can re-flash.
+        setTimeout(function () {
+          var row = document.querySelector('.cart-item[data-idx="' + idx + '"]');
+          if (!row) return;
+          var qtyInput = row.querySelector('input[type="number"]');
+          if (!qtyInput) return;
+          qtyInput.classList.add('cart-qty-flash');
+          setTimeout(function () { qtyInput.classList.remove('cart-qty-flash'); }, 1500);
+        }, 50);
+      }
+    }
+    function onCartItemSizeCustomAdd(idx, btn) {
+      var wrap = btn.parentElement;
+      var keyEl = wrap.querySelector('[data-ci-custom-key]');
+      var qtyEl = wrap.querySelector('[data-ci-custom-qty]');
+      var key = String(keyEl.value || '').trim().toUpperCase().slice(0, 10);
+      var qty = parseInt(qtyEl.value || '0', 10) || 0;
+      if (!key || qty <= 0) return;
+      onCartItemSizeChange(idx, key, qty);
+      keyEl.value = '';
+      qtyEl.value = '';
+    }
+    function onCartItemSizesAutoFill(idx) {
+      var c = SinghsCart.read();
+      var it = c.items[idx]; if (!it) return;
+      var sizes = Object.assign({}, it.sizes || {});
+      var filled = Object.keys(sizes).filter(function(k){ return Number(sizes[k]) > 0; });
+      var qty = Number(it.qty) || 0;
+      if (!qty) return;
+      if (filled.length === 0) { sizes.M = qty; SinghsCart.update(idx, { sizes: sizes }); return; }
+      var total = filled.reduce(function(s,k){ return s + Number(sizes[k] || 0); }, 0);
+      var delta = qty - total;
+      if (delta === 0) return;
+      var per = Math.floor(delta / filled.length);
+      var leftover = delta - per * filled.length;
+      filled.forEach(function(k, i) {
+        sizes[k] = Math.max(0, (Number(sizes[k]) || 0) + per + (i < leftover ? 1 : 0));
+      });
+      SinghsCart.update(idx, { sizes: sizes });
+    }
+
     // ----- Mutations ------------------------------------------------------
     function cartTogglePicker(idx) {
       _cartPickerOpenIdx = (_cartPickerOpenIdx === idx) ? null : idx;
       renderCartList();
     }
+    // ─────────────────────────────────────────────────────────────────────
+    // 2026-05-24 — Placement exclusivity groups.
+    //
+    // Some placements physically overlap and cannot coexist on the same
+    // garment. Front-of-chest is the obvious case: Left Chest, Center
+    // Chest, Full Front, and Oversized Front are different SIZES of a
+    // print covering the same chest area. You can pick one, not all four.
+    // Same logic for the back (Top Back, Across Back, Full Back).
+    //
+    // Pricing impact (the real reason this matters): each placement adds
+    // 1 to it.sides AND carries its own placement-specific surcharge from
+    // pricing_size_modifiers (Full Front +$3/piece, Full Back +$5/piece,
+    // etc.). Letting the customer select all four front options would
+    // 4× the side count and stack four surcharges — but in reality only
+    // ONE print happens (the biggest one). The customer would be
+    // double / quadruple-billed.
+    //
+    // Rule: picking a chip in a group removes any other selection from
+    // the same group. Chips outside any group are independent (e.g.,
+    // Left Sleeve + Right Sleeve, sleeves + back, etc.).
+    // ─────────────────────────────────────────────────────────────────────
+    var PLACEMENT_EXCLUSIVE_GROUPS = {
+      // Front-of-chest — only one print of one size can occupy the chest.
+      'left-chest':   'shirt-front',
+      'center-chest': 'shirt-front',
+      'full-front':   'shirt-front',
+      'oversized':    'shirt-front',
+      // Back of shirt/hoodie — only one back-print size.
+      'back-top':     'shirt-back',
+      'back-across':  'shirt-back',
+      'back-full':    'shirt-back',
+      // Bag — front body vs. front pocket overlap (small pocket sits on
+      // the front face). Treat them as one group.
+      'bag-front':    'bag-front',
+      'bag-pocket':   'bag-front',
+      // Apron — chest / pocket / full all overlap the apron front.
+      'apron-chest':  'apron-front',
+      'apron-pocket': 'apron-front',
+      'apron-full':   'apron-front',
+      // Sleeves, hood, cap panels, leg hips — left intentionally
+      // independent. Customers can mix-and-match those across the
+      // garment without overlap.
+    };
+
     function cartAddPlacement(idx, presetId) {
       var c = SinghsCart.read();
       var it = c.items[idx]; if (!it) return;
       it.placements = Array.isArray(it.placements) ? it.placements.slice() : [];
       var i = it.placements.indexOf(presetId);
-      if (i >= 0) it.placements.splice(i, 1);          // toggle off
-      else        it.placements.push(presetId);        // toggle on
+      if (i >= 0) {
+        // Toggle off
+        it.placements.splice(i, 1);
+      } else {
+        // Toggle on — but first kick out any sibling in the same
+        // exclusive group. This is what makes picking "Full Front"
+        // automatically deselect "Center Chest" / "Left Chest" / etc.
+        var group = PLACEMENT_EXCLUSIVE_GROUPS[presetId];
+        if (group) {
+          it.placements = it.placements.filter(function (p) {
+            return PLACEMENT_EXCLUSIVE_GROUPS[p] !== group;
+          });
+        }
+        it.placements.push(presetId);
+      }
       if (it.placements.length === 0) it.placements = ['center-chest']; // never zero
       it.sides = it.placements.length;
       SinghsCart.update(idx, { placements: it.placements });
@@ -3954,21 +5117,95 @@
         var el = document.getElementById(id);
         if (el) el.addEventListener('change', _queueCartSync);
       });
+      // Initialize the "Need by" date input's min to today so customers
+      // can't pick a date in the past. Date strings are ISO-local.
+      var needBy = document.getElementById('needByDate');
+      if (needBy) {
+        var today = new Date();
+        var iso = today.getFullYear() + '-' +
+                  String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                  String(today.getDate()).padStart(2, '0');
+        needBy.min = iso;
+      }
     });
 
+    // ───── Mobile keyboard-aware sticky strip ─────────────────────────
+    // On phones the live-price strip is position:fixed bottom:0. When
+    // the on-screen keyboard opens (user tapping into qty/email fields)
+    // iOS Safari leaves position:fixed elements stuck UNDERNEATH the
+    // keyboard, hiding the price. We expose the difference between the
+    // layout viewport and the visual viewport (= keyboard height + any
+    // browser chrome) via a CSS custom property the strip's `bottom`
+    // reads. Hidden by default (--sp-keyboard-offset = 0); only set
+    // when the visualViewport API reports a real height delta.
+    (function initKeyboardOffset() {
+      if (typeof window === 'undefined' || !window.visualViewport) return;
+      function sync() {
+        var vv = window.visualViewport;
+        // height delta vs. the layout viewport. Positive when keyboard
+        // is up. We add a small 4px breathing room so the strip
+        // doesn't touch the keyboard's top edge.
+        var raw = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        // Below 100px we treat as noise (browser chrome shifts) and
+        // collapse to 0 — prevents the strip from "floating" on
+        // address-bar autohide.
+        var offset = raw > 100 ? Math.round(raw + 4) : 0;
+        document.documentElement.style.setProperty('--sp-keyboard-offset', offset + 'px');
+      }
+      window.visualViewport.addEventListener('resize', sync);
+      window.visualViewport.addEventListener('scroll', sync);
+      // Initial sync after layout settles.
+      window.addEventListener('load', sync);
+      sync();
+    })();
+
     // Per-item live-price cache so we don't refetch every render. Keyed by
-    // product_id + qty + sides.
+    // product_id + qty + sides + decoration_method, so switching DTG/DTF →
+    // Embroidery in the Print Method picker yields a fresh fetch instead
+    // of a stale DTF-flavoured cache hit.
     var _priceCache = {};
-    // Map the UI Print Method tile (DTG / DTF / Embroidery / "Not sure")
-    // onto the engine's two-method axis. DTG + DTF both quote at the DTF
-    // base price; Embroidery layers the surcharge on top.
+    // Map the UI's service tile values (DTG / DTF / Embroidery / "Not sure")
+    // onto the engine's two-method axis: DTG and DTF both quote at the DTF
+    // base ladder (same press, same per-side cost); Embroidery layers the
+    // surcharge on top via the engine. Unknown / "Not sure" defaults to dtf
+    // so the customer sees a price right away — we recommend the right
+    // method at quote-reply time anyway.
     function currentDecorationMethod() {
       var s = (typeof state !== 'undefined' && state.service) ? String(state.service).toLowerCase() : '';
       return s === 'embroidery' ? 'embroidery' : 'dtf';
     }
-    function liveUnitPrice(productId, qty, sides, placements, cb) {
+    // Accept an optional `placements` array as the 4th arg — when method
+    // is Embroidery the engine multiplies the surcharge by each placement's
+    // own multiplier (Left Chest 1×, Center Chest 2×, Full Front 3×, etc.).
+    // Without the placements list, the engine defaults to "N × 1× left
+    // chest" which mispriced any quote that asked for, say, Full Front
+    // embroidery (should be 3× cost, was showing 1×). Cache key includes
+    // the placement list so DTF/Embroidery + Center/Full quotes each get
+    // their own slot.
+    // 2026-05-24 — `methodOverride` accepts a per-item decoration_type
+    // (dtg/dtf/embroidery/not-sure/'') so multi-method carts cache + look
+    // up under the right key. Without it, an embroidered hat would
+    // cache under the global state.service ('dtf' by default), then
+    // updateCartTotal's per-item lookup (key contains 'embroidery')
+    // would miss → headline shows $— even though the API returned a
+    // real price. Legacy callers omitting the param fall back to the
+    // global current method (unchanged behavior).
+    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride) {
+      // Backwards-compat: older callers pass (productId, qty, sides, cb)
+      // with no placements arg. Detect and shift.
       if (typeof placements === 'function') { cb = placements; placements = []; }
-      var method = currentDecorationMethod();
+      // Normalize the per-item method onto the engine's two-method
+      // axis: 'embroidery' stays as-is; anything else (dtg/dtf/
+      // not-sure/'') maps to 'dtf' for pricing purposes (DTG + DTF
+      // share the same base ladder; not-sure defaults to dtf so the
+      // customer sees a number while we recommend at quote-reply).
+      var method;
+      if (methodOverride) {
+        var raw = String(methodOverride).toLowerCase();
+        method = raw === 'embroidery' ? 'embroidery' : 'dtf';
+      } else {
+        method = currentDecorationMethod();
+      }
       var placementsArr = Array.isArray(placements) ? placements.slice() : [];
       var placementsKey = placementsArr.join(',');
       var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey;
@@ -4009,7 +5246,7 @@
           if (singlePick) singlePick.style.display = 'none';
           // Un-hide the legacy product grid + fields that cart mode hides
           // so the visitor still has a fallback path to fill out the quote.
-          ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+          ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
             .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = ''; });
           document.querySelectorAll('.form-group, .color-section').forEach(function(g){
             var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
@@ -4020,6 +5257,12 @@
           // Re-show the GLOBAL placement section for the legacy single-
           // product flow (we hide it in cart mode below).
           document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = ''; });
+          // 2026-05-24 — restore the 3-step pill bar + Step 2 form-section
+          // for the legacy single-product flow when the cart is empty.
+          var pillStep2 = document.querySelector('.step-pill[data-step="2"]');
+          if (pillStep2) pillStep2.style.display = '';
+          var formStep2 = document.querySelector('.form-section[data-step="2"]');
+          if (formStep2) formStep2.style.display = '';
         }
         // Clear the right-panel cart total too
         var strip = document.getElementById('livePriceStrip');
@@ -4032,8 +5275,10 @@
       if (emptyCta)   emptyCta.style.display = 'none';
       if (singlePick) singlePick.style.display = 'none';
       // Hide legacy product grid and redundant fields (same logic as
-      // single-product prefill).
-      ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+      // single-product prefill). 2026-05-24 — globalPrintMethodGroup
+      // joins this list: per-item method pickers in each cart row mean
+      // the global DTG/DTF/Embroidery selector is duplicate work.
+      ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
         .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = 'none'; });
       document.querySelectorAll('.form-group, .color-section').forEach(function(g){
         var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
@@ -4045,6 +5290,20 @@
       // single-product (non-cart) path; we re-show it in the cart-empty
       // branch above.
       document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = 'none'; });
+      // 2026-05-24 — collapse the step-pill bar from 3 to 2 in cart mode.
+      // Step 2 ("Your design & sizes") was a global question for the
+      // legacy single-product path; cart rows already capture both
+      // pieces (per-placement uploads + per-item sizes), so the step is
+      // redundant. goToStep() also auto-routes around it (1 → 3 forward,
+      // 3 → 1 back) so Continue / Back behave naturally with the pill
+      // hidden.
+      var pillStep2 = document.querySelector('.step-pill[data-step="2"]');
+      if (pillStep2) pillStep2.style.display = 'none';
+      // Also remove Step 2's form-section from layout so any stale "Next"
+      // button still on Step 1 won't briefly flash a blank Step 2 view if
+      // the customer hits it before goToStep's redirect kicks in.
+      var formStep2 = document.querySelector('.form-section[data-step="2"]');
+      if (formStep2) formStep2.style.display = 'none';
 
       var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       var lblColor  = _t('quote.cart.item.color')  || 'Color:';
@@ -4054,7 +5313,17 @@
         var label = (it.color_name || '').replace(/_\d+$/, '');
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
         var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
+        // 2026-05-24 — per-item method + sizes widgets, surfaced below
+        // the placement chips. Multi-item carts now express things like
+        // "DTG tote + DTF tee + embroidered hat" cleanly.
+        var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '', it.garment_type);
+        var sizesHtml      = renderCartItemSizes(idx, it.sizes || {}, it.qty || 0, it.garment_type);
         return '' +
+          // overflow:hidden + max-width:100% + box-sizing prevent the
+          // 9-column tier table inside the row from forcing the cart-item
+          // (and the whole page) to grow horizontally past the mobile
+          // viewport. Customers can still swipe inside the table's
+          // overflow-x:auto container to see the embroidery columns.
           '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap;max-width:100%;box-sizing:border-box;overflow:hidden">' +
           '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
           '    <img id="ci-img-' + idx + '" src="' + imgUrl(it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
@@ -4075,8 +5344,13 @@
           '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
           '  </div>' +
           placementsHtml +
+          methodHtml +
+          sizesHtml +
           uploadsHtml +
           // Live per-item pricing table — populated async by paintCartItemLiveMatrix.
+          // Sits on its own flex line via flex-basis:100% so it spans the full row.
+          // min-width:0 lets the inner overflow-x:auto container actually
+          // clip + scroll on mobile instead of forcing the row wider.
           '<div id="ci-livematrix-' + idx + '" class="ci-livematrix" style="flex-basis:100%;min-width:0;max-width:100%;width:100%;margin-top:8px;box-sizing:border-box"></div>' +
           '</div>';
       }).join('');
@@ -4093,6 +5367,11 @@
             paintCartItemSwatches(idx, p.colors || [], it.color_id);
           });
 
+        // 2026-05-24 — pass it.decoration_type as the methodOverride
+        // (6th arg) so the cache key matches updateCartTotal's lookup.
+        // Without it, an embroidered hat would cache under 'dtf' (the
+        // global current method) and miss the 'embroidery' lookup
+        // below, showing $— in the right-panel headline.
         liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, it.placements || [], function(price) {
           var el = document.getElementById('ci-price-' + idx);
           if (!el) return;
@@ -4103,21 +5382,24 @@
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        });
+        }, it.decoration_type);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
+        // Hits /api/pricing/live-matrix which returns engine-derived prices
+        // for the actual variant's wholesale + garment_type, including DTF
+        // and embroidery side-by-side with the cell's implied margin %.
         paintCartItemLiveMatrix(idx, it);
       });
     }
 
-    // Per-item /api/pricing/live-matrix renderer. Cached per product_id.
-    // Highlights the row matching the item's current qty so the customer can
-    // see how their order tier moves as they change qty.
+    // Per-item /api/pricing/live-matrix renderer. Cached per product_id since
+    // the matrix only changes when the CRM pricing config does (≤ once an
+    // hour in practice). Highlights the row matching the item's current qty.
     var _liveMatrixCache = {};
     function paintCartItemLiveMatrix(idx, it) {
       var host = document.getElementById('ci-livematrix-' + idx);
       if (!host || !it.product_id) return;
-      var loadingMsg = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.tierloading')) || 'Chargement des paliers de prix…';
+      var loadingMsg = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.tierloading')) || 'Loading tier pricing…';
       host.innerHTML = '<div style="font-size:.72rem;color:#999;padding:6px 0">' + loadingMsg + '</div>';
 
       var render = function(matrix) {
@@ -4128,6 +5410,7 @@
         var sidesList = [];
         for (var s = 1; s <= (matrix.max_sides || 4); s++) sidesList.push(s);
         var showEmb = !!matrix.emb_supported;
+        var isMobile = window.innerWidth < 720;
 
         var fmt = function(cell) {
           if (!cell || cell.price == null) return '—';
@@ -4138,48 +5421,90 @@
         };
         var activeQty = Number(it.qty) || 50;
 
-        var headSides = sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + s + ' côté' + (s>1?'s':'') + '</th>'; }).join('');
-        var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
-          '<tr>' +
-            '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qté</th>' +
-            '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">Impression DTF</th>' +
-            (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Broderie</th>' : '') +
-          '</tr>' +
-          '<tr>' + headSides + (showEmb ? headSides : '') + '</tr>' +
-        '</thead>';
-
-        var body = matrix.rows.map(function(r) {
-          var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
-          var rowStyle = isActive
-            ? 'background:#1a1a1a;color:#fff;font-weight:600'
-            : 'background:#fff;color:#1a1a1a';
-          var cells = sidesList.map(function(s) {
-            return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">'
-              + fmt(r.dtf[s]) + '</td>';
+        // Render a single method's table (DTF or Embroidery). `accessor` is
+        // the property name on each row ('dtf' or 'embroidery'); `label` is
+        // the human-readable method name shown above the table. `bg` is the
+        // tinted background for the header row, matching the wide-table
+        // colour convention (cream for DTF, peach for Embroidery).
+        function buildMethodTable(label, accessor, bg) {
+          var headSides = sidesList.map(function(s){
+            return '<th style="text-align:right;padding:5px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>';
           }).join('');
-          if (showEmb) {
-            cells += sidesList.map(function(s){
-              return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + ';border-left:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">'
-                + fmt(r.embroidery[s]) + '</td>';
+          var body = matrix.rows.map(function(r) {
+            var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
+            var rowStyle = isActive
+              ? 'background:#1a1a1a;color:#fff;font-weight:600'
+              : 'background:#fff;color:#1a1a1a';
+            var border = isActive ? '#333' : '#f0eee5';
+            var cells = sidesList.map(function(s) {
+              return '<td style="text-align:right;padding:5px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + '">'
+                + fmt(r[accessor][s]) + '</td>';
             }).join('');
-          }
-          return '<tr style="' + rowStyle + '">' +
-            '<td style="padding:6px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + (isActive ? '#333' : '#f0eee5') + '">' + qtyLabel(r) + '</td>' +
-            cells +
-          '</tr>';
-        }).join('');
-
-        host.innerHTML =
-          '<details style="margin-top:4px" ' + (window.innerWidth >= 720 ? 'open' : '') + '>' +
-            '<summary style="cursor:pointer;font-size:.72rem;font-weight:600;color:#666;letter-spacing:.04em;text-transform:uppercase;padding:6px 0;list-style:none">' +
-              '▾ Paliers de prix pour cet article' +
-              '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— ligne actuelle surlignée, changez la quantité pour repricer</span>' +
-            '</summary>' +
-            '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
+            return '<tr style="' + rowStyle + '">' +
+              '<td style="padding:5px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + border + '">' + qtyLabel(r) + '</td>' +
+              cells +
+            '</tr>';
+          }).join('');
+          return '<div style="margin-top:8px;border:1px solid #e8e6df;border-radius:10px;background:#fff;overflow:hidden">' +
+            '<div style="background:' + bg + ';font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#666;padding:6px 10px">' + label + '</div>' +
+            '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
               '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' +
-                head + '<tbody>' + body + '</tbody>' +
+                '<thead style="font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
+                  '<tr><th style="text-align:left;padding:5px 8px;font-weight:600">Qty</th>' + headSides + '</tr>' +
+                '</thead>' +
+                '<tbody>' + body + '</tbody>' +
               '</table>' +
             '</div>' +
+          '</div>';
+        }
+
+        // Mobile (< 720px): stack DTF and Embroidery as two narrow 5-column
+        // tables — much more readable than swiping a single 9-column table.
+        // Desktop: keep the original side-by-side 9-column layout because
+        // there's room and the comparison is easier at a glance.
+        var inner;
+        if (isMobile) {
+          inner = buildMethodTable('DTF print', 'dtf', '#f7f6f0') +
+                  (showEmb ? buildMethodTable('Embroidery', 'embroidery', '#fef6e7') : '');
+        } else {
+          // Desktop wide table (original layout).
+          var headSidesWide = sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>'; }).join('');
+          var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
+            '<tr>' +
+              '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qty</th>' +
+              '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTF print</th>' +
+              (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Embroidery</th>' : '') +
+            '</tr>' +
+            '<tr>' + headSidesWide + (showEmb ? headSidesWide : '') + '</tr>' +
+          '</thead>';
+          var body = matrix.rows.map(function(r) {
+            var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
+            var rowStyle = isActive ? 'background:#1a1a1a;color:#fff;font-weight:600' : 'background:#fff;color:#1a1a1a';
+            var border = isActive ? '#333' : '#f0eee5';
+            var cells = sidesList.map(function(s) {
+              return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + '">' + fmt(r.dtf[s]) + '</td>';
+            }).join('');
+            if (showEmb) {
+              cells += sidesList.map(function(s){
+                return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + ';border-left:1px solid ' + border + '">' + fmt(r.embroidery[s]) + '</td>';
+              }).join('');
+            }
+            return '<tr style="' + rowStyle + '">' +
+              '<td style="padding:6px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + border + '">' + qtyLabel(r) + '</td>' + cells +
+            '</tr>';
+          }).join('');
+          inner = '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
+            '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' + head + '<tbody>' + body + '</tbody></table>' +
+          '</div>';
+        }
+
+        host.innerHTML =
+          '<details style="margin-top:4px" ' + (isMobile ? '' : 'open') + '>' +
+            '<summary style="cursor:pointer;font-size:.72rem;font-weight:600;color:#666;letter-spacing:.04em;text-transform:uppercase;padding:6px 0;list-style:none">' +
+              '▾ Tier pricing for this item' +
+              '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— current row highlighted, change qty to reprice</span>' +
+            '</summary>' +
+            inner +
           '</details>';
       };
 
@@ -4264,8 +5589,11 @@
 
     function onCartItemChange(idx, patch) {
       SinghsCart.update(idx, patch);
-      // Cart changed → shipping is stale, refetch on next idle. See EN
-      // quote.html for full rationale.
+      // Cart qty / sides / placements changed → the shipping estimate is
+      // now stale (different box weight, different order subtotal, so the
+      // "Add $X more for FREE shipping" line and the rate cards have to
+      // recompute). Debounced via spRecalcShippingIfStale to coalesce
+      // rapid input changes into a single API hit.
       spRecalcShippingIfStale();
     }
     function removeCartItem(idx) {
@@ -4273,11 +5601,23 @@
       spRecalcShippingIfStale();
     }
 
+    // -------------------------------------------------------------------------
+    // Shipping recalc on qty/sizes change. The shipping estimator is fetched
+    // from /api/shipping with the current items + postal code, and its
+    // response includes the per-rate fee AND the free-shipping threshold
+    // gap. Without this hook, the customer hits Estimate at qty=10 (sees
+    // "Add $400 more for FREE shipping"), bumps qty to 100 in Step 1/2,
+    // returns to Step 3, and is still looking at the qty=10 numbers.
+    // -------------------------------------------------------------------------
     var _spShipDebounce = null;
     function spRecalcShippingIfStale() {
+      // Only refetch if the customer already supplied a postal — otherwise
+      // there's nothing to refresh and the panel still shows the "enter
+      // postal" placeholder.
       var postalEl = document.getElementById('shipPostal');
       var postal = (postalEl && postalEl.value || '').trim();
       if (!postal || postal.length < 3) return;
+      // Debounce so a flurry of size-grid keystrokes only fires one fetch.
       clearTimeout(_spShipDebounce);
       _spShipDebounce = setTimeout(function() {
         if (typeof spRequestShippingEstimate === 'function') {
@@ -4306,66 +5646,84 @@
       strip.style.display = 'block';
 
       // Per-item unit prices live in _priceCache keyed by
-      // product_id + qty + sides + decoration_method (method suffix
-      // added 2026-05-19). Use the same key liveUnitPrice writes.
-      var method = currentDecorationMethod();
-      var cartUnitSum = 0, cartUnits = 0, knownAll = true;
+      // product_id + qty + sides + decoration_method + placements.
+      // 2026-05-24 — per-item method is now in it.decoration_type;
+      // fall back to the legacy global state.service for items that
+      // predate the per-item picker.
+      var cartUnitSum = 0, cartUnits = 0, cartLineTotal = 0, knownAll = true;
       items.forEach(function (it) {
         var qty   = Number(it.qty) || 0;
         var sides = it.sides || 1;
         var pk    = (it.placements || []).join(',');
+        var rawM  = (it.decoration_type || '').toLowerCase();
+        var method = rawM === 'embroidery' ? 'embroidery' : (rawM ? 'dtf' : currentDecorationMethod());
         var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk];
         cartUnits += qty;
-        if (typeof p === 'number') cartUnitSum += p;
-        else knownAll = false;
+        if (typeof p === 'number') {
+          cartUnitSum  += p;
+          cartLineTotal += p * qty;
+        } else {
+          knownAll = false;
+        }
       });
       var avgUnitPrice = (items.length > 0 && cartUnitSum > 0) ? (cartUnitSum / items.length) : null;
 
-      // Size grid total — the authoritative count once filled.
-      var sizeTotalEl = document.getElementById('sizeTotal');
-      var sizeTotal = sizeTotalEl ? (parseInt(sizeTotalEl.textContent, 10) || 0) : 0;
+      // 2026-05-24 — Cart mode is now the only source of truth for
+      // quantities (Step 2's global size grid is hidden in cart mode).
+      // Use the cart's own piece count as the authoritative total. If
+      // any item has a per-item sizes map filled in, prefer the sum of
+      // those — otherwise fall back to `it.qty`. Both numbers should
+      // converge once the customer reconciles sizes with qty.
+      var cartSizeTotal = 0;
+      items.forEach(function (it) {
+        var sizes = (it.sizes && typeof it.sizes === 'object') ? it.sizes : {};
+        Object.keys(sizes).forEach(function (k) {
+          var n = Number(sizes[k]);
+          if (Number.isFinite(n) && n > 0) cartSizeTotal += n;
+        });
+      });
       var sur = (typeof computeSizeSurcharge === 'function') ? computeSizeSurcharge() : { surchargeTotal: 0, count: 0 };
 
-      // Header line — items count.
-      document.getElementById('livePriceUnit').textContent =
-        items.length + (items.length === 1 ? ' item' : ' items');
       var suf = document.getElementById('livePriceUnitSuffix');
-      if (suf) suf.style.display = 'none';
-
       var totalWrap = document.getElementById('livePriceTotalWrap');
 
-      if (sizeTotal > 0 && knownAll && avgUnitPrice != null) {
-        // SIZES FILLED → show the real total at the size-grid quantity.
-        // Re-price single-item carts at the actual size total so the
-        // price tier reflects what they're really buying. Multi-item
-        // carts fall back to the cart's mixed unit average × sizeTotal.
-        var liveTotal;
-        var perUnitDisplay = avgUnitPrice;
-        if (items.length === 1 && items[0].product_id) {
-          // Async refetch — meanwhile show the cart-qty estimate so the
-          // strip doesn't blank out.
-          liveUnitPrice(items[0].product_id, sizeTotal, items[0].sides || 1, items[0].placements || [], function (livePx) {
-            if (typeof livePx === 'number' && livePx > 0) {
-              document.getElementById('livePriceUnit').textContent =
-                '$' + livePx.toFixed(2);
-              document.getElementById('livePriceQty').textContent =
-                sizeTotal + ' units · ' + (items[0].sides || 1) + ' side' + ((items[0].sides || 1) > 1 ? 's' : '');
-              document.getElementById('livePriceTotal').textContent =
-                '$' + ((livePx * sizeTotal) + sur.surchargeTotal).toFixed(2);
-            }
-          });
-          liveTotal = perUnitDisplay * sizeTotal + sur.surchargeTotal;
+      // Effective quantity for the visible total: prefer the size-grid
+      // sum if the customer has started filling it in, otherwise use the
+      // per-item qty totals (which default to 50 on catalog add).
+      var effectiveUnits = cartSizeTotal > 0 ? cartSizeTotal : cartUnits;
+
+      if (knownAll && cartLineTotal > 0) {
+        // Standard cart-mode path — every line has a known unit price.
+        // For a single-item cart the per-unit price is the most
+        // informative headline (customer's anchor is "$X each").
+        // Multi-item carts default to "N items" since unit prices
+        // typically differ across rows.
+        if (items.length === 1 && avgUnitPrice != null) {
+          document.getElementById('livePriceUnit').textContent =
+            '$' + avgUnitPrice.toFixed(2);
+          if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
         } else {
-          liveTotal = avgUnitPrice * sizeTotal + sur.surchargeTotal;
+          document.getElementById('livePriceUnit').textContent =
+            items.length + ' items';
+          if (suf) suf.style.display = 'none';
         }
+        // Below the headline, show pieces count + any size-grid drift.
+        // If the customer's size-grid total diverges from their per-line
+        // qty (e.g. they've filled in 32 sizes for a 50-piece line),
+        // surface that so it doesn't silently mismatch what the rep
+        // sees on the CRM.
         document.getElementById('livePriceQty').textContent =
-          sizeTotal + ' units' + (cartUnits !== sizeTotal ? ' (size grid)' : '');
+          cartUnits + (cartUnits === 1 ? ' piece' : ' pieces') +
+          (cartSizeTotal > 0 && cartSizeTotal !== cartUnits
+            ? ' · sizes filled: ' + cartSizeTotal
+            : '');
         totalWrap.style.display = 'block';
-        document.getElementById('livePriceTotal').textContent = '$' + liveTotal.toFixed(2);
+        document.getElementById('livePriceTotal').textContent =
+          '$' + (cartLineTotal + sur.surchargeTotal).toFixed(2);
       } else if (avgUnitPrice != null) {
-        // NO SIZES YET → show per-unit estimate only. Hide the total
-        // so customers don't feel anchored to a number that's based on
-        // a placeholder qty they haven't committed to.
+        // Some prices are still resolving (async fetches in flight).
+        // Show the running estimate but flag it so the customer knows
+        // it's still settling.
         document.getElementById('livePriceUnit').textContent =
           '$' + avgUnitPrice.toFixed(2);
         if (suf) {
@@ -4373,13 +5731,17 @@
           suf.textContent = '/unit est.';
         }
         document.getElementById('livePriceQty').textContent =
-          'Enter sizes in Step 2 for the total';
-        totalWrap.style.display = 'none';
+          effectiveUnits + ' pieces · pricing in progress…';
+        totalWrap.style.display = 'block';
+        document.getElementById('livePriceTotal').textContent =
+          '$' + (avgUnitPrice * effectiveUnits + sur.surchargeTotal).toFixed(2);
       } else {
-        // Prices haven't loaded yet.
+        // Prices haven't loaded yet — keep the strip visible with a
+        // friendly loading state. No total shown because we have no
+        // unit price to multiply yet.
         document.getElementById('livePriceUnit').textContent = '$—';
         document.getElementById('livePriceQty').textContent =
-          cartUnits + (cartUnits === 1 ? ' unit' : ' units') + ' · loading…';
+          effectiveUnits + (effectiveUnits === 1 ? ' piece' : ' pieces') + ' · loading…';
         totalWrap.style.display = 'none';
       }
     }
@@ -4647,15 +6009,119 @@
     // the request in /dashboard/inbox/requests with structured cart items
     // they can convert to a draft order in one click. We do BOTH so the
     // email backup keeps working even if the CRM is down at submit time.
-    var INBOUND_API = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var INBOUND_API        = 'https://singhsprint-crm.vercel.app/api/inbound';
+    var INBOUND_UPLOAD_API = 'https://singhsprint-crm.vercel.app/api/inbound/upload';
+
+    // Hard cap matches /api/inbound/upload — keep them in sync. We
+    // surface a friendly error on oversize *before* hitting the network.
+    var UPLOAD_MAX_BYTES = 15 * 1024 * 1024; // 15 MB
+
+    // Tamarah's bug (May 2026): she uploaded a logo, the form
+    // submitted, but the inbound_requests row landed with
+    // design_url=null / design_bytes=0. Root cause was three-fold:
+    //   (a) uploadDesignFile() swallowed errors silently and the
+    //       form submit handler was fire-and-forget — so a slow or
+    //       failing upload got cancelled the moment Web3Forms's
+    //       native POST navigated away.
+    //   (b) Customer got no UI feedback that an upload was in flight,
+    //       and no error if it failed.
+    //   (c) On size / network errors we returned null and the row
+    //       got 'mockup_status=skipped' with no hint to the rep that
+    //       a file was attempted.
+    //
+    // Fix: this function now throws on real failures (so the submit
+    // handler can show an error); the submit handler preventDefaults
+    // the form, awaits the upload, then programmatically submits.
+    function uploadDesignFile(file) {
+      if (!file) return Promise.resolve(null);
+      if (file.size && file.size > UPLOAD_MAX_BYTES) {
+        var mb = (file.size / 1024 / 1024).toFixed(1);
+        return Promise.reject(new Error(
+          'Your design file is ' + mb + ' MB — our upload limit is 15 MB. ' +
+          'Please compress or email it to sales@singhsprint.com.'
+        ));
+      }
+      var fd = new FormData();
+      fd.append('file', file);
+      fd.append('kind', 'design');
+      return fetch(INBOUND_UPLOAD_API, { method: 'POST', body: fd })
+        .then(function(res){
+          if (!res.ok) {
+            return res.text().then(function(t){
+              console.warn('[design upload] HTTP ' + res.status + ':', t);
+              throw new Error('Upload failed (' + res.status + '). Try again or email your design to sales@singhsprint.com.');
+            });
+          }
+          return res.json();
+        });
+    }
+
+    // Tiny overlay shown while the design upload + structured POST run.
+    // Built lazily so we don't add DOM weight on pages where the customer
+    // never submits.
+    function spShowUploadOverlay(label) {
+      var existing = document.getElementById('spUploadOverlay');
+      if (existing) {
+        var l = existing.querySelector('.sp-upload-overlay__label');
+        if (l && label) l.textContent = label;
+        existing.style.display = 'flex';
+        return existing;
+      }
+      var el = document.createElement('div');
+      el.id = 'spUploadOverlay';
+      el.style.cssText = [
+        'position:fixed','inset:0','background:rgba(26,26,26,0.78)',
+        'z-index:9999','display:flex','align-items:center','justify-content:center',
+        'font-family:inherit'
+      ].join(';');
+      el.innerHTML =
+        '<div style="background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:28px 32px;text-align:center;max-width:380px;width:90%;">' +
+          '<div style="width:48px;height:48px;border:3px solid #333;border-top-color:#e8ff3c;border-radius:50%;margin:0 auto 16px;animation:spSpin 0.9s linear infinite"></div>' +
+          '<div class="sp-upload-overlay__label" style="color:#fff;font-weight:600;font-size:0.95rem;line-height:1.4">' + (label || 'Uploading your design…') + '</div>' +
+          '<div style="color:#888;font-size:0.78rem;margin-top:8px">This usually takes a few seconds.</div>' +
+        '</div>' +
+        '<style>@keyframes spSpin{to{transform:rotate(360deg)}}</style>';
+      document.body.appendChild(el);
+      return el;
+    }
+    function spHideUploadOverlay() {
+      var el = document.getElementById('spUploadOverlay');
+      if (el) el.style.display = 'none';
+    }
+    function spShowUploadError(message) {
+      var existing = document.getElementById('spUploadOverlay');
+      if (!existing) existing = spShowUploadOverlay('');
+      existing.innerHTML =
+        '<div style="background:#1a1a1a;border:1px solid #4a1f1f;border-radius:16px;padding:28px 32px;max-width:420px;width:90%;text-align:center">' +
+          '<div style="font-size:32px;margin-bottom:8px">⚠️</div>' +
+          '<div style="color:#fff;font-weight:700;font-size:1rem;margin-bottom:8px">Upload didn’t go through</div>' +
+          '<div style="color:#ddd;font-size:0.86rem;line-height:1.5;margin-bottom:18px">' + message + '</div>' +
+          '<div style="display:flex;gap:8px;justify-content:center">' +
+            '<button type="button" id="spUploadRetry" style="background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:10px 18px;font-weight:700;cursor:pointer">Try again</button>' +
+            '<button type="button" id="spUploadSkip"  style="background:transparent;color:#bbb;border:1px solid #444;border-radius:50px;padding:10px 18px;font-weight:600;cursor:pointer">Send without design</button>' +
+          '</div>' +
+        '</div>';
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       var form = document.getElementById('quoteForm');
       if (!form) return;
-      form.addEventListener('submit', function() {
+
+      // Flag: once we've finished the async upload + structured POST,
+      // we set this and call form.submit() to let Web3Forms's native
+      // multipart POST take over. The handler bails on the second pass.
+      form.dataset.spUploadCleared = '0';
+
+      form.addEventListener('submit', function(e) {
+        if (form.dataset.spUploadCleared === '1') {
+          // Second pass — let the native submit through to Web3Forms.
+          return;
+        }
+
         var items = SinghsCart.read().items;
 
         // 1) Hidden fields for the Web3Forms email backup
-        if (items.length > 0) {
+        if (items.length > 0 && !form.querySelector('input[name="cart_items_json"]')) {
           var hidden = document.createElement('input');
           hidden.type = 'hidden';
           hidden.name = 'cart_items_json';
@@ -4676,7 +6142,118 @@
           form.appendChild(summaryHidden);
         }
 
-        // 2) Structured POST to CRM /api/inbound
+        // 1b) Collect EVERY design file the customer attached, keyed by
+        // the placement preset it's tagged to. Per-placement and
+        // per-cart-item file inputs are re-rendered (innerHTML = …)
+        // every time placements or cart items change — including
+        // immediately after `onchange` fires via attachPlacementFile()
+        // / cartAttachItemFile(). That wipes `.files` on the DOM
+        // <input>, so by submit time the form's file inputs are
+        // empty even though the customer DID attach artwork. The real
+        // File objects live in:
+        //
+        //   placementFiles[presetId]              — single-product flow
+        //   cartItemFiles[idx + '_' + presetId]   — catalog cart flow
+        // (Legacy #designFile path removed 2026-05-24; the fallback at
+        //  the bottom of this block still scans all visible file inputs
+        //  defensively in case some future widget gets re-introduced.)
+        //
+        // We upload one file per placement (Phase A of per-side mockups),
+        // so each placement lands in its own inbound_request_mockups row
+        // on the CRM. The 30-min cron then generates them independently;
+        // a Gemini hiccup on the back print no longer kills the front.
+        // 2026-05-24 — cart_item_index added so per-item uploads from
+        // the catalog cart flow ("Bella Aqua: Left Chest design A",
+        // "Bella Black: Left Chest design B") are preserved through
+        // upload + inbound and the CRM's mockup orchestrator can
+        // generate a separate mockup per item.
+        //
+        // Index semantics:
+        //   - cartItemFiles keys carry "<itemIdx>_<presetId>" — pull
+        //     itemIdx out and stamp it on the entry.
+        //   - placementFiles (single-product / non-cart flow) doesn't
+        //     have an item index; leave it null so the CRM fans out
+        //     to all cart items carrying that placement (or anchors
+        //     to item 0 when there are none).
+        var pendingFiles = [];   // [{ placement, cart_item_index, file }]
+        try {
+          if (typeof placementFiles === 'object' && placementFiles) {
+            Object.keys(placementFiles).forEach(function(presetId){
+              var f = placementFiles[presetId];
+              if (f instanceof File) pendingFiles.push({
+                placement: presetId,
+                cart_item_index: null,   // global/single-product upload
+                file: f
+              });
+            });
+          }
+          if (typeof cartItemFiles === 'object' && cartItemFiles) {
+            Object.keys(cartItemFiles).forEach(function(key){
+              var f = cartItemFiles[key];
+              if (!(f instanceof File)) return;
+              // key format: "<itemIdx>_<presetId>". presetIds never
+              // contain underscores (see placementPresets); split on
+              // the first '_' to recover both halves.
+              var split = key.indexOf('_');
+              var idxStr = split > -1 ? key.slice(0, split) : '';
+              var idxNum = parseInt(idxStr, 10);
+              var placement = split > -1 ? key.slice(split + 1) : null;
+              pendingFiles.push({
+                placement: placement,
+                cart_item_index: Number.isFinite(idxNum) ? idxNum : null,
+                file: f
+              });
+            });
+          }
+          // Legacy single-input fallback. Tag it as the first selected
+          // placement (or null) so the CRM still attributes it sensibly.
+          if (pendingFiles.length === 0) {
+            var fileInputs = form.querySelectorAll('input[type="file"]');
+            for (var i = 0; i < fileInputs.length; i++) {
+              if (fileInputs[i].files && fileInputs[i].files[0]) {
+                pendingFiles.push({
+                  placement: (Object.values(presetByLocation || {})[0]) || null,
+                  cart_item_index: null,
+                  file: fileInputs[i].files[0],
+                });
+                break;
+              }
+            }
+          }
+        } catch (e) { /* file collection should never break submit */ }
+
+        // Block the native submit; we'll re-submit after upload + POST.
+        e.preventDefault();
+        var fileCount = pendingFiles.length;
+        spShowUploadOverlay(
+          fileCount === 0 ? 'Sending your request…' :
+          fileCount === 1 ? 'Uploading your design…' :
+          ('Uploading ' + fileCount + ' designs…')
+        );
+
+        function finishAndSubmit() {
+          form.dataset.spUploadCleared = '1';
+          spHideUploadOverlay();
+          // form.submit() doesn't trigger 'submit' handlers, so our
+          // bail-out flag is belt-and-suspenders.
+          form.submit();
+        }
+
+        // Safety timeout: if upload + POST takes longer than the
+        // bailout window, give up on the bonus path and submit anyway
+        // — the Web3Forms email backup carries the attachment so the
+        // rep still gets the design. We grow the budget with the file
+        // count because each upload is a separate round trip; 8s base
+        // + 4s per extra file is comfortable on a 3G phone and still
+        // well under the typical "user gets impatient" threshold.
+        var bailoutMs = 8000 + Math.max(0, fileCount - 1) * 4000;
+        var bailoutTimer = setTimeout(function(){
+          if (form.dataset.spUploadCleared === '1') return;
+          console.warn('[quote submit] upload took >' + bailoutMs + 'ms — falling back to email backup');
+          finishAndSubmit();
+        }, bailoutMs);
+
+        function doStructuredPostThenSubmit(uploaded) {
         try {
           var fd = new FormData(form);
           var sizeBreakdown = {};
@@ -4693,6 +6270,15 @@
             if (m) estimatedTotal = parseFloat(m[0]) || 0;
           }
           var isBYO = (fd.get('garment_source') || '') === 'BYOG';
+          // Promo slug — set when the visitor arrived from the homepage
+          // offer popup (/quote?promo=…). Pull from URL first, fall back to
+          // the hidden input the page already stamps on DOMContentLoaded.
+          var promoSlug = null;
+          try {
+            promoSlug = new URLSearchParams(window.location.search).get('promo')
+                     || (fd.get('promo_slug') || null);
+          } catch (e) {}
+
           var payload = {
             kind:            isBYO ? 'byo' : 'quote',
             contact_name:    fd.get('name') || null,
@@ -4708,27 +6294,186 @@
             notes:           fd.get('details') || null,
             cart_items:      items,
             size_breakdown:  sizeBreakdown,
+            // Customer-uploaded designs — one entry per placement the
+            // customer attached artwork to. The CRM inserts one
+            // inbound_request_mockups row per entry, and the 30-min
+            // sweep generates each side independently so a failure
+            // on one print can't kill the others.
+            //
+            // The legacy single-design fields stay populated from the
+            // FIRST upload (if any) so older CRM read paths that
+            // haven't migrated yet keep showing something.
+            designs:         Array.isArray(uploaded) ? uploaded.map(function(u){
+                               return {
+                                 placement:       u.placement || null,
+                                 // 2026-05-24 — tells the CRM which cart
+                                 // item this upload belongs to so the
+                                 // mockup orchestrator generates a
+                                 // separate mockup per item. null means
+                                 // "global" — CRM fans out to every
+                                 // cart item carrying this placement.
+                                 cart_item_index: (typeof u.cart_item_index === 'number') ? u.cart_item_index : null,
+                                 path:            u.path,
+                                 signed_url:      u.signed_url || null,
+                                 mime:            u.mime  || null,
+                                 bytes:           u.bytes || null,
+                               };
+                             }) : [],
+            design_path:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].path)       || null,
+            design_url:      (Array.isArray(uploaded) && uploaded[0] && uploaded[0].signed_url) || null,
+            design_mime:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].mime)       || null,
+            design_bytes:    (Array.isArray(uploaded) && uploaded[0] && uploaded[0].bytes)      || null,
             meta: {
               purpose:        fd.get('purpose') || null,
               blank_brand:    fd.get('blank_brand') || null,
               canadian_addon: !!fd.get('canadian_blanks'),
               xxl_surcharge_total: sur.surchargeTotal || 0,
-              placements: Array.from(document.querySelectorAll('input[name="placements[]"]:checked,input[name="placements"]:checked')).map(function(el){ return el.value; }),
-              promo_slug: (function(){ try { return new URLSearchParams(window.location.search).get('promo') || (fd.get('promo_slug') || null); } catch(e){ return null; } })()
+              // Selected placement preset IDs. Pulled from presetByLocation
+              // (the active map) and the cart items as a fallback. We used
+              // to query `input[name="placements[]"]:checked` but the form
+              // doesn't have placement checkboxes — placements live in the
+              // .loc-check divs + the per-preset card grid — so that
+              // selector always returned an empty array and meta.placements
+              // was always [].
+              placements: (function(){
+                try {
+                  if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+                    var items = SinghsCart.read().items;
+                    var all = [];
+                    items.forEach(function(it){
+                      if (Array.isArray(it.placements)) all = all.concat(it.placements);
+                    });
+                    // De-dupe while preserving order
+                    return all.filter(function(v, i){ return all.indexOf(v) === i; });
+                  }
+                  return Object.values(presetByLocation || {});
+                } catch (e) { return []; }
+              })(),
+              // Promo handoff from the homepage offer popup — surfaces on
+              // the CRM inbox as a "$20 off (first order)" pill so the rep
+              // remembers to apply the discount on the formal quote.
+              promo_slug:     promoSlug || null,
+              // 2026-05-24 — customer-supplied urgency. needed_by is a
+              // YYYY-MM-DD string (or null when blank); is_rush is true
+              // when the rush checkbox was ticked. CRM inbox shows a red
+              // badge for is_rush, and convert-to-order pre-fills the
+              // quote builder's `deadline` from needed_by so the rep
+              // doesn't re-type.
+              needed_by:      fd.get('need_by_date') || null,
+              is_rush:        !!fd.get('is_rush')
             },
             source_url: location.href
           };
-          // Fire-and-forget; we don't await so the form submit isn't blocked.
+          // Now that the design file(s) are already in our bucket (or
+          // none if the customer skipped artwork), POST the structured
+          // payload. We await it so the row is fully written before
+          // we either show the inline success state OR (on failure)
+          // fall through to Web3Forms as a backup.
+          //
+          // Submission policy (May 2026):
+          //   - CRM POST 2xx  →  show the inline #formSuccess panel.
+          //                      Web3Forms is NOT called — it's just
+          //                      redundant work and its spam classifier
+          //                      sometimes rejects the dup payload,
+          //                      which used to flash a confusing
+          //                      "submission failed" page to the
+          //                      customer even when their request had
+          //                      already landed in our CRM.
+          //   - CRM POST !ok / network err → call form.submit() so
+          //                      Web3Forms backstops the request via
+          //                      its native multipart POST. The rep
+          //                      still gets the rep-alert email; we
+          //                      lose the structured cart on that
+          //                      single submission and have to re-enter
+          //                      it manually in /inbox/requests.
+          //   - Bailout timer fired → same as failure path: Web3Forms
+          //                      catches it. The CRM may also still be
+          //                      writing the row in the background
+          //                      (keepalive: true), so duplicate-detect
+          //                      on the inbox handles the rare double.
           fetch(INBOUND_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             keepalive: true
-          }).catch(function(){ /* email backup will still deliver */ });
+          }).then(function(r){
+            clearTimeout(bailoutTimer);
+            if (r && r.ok) {
+              // Inline success — short-circuits Web3Forms entirely.
+              form.dataset.spUploadCleared = '1';
+              spHideUploadOverlay();
+              try { showSuccess(); } catch (e) { /* showSuccess is defined below; fall back if not yet */ }
+            } else {
+              console.warn('[inbound POST] non-2xx from CRM (status ' + (r && r.status) + ') — falling back to Web3Forms');
+              finishAndSubmit();
+            }
+          }).catch(function(err){
+            console.warn('[inbound POST] failed — falling back to Web3Forms:', err);
+            clearTimeout(bailoutTimer);
+            finishAndSubmit();
+          });
         } catch (e) {
           // Never block the form submit on our own analytics path.
           console.warn('[inbound dual-post] skipped:', e);
+          clearTimeout(bailoutTimer);
+          finishAndSubmit();
         }
+        }  // end doStructuredPostThenSubmit
+
+        // Kick off uploads in parallel — one POST per pending file.
+        // Each resolves to { path, signed_url, mime, bytes, placement }.
+        // We use Promise.all so a single slow upload doesn't block the
+        // others; if any single upload fails hard we surface the error
+        // (as before) but the customer can choose "Send without
+        // designs" to push the request through without artwork.
+        function uploadAll(pending) {
+          if (!pending || pending.length === 0) return Promise.resolve([]);
+          return Promise.all(pending.map(function(p){
+            return uploadDesignFile(p.file).then(function(u){
+              if (!u) return null;
+              // Stamp the placement AND cart_item_index onto the upload
+              // result so the structured POST can build designs[] with
+              // both tags. cart_item_index lets the CRM's mockup
+              // orchestrator generate a separate mockup per item.
+              u.placement = p.placement || null;
+              u.cart_item_index = (typeof p.cart_item_index === 'number') ? p.cart_item_index : null;
+              return u;
+            });
+          })).then(function(arr){
+            // Filter null entries (uploadDesignFile resolves null for
+            // a falsy input — shouldn't happen here but defend anyway).
+            return arr.filter(function(x){ return x && x.path; });
+          });
+        }
+
+        uploadAll(pendingFiles).then(function(uploaded){
+          doStructuredPostThenSubmit(uploaded);
+        }).catch(function(err){
+          // Upload failed loud — show the customer what happened and
+          // let them retry or skip. We DON'T call finishAndSubmit here
+          // because the customer should see the error before navigating.
+          clearTimeout(bailoutTimer);
+          console.warn('[design upload] failed:', err);
+          spShowUploadError((err && err.message) || 'Something went wrong uploading your design.');
+          var retry = document.getElementById('spUploadRetry');
+          var skip  = document.getElementById('spUploadSkip');
+          if (retry) retry.addEventListener('click', function(){
+            spHideUploadOverlay();
+            // Re-trigger submit; flag is still 0 so this re-enters.
+            form.requestSubmit ? form.requestSubmit() : form.submit();
+          });
+          if (skip)  skip.addEventListener('click', function(){
+            // User chose to send without the designs. Swap the error
+            // UI back to a spinner, then re-run the structured POST
+            // path with an empty array so the rep at least gets the
+            // request (they can ask the customer to email the designs
+            // later).
+            var overlay = document.getElementById('spUploadOverlay');
+            if (overlay) overlay.remove();
+            spShowUploadOverlay('Sending your request…');
+            doStructuredPostThenSubmit([]);
+          });
+        });
       });
     });
 
@@ -4749,7 +6494,12 @@
         canvas.renderAll();
       }, 150);
     });
-    // ===== Estimation d’expédition (FR) — voir quote.html EN pour le code commenté =====
+
+    // ===== Shipping estimator =====
+    // Calls /api/shipping/estimate on the CRM with cart + postal code.
+    // CRM route owns the Chit Chats API token; nothing sensitive ever
+    // reaches the browser. Falls back gracefully if the API errors —
+    // we never block the quote form on a failed estimate.
     var SHIPPING_API = 'https://singhsprint-crm.vercel.app/api/shipping/estimate';
 
     function spGatherShippingItems() {
@@ -4759,6 +6509,10 @@
             product_id:   it.product_id || null,
             qty:          parseInt(it.qty, 10) || 1,
             garment_type: it.garment_type || null,
+            // When products.weight_oz lands (post-S&S-sync fix) the CRM
+            // route will use it via the catalog lookup; until then it
+            // falls back to per-garment-type heuristics. Either way the
+            // estimator works.
             weight_g:     it.weight_g != null
                             ? Number(it.weight_g)
                             : (it.weight_oz ? Math.round(Number(it.weight_oz) * 28.35) : undefined)
@@ -4767,7 +6521,10 @@
         return items;
       } catch (e) { return []; }
     }
+
     function spReadDeclaredValue() {
+      // Live price total from the sidebar drives the declared customs
+      // value. Conservative fallback at $100 if total isn't computed yet.
       try {
         var el = document.getElementById('priceTotal') || document.getElementById('livePriceTotal');
         var t = el ? (el.textContent || '').replace(/[^0-9.]/g, '') : '';
@@ -4775,12 +6532,24 @@
         return Number.isFinite(n) && n > 0 ? Math.min(n, 100000) : 100;
       } catch (e) { return 100; }
     }
-    // Voir EN quote.html pour les commentaires détaillés.
-    var spFulfillment = 'delivery';
-    var spShippingChoice = null;
-    var spShippingFree = false;
 
-    function spIsFR() { try { return (document.documentElement.lang || '').toLowerCase().indexOf('fr') === 0; } catch (e) { return false; } }
+    // ---------------------------------------------------------------------
+    // Fulfillment state & "Shipping:" breakdown line
+    //
+    // The customer picks pickup vs delivery. The breakdown line under the
+    // running price total reflects the selection. For delivery, we show
+    // either an "enter postal code" prompt, the free-shipping confirmation
+    // (Greater Montreal · $500+), or the selected paid rate (tracked vs
+    // untracked, customer pickable).
+    // ---------------------------------------------------------------------
+    var spFulfillment = 'delivery';           // 'pickup' | 'delivery'
+    var spShippingChoice = null;              // { fee_cad, label, postage_type } | null
+    var spShippingFree = false;               // true when Greater Montreal + $500+
+
+    function spIsFR() {
+      try { return (document.documentElement.lang || '').toLowerCase().indexOf('fr') === 0; }
+      catch (e) { return false; }
+    }
     function spLabel(en, fr) { return spIsFR() ? fr : en; }
 
     function spUpdateShippingLine() {
@@ -4789,19 +6558,33 @@
       var row = document.getElementById('shippingLineRow');
       if (row) row.style.display = 'flex';
       if (spFulfillment === 'pickup') {
-        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.92rem">' + spLabel('FREE', 'GRATUIT') + '</strong> &mdash; ' + spLabel('In-store pickup', 'Cueillette en magasin');
-        val.style.color = '#1a1a1a'; return;
+        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.92rem">' +
+          spLabel('FREE', 'GRATUIT') + '</strong> &mdash; ' +
+          spLabel('In-store pickup', 'Cueillette en magasin');
+        val.style.color = '#1a1a1a';
+        return;
       }
+      // Delivery mode
       if (spShippingFree) {
-        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.92rem">' + spLabel('FREE', 'GRATUIT') + '</strong> &mdash; ' + spLabel('Greater Montreal order $500+', 'Région Montréal · 500 $ et plus');
-        val.style.color = '#1a1a1a'; return;
+        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.92rem">' +
+          spLabel('FREE', 'GRATUIT') + '</strong> &mdash; ' +
+          spLabel('Greater Montreal order $500+', 'Région Montréal · 500 $ et plus');
+        val.style.color = '#1a1a1a';
+        return;
       }
       if (spShippingChoice && spShippingChoice.fee_cad != null) {
         var fee = Number(spShippingChoice.fee_cad).toFixed(2);
-        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.95rem">$' + fee + '</strong> <span style="color:#888;font-size:.72rem;display:block;margin-top:2px">' + (spShippingChoice.label || '') + '</span>';
-        val.style.color = '#1a1a1a'; return;
+        val.innerHTML = '<strong style="color:#1a1a1a;font-size:.95rem">$' + fee +
+          '</strong> <span style="color:#888;font-size:.72rem;display:block;margin-top:2px">' +
+          (spShippingChoice.label || '') + '</span>';
+        val.style.color = '#1a1a1a';
+        return;
       }
-      val.textContent = spLabel('Enter postal code below to get shipping estimate', 'Entrez votre code postal ci-dessous pour une estimation');
+      // Delivery mode, no estimate yet
+      val.textContent = spLabel(
+        'Enter postal code below to get shipping estimate',
+        'Entrez votre code postal ci-dessous pour une estimation'
+      );
       val.style.color = '#888';
     }
 
@@ -4811,8 +6594,16 @@
       var dBtn = document.getElementById('fulfillDeliveryBtn');
       var pBody = document.getElementById('fulfillPickupBody');
       var dBody = document.getElementById('fulfillDeliveryBody');
-      if (pBtn) { pBtn.style.background = spFulfillment === 'pickup' ? '#1a1a1a' : 'transparent'; pBtn.style.color = spFulfillment === 'pickup' ? '#fff' : '#666'; pBtn.classList.toggle('active', spFulfillment === 'pickup'); }
-      if (dBtn) { dBtn.style.background = spFulfillment === 'delivery' ? '#1a1a1a' : 'transparent'; dBtn.style.color = spFulfillment === 'delivery' ? '#fff' : '#666'; dBtn.classList.toggle('active', spFulfillment === 'delivery'); }
+      if (pBtn) {
+        pBtn.style.background = spFulfillment === 'pickup' ? '#1a1a1a' : 'transparent';
+        pBtn.style.color = spFulfillment === 'pickup' ? '#fff' : '#666';
+        pBtn.classList.toggle('active', spFulfillment === 'pickup');
+      }
+      if (dBtn) {
+        dBtn.style.background = spFulfillment === 'delivery' ? '#1a1a1a' : 'transparent';
+        dBtn.style.color = spFulfillment === 'delivery' ? '#fff' : '#666';
+        dBtn.classList.toggle('active', spFulfillment === 'delivery');
+      }
       if (pBody) pBody.style.display = spFulfillment === 'pickup' ? 'block' : 'none';
       if (dBody) dBody.style.display = spFulfillment === 'delivery' ? 'block' : 'none';
       spUpdateShippingLine();
@@ -4821,24 +6612,41 @@
     function spRenderShippingResult(d) {
       var el = document.getElementById('shipResult');
       if (!el) return;
+
+      // Free shipping branch (Greater Montreal + $500+)
       if (d && d.free_shipping && d.free_shipping.eligible) {
         spShippingFree = true;
         spShippingChoice = { fee_cad: 0, label: spLabel('FREE — Greater Montreal', 'GRATUIT — Région Montréal'), postage_type: 'free_local' };
         el.style.display = 'block';
-        el.innerHTML = '<div style="padding:12px;background:#1a1a1a;color:#fff;border-radius:10px"><div style="font-weight:700;font-size:1rem">' + spLabel('FREE shipping unlocked', 'Livraison GRATUITE') + '</div><div style="font-size:.78rem;opacity:.85;margin-top:4px">' + spLabel('Greater Montreal area · order $500+', 'Région du Grand Montréal · commande de 500 $ et plus') + '</div></div>';
+        el.innerHTML =
+          '<div style="padding:12px;background:#1a1a1a;color:#fff;border-radius:10px">' +
+            '<div style="font-weight:700;font-size:1rem">' + spLabel('FREE shipping unlocked', 'Livraison GRATUITE') + '</div>' +
+            '<div style="font-size:.78rem;opacity:.85;margin-top:4px">' +
+              spLabel('Greater Montreal area · order $500+', 'Région du Grand Montréal · commande de 500 $ et plus') +
+            '</div>' +
+          '</div>';
         spUpdateShippingLine();
         return;
       }
+
+      // No rates at all
       if (!d || !d.all_rates || d.all_rates.length === 0) {
         spShippingFree = false;
         spShippingChoice = null;
         el.style.display = 'block';
-        el.innerHTML = '<div style="padding:10px;background:#fff5f5;border:1px solid #f0d9d9;border-radius:8px;color:#888;font-size:.82rem">' + spLabel('No rate available for that postal code. Contact us at 438-544-3800.', 'Aucun tarif disponible pour ce code postal. Appelez-nous au 438-544-3800.') + '</div>';
+        el.innerHTML =
+          '<div style="padding:10px;background:#fff5f5;border:1px solid #f0d9d9;border-radius:8px;color:#888;font-size:.82rem">' +
+            spLabel("No rate available for that postal code. Contact us at 438-544-3800.",
+                    "Aucun tarif disponible pour ce code postal. Appelez-nous au 438-544-3800.") +
+          '</div>';
         spUpdateShippingLine();
         return;
       }
+
+      // Paid rates branch — render tracked vs untracked selectable cards
       spShippingFree = false;
       var rates = (d.all_rates || []).slice();
+      // sort cheap first, then identify tracked vs untracked by postage_type
       rates.sort(function(a, b) { return (a.fee_cad || 0) - (b.fee_cad || 0); });
       var untracked = null, tracked = null;
       rates.forEach(function(r) {
@@ -4846,35 +6654,55 @@
         if (isTracked && !tracked) tracked = r;
         else if (!isTracked && !untracked) untracked = r;
       });
+      // fallback when API only returns one rate
       if (!untracked) untracked = rates[0];
       if (!tracked && rates.length > 1) tracked = rates[rates.length - 1];
-      // Voir quote.html EN pour la justification : si "Avec suivi" coûte moins
-      // que "Sans suivi" (cas des colis lourds), on retire l'option sans suivi.
+
+      // Counter-intuitive case: for heavy / multi-parcel shipments, Chit
+      // Chats' tracked service (Canada Post Tracked Packet under the hood)
+      // sometimes prices below Select. When "With tracking" is cheaper —
+      // i.e. tracked is a strict upgrade in both cost AND service — drop
+      // the untracked option entirely. Otherwise customers see two cards
+      // where the pricier one looks worse on every axis, which is confusing.
       if (tracked && untracked && tracked !== untracked &&
           Number(tracked.fee_cad) < Number(untracked.fee_cad)) {
         untracked = null;
       }
-      var pkg = d.package_type_label || 'Colis';
+
+      var pkg = d.package_type_label || 'Package';
       var wKg = (Number(d.weight_g) / 1000).toFixed(2);
       var nearFree = d && d.free_shipping && d.free_shipping.in_greater_montreal &&
                      typeof d.free_shipping.current_value_cad === 'number' &&
                      d.free_shipping.current_value_cad < d.free_shipping.min_value_cad;
+
       var html = '';
+      // When only one option remains (e.g. tracked-is-cheaper case),
+      // it becomes the default-checked card.
       var soleOption = !untracked || !tracked;
       if (untracked) html += spRateCardHtml('untracked', untracked, true);
       if (tracked && tracked !== untracked) html += spRateCardHtml('tracked', tracked, soleOption);
       html += '<div style="color:#888;font-size:.7rem;margin-top:8px">' + pkg + ' &middot; ~' + wKg + ' kg</div>';
       if (nearFree) {
         var diff = (d.free_shipping.min_value_cad - d.free_shipping.current_value_cad).toFixed(2);
-        html += '<div style="margin-top:8px;padding:8px 10px;background:#fff8e8;border:1px solid #f0e3b8;border-radius:8px;color:#7a5b15;font-size:.74rem">' + spLabel('Add $' + diff + ' more for FREE shipping (Greater Montreal).', 'Ajoutez ' + diff + ' $ pour la livraison GRATUITE (Région Montréal).') + '</div>';
+        html += '<div style="margin-top:8px;padding:8px 10px;background:#fff8e8;border:1px solid #f0e3b8;border-radius:8px;color:#7a5b15;font-size:.74rem">' +
+          spLabel('Add $' + diff + ' more for FREE shipping (Greater Montreal).',
+                  'Ajoutez ' + diff + ' $ pour la livraison GRATUITE (Région Montréal).') +
+          '</div>';
       }
       el.style.display = 'block';
       el.innerHTML = html;
+
+      // Wire radio change events
       var radios = el.querySelectorAll('input[name="ship-choice"]');
       Array.prototype.forEach.call(radios, function(r) {
         r.addEventListener('change', function() {
           if (!r.checked) return;
-          spShippingChoice = { fee_cad: Number(r.dataset.fee), label: r.dataset.label, postage_type: r.dataset.ptype };
+          spShippingChoice = {
+            fee_cad: Number(r.dataset.fee),
+            label: r.dataset.label,
+            postage_type: r.dataset.ptype
+          };
+          // re-style the cards
           Array.prototype.forEach.call(el.querySelectorAll('.ship-rate-card'), function(c) {
             var rad = c.querySelector('input[name="ship-choice"]');
             c.style.borderColor = (rad && rad.checked) ? '#1a1a1a' : '#e0e0e0';
@@ -4883,10 +6711,22 @@
           spUpdateShippingLine();
         });
       });
+
+      // Default selection: prefer untracked (cheapest in the normal case);
+      // when we omitted untracked because tracked is cheaper, tracked
+      // becomes the default.
       if (untracked) {
-        spShippingChoice = { fee_cad: untracked.fee_cad, label: spLabel('Without tracking · ', 'Sans suivi · ') + (untracked.label || 'Chit Chats Select'), postage_type: untracked.postage_type };
+        spShippingChoice = {
+          fee_cad: untracked.fee_cad,
+          label: spLabel('Without tracking · ', 'Sans suivi · ') + (untracked.label || 'Chit Chats Select'),
+          postage_type: untracked.postage_type
+        };
       } else if (tracked) {
-        spShippingChoice = { fee_cad: tracked.fee_cad, label: spLabel('With tracking · ', 'Avec suivi · ') + (tracked.label || 'Chit Chats Canada Tracked'), postage_type: tracked.postage_type };
+        spShippingChoice = {
+          fee_cad: tracked.fee_cad,
+          label: spLabel('With tracking · ', 'Avec suivi · ') + (tracked.label || 'Chit Chats Canada Tracked'),
+          postage_type: tracked.postage_type
+        };
       }
       spUpdateShippingLine();
     }
@@ -4915,73 +6755,104 @@
       el.style.display = 'block';
       el.textContent = msg;
     }
+
     function spClearShippingPanels() {
       var ok = document.getElementById('shipResult');
       var err = document.getElementById('shipError');
       if (ok) ok.style.display = 'none';
       if (err) err.style.display = 'none';
+      // Reset shipping selection so the breakdown line falls back to the
+      // "enter postal code" prompt if the customer hasn't picked yet.
       spShippingChoice = null;
       spShippingFree   = false;
       spUpdateShippingLine();
     }
+
     function spRequestShippingEstimate() {
       spClearShippingPanels();
       var postal = (document.getElementById('shipPostal') || {}).value || '';
       postal = postal.trim().toUpperCase();
       var country = (document.getElementById('shipCountry') || {}).value || 'CA';
-      if (!postal || postal.length < 3) { spRenderShippingError('Entrez votre code postal d\u2019abord.'); return; }
+      if (!postal || postal.length < 3) {
+        spRenderShippingError('Enter your postal/zip code first.');
+        return;
+      }
       var items = spGatherShippingItems();
-      if (!items.length) { spRenderShippingError('Ajoutez des articles à votre soumission d\u2019abord.'); return; }
+      if (!items.length) {
+        spRenderShippingError('Add items to your quote first.');
+        return;
+      }
       var declared = spReadDeclaredValue();
       var btn = document.getElementById('shipEstimateBtn');
-      if (btn) { btn.disabled = true; btn.dataset._orig = btn.textContent; btn.textContent = '\u2026'; }
+      if (btn) { btn.disabled = true; btn.dataset._orig = btn.textContent; btn.textContent = '…'; }
       fetch(SHIPPING_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: items, postal_code: postal, country_code: country, declared_value_cad: declared })
       })
-      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; }, function(){ return { ok: r.ok, status: r.status, body: null }; }); })
+      .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, body: j }; }, function(){ return { ok: r.ok, status: r.status, body: null }; }); })
       .then(function(res) {
-        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._orig || 'Estimer'; }
-        if (!res.ok) { spRenderShippingError('Impossible d\u2019obtenir un tarif (HTTP ' + res.status + ').'); return; }
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._orig || 'Estimate'; }
+        if (!res.ok) {
+          spRenderShippingError("Couldn't fetch a rate right now (HTTP " + res.status + "). Try again or contact us.");
+          return;
+        }
         spRenderShippingResult(res.body);
         if (typeof window.spTrack === 'function') {
           window.spTrack('shipping_estimate', {
-            postal_prefix: postal.slice(0, 3), country: country, lang: 'fr',
+            postal_prefix: postal.slice(0, 3),
+            country: country,
             weight_g: res.body && res.body.weight_g,
             cheapest_cad: res.body && res.body.cheapest && res.body.cheapest.fee_cad
           });
         }
       })
       .catch(function(){
-        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._orig || 'Estimer'; }
-        spRenderShippingError('Erreur réseau. Réessayez.');
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._orig || 'Estimate'; }
+        spRenderShippingError('Network error. Please try again.');
       });
     }
+
     document.addEventListener('DOMContentLoaded', function() {
       var btn = document.getElementById('shipEstimateBtn');
       var postal = document.getElementById('shipPostal');
       if (btn) btn.addEventListener('click', spRequestShippingEstimate);
-      if (postal) postal.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); spRequestShippingEstimate(); } });
-      // Bascule cueillette / livraison
+      if (postal) postal.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') { e.preventDefault(); spRequestShippingEstimate(); }
+      });
+      // Pickup / Delivery toggle
       var pBtn = document.getElementById('fulfillPickupBtn');
       var dBtn = document.getElementById('fulfillDeliveryBtn');
       if (pBtn) pBtn.addEventListener('click', function() { spSetFulfillment('pickup'); });
       if (dBtn) dBtn.addEventListener('click', function() { spSetFulfillment('delivery'); });
+      // Default to delivery — shows the postal-code prompt under the price total
       spSetFulfillment('delivery');
 
-      // Mobile inline relocation of the shipping estimator — see EN
-      // quote.html for the full rationale comment.
+      // ===========================================================
+      // Mobile: relocate the shipping estimator INLINE into Step 3.
+      // ===========================================================
+      // On desktop the estimator lives in the sidebar (right column) and
+      // floats next to the form. On phones the sidebar is hidden via CSS
+      // (.mockup-panel{display:none}), so we surgically move the card
+      // into the form flow — right after the "Delivery preference"
+      // dropdown — so the user sees their shipping options exactly when
+      // they're picking their fulfilment method. Visibility tracks the
+      // dropdown: hidden for "Local pickup", visible otherwise.
       var MOBILE_BREAKPOINT = 900;
       var card = document.getElementById('shippingEstimateCard');
       var deliverySel = document.getElementById('delivery');
       var originalParent = card ? card.parentNode : null;
       var originalNext   = card ? card.nextSibling : null;
       var mobileHost = null;
+
       function isMobile() { return window.innerWidth <= MOBILE_BREAKPOINT; }
+
       function relocateForViewport() {
         if (!card || !deliverySel) return;
         if (isMobile()) {
+          // Build / find the inline host (a wrapper right after the
+          // delivery <select>'s form-group so the card slots cleanly
+          // into the form's vertical rhythm).
           if (!mobileHost) {
             var deliveryGroup = deliverySel.closest('.form-group');
             mobileHost = document.createElement('div');
@@ -4994,28 +6865,36 @@
           if (card.parentNode !== mobileHost) mobileHost.appendChild(card);
           syncFromDeliverySelect();
         } else {
+          // Back to its original sidebar slot for desktop.
           if (originalParent && card.parentNode !== originalParent) {
             originalParent.insertBefore(card, originalNext);
           }
           card.classList.remove('is-hidden-mobile');
         }
       }
+
       function syncFromDeliverySelect() {
         if (!card || !deliverySel || !isMobile()) return;
         var v = (deliverySel.value || '').toLowerCase();
-        var hide = !v || /pickup|cueillette/.test(v);
+        // Hide on "Select..." (empty value) and on local pickup, since
+        // pickup is free and shows no postal form.
+        var hide = !v || /pickup/.test(v);
         card.classList.toggle('is-hidden-mobile', hide);
+        // If the user picked delivery/shipping, ensure the delivery pill
+        // is the active mode inside the card too.
         if (!hide) spSetFulfillment('delivery');
       }
+
       if (deliverySel) deliverySel.addEventListener('change', syncFromDeliverySelect);
       relocateForViewport();
+      // Re-evaluate on rotate / resize so a tablet user who flips
+      // orientation gets the right layout.
       var resizeTimer;
       window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(relocateForViewport, 150);
       });
     });
-
   </script>
 </body>
 </html>

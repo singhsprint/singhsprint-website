@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <link rel="canonical" href="https://www.singhsprint.com/account/allocations">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/account/allocations">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/account/allocations">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/account/allocations">
   <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/account/allocations">
@@ -96,7 +96,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/account/" class="back-link">← Back to account</a>
+  <a href="/fr/account/" class="back-link">← Back to account</a>
   <div id="acct-subnav"></div>
 
   <div class="hero">
@@ -125,7 +125,7 @@
 
   // Make sure the caller is signed in. window.api is provided by /account/auth.js.
   if (!window.api || !window.api.authedFetch) {
-    root.innerHTML = '<div class="msg msg--err">Please <a href="/account/signin.html">sign in</a> to view your allocations.</div>';
+    root.innerHTML = '<div class="msg msg--err">Please <a href="/fr/account/signin.html">sign in</a> to view your allocations.</div>';
     return;
   }
 
@@ -144,7 +144,7 @@
   if (!res.ok) {
     const j = await res.json().catch(()=>({}));
     if (res.status === 401) {
-      root.innerHTML = '<div class="msg msg--err">Please <a href="/account/signin.html">sign in</a> to view your allocations.</div>';
+      root.innerHTML = '<div class="msg msg--err">Please <a href="/fr/account/signin.html">sign in</a> to view your allocations.</div>';
       return;
     }
     root.innerHTML = `<div class="msg msg--err">${esc(j.error || ('Error: ' + res.status))}</div>`;
@@ -157,7 +157,7 @@
       <div class="empty">
         <h2>No allocations yet</h2>
         <p>You're not enrolled in a cohort with allocated items. If your school gave you an access code, enter it on the join page.</p>
-        <a class="btn btn--primary" href="/account/join.html">Enter access code</a>
+        <a class="btn btn--primary" href="/fr/account/join.html">Enter access code</a>
       </div>`;
     return;
   }
@@ -314,7 +314,7 @@
           You picked <strong>${esc(opt ? opt.productId : '—')}</strong> in size <strong>${esc(cl.size || '—')}</strong>${customs.length ? ` with ${customs.length} extra${customs.length===1?'':'s'}` : ''}.
         </div>
         <div style="font-size:.84rem;color:#666">
-          <a href="/account/orders.html" style="font-weight:700;text-decoration:underline;text-underline-offset:2px">View order →</a>
+          <a href="/fr/account/orders.html" style="font-weight:700;text-decoration:underline;text-underline-offset:2px">View order →</a>
         </div>
       </section>
     `;

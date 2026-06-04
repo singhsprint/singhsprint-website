@@ -131,7 +131,7 @@
   <meta name="twitter:title" content="Portfolio — Singhs Print">
   <meta name="twitter:description" content="A look at recent custom apparel work for Montreal brands, businesses, and creators. DTG, DTF, screen print & embroidery.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/hero-lifestyle.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://www.singhsprint.com/fr/"},{"@type":"ListItem","position":2,"name":"Portfolio","item":"https://www.singhsprint.com/fr/portfolio"}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.singhsprint.com/"},{"@type":"ListItem","position":2,"name":"Portfolio","item":"https://www.singhsprint.com/portfolio"}]}</script>
 </head>
 <body>
 
@@ -232,8 +232,8 @@
 
   <div id="footer-placeholder"></div>
 
-  <script src="/components.js" defer></script>
-  <script src="/lang.js"></script>
+  <script src="components.js" defer></script>
+  <script src="lang.js"></script>
   <script>
     // Portfolio filter
     document.querySelectorAll('.filter-btn').forEach(function(btn) {
@@ -250,6 +250,45 @@
         });
       });
     });
+  </script>
+
+  <!-- CRM-managed "Our work" gallery. Progressive enhancement: the hardcoded
+       grid above is the SEO/no-JS fallback; if the CRM returns published
+       items we rebuild the grid from them so operators can edit it from the
+       dashboard (/portfolio). Categories map 1:1 to the filter pills. -->
+  <script>
+  (function () {
+    var CRM = 'https://singhsprint-crm.vercel.app';
+    var CAT = { DTG: 'dtg', DTF: 'dtf', Embroidery: 'embroidery' };
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+    fetch(CRM + '/api/portfolio', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var items = j && j.items;
+        if (!Array.isArray(items) || !items.length) return; // keep hardcoded fallback
+        var grid = document.querySelector('.gallery');
+        if (!grid) return;
+        grid.innerHTML = items.map(function (it) {
+          var cat = CAT[it.category] || '';
+          var sub = [it.category, it.description].filter(Boolean).map(esc).join(' &bull; ');
+          return '<div class="gallery-item" data-category="' + esc(cat) + '">'
+            + '<img src="' + esc(it.image_url) + '" alt="' + esc(it.title || '') + '" loading="lazy">'
+            + '<div class="item-overlay"><div><h4>' + esc(it.title || '') + '</h4><span>' + sub + '</span></div></div>'
+            + '</div>';
+        }).join('');
+        // Re-apply whichever filter pill is active (default "all").
+        var active = document.querySelector('.filter-btn.active');
+        var f = active ? active.dataset.filter : 'all';
+        document.querySelectorAll('.gallery-item').forEach(function (item) {
+          item.style.display = (f === 'all' || item.dataset.category === f) ? 'block' : 'none';
+        });
+      })
+      .catch(function () { /* keep hardcoded fallback */ });
+  })();
   </script>
 </body>
 </html>

@@ -20,7 +20,7 @@
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/fr/">
   <meta property="og:title" content="Singhs Print — Custom Apparel Printing in Montreal">
-  <meta property="og:description" content="DTG, DTF, sérigraphie et broderie depuis l’Ouest-de-l’Île de Montréal. Faibles minimums, délai de 3 à 5 jours, options urgentes. 20 $ de rabais sur votre première commande de 100 $ et plus.">
+  <meta property="og:description" content="DTG, DTF, screen print & embroidery for brands, businesses, and creators. West Island studio. Low minimums, 3&ndash;5 day turnaround with rush options. $20 off your first order of $100+.">
   <meta property="og:image" content="https://www.singhsprint.com/images/hero-duo.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
   <meta property="og:locale:alternate" content="en_CA">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Singhs Print — Custom Apparel Printing in Montreal">
-  <meta name="twitter:description" content="DTG, DTF et broderie depuis l’Ouest-de-l’Île. Faibles minimums, délai de 3 à 5 jours. 20 $ de rabais sur votre première commande de 100 $ et plus.">
+  <meta name="twitter:description" content="DTG, DTF & embroidery from Montreal's West Island. Low minimums, 3&ndash;5 day turnaround with rush options. $20 off your first order of $100+.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/hero-duo.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,8 +82,42 @@
     /* ===== HERO ===== */
     .hero{padding:60px 0 80px;background:linear-gradient(135deg,#f8f7f4 0%,#fff 50%,#f0f5e8 100%);position:relative;overflow:hidden}
     .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
-    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #e0e0e0;border-radius:50px;padding:8px 16px;font-size:.85rem;font-weight:500;margin-bottom:20px}
-    .hero-badge .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+    /* 2026-05-24 — Hero "stamp" status mark (replaces generic
+       rounded-pill .hero-badge). Looks like a hand-applied sticker
+       on a shopfront window: tilted black-on-yellow tag + inline
+       hours/address text. Two-axis treatment (small uppercase tag
+       + larger sentence-case detail) keeps it from reading as
+       another off-the-shelf badge. */
+    .hero-stamp{
+      display:inline-flex; align-items:center; gap:12px;
+      margin-bottom:20px; flex-wrap:wrap;
+    }
+    .hero-stamp__tag{
+      display:inline-block; padding:5px 11px;
+      background:#1a1a1a; color:#e8ff3c;
+      font-size:.66rem; font-weight:800;
+      letter-spacing:.16em; text-transform:uppercase;
+      border-radius:3px; line-height:1.4;
+      /* Slight tilt + shadow read as "applied by hand" rather than
+         "rendered by a UI framework". The shadow direction matches
+         the tilt so it feels physical. */
+      transform: rotate(-2deg);
+      box-shadow: 1px 2px 0 rgba(0,0,0,.10);
+      /* Subtle pulse-free state — we already say OPEN, no need to
+         add a generic animation on top. */
+    }
+    .hero-stamp__detail{
+      font-size:.86rem; color:#444; font-weight:500;
+      line-height:1.45;
+    }
+    .hero-stamp__sep{ color:#aaa; margin:0 6px; }
+    /* When the day-of-week / status flips to "closed" the JS swaps
+       the tag color so the visual cue matches the copy. */
+    .hero-stamp__tag.is-closed{
+      background:#fafaf6; color:#1a1a1a;
+      border:1.5px solid #1a1a1a;
+      box-shadow:none;
+    }
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
     .hero h1{margin-bottom:16px}
     .hero h1 .accent{color:#555}
@@ -108,7 +142,9 @@
        match the source rather than crop. */
     .hero-photo{border-radius:20px;overflow:hidden;background:#e8e8e8;aspect-ratio:3/4;position:relative}
     .hero-photo img,.hero-photo video{width:100%;height:100%;object-fit:cover;display:block}
-    /* Voir EN index.html. Pattern à deux vidéos : CSS choisit. */
+    /* Two-video pattern: only one renders per viewport. CSS handles the
+       picker — never use <source media="…"> for this, it's flaky on
+       Safari iOS. */
     .hero-video--mobile{display:none}
     .hero-video--desktop{display:block}
     @media(max-width:768px){
@@ -313,16 +349,34 @@
       .section{padding:60px 0}
       .hero{padding:40px 0 60px}
       .hero-grid{grid-template-columns:1fr;gap:32px}
-      /* Mobile elegant hero — voir EN index.html pour la justification.
-         Vidéo en premier, en-tête condensé, CTA primaire au-dessus
-         du pli grâce au format 4:3 qui plafonne la vidéo à ~300 px. */
+      /* Mobile elegant hero — video first, tight headline, primary
+         CTA above the fold. The 4:3 aspect ratio caps the video at
+         ~300 px so it doesn't push the CTA below the fold (previous
+         3:4 portrait wrapper was 520 px tall — that's what forced
+         text-first in the earlier revision).
+         What we trade off:
+           - `.hero-guarantee` (the floating 100%-Satisfaction pill)
+             hides — when the video sits above content the pill would
+             land inside the headline area; not worth re-positioning
+             for a single-viewport stack.
+         What we preserve:
+           - H1, subhead, primary CTA, secondary text link, proof line,
+             and (2026-05-24) the `.hero-stamp` — the old generic
+             badge hid on mobile, but the new stamp carries actual
+             utility (hours + address), so we keep it visible at a
+             smaller size instead. */
       .hero-visual{order:1;max-width:none;margin:0}
       .hero-content{order:2}
       .hero-photo{aspect-ratio:4/3;max-height:320px}
       .hero-guarantee{display:none}
       .hero h1{font-size:clamp(1.7rem,6.5vw,2.1rem) !important;line-height:1.1 !important;margin-bottom:12px !important}
       .hero .subhead{font-size:.92rem !important;line-height:1.5 !important;margin-bottom:16px !important}
-      .hero-badge{display:none}
+      /* Stamp scales down on mobile but stays present. The detail
+         text wraps onto its own line when the tag eats horizontal
+         space — flex-wrap is already on .hero-stamp. */
+      .hero-stamp{gap:10px;margin-bottom:14px}
+      .hero-stamp__tag{font-size:.6rem !important;padding:4px 9px !important;letter-spacing:.14em !important}
+      .hero-stamp__detail{font-size:.76rem !important}
       .hero-proof{font-size:.78rem;margin-bottom:0;margin-top:14px}
       .hero-buttons{gap:8px;margin-bottom:4px}
       .hero-stats{gap:20px}
@@ -347,7 +401,11 @@
          mobile the `order:` reverse already happened above, so this
          just tightens the content side. */
       .hero{padding:20px 0 28px !important}
-      .hero-badge{font-size:.7rem !important;padding:5px 11px !important;margin-bottom:10px !important}
+      /* Tighten the stamp further at very-narrow widths — keeps the
+         hours line readable without forcing it onto a third row. */
+      .hero-stamp{margin-bottom:10px !important;gap:8px}
+      .hero-stamp__tag{font-size:.58rem !important;padding:3px 8px !important}
+      .hero-stamp__detail{font-size:.72rem !important}
       .hero-content h1{margin-bottom:10px !important}
       .hero-content .subhead{margin-bottom:14px !important;font-size:.92rem !important;line-height:1.5}
       .hero-buttons{margin-bottom:10px !important}
@@ -447,7 +505,7 @@
   </style>
 
   <!-- SEO: Structured data (LocalBusiness + Service + FAQPage + WebSite). Generated by scripts/seo-schema-inject. Edit the generator, not this block. -->
-  <script type="application/ld+json" id="sp-schema-home-fr">{"@context":"https://schema.org","@graph":[{"@type":"LocalBusiness","@id":"https://www.singhsprint.com/fr/#business","name":"Singh's Print","legalName":"9555-8110 Québec Inc.","alternateName":["Singhs Print","Imprimerie Singhs Print"],"url":"https://www.singhsprint.com/fr/","logo":"https://www.singhsprint.com/images/logo.png","image":["https://www.singhsprint.com/images/hero-duo.jpg","https://www.singhsprint.com/images/hero-poster.jpg"],"telephone":"+14385443800","email":"sales@singhsprint.com","priceRange":"$$","currenciesAccepted":"CAD","paymentAccepted":["Cash","Credit Card","E-Transfer","Stripe"],"address":{"@type":"PostalAddress","streetAddress":"81A Sainte-Anne Street","addressLocality":"Sainte-Anne-de-Bellevue","addressRegion":"QC","postalCode":"H9X 1L9","addressCountry":"CA"},"geo":{"@type":"GeoCoordinates","latitude":45.4034586,"longitude":-73.9535957},"areaServed":[{"@type":"AdministrativeArea","name":"West Island, Montreal"},{"@type":"City","name":"Montreal"},{"@type":"City","name":"Sainte-Anne-de-Bellevue"},{"@type":"City","name":"Pointe-Claire"},{"@type":"City","name":"Dorval"},{"@type":"City","name":"Kirkland"},{"@type":"City","name":"Beaconsfield"},{"@type":"City","name":"Pierrefonds"},{"@type":"City","name":"Laval"},{"@type":"AdministrativeArea","name":"Quebec"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"09:00","closes":"21:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue": "5.0","reviewCount": "27","bestRating":"5","worstRating":"1"},"sameAs":["https://maps.app.goo.gl/FX8o2QEvQzngxeiv7"],"identifier":[{"@type":"PropertyValue","propertyID":"NEQ","value":"1181573313"}],"knowsAbout":["DTG printing","Direct-to-Garment printing","DTF transfers","Direct-to-Film printing","Screen printing","Embroidery","Custom t-shirts","Custom hoodies","Custom polos","Custom caps","Corporate uniforms","Team apparel","Brand merch"],"description":"Imprimerie de vêtements personnalisés à l'Ouest-de-l'Île de Montréal. DTG, DTF, sérigraphie et broderie. Faibles minimums, délai de 3 à 5 jours."},{"@type":"FAQPage","@id":"https://www.singhsprint.com/fr/#faq","mainEntity":[{"@type":"Question","name":"Quels services d'impression offrez-vous ?","acceptedAnswer":{"@type":"Answer","text":"On se spécialise en DTG (impression directe sur vêtement), DTF (transfert sur film), broderie et sérigraphie. T-shirts, hoodies, crewnecks, uniformes, casquettes et plus — tout décoré sur place à notre atelier de Sainte-Anne-de-Bellevue, dans l'Ouest-de-l'Île de Montréal."}},{"@type":"Question","name":"Y a-t-il une commande minimum ?","acceptedAnswer":{"@type":"Answer","text":"Aucun minimum. On imprime 1 article ou 1 000+. Idéal pour les petites marques, créateurs, écoles, gyms, cafés et entreprises de toute taille."}},{"@type":"Question","name":"En combien de temps pouvez-vous compléter une commande ?","acceptedAnswer":{"@type":"Answer","text":"Délai standard de 3 à 5 jours après approbation du visuel. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission."}},{"@type":"Question","name":"Pouvez-vous fournir les vêtements vierges ?","acceptedAnswer":{"@type":"Answer","text":"Oui — on s'approvisionne chez S&S Activewear, SanMar, AlphaBroder et Rue Saint-Patrick (fabriqué au Canada). Accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d'autres. Ou apportez vos vêtements et on les décore au même tarif par pièce."}},{"@type":"Question","name":"Quels formats de fichier acceptez-vous ?","acceptedAnswer":{"@type":"Answer","text":"PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l'impression ? Notre studio de design vous aide gratuitement."}},{"@type":"Question","name":"Puis-je voir un échantillon d'abord ?","acceptedAnswer":{"@type":"Answer","text":"Absolument. On produit un véritable échantillon physique pour vérifier couleurs, placement et qualité avant la production complète. C'est inclus avec chaque commande."}},{"@type":"Question","name":"Offrez-vous une garantie de satisfaction ?","acceptedAnswer":{"@type":"Answer","text":"Oui. S'il y a un problème de qualité d'impression ou un défaut de vêtement, on réimprime ou on remplace l'article sans frais."}},{"@type":"Question","name":"Offrez-vous un rabais sur la première commande ?","acceptedAnswer":{"@type":"Answer","text":"Oui — votre première commande de 100 $ ou plus bénéficie de 20 $ de rabais, appliqué automatiquement lors de la soumission. Aucun code requis."}},{"@type":"Question","name":"Quels secteurs desservez-vous ?","acceptedAnswer":{"@type":"Answer","text":"On décore à Sainte-Anne-de-Bellevue et livre dans tout l'Ouest-de-l'Île de Montréal (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), le grand Montréal, Laval et la Rive-Sud. Expédition partout au Canada pour les commandes plus importantes."}}]},{"@type":"WebSite","@id":"https://www.singhsprint.com/fr/#website","url":"https://www.singhsprint.com/fr/","name":"Singh's Print","inLanguage":["en-CA","fr-CA"],"publisher":{"@id":"https://www.singhsprint.com/fr/#business"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.singhsprint.com/fr/catalog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+  <script type="application/ld+json" id="sp-schema-home-en">{"@context":"https://schema.org","@graph":[{"@type":"LocalBusiness","@id":"https://www.singhsprint.com/#business","name":"Singh's Print","legalName":"9555-8110 Québec Inc.","alternateName":["Singhs Print","Imprimerie Singhs Print"],"url":"https://www.singhsprint.com/","logo":"https://www.singhsprint.com/images/logo.png","image":["https://www.singhsprint.com/images/hero-duo.jpg","https://www.singhsprint.com/images/hero-poster.jpg"],"telephone":"+14385443800","email":"sales@singhsprint.com","priceRange":"$$","currenciesAccepted":"CAD","paymentAccepted":["Cash","Credit Card","E-Transfer","Stripe"],"address":{"@type":"PostalAddress","streetAddress":"81A Sainte-Anne Street","addressLocality":"Sainte-Anne-de-Bellevue","addressRegion":"QC","postalCode":"H9X 1L9","addressCountry":"CA"},"geo":{"@type":"GeoCoordinates","latitude":45.4034586,"longitude":-73.9535957},"areaServed":[{"@type":"AdministrativeArea","name":"West Island, Montreal"},{"@type":"City","name":"Montreal"},{"@type":"City","name":"Sainte-Anne-de-Bellevue"},{"@type":"City","name":"Pointe-Claire"},{"@type":"City","name":"Dorval"},{"@type":"City","name":"Kirkland"},{"@type":"City","name":"Beaconsfield"},{"@type":"City","name":"Pierrefonds"},{"@type":"City","name":"Laval"},{"@type":"AdministrativeArea","name":"Quebec"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"09:00","closes":"21:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue": "5.0","reviewCount": "27","bestRating":"5","worstRating":"1"},"sameAs":["https://maps.app.goo.gl/FX8o2QEvQzngxeiv7"],"identifier":[{"@type":"PropertyValue","propertyID":"NEQ","value":"1181573313"}],"knowsAbout":["DTG printing","Direct-to-Garment printing","DTF transfers","Direct-to-Film printing","Screen printing","Embroidery","Custom t-shirts","Custom hoodies","Custom polos","Custom caps","Corporate uniforms","Team apparel","Brand merch"]},{"@type":"Service","@id":"https://www.singhsprint.com/#service-dtg","name":"DTG Printing (Direct-to-Garment)","serviceType":"Direct-to-Garment Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Photo-quality full-color prints applied directly to cotton and blend garments. Soft hand-feel, unlimited colors, ideal for detailed artwork and gradients."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-dtf","name":"DTF Transfers (Direct-to-Film)","serviceType":"DTF Heat Transfer Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Vibrant prints on any fabric — polyester, nylon, cotton, blends. Durable, stretchy, and works on dark or light garments."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-embroidery","name":"Custom Embroidery","serviceType":"Machine Embroidery","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Stitched logos and text for a premium, tactile finish. Ideal for corporate wear, uniforms, hats, polos, and ongoing brand merch programs."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-screen-print","name":"Screen Printing","serviceType":"Screen Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Cost-effective at 50+ units. Vibrant solid colors, durable wash performance, classic feel for high-volume runs."},{"@type":"FAQPage","@id":"https://www.singhsprint.com/#faq","mainEntity":[{"@type":"Question","name":"What printing services do you offer?","acceptedAnswer":{"@type":"Answer","text":"We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film), embroidery and screen printing. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more — all decorated in-house at our Sainte-Anne-de-Bellevue studio in Montreal's West Island."}},{"@type":"Question","name":"Is there a minimum order?","acceptedAnswer":{"@type":"Answer","text":"No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size."}},{"@type":"Question","name":"How fast can you complete an order?","acceptedAnswer":{"@type":"Answer","text":"Standard 3-5 day turnaround from approved artwork. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage."}},{"@type":"Question","name":"Can you supply the blank apparel?","acceptedAnswer":{"@type":"Answer","text":"Yes — we source from S&S Activewear, SanMar, AlphaBroder and Rue Saint-Patrick (Canadian-made). That covers Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes and dozens more. Or bring your own garments and we'll decorate yours at the same per-piece rate."}},{"@type":"Question","name":"What file types do you accept?","acceptedAnswer":{"@type":"Answer","text":"PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Free design help included if your art isn't print-ready."}},{"@type":"Question","name":"Can I see a sample first?","acceptedAnswer":{"@type":"Answer","text":"Absolutely. We produce a real physical sample so you can verify colors, placement, and print quality before the full run. This is standard with every order."}},{"@type":"Question","name":"Do you offer a satisfaction guarantee?","acceptedAnswer":{"@type":"Answer","text":"Yes. If there is a print quality issue or garment defect, we'll reprint or replace the item at no cost to you."}},{"@type":"Question","name":"Do you offer a first-order discount?","acceptedAnswer":{"@type":"Answer","text":"Yes — your first order of $100 or more is $20 off, applied automatically when you request your quote. No code needed."}},{"@type":"Question","name":"What areas do you serve?","acceptedAnswer":{"@type":"Answer","text":"We decorate in Sainte-Anne-de-Bellevue and deliver across Montreal's West Island (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), greater Montreal, Laval, and the South Shore. Canada-wide shipping available for larger orders."}}]},{"@type":"WebSite","@id":"https://www.singhsprint.com/#website","url":"https://www.singhsprint.com/","name":"Singh's Print","inLanguage":["en-CA","fr-CA"],"publisher":{"@id":"https://www.singhsprint.com/#business"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.singhsprint.com/catalog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
 
@@ -458,9 +516,23 @@
     <div class="container">
       <div class="hero-grid">
         <div class="hero-content">
-          <!-- Dot lives OUTSIDE the data-i18n span so lang.js's
-               `el.innerHTML = val` doesn't wipe it on language flip. -->
-          <div class="hero-badge"><span class="dot"></span> <span data-i18n="home.badge">Ouvert 7 jours | Ouest-de-l'Île, Montréal</span></div>
+          <!-- 2026-05-24 — Hero status STAMP. Replaces the previous
+               generic green-dot-in-a-rounded-pill (the most "AI-coded
+               landing page" component in tech). The new mark reads
+               like a hand-stamped sticker on a shopfront window:
+               slightly tilted black-on-yellow OPEN TODAY tag, with
+               inline plain text for the hours + Sainte-Anne address.
+               Time-aware: the status word + closing hint update via
+               the IIFE at the bottom of <head> so visitors after 9 pm
+               see "Opens 9 AM" instead of misleading "open till 9 pm". -->
+          <div class="hero-stamp">
+            <span class="hero-stamp__tag" data-i18n="home.stamp.tag" id="heroStampTag">Open today</span>
+            <span class="hero-stamp__detail">
+              <span id="heroStampHours" data-i18n="home.stamp.hours">9 AM &mdash; 9 PM</span>
+              <span class="hero-stamp__sep">·</span>
+              <span data-i18n="home.stamp.addr">81A Sainte&#8209;Anne St, West Island</span>
+            </span>
+          </div>
           <h1 data-i18n="home.hero.h1">West Island's<br>custom apparel<br>printing <span class="accent">studio.</span></h1>
           <p class="subhead"  data-i18n="home.hero.sub">DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus.</p>
           <div class="hero-buttons">
@@ -486,9 +558,14 @@
                poster JPG keeps the slot filled during load + acts as
                the LCP element so Lighthouse stays happy. Mobile gets
                a 720×960 variant via <source media>. -->
-          <!-- Voir EN index.html pour la justification. Deux <video>,
-               un par viewport, choisis via CSS. Plus fiable que
-               <source media="…"> qui est instable sur Safari iOS. -->
+          <!-- Two separate <video> elements per viewport. The previous
+               single-video + <source media="…"> pattern is unreliable in
+               Safari iOS (media-attribute on <source> inside <video> is
+               not part of the spec and several WebKit builds either
+               ignore it or apply it inconsistently across reloads).
+               Splitting into two elements with CSS visibility is the
+               robust pattern. Each video has its own matching poster so
+               the still-frame aspect matches the video that swaps in. -->
           <div class="hero-photo">
             <video
               class="hero-video hero-video--desktop"
@@ -725,16 +802,21 @@
             <label for="sp-calc-qty" data-i18n="home.calc.qty">Quantity</label>
             <output for="sp-calc-qty" id="sp-calc-qty-out">50</output>
           </div>
-          <input type="range" id="sp-calc-qty" min="0" max="100" value="40" step="1" aria-valuemin="5" aria-valuemax="500" aria-valuenow="50">
+          <!-- 2026-05-24 — slider now starts at 1 (was 5) to expose the
+               new qty 1-4 micro-run tier. 7 stops at positions
+               0/16.67/33.33/50/66.67/83.33/100; the JS spCalcPosToQty
+               interpolates between them. Initial position 50 (= qty 50)
+               keeps the default in the bulk-order sweet spot. -->
+          <input type="range" id="sp-calc-qty" min="0" max="100" value="50" step="1" aria-valuemin="1" aria-valuemax="500" aria-valuenow="50">
           <div class="sp-calc__row--ticks">
-            <span>5</span><span>25</span><span>50</span><span>100</span><span>200</span><span>500</span>
+            <span>1</span><span>10</span><span>25</span><span>50</span><span>100</span><span>200</span><span>500</span>
           </div>
         </div>
         <div class="sp-calc__result">
           <div class="sp-calc__result-cell">
             <span class="sp-calc__label" data-i18n="home.calc.perunit">Per unit</span>
             <strong id="sp-calc-perunit">$14.95</strong>
-            <span class="sp-calc__hint" data-i18n="home.calc.oneside">1-side print</span>
+            <span class="sp-calc__hint" id="sp-calc-perhint" data-i18n="home.calc.oneside">1-side print</span>
           </div>
           <div class="sp-calc__result-cell">
             <span class="sp-calc__label" data-i18n="home.calc.total">Estimated total</span>
@@ -786,38 +868,141 @@
     </style>
     <script>
       (function() {
-        // Mirrors the wholesale-aware tiers in the live engine. These
-        // are conservative "first-time customer" numbers — the real
-        // /api/pricing engine on /quote runs the actual matrix per
-        // product. Kept here to keep the homepage standalone (no API
-        // dep) and survive an outage.
+        // Initial values are a FALLBACK only — the live engine on the
+        // CRM is the source of truth. On page load we fetch
+        // https://singhsprint-crm.vercel.app/api/pricing/homepage-tiers
+        // (edge-cached 10 min) and replace this object with whatever
+        // the engine returns. If the fetch fails (CRM down, CORS, etc.)
+        // we keep these conservative numbers so the homepage never
+        // shows broken state. The fetch + replace happens inside the
+        // DOMContentLoaded handler below.
+        // Fallback TIERS — used if the live fetch to /api/pricing/
+        // homepage-tiers fails. Seven bands per garment matching the
+        // chart breakpoints: 1-4 (base + micro-run premium) / 5-9 /
+        // 10-24 / 25-49 / 50-99 / 100-249 / 250+. The qty 1-4 row is
+        // the qty=5 tier price plus the per-garment
+        // micro_run_premium_cad ($6 tshirt, $7 hoodie, $4 longsleeve).
+        // Hat has no sub-5 premium (embroidery 5-piece minimum), so
+        // the [1-4] row repeats the [5-9] number for the slider's
+        // sake — the live API + display layer clamp display qty to 5.
+        // Updated 2026-05-24.
         var TIERS = {
-          tshirt:    [[1,4,29.95],[5,24,24.95],[25,49,18.95],[50,99,14.95],[100,199,11.95],[200,99999,9.95]],
-          hoodie:    [[1,4,49.95],[5,24,42.95],[25,49,34.95],[50,99,29.95],[100,199,26.95],[200,99999,24.95]],
-          longsleeve:[[1,4,36.95],[5,24,29.95],[25,49,22.95],[50,99,18.95],[100,199,15.95],[200,99999,13.95]],
-          cap:       [[1,4,32.95],[5,24,24.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,15.95]]
+          tshirt:    [[1,4,24.95],[5,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,249,11.95],[250,99999,9.95]],
+          hoodie:    [[1,4,44.95],[5,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,249,26.95],[250,99999,24.95]],
+          longsleeve:[[1,4,30.95],[5,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,249,17.95],[250,99999,14.95]],
+          cap:       [[1,4,32.95],[5,9,32.95],[10,24,29.95],[25,49,24.95],[50,99,21.95],[100,249,19.95],[250,99999,15.95]]
         };
+        // Hit the live tier endpoint once and overwrite TIERS in place
+        // so subsequent recalc() calls use the fresh numbers. Done
+        // BEFORE the DOMContentLoaded handler binds events so the
+        // initial paint already shows live prices if the fetch is fast.
+        (function fetchLiveTiers() {
+          try {
+            // Default cache mode (respects the CRM's s-maxage=600
+            // Cache-Control), with a daily cache-bust so customers
+            // always see fresh prices within 24h even if a CDN edge
+            // is holding a stale copy. force-cache used to stick to
+            // whatever the first response was; that hid pricing
+            // updates from returning visitors for hours.
+            var dayKey = new Date().toISOString().slice(0, 10);
+            var url = 'https://singhsprint-crm.vercel.app/api/pricing/homepage-tiers?d=' + dayKey;
+            fetch(url)
+              .then(function(r) { return r.ok ? r.json() : null; })
+              .then(function(j) {
+                if (!j || !j.tiers) return;
+                ['tshirt','hoodie','longsleeve','cap'].forEach(function(g) {
+                  // Accept 6 or 7 bands so this stays compatible with
+                  // either side of the 2026-05-24 split (the old
+                  // schema collapsed qty 1-4 and 5-9 into a single
+                  // band; the new one separates them so the slider
+                  // can show the micro-run premium).
+                  if (Array.isArray(j.tiers[g]) && j.tiers[g].length >= 6) {
+                    TIERS[g] = j.tiers[g];
+                  }
+                });
+                // Refresh the "from $X" chip labels with the live
+                // bottom-tier price (qty=200+ band = TIERS[g][5][2]).
+                // Skips chips the customer's i18n layer has already
+                // localized via data-i18n — that locks the string.
+                document.querySelectorAll('.sp-calc__chip').forEach(function(chip) {
+                  var g = chip.getAttribute('data-garment');
+                  var tier = TIERS[g];
+                  if (!tier) return;
+                  var fromPrice = tier[tier.length - 1][2];
+                  var span = chip.querySelector('span');
+                  if (span && !span.dataset.locked) {
+                    span.textContent = 'from $' + Number(fromPrice).toFixed(2);
+                  }
+                });
+                // Re-render with the live numbers if the DOM is ready.
+                if (typeof recalc === 'function') recalc();
+              })
+              .catch(function() { /* keep fallback */ });
+          } catch (e) { /* keep fallback */ }
+        })();
         var state = { garment: 'tshirt', qty: 50 };
+        // 2026-05-24 — per-garment method awareness. Hats are embroidery-
+        // only (no DTF/DTG capability), so the slider needs to:
+        //   1. Label the per-unit hint as "Embroidered" instead of
+        //      "1-side print" — DTF/DTG don't apply to hats.
+        //   2. Clamp display qty to ≥5 because the engine has no qty<5
+        //      tier for hat (embroidery's 5-piece minimum is a real
+        //      production constraint). The slider thumb can still drag
+        //      lower; we just show the qty=5 price + a "5 piece minimum
+        //      for embroidery" hint so the customer isn't confused by a
+        //      static price as they drag the thumb.
+        var GARMENT_METHODS = {
+          tshirt:     'dtf',
+          hoodie:     'dtf',
+          longsleeve: 'dtf',
+          cap:        'embroidery',
+        };
+        function methodFor(g) { return GARMENT_METHODS[g] || 'dtf'; }
+        function effectiveQty(g, q) {
+          // Hat = embroidery — clamp to engine's qty=5 floor.
+          if (methodFor(g) === 'embroidery' && q < 5) return 5;
+          return q;
+        }
         function findPrice(g, q) {
           var tiers = TIERS[g] || TIERS.tshirt;
-          for (var i=0;i<tiers.length;i++) if (q>=tiers[i][0] && q<=tiers[i][1]) return tiers[i][2];
+          var eq = effectiveQty(g, q);
+          for (var i=0;i<tiers.length;i++) if (eq>=tiers[i][0] && eq<=tiers[i][1]) return tiers[i][2];
           return tiers[tiers.length-1][2];
         }
         function recalc() {
+          var displayQty = effectiveQty(state.garment, state.qty);
           var per = findPrice(state.garment, state.qty);
-          var total = per * state.qty;
+          var total = per * displayQty;
           var pEl = document.getElementById('sp-calc-perunit');
           var tEl = document.getElementById('sp-calc-total');
           var oEl = document.getElementById('sp-calc-qty-out');
+          var hEl = document.getElementById('sp-calc-perhint');
           var cta = document.getElementById('sp-calc-cta');
           if (pEl) pEl.textContent = '$' + per.toFixed(2);
           if (tEl) tEl.textContent = '$' + total.toFixed(2);
-          if (oEl) oEl.textContent = state.qty;
+          if (oEl) oEl.textContent = displayQty;
+          // Method-aware hint under the per-unit number. Hat → embroidery
+          // label; everything else stays "1-side print" (or the i18n
+          // override). Customers below qty=5 on hat get an extra
+          // micro-note about the embroidery minimum.
+          if (hEl && !hEl.dataset.locked) {
+            if (methodFor(state.garment) === 'embroidery') {
+              hEl.textContent = state.qty < 5
+                ? 'Embroidered · 5-piece minimum'
+                : 'Embroidered · 1 location';
+            } else {
+              hEl.textContent = '1-side print';
+            }
+          }
           if (cta) {
             // Map calculator garment → /quote product hint so the
-            // form pre-selects the right tile.
+            // form pre-selects the right tile. Hat also stamps a
+            // method=embroidery hint so the form lands with the right
+            // service tile pre-picked.
             var qProduct = { tshirt:'tshirt', hoodie:'hoodie', longsleeve:'longsleeve', cap:'hat' }[state.garment] || state.garment;
-            cta.setAttribute('href', 'quote.html?garment=' + qProduct + '&qty=' + state.qty);
+            var url = 'quote.html?garment=' + qProduct + '&qty=' + displayQty;
+            if (methodFor(state.garment) === 'embroidery') url += '&method=embroidery';
+            cta.setAttribute('href', url);
           }
         }
         document.addEventListener('DOMContentLoaded', function() {
@@ -830,18 +1015,50 @@
               recalc();
             });
           });
-          // Slider domain is 0..100 (positional). The visible labels (5/25/50/100/
-          // 200/500) sit at 0/20/40/60/80/100% of the bar, so we map slider
-          // position to quantity via piecewise-linear interpolation between
-          // those stops. Result: thumb position always lines up with the
-          // label range the customer is actually picking from.
+
+          // 2026-05-24 — Time-aware hero stamp copy. Tag flips to
+          // "Closed now" outside business hours and the hours line
+          // becomes "Opens 9 AM" so the stamp never lies about being
+          // open at 11pm. Re-runs every 60s so a visitor sitting on
+          // the page at 9:00pm sees the transition without refreshing.
+          // Business hours: 9am–9pm, 7 days a week (matches the rest
+          // of the site copy).
+          (function setupHeroStamp() {
+            var tag   = document.getElementById('heroStampTag');
+            var hours = document.getElementById('heroStampHours');
+            if (!tag || !hours) return;
+            function sync() {
+              var h = new Date().getHours();
+              var open = h >= 9 && h < 21;
+              if (open) {
+                tag.textContent = 'Open today';
+                tag.classList.remove('is-closed');
+                hours.innerHTML = '9 AM — 9 PM';
+              } else {
+                tag.textContent = 'Closed now';
+                tag.classList.add('is-closed');
+                hours.textContent = h < 9 ? 'Opens 9 AM' : 'Opens 9 AM tomorrow';
+              }
+            }
+            sync();
+            setInterval(sync, 60000);
+          })();
+          // Slider domain is 0..100 (positional). 7 visible labels
+          // (1/10/25/50/100/200/500) sit at 0/16.67/33.33/50/66.67/83.33/100%
+          // of the bar; we map slider position to quantity via piecewise-
+          // linear interpolation between those stops. Result: thumb position
+          // always lines up with the label range the customer is picking from.
+          // 2026-05-24 — bottom stop dropped from qty=5 to qty=1 to expose
+          // the new DTF/DTG micro-run tier. Slider starts at position 50
+          // (qty=50) so the default impression is still bulk-order pricing.
           var SP_CALC_STOPS = [
-            { pos: 0,   qty: 5   },
-            { pos: 20,  qty: 25  },
-            { pos: 40,  qty: 50  },
-            { pos: 60,  qty: 100 },
-            { pos: 80,  qty: 200 },
-            { pos: 100, qty: 500 }
+            { pos: 0,     qty: 1   },
+            { pos: 16.67, qty: 10  },
+            { pos: 33.33, qty: 25  },
+            { pos: 50,    qty: 50  },
+            { pos: 66.67, qty: 100 },
+            { pos: 83.33, qty: 200 },
+            { pos: 100,   qty: 500 }
           ];
           function spCalcPosToQty(pos) {
             for (var i = 0; i < SP_CALC_STOPS.length - 1; i++) {
@@ -947,7 +1164,7 @@
         <div><span class="label"  data-i18n="home.recent.label">Travaux récents</span><h3 style="font-size:1.3rem"  data-i18n="home.recent.h">Tout juste sortis de presse</h3></div>
         <a href="portfolio" class="btn btn-outline btn-sm"  data-i18n="home.recent.viewall">Voir tout →</a>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
+      <div id="recent-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
         <div style="border-radius:12px;overflow:hidden;aspect-ratio:1"><img src="images/product-tshirt-white.jpg" alt="Custom DTG tee" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>
         <div style="border-radius:12px;overflow:hidden;aspect-ratio:1"><img src="images/product-hat-artwood.jpg" alt="Embroidered cap" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>
         <div style="border-radius:12px;overflow:hidden;aspect-ratio:1"><img src="images/product-tshirt-concordia.jpg" alt="DTG tee" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>
@@ -1036,8 +1253,8 @@
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q5">Quels formats de fichier acceptez-vous ?</button><div class="faq-a"><p  data-i18n="home.faq.a5">PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l'impression ? Notre studio de design vous aide gratuitement.</p></div></div>
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q6">Puis-je voir un échantillon d'abord ?</button><div class="faq-a"><p  data-i18n="home.faq.a6">Absolument. On produit un véritable échantillon physique pour que vous puissiez vérifier couleurs, placement et qualité avant la commande complète. C'est inclus avec chaque commande.</p></div></div>
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q7">Offrez-vous une garantie de satisfaction ?</button><div class="faq-a"><p  data-i18n="home.faq.a7">Oui. S'il y a un problème de qualité d'impression ou un défaut de vêtement, on réimprime ou on remplace l'article sans frais.</p></div></div>
-        <div class="faq-item"><button class="faq-q" data-i18n="home.faq.q8">Offrez-vous un rabais sur la première commande ?</button><div class="faq-a"><p data-i18n="home.faq.a8">Oui &mdash; votre première commande de 100 $ ou plus bénéficie de 20 $ de rabais, appliqué automatiquement lors de la soumission. Aucun code requis.</p></div></div>
-        <div class="faq-item"><button class="faq-q" data-i18n="home.faq.q9">Quels secteurs desservez-vous ?</button><div class="faq-a"><p data-i18n="home.faq.a9">On décore à Sainte-Anne-de-Bellevue et livre dans tout l&rsquo;Ouest-de-l&rsquo;Île de Montréal (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d&rsquo;Urfé, L&rsquo;Île-Bizard), le grand Montréal, Laval et la Rive-Sud. Expédition partout au Canada pour les commandes plus importantes.</p></div></div>
+        <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q8">Offrez-vous un rabais sur la première commande ?</button><div class="faq-a"><p  data-i18n="home.faq.a8">Oui — votre première commande de 100 $ ou plus bénéficie de 20 $ de rabais, appliqué automatiquement lors de la soumission. Aucun code requis.</p></div></div>
+        <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q9">Quels secteurs desservez-vous ?</button><div class="faq-a"><p  data-i18n="home.faq.a9">On décore à Sainte-Anne-de-Bellevue et livre dans tout l'Ouest-de-l'Île de Montréal (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), le grand Montréal, Laval et la Rive-Sud. Expédition partout au Canada pour les commandes plus importantes.</p></div></div>
       </div>
       <!-- "See all questions" — only visible on mobile (via CSS), only
            shown when the list is in its collapsed state. -->
@@ -1059,16 +1276,23 @@
 
   <div id="footer-placeholder"></div>
 
-  <!-- ===== OFFER POPUP (hybrid capture) — see EN comment in index.html ===== -->
+  <!-- ===== OFFER POPUP (hybrid capture) =====
+       Captures name + email so the CRM has a lead record even if the
+       visitor never finishes the quote — but submits in one click and
+       carries the values into the quote form so the customer doesn't
+       retype anything. The submit POSTs directly to the CRM's
+       /api/inbound (kind='other', popup_capture=true), not Web3Forms.
+       "Maybe later" is the zero-friction escape that just goes to /quote
+       with the promo still applied. -->
   <div class="popup-overlay" id="popup">
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
       <h3  data-i18n="home.popup.h3" data-promo="popup-h3">Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus</h3>
-      <p  data-i18n="home.popup.p">Laissez votre nom et votre courriel pour réserver votre rabais de 20 $ — on le transporte (et vous aussi) dans le formulaire de soumission. Pas de spam, pas de code, aucune attente.</p>
+      <p  data-i18n="home.popup.p">Votre rabais de 20 $ s'applique automatiquement dès que vous démarrez votre soumission. Aucun code, aucune inscription, aucune attente.</p>
       <form id="popupForm" class="popup-form" onsubmit="submitPopup(event)" novalidate>
-        <input type="text"  name="name"  placeholder="Votre nom" data-i18n-placeholder="home.popup.name" required maxlength="120" autocomplete="name">
-        <input type="email" name="email" placeholder="vous@exemple.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">
-        <button type="submit" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Démarrer ma soumission &rarr;</button>
+        <input type="text"  name="name"  placeholder="Your name" data-i18n-placeholder="home.popup.name" required maxlength="120" autocomplete="name">
+        <input type="email" name="email" placeholder="you@example.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">
+        <button type="submit" class="btn btn-accent popup-cta"  data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Démarrer ma soumission →</button>
       </form>
       <button class="skip" onclick="skipPopup()"  data-i18n="home.popup.skip">Plus tard</button>
     </div>
@@ -1080,8 +1304,8 @@
     <a href="quote" class="btn btn-accent"  data-i18n="home.sticky.cta">Soumission →</a>
   </div>
 
-  <script src="/components.js" defer></script>
-  <script src="/lang.js"></script>
+  <script src="components.js" defer></script>
+  <script src="lang.js"></script>
   <script>
 
     // FAQ
@@ -1100,15 +1324,19 @@
     },{threshold:.1});
     document.querySelectorAll('.fade-up').forEach(function(el){obs.observe(el)});
 
-    // Popup — voir index.html (EN) pour la version commentée.
-    var SP_PROMO_SLUG     = 'first-order-20-off-100';
-    var SP_INBOUND_API    = 'https://singhsprint-crm.vercel.app/api/inbound';
+    // ===== Offer popup =====
+    // Captures name + email, POSTs to the CRM, stashes for the quote form,
+    // then redirects to /quote with the promo slug attached.
+    var SP_PROMO_SLUG    = 'first-order-20-off-100';
+    var SP_INBOUND_API   = 'https://singhsprint-crm.vercel.app/api/inbound';
     var SP_POPUP_DELAY_MS = 8000;
 
     function closePopup(){
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
     }
+    // "Maybe later" — still attach the promo via sessionStorage so a
+    // visitor who eventually clicks the hero CTA still gets the banner.
     function skipPopup(){
       try { sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG); } catch(_) {}
       closePopup();
@@ -1119,15 +1347,20 @@
       var name  = (form.querySelector('input[name="name"]') || {}).value || '';
       var email = (form.querySelector('input[name="email"]') || {}).value || '';
       name = name.trim(); email = email.trim();
+      // Minimal email shape check — HTML5 type="email" already does most of it.
       if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
         form.reportValidity && form.reportValidity();
         return;
       }
+      // 1) Stash for the quote form to prefill + persist across catalog navigation.
       try {
         sessionStorage.setItem('sp_lead_name',  name);
         sessionStorage.setItem('sp_lead_email', email);
         sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG);
       } catch(_) {}
+      // 2) Fire-and-forget POST so the rep sees the lead even if the
+      //    visitor bounces before completing the quote. keepalive so the
+      //    pending request survives the navigation.
       try {
         fetch(SP_INBOUND_API, {
           method: 'POST',
@@ -1136,24 +1369,26 @@
             kind:         'other',
             contact_name: name,
             email:        email,
-            notes:        'Popup capture (FR) — visitor opted into the $20-off offer.',
+            notes:        'Popup capture — visitor opted into the $20-off offer.',
             cart_items:   [],
             size_breakdown: {},
             meta: {
               popup_capture: true,
               promo_slug:    SP_PROMO_SLUG,
-              source:        'homepage_offer_popup_fr'
+              source:        'homepage_offer_popup'
             },
             source_url: location.href
           }),
           keepalive: true
         }).catch(function(){});
       } catch(_) {}
+      // 3) Analytics breadcrumb.
       if (typeof window.spTrack === 'function') {
-        window.spTrack('popup_submit', { promo_slug: SP_PROMO_SLUG, lang: 'fr' });
+        window.spTrack('popup_submit', { promo_slug: SP_PROMO_SLUG });
       }
       sessionStorage.setItem('popupClosed','1');
-      window.location.href = '/fr/quote?promo=' + encodeURIComponent(SP_PROMO_SLUG);
+      // 4) Hand off to the quote builder.
+      window.location.href = '/quote?promo=' + encodeURIComponent(SP_PROMO_SLUG);
     }
     if(!sessionStorage.getItem('popupClosed')){
       setTimeout(function(){
@@ -1177,6 +1412,52 @@
   })();
   </script>
   -->
+
+  <!-- CRM-managed "Trusted by..." strip + "Recent Work" mini-gallery.
+       Progressive enhancement: the hardcoded markup above is the SEO/no-JS
+       fallback; when the CRM returns published rows we rebuild from them so
+       operators can edit both from the dashboard (/portfolio). -->
+  <script>
+  (function () {
+    var CRM = 'https://singhsprint-crm.vercel.app';
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+
+    // "Trusted by..." marquee — rebuild both tracks from portfolio_clients.
+    fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var cs = j && j.clients;
+        if (!Array.isArray(cs) || !cs.length) return; // keep hardcoded fallback
+        var html = cs.map(function (c) {
+          return '<span class="trust-logo-text">' + esc(c.name) + '</span>';
+        }).join('');
+        document.querySelectorAll('.trust-logos__track').forEach(function (t) {
+          t.innerHTML = html;
+        });
+      })
+      .catch(function () { /* keep hardcoded fallback */ });
+
+    // "Recent Work" mini-gallery — first 6 published portfolio_items.
+    fetch(CRM + '/api/portfolio', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var items = (j && j.items) || [];
+        if (!items.length) return; // keep hardcoded fallback
+        var grid = document.getElementById('recent-grid');
+        if (!grid) return;
+        grid.innerHTML = items.slice(0, 6).map(function (it) {
+          return '<div style="border-radius:12px;overflow:hidden;aspect-ratio:1">'
+            + '<img src="' + esc(it.image_url) + '" alt="' + esc(it.title || '') + '" '
+            + 'style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>';
+        }).join('');
+      })
+      .catch(function () { /* keep hardcoded fallback */ });
+  })();
+  </script>
 
 </body>
 </html>

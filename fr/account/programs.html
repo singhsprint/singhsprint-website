@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <link rel="canonical" href="https://www.singhsprint.com/account/programs">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/account/programs">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/account/programs">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/account/programs">
   <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/account/programs">
@@ -83,11 +83,11 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/account/" class="back-link" data-i18n="account.back.account">← Back to account</a>
+  <a href="/fr/account/" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
   <div id="acct-subnav"></div>
   <div class="hero">
-    <h1 data-i18n="account.prog.h1">Programs</h1>
-    <p data-i18n="account.prog.sub">Institutional ordering — cohorts, catalog whitelists, spending allowances, reporting.</p>
+    <h1  data-i18n="account.prog.h1">Programmes</h1>
+    <p  data-i18n="account.prog.sub">Achats institutionnels — cohortes, listes de catalogues, plafonds de dépenses, rapports.</p>
   </div>
 
   <div id="biz-strip" class="biz-strip hide">
@@ -261,7 +261,7 @@
 
   <div id="no-access" class="card hide" style="text-align:center">
     <h2 style="font-size:1.1rem">Programs are a business-tier feature</h2>
-    <p style="color:#666;margin-top:6px">Request business status from the <a href="/account/business.html" style="text-decoration:underline">business page</a> to set up institutional programs.</p>
+    <p style="color:#666;margin-top:6px">Request business status from the <a href="/fr/account/business.html" style="text-decoration:underline">business page</a> to set up institutional programs.</p>
   </div>
 </main>
 
@@ -347,7 +347,7 @@
           <div class="stat"><div class="stat__lbl">Approved products</div><div class="stat__val">${p.catalogProductIds.length || 'All'}</div></div>
         </div>
         ${allowance != null ? `<div class="balance-bar" style="margin-top:14px"><span class="balance-bar__fill ${pct < 20 ? 'is-low' : ''}" style="width:${pct}%"></span></div>` : ''}
-        <div style="margin-top:14px"><a class="btn btn--primary" href="/catalog?program=${esc(p.slug)}" style="background:#1a1a1a;color:#e8ff3c">Shop your catalog →</a></div>`;
+        <div style="margin-top:14px"><a class="btn btn--primary" href="/fr/catalog?program=${esc(p.slug)}" style="background:#1a1a1a;color:#e8ff3c">Shop your catalog →</a></div>`;
       root.appendChild(card);
     });
   }

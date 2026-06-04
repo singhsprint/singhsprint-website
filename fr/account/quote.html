@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <link rel="canonical" href="https://www.singhsprint.com/account/quote">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/account/quote">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/account/quote">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/account/quote">
   <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/account/quote">
@@ -9,7 +9,7 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/images/favicon-180.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your quote · Singhs Print</title>
+<title>Soumission · Singhs Print · FR</title>
 <meta name="robots" content="noindex,follow">
 <meta name="theme-color" content="#1a1a1a">
 
@@ -130,7 +130,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/account/orders.html" class="back-link">← Back to quotes &amp; orders</a>
+  <a href="/fr/account/orders.html" class="back-link">← Back to quotes &amp; orders</a>
 
   <div id="content" class="loading">Loading your quote…</div>
 </main>
@@ -452,14 +452,14 @@
 
     var quoteId = getQuoteId();
     if (!quoteId) {
-      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/fr/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
       return;
     }
 
     var data;
     try { data = await loadQuote(quoteId); }
     catch (e) {
-      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/fr/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
       return;
     }
 

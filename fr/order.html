@@ -90,8 +90,8 @@
 
 <div id="footer-placeholder"></div>
 
-<script src="/components.js" defer></script>
-<script src="/lang.js" defer></script>
+<script src="components.js" defer></script>
+<script src="lang.js" defer></script>
 
 <script>
   // Pull the token from the path (/order/abc123) or ?token= query.
@@ -122,6 +122,7 @@
     quote: 'Quote builder', byo: 'Bring-your-own', rfp: 'RFP',
     pricing_pdf: 'Pricing PDF', inkwear: 'Inkwear partnership', other: 'Other'
   };
+  // Lead-funnel statuses (legacy /api/order-status lead branch).
   var STATUS_LABEL = {
     new: 'New', in_review: 'In review', contacted: 'Contacted',
     converted: 'Converted to order', closed: 'Closed', spam: 'Closed'
@@ -130,14 +131,36 @@
     new: 'new', in_review: 'review', contacted: 'contacted',
     converted: 'converted', closed: 'closed', spam: 'closed'
   };
-  // Step ordering for the visual timeline.
+  // Production-pipeline statuses (new shape='order' branch). Same pill
+  // colors as the operator-side CRM so a "Shipped" badge looks the same
+  // in both places.
+  var ORDER_STATUS_LABEL = {
+    new: 'New', quoted: 'Quoted', pending_approval: 'Awaiting approval',
+    in_production: 'In production', shipped: 'Shipped',
+    completed: 'Completed', cancelled: 'Cancelled',
+  };
+  var ORDER_STATUS_PILL = {
+    new: 'new', quoted: 'review', pending_approval: 'review',
+    in_production: 'contacted', shipped: 'converted',
+    completed: 'converted', cancelled: 'closed',
+  };
+  // Step ordering for the lead-funnel timeline.
   var STEPS = ['Received', 'In review', 'Contacted', 'Quoted'];
+  // Step ordering for the production timeline.
+  var ORDER_STEPS = ['Placed', 'In production', 'Shipped'];
 
   function statusStepIndex(status) {
     if (status === 'new') return 0;
     if (status === 'in_review') return 1;
     if (status === 'contacted') return 2;
     if (status === 'converted') return 3;
+    return 0;
+  }
+
+  function orderStatusStepIndex(status) {
+    if (status === 'new' || status === 'quoted' || status === 'pending_approval') return 0;
+    if (status === 'in_production') return 1;
+    if (status === 'shipped' || status === 'completed') return 2;
     return 0;
   }
 
@@ -156,11 +179,89 @@
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // Render the production-order shape (new pipeline). Called when the
+  // /api/order-status response has shape='order'. The legacy lead shape
+  // continues to flow through render() below.
+  function renderOrder(data) {
+    var root = document.getElementById('orderRoot');
+    var stepIdx = orderStatusStepIndex(data.status);
+    var pillCls = 'pill--' + (ORDER_STATUS_PILL[data.status] || 'unknown');
+    var statusText = ORDER_STATUS_LABEL[data.status] || data.status;
+    var html = '';
+
+    // Top card — order number + program + status pill + timeline
+    html += '<div class="card">';
+    html +=   '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">';
+    html +=     '<div>';
+    html +=       '<div class="label">' + esc(data.isAllocationClaim ? tFR('Allocated set') : tFR('Order')) + '</div>';
+    html +=       '<div style="font-size:1.15rem;font-weight:700;line-height:1.3">' + esc(data.orderNumber || tFR('Your order')) + '</div>';
+    if (data.program && data.program.name) {
+      html +=     '<div class="ts">' + esc(data.program.name) + (data.program.cohortLabel ? ' · ' + esc(data.program.cohortLabel) : '') + '</div>';
+    } else if (data.contact_name) {
+      html +=     '<div class="ts">' + esc(data.contact_name) + '</div>';
+    }
+    html +=     '</div>';
+    html +=     '<span class="pill ' + pillCls + '">' + esc(tFR(statusText)) + '</span>';
+    html +=   '</div>';
+    html +=   '<div class="steps">';
+    ORDER_STEPS.forEach(function (s, i) {
+      var cls = 'step';
+      if (i < stepIdx) cls += ' done';
+      else if (i === stepIdx) cls += ' active';
+      html += '<div class="' + cls + '"><div class="stage">' + esc(tFR(s)) + '</div></div>';
+    });
+    html +=   '</div>';
+    html += '</div>';
+
+    // Items card
+    if (Array.isArray(data.items) && data.items.length) {
+      html += '<div class="card">';
+      html +=   '<div class="label">' + esc(tFR('Items')) + '</div>';
+      data.items.forEach(function (it) {
+        var price = (it.priceCents != null && it.priceCents > 0)
+          ? fmtMoney(it.priceCents / 100)
+          : (it.paidBy === 'organization' ? tFR('covered') : '—');
+        html += '<div class="cart-row">';
+        html +=   '<div style="min-width:0">';
+        html +=     '<div>' + esc(it.label) + (it.size ? ' <span style="color:#888">— ' + esc(it.size) + '</span>' : '') + '</div>';
+        html +=   '</div>';
+        html +=   '<div class="cart-row__qty">' + esc(String(it.qty || 1)) + ' · ' + esc(price) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Payment summary
+    html += '<div class="card">';
+    html +=   '<div class="label">' + esc(tFR('Payment')) + '</div>';
+    if (data.paidBy === 'organization') {
+      html += '<div class="row"><span class="key">' + esc(tFR('Paid by')) + '</span><span class="val">' + esc(tFR('Your school')) + '</span></div>';
+    } else if (data.paidBy === 'split') {
+      html += '<div class="row"><span class="key">' + esc(tFR('Paid by')) + '</span><span class="val">' + esc(tFR('School covers base · you paid for extras')) + '</span></div>';
+    } else if (data.paidBy === 'customer') {
+      html += '<div class="row"><span class="key">' + esc(tFR('Paid by')) + '</span><span class="val">' + esc(tFR('You')) + '</span></div>';
+    }
+    if (data.total != null) {
+      html += '<div class="row"><span class="key">' + esc(tFR('Total')) + '</span><span class="val">' + esc(fmtMoney(data.total)) + '</span></div>';
+    }
+    if (data.deadline) {
+      html += '<div class="row"><span class="key">' + esc(tFR('Deadline')) + '</span><span class="val">' + esc(fmtDate(data.deadline)) + '</span></div>';
+    }
+    html += '</div>';
+
+    root.innerHTML = html;
+  }
+
   function render(data) {
     var root = document.getElementById('orderRoot');
     if (!data) {
       root.innerHTML = '<div class="card error">' + esc(tFR("We couldn't find an order with that link. Check it's complete, or email sales@singhsprint.com.")) + '</div>';
       return;
+    }
+    // Dispatch on shape — 'order' uses production statuses, 'lead' (or
+    // missing shape for old responses) uses the original funnel.
+    if (data.shape === 'order') {
+      return renderOrder(data);
     }
     var stepIdx = statusStepIndex(data.status);
     var pillCls = 'pill--' + (STATUS_PILL[data.status] || 'unknown');
