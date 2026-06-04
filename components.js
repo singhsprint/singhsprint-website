@@ -1631,3 +1631,79 @@ document.addEventListener('DOMContentLoaded', function() {
   loadProductModal();
   loadLiveReviews();
 });
+
+/* ============================================================
+   "Text us" floating widget — routes a website message into the
+   Singhs Print CRM as an inbound text (Messages inbox + push).
+   Self-contained; loaded site-wide via components.js. EN/FR.
+   ============================================================ */
+(function () {
+  if (window.__spTextWidget) return; window.__spTextWidget = true;
+  var CRM_URL = 'https://singhsprint-crm.vercel.app/api/widget/text';
+  var TEL = '+14385443800';
+  var TEL_DISPLAY = '438-544-3800';
+  function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+  ready(function () {
+    var fr = (document.documentElement.lang || '').slice(0,2).toLowerCase() === 'fr' || /\/fr\//.test(location.pathname);
+    function T(en, frStr){ return fr ? frStr : en; }
+    var css =
+      '.sp-tw-btn{position:fixed;right:18px;bottom:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;background:#111;color:#fff;border:none;border-radius:999px;padding:12px 18px;font:600 14px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}' +
+      '.sp-tw-btn:hover{opacity:.92}' +
+      '.sp-tw-panel{position:fixed;right:18px;bottom:74px;z-index:9999;width:330px;max-width:calc(100vw - 36px);background:#fff;color:#111;border:1px solid #e5e5e5;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden}' +
+      '.sp-tw-panel,.sp-tw-panel *{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-sizing:border-box}' +
+      '.sp-tw-head{background:#111;color:#fff;padding:14px 16px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}' +
+      '.sp-tw-head button{background:none;border:none;color:#fff;font-size:20px;line-height:1;cursor:pointer}' +
+      '.sp-tw-body{padding:14px 16px}' +
+      '.sp-tw-body>p{margin:0 0 10px;font-size:13px;color:#555}' +
+      '.sp-tw-body input,.sp-tw-body textarea{width:100%;border:1px solid #ddd;border-radius:9px;padding:9px 11px;font-size:14px;margin-bottom:8px}' +
+      '.sp-tw-body textarea{resize:vertical;min-height:64px}' +
+      '.sp-tw-send{width:100%;background:#111;color:#fff;border:none;border-radius:9px;padding:11px;font-weight:600;font-size:14px;cursor:pointer}' +
+      '.sp-tw-send:disabled{opacity:.5;cursor:default}' +
+      '.sp-tw-consent{font-size:11px;color:#999;margin-top:8px;line-height:1.4}' +
+      '.sp-tw-alt{display:block;text-align:center;font-size:12px;color:#111;margin-top:10px;text-decoration:underline}' +
+      '.sp-tw-hp{position:absolute!important;left:-9999px!important}' +
+      '.sp-tw-ok{padding:22px 16px;text-align:center;font-size:14px;color:#111}';
+    var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+    var btn = document.createElement('button');
+    btn.className = 'sp-tw-btn'; btn.type = 'button';
+    btn.setAttribute('aria-label', T('Text us', 'Ecrivez-nous'));
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>' + T('Text us', 'Texto') + '</span>';
+    var panel = document.createElement('div');
+    panel.className = 'sp-tw-panel'; panel.style.display = 'none';
+    panel.innerHTML =
+      '<div class="sp-tw-head">' + T('Text Singhs Print', 'Texto Singhs Print') + '<button type="button" aria-label="Close">&times;</button></div>' +
+      '<div class="sp-tw-body">' +
+        '<p>' + T("Got a question? Send us a text and we'll reply to your phone.", "Une question? Ecrivez-nous et on repond par texto.") + '</p>' +
+        '<input class="sp-tw-name" type="text" placeholder="' + T('Your name (optional)', 'Votre nom (optionnel)') + '">' +
+        '<input class="sp-tw-phone" type="tel" inputmode="tel" placeholder="' + T('Your mobile number', 'Votre numero mobile') + '">' +
+        '<textarea class="sp-tw-msg" placeholder="' + T('How can we help? (quantities, deadline, etc.)', 'Comment aider? (quantites, echeance...)') + '"></textarea>' +
+        '<input class="sp-tw-hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        '<button class="sp-tw-send" type="button">' + T('Send text', 'Envoyer') + '</button>' +
+        '<div class="sp-tw-consent">' + T('By sending, you agree to receive texts about your inquiry.', 'En envoyant, vous acceptez de recevoir des textos.') + '</div>' +
+        '<a class="sp-tw-alt" href="sms:' + TEL + '">' + T('Or text us directly: ', 'Ou textez-nous: ') + TEL_DISPLAY + '</a>' +
+      '</div>';
+    document.body.appendChild(btn); document.body.appendChild(panel);
+    var open = false;
+    function toggle(v){ open = (v===undefined) ? !open : v; panel.style.display = open ? 'block' : 'none'; }
+    btn.addEventListener('click', function(){ toggle(); });
+    panel.querySelector('.sp-tw-head button').addEventListener('click', function(){ toggle(false); });
+    var send = panel.querySelector('.sp-tw-send');
+    send.addEventListener('click', function(){
+      var name = panel.querySelector('.sp-tw-name').value.trim();
+      var phone = panel.querySelector('.sp-tw-phone').value.trim();
+      var msg = panel.querySelector('.sp-tw-msg').value.trim();
+      var hp = panel.querySelector('.sp-tw-hp').value.trim();
+      var consent = panel.querySelector('.sp-tw-consent');
+      if (!phone || !msg) { consent.textContent = T('Please add your number and a message.', 'Ajoutez votre numero et un message.'); return; }
+      send.disabled = true; send.textContent = T('Sending...', 'Envoi...');
+      fetch(CRM_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name:name, phone:phone, message:msg, page: location.href, company_website: hp }) })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok:r.ok, j:j }; }); })
+        .then(function(res){
+          if (!res.ok) { send.disabled=false; send.textContent=T('Send text','Envoyer'); consent.textContent = (res.j && res.j.error) || T('Something went wrong - please call us.', 'Erreur - appelez-nous.'); return; }
+          panel.querySelector('.sp-tw-body').innerHTML = '<div class="sp-tw-ok">' + T("Thanks! We got your message and will text you back shortly.", "Merci! On a recu votre message et on vous repond par texto sous peu.") + '</div>';
+          if (window.gtag) { try { window.gtag('event', 'web_text_lead'); } catch(e){} }
+        })
+        .catch(function(){ send.disabled=false; send.textContent=T('Send text','Envoyer'); consent.textContent = T('Network error - please call us.', 'Erreur reseau - appelez-nous.'); });
+    });
+  });
+})();
