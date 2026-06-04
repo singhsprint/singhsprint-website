@@ -134,7 +134,7 @@ var SP_LANG = (function() {
       fr: 'Obtenez une soumission en heures, pas en jours. 20 $ de rabais sur votre première commande de 100 $ et plus.'
     },
     'home.cta.btn': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
-    'home.cta.call': { en: 'Call 514-915-1539', fr: 'Appelez le 514-915-1539' },
+    'home.cta.call': { en: 'Call 438-544-3800', fr: 'Appelez le 438-544-3800' },
     'home.stats.orderqty': { en: 'Order any qty', fr: 'Toute quantité' },
     // Proof bar
     'home.proof.orders':     { en: 'Orders Completed', fr: 'Commandes complétées' },
@@ -200,7 +200,7 @@ var SP_LANG = (function() {
     'midcta.title':   { en: 'Got a project like this in mind?',                  fr: 'Vous avez un projet similaire en tête ?' },
     'midcta.copy':    { en: "Send us the details and we'll come back with a quote, sample timeline, and price within the hour.", fr: 'Envoyez-nous les détails — soumission, échéancier d\'échantillon et prix dans l\'heure.' },
     'midcta.btn':     { en: 'Get a free quote →',                                fr: 'Soumission gratuite →' },
-    'midcta.alt':     { en: 'or call 514-915-1539',                              fr: 'ou appelez le 514-915-1539' },
+    'midcta.alt':     { en: 'or call 438-544-3800',                              fr: 'ou appelez le 438-544-3800' },
     // Product category cards
     'home.badge.popular':    { en: 'Popular',     fr: 'Populaire' },
     'home.badge.bestseller': { en: 'Best Seller', fr: 'Best-seller' },
@@ -371,8 +371,8 @@ var SP_LANG = (function() {
 
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 9PM. Call 514-915-1539 before you come by. Production runs all day and we like to set aside time for visitors.',
-      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours, de 9h à 21h. Appelez au 514-915-1539 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
+      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 9PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
+      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours, de 9h à 21h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
@@ -690,8 +690,8 @@ var SP_LANG = (function() {
 
     // ===== SHARED FR-ONLY NOTICE (industries + guides) =====
     'page.fr-notice': {
-      en: 'The detailed content of this article is available in English. A full French version is coming soon — contact us at 514-915-1539 for any questions.',
-      fr: 'Le contenu détaillé de cet article est disponible en anglais. Une version française intégrale arrive bientôt — contactez-nous au 514-915-1539 pour toute question.'
+      en: 'The detailed content of this article is available in English. A full French version is coming soon — contact us at 438-544-3800 for any questions.',
+      fr: 'Le contenu détaillé de cet article est disponible en anglais. Une version française intégrale arrive bientôt — contactez-nous au 438-544-3800 pour toute question.'
     },
 
     // ===== CATALOG =====
@@ -899,8 +899,8 @@ var SP_LANG = (function() {
     'quote.alert.method': { en: 'Please select a printing method.', fr: 'Veuillez sélectionner une méthode d\'impression.' },
     'quote.alert.upload.imageonly':   { en: 'Please upload an image file (PNG, JPG, SVG)', fr: 'Veuillez téléverser un fichier image (PNG, JPG, SVG).' },
     'quote.alert.upload.failed':      { en: 'Could not load your image. Try a different file.', fr: 'Impossible de charger votre image. Essayez un autre fichier.' },
-    'quote.alert.submit.failed':      { en: 'Something went wrong. Please call us at 514-915-1539 or email sales@singhsprint.com.', fr: 'Une erreur est survenue. Appelez-nous au 514-915-1539 ou écrivez à sales@singhsprint.com.' },
-    'quote.alert.submit.connection':  { en: 'Connection error. Please call us at 514-915-1539 or email sales@singhsprint.com.', fr: 'Erreur de connexion. Appelez-nous au 514-915-1539 ou écrivez à sales@singhsprint.com.' },
+    'quote.alert.submit.failed':      { en: 'Something went wrong. Please call us at 438-544-3800 or email sales@singhsprint.com.', fr: 'Une erreur est survenue. Appelez-nous au 438-544-3800 ou écrivez à sales@singhsprint.com.' },
+    'quote.alert.submit.connection':  { en: 'Connection error. Please call us at 438-544-3800 or email sales@singhsprint.com.', fr: 'Erreur de connexion. Appelez-nous au 438-544-3800 ou écrivez à sales@singhsprint.com.' },
     'quote.summary.live': { en: 'Live Preview', fr: 'Aperçu en direct' },
     'quote.summary.product.label': { en: 'Product', fr: 'Produit' },
     'quote.summary.totalunits': { en: 'Total units', fr: 'Total d\'unités' },

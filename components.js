@@ -439,7 +439,7 @@ function loadNav() {
     + '      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>'
     + '      <span class="sp-account-label" id="sp-account-label">' + t('Business', 'Entreprise') + '</span>'
     + '    </a>'
-    + '    <a href="tel:5149151539" class="sp-phone" aria-label="Call us at 514-915-1539">' + ICON.phone + '<span>514-915-1539</span></a>'
+    + '    <a href="tel:4385443800" class="sp-phone" aria-label="Call us at 438-544-3800">' + ICON.phone + '<span>438-544-3800</span></a>'
     + '    <button id="langToggle" onclick="SP_LANG && SP_LANG.toggleLang && SP_LANG.toggleLang()">' + (IS_FR ? 'EN' : 'FR') + '</button>'
     + '    <a href="' + BASE + '/quote" class="sp-cta" data-i18n="nav.quote">' + t('Get a Quote', 'Soumission') + '</a>'
     + '    <a href="' + BASE + '/quote" class="sp-mobile-quote" data-i18n="nav.quote.short">' + t('Quote', 'Devis') + '</a>'
@@ -484,7 +484,7 @@ function loadNav() {
     + '    <div class="sp-drawer-section">' + t('Shop', 'Magasinez') + '</div>' + drawerCats
     + '    <div class="sp-drawer-section">' + t('More', 'Plus') + '</div>' + drawerEdit
     + '    <div class="sp-drawer-foot">'
-    + '      <div style="font-size:.92rem;font-weight:600">514-915-1539</div>'
+    + '      <div style="font-size:.92rem;font-weight:600">438-544-3800</div>'
     + '      <div style="font-size:.84rem;color:#666;margin-top:3px">sales@singhsprint.com</div>'
     + '      <div class="row">'
     + '        <button onclick="SP_LANG && SP_LANG.toggleLang && SP_LANG.toggleLang()" id="langToggle">' + (IS_FR ? 'EN' : 'FR') + '</button>'
@@ -770,7 +770,7 @@ function loadFooter() {
   }
   // data-nosnippet on the whole footer tells Google not to use any text in
   // here for SERP snippets. Previously Google's sitelink for guides was
-  // scraping "514-915-1539sales@singhsprint.com@singhsprint on..." because
+  // scraping "438-544-3800sales@singhsprint.com@singhsprint on..." because
   // the <a> siblings extract as one continuous string.
   el.innerHTML = ''
     + '<footer class="footer" data-nosnippet>'
@@ -783,7 +783,7 @@ function loadFooter() {
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/youth-initiative" data-i18n="footer.youth">Youth Initiative</a><a href="/about" data-i18n="footer.about">About</a></div>'
     + '      <div class="footer-col" data-mobile-hide><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
     + '      <div class="footer-col" data-mobile-hide><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/procurement-checklist">Procurement checklist</a><a href="/guides/charity-run-timeline">Charity run timeline</a><a href="/guides/construction-crew-cost">Crew cost analysis</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
-    + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:5149151539" aria-label="Call us at 514-915-1539">Call 514-915-1539</a><a href="mailto:sales@singhsprint.com" aria-label="Email sales@singhsprint.com">Email sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank" rel="noopener" aria-label="Follow on Instagram">Instagram @singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener" data-i18n="footer.location">West Island, Montreal</a></div>'
+    + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:4385443800" aria-label="Call us at 438-544-3800">Call 438-544-3800</a><a href="mailto:sales@singhsprint.com" aria-label="Email sales@singhsprint.com">Email sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank" rel="noopener" aria-label="Follow on Instagram">Instagram @singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener" data-i18n="footer.location">West Island, Montreal</a></div>'
     + '    </div>'
     + '    <div class="footer-bottom">'
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Imprimerie Singhs Print &middot; NEQ 1181573313</span></span>'
@@ -823,7 +823,7 @@ function loadSchema() {
         "image": "https://www.singhsprint.com/images/storefront.jpg",
         "logo": "https://www.singhsprint.com/images/logo.png",
         "url": "https://www.singhsprint.com/",
-        "telephone": "+1-514-915-1539",
+        "telephone": "+1-438-544-3800",
         "email": "sales@singhsprint.com",
         "priceRange": "$$",
         "description": "Montreal custom apparel printer specializing in bulk workwear, staff uniforms, corporate swag, and event merchandise. DTG, DTF, and embroidery decoration. Quebec-registered NEQ 1181573313.",
@@ -951,7 +951,7 @@ function loadSchema() {
         "name": "Singhs Print — B2B Custom Apparel & Procurement",
         "parentOrganization": { "@id": "https://www.singhsprint.com/#business" },
         "url": "https://www.singhsprint.com/businesses",
-        "telephone": "+1-514-915-1539",
+        "telephone": "+1-438-544-3800",
         "email": "sales@singhsprint.com",
         "description": "Net-30 terms, master service agreements, and standing apparel programs for Montreal-area corporate, hospitality, construction, and event clients.",
         "areaServed": [
@@ -1277,7 +1277,7 @@ function loadMidPageCTA() {
     + '<p class="sp-mid-cta__copy" data-i18n="midcta.copy">Send us the details and we\'ll come back with a quote, sample timeline, and price within the hour.</p>'
     + '<div class="sp-mid-cta__row">'
     +   '<a href="/quote" class="sp-mid-cta__btn" data-i18n="midcta.btn">Get a free quote →</a>'
-    +   '<a href="tel:5149151539" class="sp-mid-cta__alt" data-i18n="midcta.alt">or call 514-915-1539</a>'
+    +   '<a href="tel:4385443800" class="sp-mid-cta__alt" data-i18n="midcta.alt">or call 438-544-3800</a>'
     + '</div>';
   anchor.parentNode.insertBefore(card, anchor.nextSibling);
 }
