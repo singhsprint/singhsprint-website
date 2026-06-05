@@ -142,7 +142,18 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
     @media (max-width:780px){.grid{grid-template-columns:1fr;gap:32px}.wrap{padding:24px}}
 
     .media{background:transparent}
-    .media>#mainImg{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f0f0f0;border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .media-frame{position:relative}
+    .media-frame>#mainImg{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#f0f0f0;border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:zoom-in}
+    .expand-btn{position:absolute;top:12px;right:12px;width:40px;height:40px;border:0;border-radius:50%;background:rgba(26,26,26,.55);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .2s,transform .2s}
+    .expand-btn:hover{background:rgba(26,26,26,.85);transform:scale(1.06)}
+    .expand-btn svg{width:20px;height:20px;display:block}
+    /* Fullscreen image lightbox */
+    .lightbox{position:fixed;inset:0;z-index:1000;background:rgba(10,10,10,.92);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;overscroll-behavior:contain}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:94vw;max-height:90vh;object-fit:contain;border-radius:8px;transition:transform .25s ease;cursor:zoom-in;touch-action:none}
+    .lightbox img.zoomed{transform:scale(2);cursor:zoom-out}
+    .lb-close{position:absolute;top:16px;right:20px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:1.6rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .lb-close:hover{background:rgba(255,255,255,.24)}
     .thumbs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
     .thumb{padding:0;border:2px solid transparent;border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;width:72px;height:72px;flex:0 0 auto}
     .thumb img{width:100%;height:100%;object-fit:cover;background:#f0f0f0}
@@ -204,7 +215,12 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
 
     <div class="grid">
       <div class="media">
-        <img id="mainImg" src="${esc(hero)}" alt="${esc(drop.title)}">
+        <div class="media-frame">
+          <img id="mainImg" src="${esc(hero)}" alt="${esc(drop.title)}">
+          <button id="expandBtn" class="expand-btn" type="button" aria-label="Expand image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+          </button>
+        </div>
         ${imgs.length > 1 ? `<div class="thumbs">${imgs.map((u, i) => `<button class="thumb${i === 0 ? ' active' : ''}" data-src="${esc(u)}" aria-label="View ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}
       </div>
       <div class="info">
@@ -237,6 +253,11 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
     </div>
   </main>
 
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Expanded image">
+    <button id="lbClose" class="lb-close" type="button" aria-label="Close">&times;</button>
+    <img id="lbImg" src="" alt="${esc(drop.title)}">
+  </div>
+
   <script>
     (function() {
       const url = new URL(window.location.href);
@@ -260,6 +281,33 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
           t.classList.add('active');
         });
       });
+
+      // Expand / zoom: tap the image or the expand button to open a fullscreen
+      // lightbox of whatever view is currently shown. Click the image to toggle
+      // 2x zoom; click the backdrop, the close button, or press Esc to exit.
+      var lightbox = document.getElementById('lightbox');
+      var lbImg = document.getElementById('lbImg');
+      var lbClose = document.getElementById('lbClose');
+      var expandBtn = document.getElementById('expandBtn');
+      function openLightbox() {
+        if (!lightbox || !lbImg || !mainImg) return;
+        lbImg.src = mainImg.src;
+        lbImg.classList.remove('zoomed');
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeLightbox() {
+        if (!lightbox) return;
+        lightbox.classList.remove('open');
+        if (lbImg) lbImg.classList.remove('zoomed');
+        document.body.style.overflow = '';
+      }
+      if (expandBtn) expandBtn.addEventListener('click', function (e) { e.stopPropagation(); openLightbox(); });
+      if (mainImg) mainImg.addEventListener('click', openLightbox);
+      if (lbClose) lbClose.addEventListener('click', closeLightbox);
+      if (lbImg) lbImg.addEventListener('click', function (e) { e.stopPropagation(); lbImg.classList.toggle('zoomed'); });
+      if (lightbox) lightbox.addEventListener('click', closeLightbox);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
       const btn = document.getElementById('buyBtn');
       const err = document.getElementById('err');
       // Size selection (only present when the drop offers sizes).
