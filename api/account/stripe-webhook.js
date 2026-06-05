@@ -202,6 +202,7 @@ module.exports = async function handler(req, res) {
           tax_cents:                 totalDetails.amount_tax ?? null,
           currency:                  (session.currency || 'cad').toUpperCase(),
           status:                    'paid',
+          size:                      session.metadata?.size || null,
           shipping_name:             session.shipping_details?.name || customerDetails.name || null,
           shipping_address:          session.shipping_details?.address || customerDetails.address || null,
           raw_session:               session,

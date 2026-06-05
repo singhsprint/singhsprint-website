@@ -59,14 +59,12 @@ a{color:#1a1a1a}</style></head><body>
 function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
   const url   = `${siteUrl}/shop/${encodeURIComponent(drop.slug)}`;
   const price = formatPrice(drop.retail_price_cents, drop.currency);
+  const sizes = Array.isArray(drop.sizes) ? drop.sizes.filter(Boolean) : [];
   const stockLabel = soldOut ? 'Sold out'
     : (remaining != null && remaining <= 10 ? `Only ${remaining} left` : '');
   const imgs  = (images && images.length) ? images : (drop.mockup_url ? [drop.mockup_url] : []);
   const hero  = imgs[0] || '';
   const specBullets = specs ? parseSpecBullets(specs.description) : [];
-  const blankLine = specs
-    ? [specs.brand, specs.style_number].filter(Boolean).join(' ') + (specs.color_name ? ' — ' + specs.color_name : '')
-    : (drop.blank_label || '');
   const metaBits = specs
     ? [specs.weight_oz ? specs.weight_oz + ' oz' : null, specs.fabric, specs.gender, specs.garment_type].filter(Boolean)
     : [];
@@ -156,6 +154,13 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
     .info .stock{display:inline-block;font-size:.85rem;font-weight:700;margin-bottom:16px;padding:4px 12px;border-radius:999px;background:#fff3cd;color:#8a6d00}
     .info .stock.soldout{background:#fde2e1;color:#b00020}
     .buy:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+
+    .sizes{margin-bottom:20px}
+    .sizes-head{font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:8px}
+    .sizes-row{display:flex;flex-wrap:wrap;gap:8px}
+    .size{min-width:48px;padding:10px 14px;border:1.5px solid #d9d9d9;border-radius:10px;background:#fff;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit;color:#1a1a1a}
+    .size:hover{border-color:#1a1a1a}
+    .size.active{border-color:#1a1a1a;background:#1a1a1a;color:#fff}
     .info .desc{font-size:1.05rem;color:#444;margin-bottom:32px;white-space:pre-wrap}
     .info .blank{font-size:.85rem;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
 
@@ -203,13 +208,17 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
         ${imgs.length > 1 ? `<div class="thumbs">${imgs.map((u, i) => `<button class="thumb${i === 0 ? ' active' : ''}" data-src="${esc(u)}" aria-label="View ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}
       </div>
       <div class="info">
-        ${blankLine ? `<div class="blank">${esc(blankLine)}</div>` : ''}
         <h1>${esc(drop.title)}</h1>
         <div class="price">${esc(price)}</div>
         ${stockLabel ? `<div class="stock${soldOut ? ' soldout' : ''}">${esc(stockLabel)}</div>` : ''}
         ${metaBits.length ? `<div class="specmeta">${metaBits.map((b) => esc(b)).join('  ·  ')}</div>` : ''}
         ${drop.description ? `<div class="desc">${esc(drop.description)}</div>` : ''}
-        <button id="buyBtn" class="buy" data-drop-id="${esc(drop.id)}"${soldOut ? ' disabled' : ''}>${soldOut ? 'Sold out' : 'Buy now'}</button>
+        ${sizes.length ? `
+        <div class="sizes" id="sizes">
+          <div class="sizes-head">Size</div>
+          <div class="sizes-row">${sizes.map((s) => `<button type="button" class="size" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+        </div>` : ''}
+        <button id="buyBtn" class="buy" data-drop-id="${esc(drop.id)}" data-has-sizes="${sizes.length ? '1' : '0'}"${soldOut ? ' disabled' : ''}>${soldOut ? 'Sold out' : 'Buy now'}</button>
         <div id="err" class="err"></div>
         <div class="meta">
           <span>Ships from Montréal</span>
@@ -221,7 +230,7 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
         </div>
         ${specBullets.length ? `
         <div class="specs">
-          <div class="specs-head">Tech specs${specs && specs.name ? ' · ' + esc(specs.name) : ''}</div>
+          <div class="specs-head">Tech specs</div>
           <ul>${specBullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
         </div>` : ''}
       </div>
@@ -253,15 +262,29 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
       });
       const btn = document.getElementById('buyBtn');
       const err = document.getElementById('err');
+      // Size selection (only present when the drop offers sizes).
+      var selectedSize = null;
+      document.querySelectorAll('.size').forEach(function (b) {
+        b.addEventListener('click', function () {
+          selectedSize = b.dataset.size;
+          document.querySelectorAll('.size').forEach(function (x) { x.classList.remove('active'); });
+          b.classList.add('active');
+          err.textContent = '';
+        });
+      });
       btn.addEventListener('click', async () => {
         err.textContent = '';
+        if (btn.dataset.hasSizes === '1' && !selectedSize) {
+          err.textContent = 'Please choose a size.';
+          return;
+        }
         btn.disabled = true;
         btn.textContent = 'Loading…';
         try {
           const resp = await fetch('/api/shop/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ drop_id: btn.dataset.dropId })
+            body: JSON.stringify({ drop_id: btn.dataset.dropId, size: selectedSize })
           });
           const json = await resp.json();
           if (!resp.ok || !json.url) throw new Error(json.error || 'checkout failed');
@@ -297,7 +320,7 @@ module.exports = async function handler(req, res) {
     const supabase = adminClient();
     const { data: drop, error } = await supabase
       .from('drops')
-      .select('id, slug, title, description, mockup_url, blank_label, color_id, gallery_urls, inventory_limit, retail_price_cents, currency, status')
+      .select('id, slug, title, description, mockup_url, blank_label, color_id, gallery_urls, inventory_limit, sizes, retail_price_cents, currency, status')
       .eq('slug', slug)
       .eq('status', 'live')
       .maybeSingle();

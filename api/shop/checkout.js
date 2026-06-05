@@ -135,18 +135,25 @@ module.exports = async function handler(req, res) {
   try {
     const body = await readBody(req);
     const dropId = (body.drop_id || '').toString().trim();
+    const size = (body.size || '').toString().trim();
     if (!dropId) return res.status(400).json({ error: 'drop_id required' });
 
     // Load the drop (service role bypasses RLS; we re-check status here).
     const supabase = adminClient();
     const { data: drop, error } = await supabase
       .from('drops')
-      .select('id, slug, title, mockup_url, inventory_limit, retail_price_cents, currency, status')
+      .select('id, slug, title, mockup_url, inventory_limit, sizes, retail_price_cents, currency, status')
       .eq('id', dropId)
       .maybeSingle();
     if (error) throw error;
     if (!drop)               return res.status(404).json({ error: 'drop not found' });
     if (drop.status !== 'live') return res.status(409).json({ error: 'drop not live' });
+
+    // Size: required + validated when the drop offers sizes.
+    const offeredSizes = Array.isArray(drop.sizes) ? drop.sizes.filter(Boolean) : [];
+    if (offeredSizes.length && (!size || !offeredSizes.includes(size))) {
+      return res.status(400).json({ error: 'Please choose a valid size.' });
+    }
 
     // Limited-run guard: block checkout when sold out, and cap to 1 unit per
     // order so the paid-order count stays equal to units sold.
@@ -184,7 +191,7 @@ module.exports = async function handler(req, res) {
         price_data: {
           currency:     (drop.currency || 'CAD').toLowerCase(),
           product_data: {
-            name:   drop.title,
+            name:   drop.title + (size ? ` — Size ${size}` : ''),
             images: drop.mockup_url ? [drop.mockup_url] : undefined,
           },
           unit_amount: drop.retail_price_cents,
@@ -204,6 +211,7 @@ module.exports = async function handler(req, res) {
         purpose:   'drop_purchase',
         drop_id:   drop.id,
         drop_slug: drop.slug,
+        size:      size || '',
       },
       success_url: successUrl,
       cancel_url:  cancelUrl,
