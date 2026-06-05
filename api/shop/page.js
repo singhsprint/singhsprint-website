@@ -30,6 +30,21 @@ function formatPrice(cents, currency) {
   return `$${major} ${currency || 'CAD'}`;
 }
 
+// Parse a supplier description into spec bullets. Handles HTML <li> lists and
+// plain-text (split on bullets / newlines / sentence boundaries).
+function parseSpecBullets(desc) {
+  if (!desc) return [];
+  const s = String(desc);
+  const li = s.match(/<li[^>]*>([\s\S]*?)<\/li>/gi);
+  if (li && li.length) {
+    return li.map((x) => x.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  }
+  const text = s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text) return [];
+  const parts = text.split(/\s*[••\n;]\s*|\.\s+(?=[A-Z0-9])/).map((x) => x.trim()).filter(Boolean);
+  return parts.length > 1 ? parts.slice(0, 12) : [text];
+}
+
 function notFoundHtml() {
   return `<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><title>Drop not found · Singhs Print</title>
@@ -41,9 +56,18 @@ a{color:#1a1a1a}</style></head><body>
 </body></html>`;
 }
 
-function pageHtml(drop, siteUrl) {
+function pageHtml(drop, siteUrl, images, specs) {
   const url   = `${siteUrl}/shop/${encodeURIComponent(drop.slug)}`;
   const price = formatPrice(drop.retail_price_cents, drop.currency);
+  const imgs  = (images && images.length) ? images : (drop.mockup_url ? [drop.mockup_url] : []);
+  const hero  = imgs[0] || '';
+  const specBullets = specs ? parseSpecBullets(specs.description) : [];
+  const blankLine = specs
+    ? [specs.brand, specs.style_number].filter(Boolean).join(' ') + (specs.color_name ? ' — ' + specs.color_name : '')
+    : (drop.blank_label || '');
+  const metaBits = specs
+    ? [specs.weight_oz ? specs.weight_oz + ' oz' : null, specs.fabric, specs.gender, specs.garment_type].filter(Boolean)
+    : [];
 
   return `<!doctype html>
 <html lang="en">
@@ -117,13 +141,24 @@ function pageHtml(drop, siteUrl) {
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
     @media (max-width:780px){.grid{grid-template-columns:1fr;gap:32px}.wrap{padding:24px}}
 
-    .media{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-    .media img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f0f0f0}
+    .media{background:transparent}
+    .media>#mainImg{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f0f0f0;border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .thumbs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .thumb{padding:0;border:2px solid transparent;border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;width:72px;height:72px;flex:0 0 auto}
+    .thumb img{width:100%;height:100%;object-fit:cover;background:#f0f0f0}
+    .thumb.active{border-color:#1a1a1a}
 
     .info h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,2.75rem);font-weight:800;line-height:1.1;margin-bottom:16px}
-    .info .price{font-size:1.5rem;font-weight:700;margin-bottom:24px}
+    .info .price{font-size:1.5rem;font-weight:700;margin-bottom:16px}
+    .info .specmeta{font-size:.95rem;color:#555;margin-bottom:24px}
     .info .desc{font-size:1.05rem;color:#444;margin-bottom:32px;white-space:pre-wrap}
     .info .blank{font-size:.85rem;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+
+    .specs{margin-top:32px;border-top:1px solid #eee;padding-top:24px}
+    .specs-head{font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:12px}
+    .specs ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .specs li{position:relative;padding-left:18px;font-size:.95rem;color:#444;line-height:1.5}
+    .specs li::before{content:"•";position:absolute;left:2px;color:#999}
 
     .buy{background:#1a1a1a;color:#fff;border:0;padding:18px 36px;border-radius:50px;font-size:1.05rem;font-weight:600;cursor:pointer;transition:all .25s;width:100%;max-width:320px;font-family:inherit}
     .buy:hover:not(:disabled){background:#333;transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
@@ -159,12 +194,14 @@ function pageHtml(drop, siteUrl) {
 
     <div class="grid">
       <div class="media">
-        <img src="${esc(drop.mockup_url)}" alt="${esc(drop.title)}">
+        <img id="mainImg" src="${esc(hero)}" alt="${esc(drop.title)}">
+        ${imgs.length > 1 ? `<div class="thumbs">${imgs.map((u, i) => `<button class="thumb${i === 0 ? ' active' : ''}" data-src="${esc(u)}" aria-label="View ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}
       </div>
       <div class="info">
-        ${drop.blank_label ? `<div class="blank">${esc(drop.blank_label)}</div>` : ''}
+        ${blankLine ? `<div class="blank">${esc(blankLine)}</div>` : ''}
         <h1>${esc(drop.title)}</h1>
         <div class="price">${esc(price)}</div>
+        ${metaBits.length ? `<div class="specmeta">${metaBits.map((b) => esc(b)).join('  ·  ')}</div>` : ''}
         ${drop.description ? `<div class="desc">${esc(drop.description)}</div>` : ''}
         <button id="buyBtn" class="buy" data-drop-id="${esc(drop.id)}">Buy now</button>
         <div id="err" class="err"></div>
@@ -176,6 +213,11 @@ function pageHtml(drop, siteUrl) {
         <div style="margin-top:18px;font-size:.85rem;color:#888">
           Final sale. Defects reprinted at no charge — see <a href="/shop/policies" style="color:#1a1a1a;text-decoration:underline">shipping &amp; refund policy</a>.
         </div>
+        ${specBullets.length ? `
+        <div class="specs">
+          <div class="specs-head">Tech specs${specs && specs.name ? ' · ' + esc(specs.name) : ''}</div>
+          <ul>${specBullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
+        </div>` : ''}
       </div>
     </div>
   </main>
@@ -194,6 +236,15 @@ function pageHtml(drop, siteUrl) {
       if (url.searchParams.get('cancel') === '1') {
         document.getElementById('cancelBanner').style.display = 'block';
       }
+      // Image gallery: click a thumbnail to swap the main image.
+      var mainImg = document.getElementById('mainImg');
+      document.querySelectorAll('.thumb').forEach(function (t) {
+        t.addEventListener('click', function () {
+          if (mainImg) mainImg.src = t.dataset.src;
+          document.querySelectorAll('.thumb').forEach(function (x) { x.classList.remove('active'); });
+          t.classList.add('active');
+        });
+      });
       const btn = document.getElementById('buyBtn');
       const err = document.getElementById('err');
       btn.addEventListener('click', async () => {
@@ -240,7 +291,7 @@ module.exports = async function handler(req, res) {
     const supabase = adminClient();
     const { data: drop, error } = await supabase
       .from('drops')
-      .select('id, slug, title, description, mockup_url, blank_label, retail_price_cents, currency, status')
+      .select('id, slug, title, description, mockup_url, blank_label, color_id, gallery_urls, retail_price_cents, currency, status')
       .eq('slug', slug)
       .eq('status', 'live')
       .maybeSingle();
@@ -251,10 +302,49 @@ module.exports = async function handler(req, res) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(404).send(notFoundHtml());
     }
+
+    // Per-side composited mockups (front/back/sleeve) for the image gallery.
+    const { data: sides } = await supabase
+      .from('drop_mockups')
+      .select('mockup_url, sort_index')
+      .eq('drop_id', drop.id)
+      .not('mockup_url', 'is', null)
+      .order('sort_index', { ascending: true });
+
+    // Blank tech specs + garment photos (front/back/side) via the chosen colour.
+    let colorRow = null;
+    if (drop.color_id) {
+      const { data: pc } = await supabase
+        .from('product_colors')
+        .select('color_name, mockup_front_url, mockup_back_url, mockup_side_url, products!inner ( brand, style_number, name, garment_type, gender, weight_oz, fabric, description )')
+        .eq('id', drop.color_id)
+        .maybeSingle();
+      colorRow = pc || null;
+    }
+    const product = colorRow && colorRow.products
+      ? (Array.isArray(colorRow.products) ? colorRow.products[0] : colorRow.products)
+      : null;
+
+    // Image gallery: hero composite, then other composited sides, then operator
+    // lifestyle photos, then the blank's back/side studio photos (the rear view).
+    const sideUrls    = (sides || []).map((s) => s.mockup_url).filter(Boolean);
+    const galleryUrls = Array.isArray(drop.gallery_urls) ? drop.gallery_urls : [];
+    const blankPhotos = colorRow ? [colorRow.mockup_back_url, colorRow.mockup_side_url].filter(Boolean) : [];
+    const images = Array.from(new Set(
+      [drop.mockup_url, ...sideUrls, ...galleryUrls, ...blankPhotos].filter(Boolean),
+    )).slice(0, 8);
+
+    const specs = product ? {
+      brand: product.brand, style_number: product.style_number, name: product.name,
+      garment_type: product.garment_type, gender: product.gender,
+      weight_oz: product.weight_oz, fabric: product.fabric, description: product.description,
+      color_name: colorRow.color_name,
+    } : null;
+
     const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || `https://${req.headers.host || 'singhsprint.com'}`;
     // Short cache: drop edits (price, description) should appear within a minute.
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
-    return res.status(200).send(pageHtml(drop, base));
+    return res.status(200).send(pageHtml(drop, base, images, specs));
   } catch (e) {
     console.error('[/api/shop/page]', e);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
