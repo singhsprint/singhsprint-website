@@ -58,6 +58,14 @@ async function loadTranslations() {
   return fn();
 }
 
+// Legal pages are translated by hand into full French (compliance/Bill 96),
+// not via data-i18n, so the generator must NOT overwrite their /fr versions.
+// Their hand-written counterparts live at /fr/<name> and are maintained
+// directly. (Added 2026-06-05.)
+const SKIP_FILES = new Set([
+  'privacy.html', 'cookies.html', 'terms.html', 'accessibility.html',
+]);
+
 // -- HTML files to mirror --------------------------------------------------
 async function findHtmlFiles(dir, out = []) {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -71,7 +79,7 @@ async function findHtmlFiles(dir, out = []) {
       // template gets data-i18n keys, remove 'p' from this list.
       if (['fr', 'scripts', 'node_modules', '.git', 'images', 'downloads', 'p'].includes(e.name)) continue;
       await findHtmlFiles(full, out);
-    } else if (e.isFile() && e.name.endsWith('.html')) {
+    } else if (e.isFile() && e.name.endsWith('.html') && !SKIP_FILES.has(e.name)) {
       out.push(full);
     }
   }

@@ -1891,12 +1891,12 @@
 
     card.innerHTML = `
       ${badge}
-      <div class="photo"><img src="${photoUrl}" alt="${p.brand} ${p.style_number}" loading="${opts.eager ? 'eager' : 'lazy'}" decoding="async"${opts.eager ? ' fetchpriority="high"' : ''}/></div>
+      <div class="photo"><img src="${esc(photoUrl)}" alt="${esc((p.brand || '') + ' ' + (p.style_number || ''))}" loading="${opts.eager ? 'eager' : 'lazy'}" decoding="async"${opts.eager ? ' fetchpriority="high"' : ''}/></div>
       <div class="body">
-        <div class="brand-row">${(p.brand || '').toUpperCase()} · ${p.style_number || ''}</div>
-        <div class="name">${p.name}</div>
+        <div class="brand-row">${esc((p.brand || '').toUpperCase())} · ${esc(p.style_number || '')}</div>
+        <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
-        <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${(heroColor.color_name || '').replace(/_\d+$/, '')}</div>
+        <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
         <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span  data-i18n="cat.card.from">À partir de</span> <strong>$${p.price_from.toFixed(2)}</strong><span  data-i18n="cat.card.perunit">/unité</span> · <span class="price-meta"  data-i18n="cat.card.oneside">Impression 1 côté</span>` : `<strong  data-i18n="cat.card.quote-on-request">Sur demande</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
@@ -1942,6 +1942,16 @@
     });
 
     return card;
+  }
+
+  // HTML-escape helper for values interpolated into innerHTML templates.
+  // Catalog data comes from the S&S supplier feed via /api/catalog; escaping
+  // is defense-in-depth against a malicious product name/brand/colour string
+  // (added 2026-06-05 security audit).
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
   function byoCard() {
@@ -2147,10 +2157,10 @@
             style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;margin-bottom:10px;background:#fafaf7"/>
           <div id="brandList" style="display:flex;flex-direction:column;max-height:300px;overflow-y:auto;border-top:1px solid var(--line)">
             ${orderedBrands.map(([b, n]) => `
-              <label data-brand-row="${b.toLowerCase()}" style="display:flex;align-items:center;gap:10px;font-size:.88rem;cursor:pointer;padding:8px 2px;border-bottom:1px solid #f0eee7">
+              <label data-brand-row="${esc(b.toLowerCase())}" style="display:flex;align-items:center;gap:10px;font-size:.88rem;cursor:pointer;padding:8px 2px;border-bottom:1px solid #f0eee7">
                 <input type="checkbox" ${state.filters.brand.includes(b) ? 'checked' : ''}
                   onchange="toggleBrand('${b.replace(/'/g, "\\'")}', this.checked)" style="accent-color:var(--ink);width:15px;height:15px"/>
-                <span style="flex:1">${b}</span>
+                <span style="flex:1">${esc(b)}</span>
                 <span style="color:var(--soft);font-size:.78rem">${n}</span>
               </label>
             `).join('')}

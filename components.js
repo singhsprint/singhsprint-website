@@ -17,6 +17,42 @@
 // Skips itself if it's already booted (sp-gtag-config script exists), so
 // safe even if a page also inlines the snippet in <head> for earlier firing.
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Consent Mode v2 (Quebec Law 25 / GDPR). Runs SYNCHRONOUSLY before the
+// gtag boot below so Google receives "denied" defaults for all storage
+// until the visitor accepts. If a prior choice is stored we apply it
+// immediately. The banner UI + accept/reject lives in /consent.js (loaded
+// at the bottom of this IIFE chain). (Added 2026-06-05 compliance pass.)
+// ---------------------------------------------------------------------
+(function consentModeDefaults() {
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { window.dataLayer.push(arguments); }
+  window.gtag = window.gtag || gtag;
+  var stored = null;
+  try { stored = localStorage.getItem('sp_consent'); } catch (e) {}
+  var granted = stored === 'granted';
+  gtag('consent', 'default', {
+    ad_storage:          granted ? 'granted' : 'denied',
+    analytics_storage:   granted ? 'granted' : 'denied',
+    ad_user_data:        granted ? 'granted' : 'denied',
+    ad_personalization:  granted ? 'granted' : 'denied',
+    functionality_storage: 'granted',
+    security_storage:    'granted',
+    wait_for_update: 500,
+  });
+  window.SP_CONSENT_STATE = stored || 'unset';
+})();
+
+// Load the consent banner UI + controller once per page.
+(function loadConsentBanner() {
+  if (document.getElementById('sp-consent-script')) return;
+  var s = document.createElement('script');
+  s.id = 'sp-consent-script';
+  s.src = '/consent.js';
+  s.defer = true;
+  document.head.appendChild(s);
+})();
+
 (function loadGoogleMeasurement() {
   if (document.getElementById('sp-gtag-config')) return;
   // 1. Load the config first. It sets window.SP_GA4_MEASUREMENT_ID etc.
@@ -787,6 +823,7 @@ function loadFooter() {
     + '    </div>'
     + '    <div class="footer-bottom">'
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Imprimerie Singhs Print &middot; NEQ 1181573313</span></span>'
+    + '      <span class="footer-legal" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center"><a href="/privacy" data-i18n="footer.privacy">Privacy</a><a href="/cookies" data-i18n="footer.cookies">Cookies</a><a href="/terms" data-i18n="footer.terms">Terms</a><a href="/accessibility" data-i18n="footer.accessibility">Accessibility</a><a href="#" onclick="if(window.SP_CONSENT){SP_CONSENT.reopen();}return false;" data-i18n="footer.cookieprefs">Cookie preferences</a></span>'
     + '      <span data-i18n="footer.tagline">Custom Apparel Printing | Montreal, QC</span>'
     + '      <a href="https://singhsprint-crm.vercel.app/login" style="font-size:.75rem;color:#777;font-weight:500;opacity:.7;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7" data-i18n="nav.login">Login</a>'
     + '    </div>'

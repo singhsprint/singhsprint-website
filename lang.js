@@ -76,6 +76,11 @@ var SP_LANG = (function() {
     'footer.location': { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'footer.rights': { en: '2026 Singhs Print. All rights reserved.', fr: '2026 Singhs Print. Tous droits réservés.' },
     'footer.tagline': { en: 'Custom Apparel Printing | Montreal, QC', fr: 'Impression de vêtements personnalisés | Montréal, QC' },
+    'footer.privacy': { en: 'Privacy', fr: 'Confidentialité' },
+    'footer.cookies': { en: 'Cookies', fr: 'Témoins' },
+    'footer.terms': { en: 'Terms', fr: 'Conditions' },
+    'footer.accessibility': { en: 'Accessibility', fr: 'Accessibilité' },
+    'footer.cookieprefs': { en: 'Cookie preferences', fr: 'Préférences de témoins' },
 
     // ===== INDEX / HOME =====
     'home.badge': { en: 'Open 7 days | West Island, Montreal', fr: 'Ouvert 7 jours | Ouest-de-l\'Île, Montréal' },
