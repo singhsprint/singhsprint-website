@@ -1,8 +1,13 @@
 /* =========================================================================
  * GET /api/shop/list
  *
- * Public endpoint. Returns all drops with status='live', newest first.
- * Powers the /shop hub page rail.
+ * Public endpoint. Powers the /shop hub page rail.
+ *
+ * Shows ONLY the site primary drop (drops.is_primary = true, status='live').
+ * Campaign secondaries stay live and reachable by their own /shop/{slug} ad
+ * link (served by api/shop/page.js, which serves any live drop) but never
+ * appear in this hub listing. There is at most one primary (a partial unique
+ * index in the CRM enforces it), so this rail shows one drop at a time.
  *
  * Response: { drops: [{ slug, title, mockup_url, retail_price_cents, currency, launched_at }] }
  *
@@ -24,6 +29,7 @@ module.exports = async function handler(req, res) {
       .from('drops')
       .select('slug, title, mockup_url, retail_price_cents, currency, launched_at')
       .eq('status', 'live')
+      .eq('is_primary', true)
       .order('launched_at', { ascending: false });
     if (error) throw error;
 
