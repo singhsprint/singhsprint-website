@@ -141,12 +141,27 @@ module.exports = async function handler(req, res) {
     const supabase = adminClient();
     const { data: drop, error } = await supabase
       .from('drops')
-      .select('id, slug, title, mockup_url, retail_price_cents, currency, status')
+      .select('id, slug, title, mockup_url, inventory_limit, retail_price_cents, currency, status')
       .eq('id', dropId)
       .maybeSingle();
     if (error) throw error;
     if (!drop)               return res.status(404).json({ error: 'drop not found' });
     if (drop.status !== 'live') return res.status(409).json({ error: 'drop not live' });
+
+    // Limited-run guard: block checkout when sold out, and cap to 1 unit per
+    // order so the paid-order count stays equal to units sold.
+    let maxQty = 10;
+    if (drop.inventory_limit != null) {
+      const { count } = await supabase
+        .from('drop_orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('drop_id', drop.id)
+        .in('status', ['paid', 'fulfilled']);
+      if ((drop.inventory_limit - (count || 0)) <= 0) {
+        return res.status(409).json({ error: 'This drop is sold out.' });
+      }
+      maxQty = 1;
+    }
 
     const base = siteUrl(req);
     const successUrl = `${base}/shop/${encodeURIComponent(drop.slug)}?paid=1&session_id={CHECKOUT_SESSION_ID}`;
@@ -176,7 +191,7 @@ module.exports = async function handler(req, res) {
           tax_behavior: 'exclusive',                    // tax added on top; Stripe Tax requires this
         },
         quantity: 1,
-        adjustable_quantity: { enabled: true, minimum: 1, maximum: 10 },
+        adjustable_quantity: { enabled: maxQty > 1, minimum: 1, maximum: maxQty },
       }],
       // Real shipping rates via Chit Chats (CRM `/api/shipping/estimate`).
       // We quote TWO rates at session creation — one for CA, one for US —

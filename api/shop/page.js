@@ -56,9 +56,11 @@ a{color:#1a1a1a}</style></head><body>
 </body></html>`;
 }
 
-function pageHtml(drop, siteUrl, images, specs) {
+function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
   const url   = `${siteUrl}/shop/${encodeURIComponent(drop.slug)}`;
   const price = formatPrice(drop.retail_price_cents, drop.currency);
+  const stockLabel = soldOut ? 'Sold out'
+    : (remaining != null && remaining <= 10 ? `Only ${remaining} left` : '');
   const imgs  = (images && images.length) ? images : (drop.mockup_url ? [drop.mockup_url] : []);
   const hero  = imgs[0] || '';
   const specBullets = specs ? parseSpecBullets(specs.description) : [];
@@ -103,7 +105,7 @@ function pageHtml(drop, siteUrl, images, specs) {
       url,
       priceCurrency:   drop.currency || "CAD",
       price:           (drop.retail_price_cents / 100).toFixed(2),
-      availability:    "https://schema.org/InStock",
+      availability:    soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
       itemCondition:   "https://schema.org/NewCondition",
     },
   })}</script>
@@ -151,6 +153,9 @@ function pageHtml(drop, siteUrl, images, specs) {
     .info h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,2.75rem);font-weight:800;line-height:1.1;margin-bottom:16px}
     .info .price{font-size:1.5rem;font-weight:700;margin-bottom:16px}
     .info .specmeta{font-size:.95rem;color:#555;margin-bottom:24px}
+    .info .stock{display:inline-block;font-size:.85rem;font-weight:700;margin-bottom:16px;padding:4px 12px;border-radius:999px;background:#fff3cd;color:#8a6d00}
+    .info .stock.soldout{background:#fde2e1;color:#b00020}
+    .buy:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
     .info .desc{font-size:1.05rem;color:#444;margin-bottom:32px;white-space:pre-wrap}
     .info .blank{font-size:.85rem;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
 
@@ -201,9 +206,10 @@ function pageHtml(drop, siteUrl, images, specs) {
         ${blankLine ? `<div class="blank">${esc(blankLine)}</div>` : ''}
         <h1>${esc(drop.title)}</h1>
         <div class="price">${esc(price)}</div>
+        ${stockLabel ? `<div class="stock${soldOut ? ' soldout' : ''}">${esc(stockLabel)}</div>` : ''}
         ${metaBits.length ? `<div class="specmeta">${metaBits.map((b) => esc(b)).join('  ·  ')}</div>` : ''}
         ${drop.description ? `<div class="desc">${esc(drop.description)}</div>` : ''}
-        <button id="buyBtn" class="buy" data-drop-id="${esc(drop.id)}">Buy now</button>
+        <button id="buyBtn" class="buy" data-drop-id="${esc(drop.id)}"${soldOut ? ' disabled' : ''}>${soldOut ? 'Sold out' : 'Buy now'}</button>
         <div id="err" class="err"></div>
         <div class="meta">
           <span>Ships from Montréal</span>
@@ -291,7 +297,7 @@ module.exports = async function handler(req, res) {
     const supabase = adminClient();
     const { data: drop, error } = await supabase
       .from('drops')
-      .select('id, slug, title, description, mockup_url, blank_label, color_id, gallery_urls, retail_price_cents, currency, status')
+      .select('id, slug, title, description, mockup_url, blank_label, color_id, gallery_urls, inventory_limit, retail_price_cents, currency, status')
       .eq('slug', slug)
       .eq('status', 'live')
       .maybeSingle();
@@ -301,6 +307,19 @@ module.exports = async function handler(req, res) {
     if (!drop) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(404).send(notFoundHtml());
+    }
+
+    // Limited-run stock: count paid orders against inventory_limit (null = unlimited).
+    let remaining = null;
+    let soldOut = false;
+    if (drop.inventory_limit != null) {
+      const { count } = await supabase
+        .from('drop_orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('drop_id', drop.id)
+        .in('status', ['paid', 'fulfilled']);
+      remaining = Math.max(0, drop.inventory_limit - (count || 0));
+      soldOut = remaining <= 0;
     }
 
     // Per-side composited mockups (front/back/sleeve) for the image gallery.
@@ -344,7 +363,7 @@ module.exports = async function handler(req, res) {
     const base = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || `https://${req.headers.host || 'singhsprint.com'}`;
     // Short cache: drop edits (price, description) should appear within a minute.
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
-    return res.status(200).send(pageHtml(drop, base, images, specs));
+    return res.status(200).send(pageHtml(drop, base, images, specs, remaining, soldOut));
   } catch (e) {
     console.error('[/api/shop/page]', e);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
