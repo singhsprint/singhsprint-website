@@ -4291,30 +4291,219 @@
       }
     })();
 
-    function handlePayment() {
-      alert('Submitting quote with payment option enabled. You will receive an invoice by email.');
-      // For now, just trigger form submission. Later, integrate with Stripe Checkout.
-      // Commented Stripe code below for future implementation:
-      /*
-      var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
-      var amount = parseFloat(document.getElementById('priceTotal').textContent.replace('$', '')) || 0;
+    // ===== DIRECT ORDER / SELF-SERVE CHECKOUT =====
+    // The CRM's public checkout endpoint. It re-prices the cart server-side
+    // (never trusts the client total), writes an inbound_request flagged
+    // flow='shop_order' status='pending_payment', creates a Stripe Checkout
+    // session, and returns { payment_url }. The Stripe webhook promotes the
+    // request to a real `orders` row once payment clears. The "Request a
+    // quote instead" path (the form below) is unchanged — it still POSTs to
+    // /api/inbound. This is the pay-now path only.
+    var SHOP_CHECKOUT_API = 'https://singhsprint-crm.vercel.app/api/shop/checkout';
 
-      fetch('/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product: state.garment,
-          service: state.service,
-          quantity: qty,
-          amount: amount
-        })
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.url) window.location.href = data.url;
-      })
-      .catch(function(err) { console.error('Payment error:', err); });
-      */
+    // Collect every design file the customer attached, from the same two
+    // sources the quote-submit path uses (placementFiles = single-product /
+    // global; cartItemFiles = per-cart-item, keyed "<itemIdx>_<presetId>").
+    // Returns [{ placement, cart_item_index, file }].
+    function spCollectPendingFiles() {
+      var pending = [];
+      try {
+        if (typeof placementFiles === 'object' && placementFiles) {
+          Object.keys(placementFiles).forEach(function(presetId) {
+            var f = placementFiles[presetId];
+            if (f instanceof File) pending.push({ placement: presetId, cart_item_index: null, file: f });
+          });
+        }
+        if (typeof cartItemFiles === 'object' && cartItemFiles) {
+          Object.keys(cartItemFiles).forEach(function(key) {
+            var f = cartItemFiles[key];
+            if (!(f instanceof File)) return;
+            var split = key.indexOf('_');
+            var idxNum = split > -1 ? parseInt(key.slice(0, split), 10) : NaN;
+            var placement = split > -1 ? key.slice(split + 1) : null;
+            pending.push({ placement: placement, cart_item_index: Number.isFinite(idxNum) ? idxNum : null, file: f });
+          });
+        }
+      } catch (e) { /* never let file collection break checkout */ }
+      return pending;
+    }
+
+    // Build the items[] payload for /api/shop/checkout from the current page
+    // state — works in both multi-item cart mode and single-product mode.
+    // Field names match the CRM's ShopCartItemInput; the server re-prices
+    // from product_id/variant_id + color_id + qty + placements, so we only
+    // need to pass identifiers, not money.
+    function spBuildCheckoutItems() {
+      // Multi-item cart flow (catalog "add to cart").
+      if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+        return SinghsCart.read().items.map(function(it) {
+          return {
+            product_id:        it.product_id || null,
+            variant_id:        it.variant_id || null,
+            color_id:          it.color_id || null,
+            qty:               parseInt(it.qty, 10) || 0,
+            sizes:             (it.sizes && typeof it.sizes === 'object') ? it.sizes : {},
+            placements:        Array.isArray(it.placements) ? it.placements : [],
+            decoration_method: (it.decoration_type || '').toLowerCase() || 'dtf',
+            brand:             it.brand || null,
+            style_number:      it.style_number || null,
+            name:              it.name || null,
+            color_name:        (it.color_name || '').replace(/_\d+$/, '') || null,
+            garment_type:      it.garment_type || null
+          };
+        });
+      }
+      // Single-product flow (?product=… deep link).
+      if (!catalogPick || !catalogPick.product_id) return [];
+      var sizes = {};
+      ['xs','s','m','l','xl','2xl','3xl','4xl','5xl'].forEach(function(s) {
+        var inp = document.querySelector('input[name="size_' + s + '"]');
+        var v = inp ? (parseInt(inp.value, 10) || 0) : 0;
+        if (v > 0) sizes[s.toUpperCase()] = v;
+      });
+      var qty = Object.keys(sizes).reduce(function(a, k) { return a + sizes[k]; }, 0)
+              || (parseInt(document.getElementById('sizeTotal').textContent, 10) || 0);
+      var placements = [];
+      try { placements = Object.values(presetByLocation || {}).filter(Boolean); } catch (e) {}
+      var colorIdInp = document.getElementById('catalogColorId');
+      return [{
+        product_id:        catalogPick.product_id,
+        color_id:          (colorIdInp && colorIdInp.value) || null,
+        qty:               qty,
+        sizes:             sizes,
+        placements:        placements,
+        decoration_method: (state.service || '').toLowerCase() || 'dtf',
+        brand:             catalogPick.brand || null,
+        style_number:      catalogPick.style_number || null,
+        name:              catalogPick.name || state.product || null,
+        color_name:        state.colorName || null,
+        garment_type:      catalogPick.garment_type || state.garment || null
+      }];
+    }
+
+    function handlePayment() {
+      var nameEl    = document.getElementById('name');
+      var emailEl   = document.getElementById('email');
+      var phoneEl   = document.getElementById('phone');
+      var companyEl = document.getElementById('company');
+      var name  = (nameEl  && nameEl.value  || '').trim();
+      var email = (emailEl && emailEl.value || '').trim();
+
+      // Email + name are required to own the order + send the receipt. If
+      // they're missing, route the customer to the contact step and focus
+      // the field rather than failing silently at the API.
+      function focusContact(el) {
+        try { if (typeof goToStep === 'function') goToStep(3); } catch (e) {}
+        if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      }
+      if (!name) { alert('Please add your name so we can put it on the order.'); focusContact(nameEl); return; }
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        alert('Please enter a valid email — that’s where your receipt and order updates go.');
+        focusContact(emailEl); return;
+      }
+
+      var items = spBuildCheckoutItems();
+      if (!items.length || !items.some(function(i) { return i.qty > 0; })) {
+        alert('Add at least one item with a quantity before ordering.');
+        return;
+      }
+
+      // Aggregate size breakdown across items (powers the CRM inbox UI).
+      var sizeBreakdown = {};
+      items.forEach(function(it) {
+        Object.keys(it.sizes || {}).forEach(function(k) {
+          sizeBreakdown[k] = (sizeBreakdown[k] || 0) + (it.sizes[k] || 0);
+        });
+      });
+
+      // Attribution breadcrumbs.
+      var utm = {};
+      try {
+        var sp = new URLSearchParams(location.search);
+        ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid','promo'].forEach(function(k) {
+          var v = sp.get(k); if (v) utm[k] = v;
+        });
+      } catch (e) {}
+
+      var payBtn = document.getElementById('payButton');
+      if (payBtn) {
+        payBtn.disabled = true;
+        if (!payBtn.dataset._label) payBtn.dataset._label = payBtn.textContent;
+        payBtn.textContent = 'Starting secure checkout…';
+      }
+      if (typeof spShowUploadOverlay === 'function') spShowUploadOverlay('Preparing your order…');
+
+      function restoreBtn() {
+        if (typeof spHideUploadOverlay === 'function') spHideUploadOverlay();
+        if (payBtn) { payBtn.disabled = false; if (payBtn.dataset._label) payBtn.textContent = payBtn.dataset._label; }
+      }
+
+      // Upload any attached artwork first (best-effort — a failed/oversize
+      // upload must NOT block payment; production can chase the file later
+      // via the request row). Then attach a design_url per item and POST.
+      var pending = (typeof spCollectPendingFiles === 'function') ? spCollectPendingFiles() : [];
+      var uploadAll = pending.length
+        ? Promise.all(pending.map(function(p) {
+            return uploadDesignFile(p.file)
+              .then(function(r) {
+                return {
+                  placement:       p.placement,
+                  cart_item_index: p.cart_item_index,
+                  path:            (r && (r.path || r.key)) || null,
+                  signed_url:      (r && (r.signed_url || r.url || r.signedUrl)) || null
+                };
+              })
+              .catch(function() { return null; });
+          })).then(function(arr) { return arr.filter(Boolean); })
+        : Promise.resolve([]);
+
+      uploadAll.then(function(uploaded) {
+        items.forEach(function(it, idx) {
+          var match = null;
+          for (var i = 0; i < uploaded.length; i++) {
+            if (uploaded[i].cart_item_index === idx) { match = uploaded[i]; break; }
+          }
+          if (!match) {
+            for (var j = 0; j < uploaded.length; j++) {
+              if (uploaded[j].cart_item_index == null) { match = uploaded[j]; break; }
+            }
+          }
+          if (match) { it.design_url = match.signed_url || null; it.design_path = match.path || null; }
+          it.mockups = []; // composited server-side after the order lands
+        });
+
+        return fetch(SHOP_CHECKOUT_API, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_email: email,
+            contact_name:   name || null,
+            phone:          (phoneEl   && phoneEl.value)   || null,
+            company:        (companyEl && companyEl.value) || null,
+            items:          items,
+            size_breakdown: sizeBreakdown,
+            deposit_choice: 'full',
+            source_url:     location.href,
+            meta:           utm
+          })
+        }).then(function(r) {
+          return r.json().then(function(j) { return { ok: r.ok, body: j }; })
+                          .catch(function() { return { ok: r.ok, body: {} }; });
+        });
+      }).then(function(res) {
+        if (res.ok && res.body && res.body.payment_url) {
+          if (window.spTrack) {
+            try { window.spTrack('shop_checkout_start', { total: res.body.total, kind: res.body.kind, currency: 'CAD' }); } catch (e) {}
+          }
+          window.location.href = res.body.payment_url;
+        } else {
+          throw new Error((res.body && res.body.error) || 'Checkout is temporarily unavailable.');
+        }
+      }).catch(function(err) {
+        restoreBtn();
+        alert('We couldn’t start secure checkout: ' + ((err && err.message) || err) +
+              '\n\nYou can still submit the form below to request a quote and we’ll send a payment link.');
+      });
     }
 
     // Hook price calculation to size changes
