@@ -1449,9 +1449,20 @@
                  #livePriceStrip on mobile (position:fixed at bottom of
                  viewport). Without it the Submit button gets visually
                  swallowed by the live-estimate bar at small heights. -->
-            <div class="form-buttons" style="padding-bottom:120px">
-              <button type="button" class="btn btn-outline" onclick="goToStep(2)" data-i18n="quote.back">&larr; Back</button>
-              <button type="submit" class="btn btn-accent" style="padding:16px 36px;font-size:1rem" data-i18n="quote.submit">Submit Quote Request &rarr;</button>
+            <!-- DUAL CTA: pay-now order (primary) + request-a-quote (secondary).
+                 The order button posts the priced cart to /api/shop/checkout
+                 and redirects to Stripe; the quote button keeps the existing
+                 /api/inbound submit. Both consume the same built cart. -->
+            <div class="form-buttons" style="padding-bottom:120px;display:flex;flex-direction:column;gap:14px;align-items:stretch">
+              <button type="button" id="orderPayBtn" onclick="handlePayment()" class="btn btn-accent" style="width:100%;padding:18px 28px;font-size:1.05rem;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:50px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span data-i18n="quote.order.button">Order &amp; Pay Now — secure checkout</span>
+              </button>
+              <p style="font-size:.8rem;color:#888;text-align:center;margin:-4px 0 2px;line-height:1.45" data-i18n="quote.order.note">Pay securely by card or Affirm. Prefer to talk pricing first? Request a quote below.</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <button type="button" class="btn btn-outline" onclick="goToStep(2)" data-i18n="quote.back">&larr; Back</button>
+                <button type="submit" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem" data-i18n="quote.submit">Request a quote instead</button>
+              </div>
             </div>
           </div>
         </form>
@@ -4448,17 +4459,21 @@
         });
       } catch (e) {}
 
-      var payBtn = document.getElementById('payButton');
-      if (payBtn) {
-        payBtn.disabled = true;
-        if (!payBtn.dataset._label) payBtn.dataset._label = payBtn.textContent;
-        payBtn.textContent = 'Starting secure checkout…';
+      // Disable both possible triggers (panel button + bottom order button)
+      // to prevent a double-submit; the overlay carries the progress message.
+      var payBtns = [document.getElementById('payButton'), document.getElementById('orderPayBtn')].filter(Boolean);
+      var legacyPayBtn = document.getElementById('payButton');
+      payBtns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.65'; b.style.cursor = 'progress'; });
+      if (legacyPayBtn) {
+        if (!legacyPayBtn.dataset._label) legacyPayBtn.dataset._label = legacyPayBtn.textContent;
+        legacyPayBtn.textContent = 'Starting secure checkout…';
       }
       if (typeof spShowUploadOverlay === 'function') spShowUploadOverlay('Preparing your order…');
 
       function restoreBtn() {
         if (typeof spHideUploadOverlay === 'function') spHideUploadOverlay();
-        if (payBtn) { payBtn.disabled = false; if (payBtn.dataset._label) payBtn.textContent = payBtn.dataset._label; }
+        payBtns.forEach(function(b) { b.disabled = false; b.style.opacity = ''; b.style.cursor = ''; });
+        if (legacyPayBtn && legacyPayBtn.dataset._label) legacyPayBtn.textContent = legacyPayBtn.dataset._label;
       }
 
       // Upload any attached artwork first (best-effort — a failed/oversize
