@@ -569,7 +569,7 @@
              mockup card, etc.) gets explicitly hidden so we don't
              leak marketing copy into the form flow. */
       .mockup-panel{display:contents !important}
-      .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard){
+      .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard):not(#spInlinePreview){
         display:none !important;
       }
 
@@ -1487,6 +1487,12 @@
         <div style="font-size:.7rem;color:#888;margin-top:10px;line-height:1.4" data-i18n="quote.liveprice.note">Final quote may vary based on artwork complexity, decoration method, and delivery deadline.</div>
       </div>
 
+      <!-- INLINE BAKED-MOCKUP PREVIEW — filled by the customizer's onDone so
+           the customer sees their design on the garment right on the page,
+           without re-opening the modal. Visible in both single + cart modes
+           (kept out of the mobile cart-collapse rule below). -->
+      <div id="spInlinePreview" style="display:none;margin:0 0 16px"></div>
+
       <!-- BRAND-STYLED REASSURANCE CARD
            Replaces the live preview. Customer doesn't see a fake mockup
            while they fill out the form — they see a clear promise that a
@@ -1512,7 +1518,7 @@
         <!-- Live customizer launch — see it on the garment before ordering.
              Hidden until a catalog product is picked; the handler prompts for
              artwork if none is attached yet. -->
-        <button type="button" id="spCustomizeBtn" onclick="spLaunchSingleCustomizer()" style="display:none;width:100%;margin:4px 0 16px;padding:13px 16px;border-radius:12px;border:none;background:#1a1a1a;color:#e8ff3c;font-weight:700;font-size:.9rem;cursor:pointer;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px">
+        <button type="button" id="spCustomizeBtn" onclick="spLaunchCustomizer()" style="display:none;width:100%;margin:4px 0 16px;padding:13px 16px;border-radius:12px;border:none;background:#1a1a1a;color:#e8ff3c;font-weight:700;font-size:.9rem;cursor:pointer;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
           <span>Customize &amp; preview on the garment</span>
         </button>
@@ -4593,7 +4599,22 @@
         '.sp-cz-btn:disabled{opacity:.5;cursor:not-allowed}' +
         '.sp-cz-status{font-size:.78rem;color:#9a9a9a;flex:1;min-width:120px}' +
         '.sp-cz-spin{width:16px;height:16px;border:2px solid #555;border-top-color:#e8ff3c;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:6px;animation:spCzSpin .8s linear infinite}' +
-        '@keyframes spCzSpin{to{transform:rotate(360deg)}}';
+        '@keyframes spCzSpin{to{transform:rotate(360deg)}}' +
+        // Sticky footer so the action buttons are always reachable under the
+        // tall square stage. Header sticky too so the title/close stay put.
+        '.sp-cz-h{position:sticky;top:0;background:#1a1a1a;z-index:2}' +
+        '.sp-cz-foot{position:sticky;bottom:0;background:#1a1a1a;z-index:2}' +
+        // Mobile: full-bleed sheet, square stage capped to keep controls in
+        // view, and stacked full-width buttons (primary on top).
+        '@media (max-width:560px){' +
+          '.sp-cz-overlay{padding:0;align-items:stretch}' +
+          '.sp-cz{max-width:none;max-height:100vh;height:100vh;border-radius:0;display:flex;flex-direction:column}' +
+          '.sp-cz-stage{aspect-ratio:auto;height:min(56vh,60vw);flex:0 0 auto}' +
+          '.sp-cz-foot{flex-wrap:wrap}' +
+          '.sp-cz-status{flex:1 0 100%;order:1;margin-bottom:4px}' +
+          '.sp-cz-btn{flex:1;order:2;padding:13px 16px;font-size:.92rem}' +
+          '.sp-cz-btn--primary{order:1;flex:1 0 100%}' +
+        '}';
       document.head.appendChild(st);
     }
 
@@ -4808,6 +4829,52 @@
       paint();
     }
 
+    // ---- Universal entry point + inline preview --------------------------
+    // The prominent "Customize & preview" button routes to the right flow:
+    // a multi-item cart customizes per row (open the first; the rest have
+    // their own buttons), otherwise the single-product flow.
+    function spLaunchCustomizer() {
+      var hasCart = (typeof SinghsCart !== 'undefined' && SinghsCart.count && SinghsCart.count() > 0);
+      if (hasCart) {
+        var items = SinghsCart.read().items;
+        if (items.length > 1) {
+          // Point them at the per-item buttons so it's clear each item is
+          // customized separately, then open the first as a head start.
+          var host = document.getElementById('cartList') || document.querySelector('.cart-item');
+          if (host && host.scrollIntoView) host.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        spLaunchCartCustomizer(0);
+      } else {
+        spLaunchSingleCustomizer();
+      }
+    }
+
+    // Render baked mockups inline on the page (in the right panel) so the
+    // customer sees their design on the garment without re-opening the modal.
+    function spShowInlineMockups(mockups, onEdit) {
+      var host = document.getElementById('spInlinePreview');
+      if (!host) return;
+      if (!mockups || !mockups.length) { host.style.display = 'none'; host.innerHTML = ''; return; }
+      function lbl(p) { return (placementPresets[p] && placementPresets[p].label) || p; }
+      var imgs = mockups.map(function(m) {
+        return '<figure style="margin:0;flex:1;min-width:120px;max-width:200px">' +
+          '<img src="' + m.url + '" alt="' + lbl(m.placement) + ' mockup" style="width:100%;border-radius:10px;border:1px solid #eee;background:#fff;display:block"/>' +
+          '<figcaption style="font-size:.7rem;color:#888;text-align:center;margin-top:5px;font-weight:600">' + lbl(m.placement) + '</figcaption>' +
+        '</figure>';
+      }).join('');
+      host.innerHTML =
+        '<div style="background:#fff;border:1px solid #e8e8e8;border-radius:16px;padding:16px 16px 14px;box-shadow:0 2px 12px rgba(0,0,0,.05)">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">' +
+            '<div style="display:flex;align-items:center;gap:7px;font-weight:700;font-size:.85rem;color:#1a1a1a"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18)"></span>Your mockup</div>' +
+            '<button type="button" id="spInlineEdit" style="background:transparent;border:1px solid #d8d8d8;border-radius:50px;padding:6px 13px;font-size:.76rem;font-weight:700;cursor:pointer;color:#1a1a1a">Edit</button>' +
+          '</div>' +
+          '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">' + imgs + '</div>' +
+        '</div>';
+      host.style.display = 'block';
+      var eb = document.getElementById('spInlineEdit');
+      if (eb) eb.onclick = (typeof onEdit === 'function') ? onEdit : function() {};
+    }
+
     // ---- Single-product wiring -------------------------------------------
     function spSingleColor() {
       var cidEl = document.getElementById('catalogColorId');
@@ -4846,6 +4913,7 @@
           window.__spSingleRemoveBg  = res.removeBg;
           window.__spSingleDesign    = res.design || null;
           spMarkCustomized(res.mockups);
+          spShowInlineMockups(res.mockups, spLaunchSingleCustomizer);
         }
       });
     }
@@ -4884,30 +4952,39 @@
                 design_url: (res.design && res.design.signed_url) || it.design_url || null,
                 design_path: (res.design && res.design.path) || it.design_path || null
               });
+              var n = (res.mockups && res.mockups.length) || 0;
               var b = document.getElementById('spCartCzBtn-' + idx);
               if (b) {
-                var n = (res.mockups && res.mockups.length) || 0;
-                b.textContent = n ? '✓ Mockup ready' : 'Customize';
+                b.textContent = n ? '✓ Mockup ready · edit' : 'Customize';
                 if (n) { b.style.background = '#143a14'; b.style.color = '#9dff9d'; }
               }
+              // Swap the cart row thumbnail to the baked front mockup so the
+              // customer sees their design right on the item, inline.
+              if (n) {
+                var front = (res.mockups.filter(function(m){ return spSideFor(m.placement) === 'front'; })[0] || res.mockups[0]);
+                var thumb = document.getElementById('ci-img-' + idx);
+                if (thumb && front) { thumb.src = front.url; thumb.style.objectFit = 'contain'; thumb.style.background = '#fff'; }
+              }
+              // Show the inline preview panel + reflect on the primary button.
+              spShowInlineMockups(res.mockups, function() { spLaunchCartCustomizer(idx); });
+              spMarkCustomized(res.mockups);
             }
           });
         })
         .catch(function() { alert('Could not load this product to customize. Please try again.'); });
     }
 
-    // Reveal the single-product customize button once a catalog product loads.
+    // Reveal the customize button whenever there's something to customize —
+    // a picked single product OR items in the cart. (The router sends each to
+    // the right flow.) Hide it only when there's nothing yet.
     (function() {
-      var tries = 0;
       var iv = setInterval(function() {
-        tries++;
         var btn = document.getElementById('spCustomizeBtn');
+        if (!btn) return;
         var hasCart = (typeof SinghsCart !== 'undefined' && SinghsCart.count && SinghsCart.count() > 0);
-        if (btn && !hasCart && typeof catalogPick !== 'undefined' && catalogPick && catalogPick.product_id) {
-          btn.style.display = 'flex';
-        }
-        if (tries > 40) clearInterval(iv);
-      }, 500);
+        var hasSingle = (typeof catalogPick !== 'undefined' && catalogPick && catalogPick.product_id);
+        btn.style.display = (hasCart || hasSingle) ? 'flex' : 'none';
+      }, 600);
     })();
 
     // Hook price calculation to size changes
