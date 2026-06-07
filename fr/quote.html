@@ -3858,16 +3858,60 @@
       // Clear immediately to defend against accidental re-render double-fires
       window.__sp_pendingConversion = null;
 
-      // Meta Pixel Lead — Meta uses this to optimize Leads-objective ad sets
+      // Meta Lead — the event the Leads-objective ad sets optimize toward.
+      // Fired on BOTH the browser Pixel and the server-side CAPI with a single
+      // shared event_id, so Meta de-dupes to exactly ONE Lead (no double-count)
+      // while recovering the ~10-20% of browser events lost to ad-blockers/iOS
+      // and lifting Event Match Quality via hashed email/phone/name. The CAPI
+      // POST is gated on the same consent flag the Pixel respects (sp_consent),
+      // so PII never leaves the browser without consent. Mirrors the drops
+      // funnel, which already had server-side CAPI; the quote funnel did not.
       try {
         if (typeof fbq === 'function') {
-          fbq('track', 'Lead', {
+          var leadCustom = {
             content_name: trk.product || 'Quote Request',
             content_category: trk.service || 'Print',
             value: trk.estValue || 0,
             currency: 'CAD',
             num_items: trk.totalQty || 0
-          });
+          };
+          var leadEventId = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : ('lead-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+
+          // 1) Browser Pixel — with eventID so it dedupes against the server event.
+          fbq('track', 'Lead', leadCustom, { eventID: leadEventId });
+
+          // 2) Server CAPI — same event_id + hashed identity. Consent-gated.
+          try {
+            if (localStorage.getItem('sp_consent') === 'granted') {
+              var spCookie = function (n) { var m = document.cookie.match('(?:^|; )' + n + '=([^;]+)'); return m ? decodeURIComponent(m[1]) : undefined; };
+              var leadName = ((document.getElementById('name') || {}).value || '').trim();
+              var leadParts = leadName ? leadName.split(/\s+/) : [];
+              var leadUserData = {
+                em:  ((document.getElementById('email') || {}).value || '').trim() || undefined,
+                ph:  ((document.getElementById('phone') || {}).value || '').trim() || undefined,
+                fn:  leadParts[0] || undefined,
+                ln:  leadParts.length > 1 ? leadParts.slice(1).join(' ') : undefined,
+                fbp: spCookie('_fbp'),
+                fbc: spCookie('_fbc')
+              };
+              var leadCapiBody = JSON.stringify({
+                event_name:       'Lead',
+                event_id:         leadEventId,
+                event_time:       Math.floor(Date.now() / 1000),
+                event_source_url: location.href,
+                action_source:    'website',
+                user_data:        leadUserData,
+                custom_data:      { value: trk.estValue || 0, currency: 'CAD', num_items: trk.totalQty || 0 }
+              });
+              if (navigator.sendBeacon) {
+                navigator.sendBeacon('/api/meta-capi', new Blob([leadCapiBody], { type: 'application/json' }));
+              } else {
+                fetch('/api/meta-capi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: leadCapiBody, keepalive: true }).catch(function () {});
+              }
+            }
+          } catch (capiErr) { /* CAPI must never break the success state */ }
         }
       } catch(err) { /* tracking should never break the success state */ }
 
@@ -4528,6 +4572,22 @@
           if (window.spTrack) {
             try { window.spTrack('shop_checkout_start', { total: res.body.total, kind: res.body.kind, currency: 'CAD' }); } catch (e) {}
           }
+          // Meta Pixel InitiateCheckout — fires once the Stripe session is
+          // confirmed created and we're about to redirect to secure payment.
+          // Mirrors the drops page (api/shop/page.js) so both checkout funnels
+          // report the same start step. Purchase fires server-side from the
+          // Stripe webhook (CAPI, deterministic event_id), so we deliberately
+          // do NOT fire a client Purchase here — same discipline as drops.
+          try {
+            if (typeof fbq === 'function') {
+              fbq('track', 'InitiateCheckout', {
+                value: (res.body && typeof res.body.total === 'number') ? res.body.total : undefined,
+                currency: 'CAD',
+                content_type: 'product',
+                num_items: items.reduce(function(a, it) { return a + (parseInt(it.qty, 10) || 0); }, 0) || undefined
+              });
+            }
+          } catch (e) { /* tracking must never block the redirect to payment */ }
           window.location.href = res.body.payment_url;
         } else {
           throw new Error((res.body && res.body.error) || 'Le paiement est temporairement indisponible.');
