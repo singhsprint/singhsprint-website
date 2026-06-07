@@ -569,7 +569,7 @@
              mockup card, etc.) gets explicitly hidden so we don't
              leak marketing copy into the form flow. */
       .mockup-panel{display:contents !important}
-      .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard){
+      .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard):not(#spInlinePreview){
         display:none !important;
       }
 
@@ -1445,9 +1445,17 @@
                  #livePriceStrip on mobile (position:fixed at bottom of
                  viewport). Without it the Submit button gets visually
                  swallowed by the live-estimate bar at small heights. -->
-            <div class="form-buttons" style="padding-bottom:120px">
-              <button type="button" class="btn btn-outline" onclick="goToStep(2)"  data-i18n="quote.back">Retour</button>
-              <button type="submit" class="btn btn-accent" style="padding:16px 36px;font-size:1rem"  data-i18n="quote.submit">Soumettre la demande</button>
+            <!-- CTA double : commander/payer (principal) + demander une soumission (secondaire). -->
+            <div class="form-buttons" style="padding-bottom:120px;display:flex;flex-direction:column;gap:14px;align-items:stretch">
+              <button type="button" id="orderPayBtn" onclick="handlePayment()" class="btn btn-accent" style="width:100%;padding:18px 28px;font-size:1.05rem;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:50px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span data-i18n="quote.order.button">Commander et payer — paiement sécurisé</span>
+              </button>
+              <p style="font-size:.8rem;color:#888;text-align:center;margin:-4px 0 2px;line-height:1.45" data-i18n="quote.order.note">Payez en toute sécurité par carte ou Affirm. Vous préférez discuter du prix d'abord? Demandez une soumission ci-dessous.</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <button type="button" class="btn btn-outline" onclick="goToStep(2)" data-i18n="quote.back">&larr; Retour</button>
+                <button type="submit" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem" data-i18n="quote.order.quoteinstead">Demander une soumission</button>
+              </div>
             </div>
           </div>
         </form>
@@ -1483,6 +1491,9 @@
         <div style="font-size:.7rem;color:#888;margin-top:10px;line-height:1.4"  data-i18n="quote.liveprice.note">La soumission finale peut varier selon la complexité du visuel, la méthode et le délai.</div>
       </div>
 
+      <!-- Aperçu de la maquette générée — rempli par le personnalisateur. -->
+      <div id="spInlinePreview" style="display:none;margin:0 0 16px"></div>
+
       <!-- BRAND-STYLED REASSURANCE CARD
            Replaces the live preview. Customer doesn't see a fake mockup
            while they fill out the form — they see a clear promise that a
@@ -1505,6 +1516,11 @@
           <li><span class="step-num">2</span><span  data-i18n="quote.reassure.step2">On rend la maquette et on fixe le prix</span></li>
           <li><span class="step-num">3</span><span  data-i18n="quote.reassure.step3">Vous approuvez — on imprime et expédie</span></li>
         </ol>
+        <!-- Lancement du personnalisateur en direct — voir le rendu sur le vêtement avant de commander. -->
+        <button type="button" id="spCustomizeBtn" onclick="spLaunchCustomizer()" style="display:none;width:100%;margin:4px 0 16px;padding:13px 16px;border-radius:12px;border:none;background:#1a1a1a;color:#e8ff3c;font-weight:700;font-size:.9rem;cursor:pointer;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          <span>Personnaliser et prévisualiser sur le vêtement</span>
+        </button>
         <div class="mockup-reassure__foot">
           <span class="foot-dot"></span>
           <span  data-i18n="quote.reassure.foot">Habituellement en moins d'une heure, 9 h à 21 h.</span>
@@ -2587,36 +2603,36 @@
 
     var placementPresets = {
       // Shirt-like presets (used by tshirt, hoodie, polo, longsleeve, etc.)
-      'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest',        desc: '~3-4" — logo / pocket', sil:'shirt-front', rect:{x:11,y:14,w:6, h:5}  },
-      'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest',      desc: '~7" mid-chest',         sil:'shirt-front', rect:{x:14,y:17,w:14,h:10} },
-      'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',        desc: '~11" chest panel',      sil:'shirt-front', rect:{x:11,y:14,w:20,h:18} },
-      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~14" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
-      'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back',          desc: 'Under collar, ~5"',     sil:'shirt-back',  rect:{x:15,y:10,w:12,h:5}  },
-      'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back',       desc: '~12" upper back',       sil:'shirt-back',  rect:{x:11,y:15,w:20,h:16} },
-      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~14" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
-      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
-      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
+      'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Poitrine gauche',        desc: '~3-4" — logo / pocket', sil:'shirt-front', rect:{x:11,y:14,w:6, h:5}  },
+      'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Centre poitrine',      desc: '~7" mid-chest',         sil:'shirt-front', rect:{x:14,y:17,w:14,h:10} },
+      'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Devant complet',        desc: '~11" chest panel',      sil:'shirt-front', rect:{x:11,y:14,w:20,h:18} },
+      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Devant surdimensionné',   desc: '~14" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
+      'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Haut du dos',          desc: 'Under collar, ~5"',     sil:'shirt-back',  rect:{x:15,y:10,w:12,h:5}  },
+      'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Travers du dos',       desc: '~12" upper back',       sil:'shirt-back',  rect:{x:11,y:15,w:20,h:16} },
+      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Dos complet',         desc: '~14" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
+      'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Manche gauche',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
+      'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Manche droite',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
       // Hoodie-specific
-      'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood',              desc: 'On the hood itself',    sil:'hoodie',      rect:{x:17,y:1, w:8, h:4}  },
+      'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Capuchon',              desc: 'On the hood itself',    sil:'hoodie',      rect:{x:17,y:1, w:8, h:4}  },
       // Cap / hat-specific
-      'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Cap Front',        desc: 'Front panel, ~3"',     sil:'cap', rect:{x:16,y:18,w:10,h:7} },
-      'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Left Side Panel',  desc: 'Side hit, ~2"',        sil:'cap', rect:{x:6, y:22,w:6, h:5} },
-      'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Right Side Panel', desc: 'Side hit, ~2"',        sil:'cap', rect:{x:30,y:22,w:6, h:5} },
-      'cap-back':        { loc: 'back',  size: 'small',       cx: 0.50, cy: 0.45, label: 'Back Panel',       desc: 'Behind closure',       sil:'cap', rect:{x:18,y:25,w:6, h:4} },
-      'cap-brim':        { loc: 'front', size: 'small',       cx: 0.50, cy: 0.85, label: 'Brim',             desc: 'Underside / top edge', sil:'cap', rect:{x:16,y:29,w:10,h:3} },
+      'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Devant de casquette',        desc: 'Front panel, ~3"',     sil:'cap', rect:{x:16,y:18,w:10,h:7} },
+      'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Panneau latéral gauche',  desc: 'Side hit, ~2"',        sil:'cap', rect:{x:6, y:22,w:6, h:5} },
+      'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Panneau latéral droit', desc: 'Side hit, ~2"',        sil:'cap', rect:{x:30,y:22,w:6, h:5} },
+      'cap-back':        { loc: 'back',  size: 'small',       cx: 0.50, cy: 0.45, label: 'Panneau arrière',       desc: 'Behind closure',       sil:'cap', rect:{x:18,y:25,w:6, h:4} },
+      'cap-brim':        { loc: 'front', size: 'small',       cx: 0.50, cy: 0.85, label: 'Visière',             desc: 'Underside / top edge', sil:'cap', rect:{x:16,y:29,w:10,h:3} },
       // Bag / tote-specific
-      'bag-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Front of Bag',  desc: 'Main panel print',     sil:'bag', rect:{x:13,y:22,w:16,h:14} },
-      'bag-back':        { loc: 'back',  size: 'medium',      cx: 0.50, cy: 0.45, label: 'Back of Bag',   desc: 'Reverse panel',        sil:'bag', rect:{x:13,y:22,w:16,h:14} },
-      'bag-pocket':      { loc: 'front', size: 'small',       cx: 0.50, cy: 0.65, label: 'Front Pocket',  desc: 'Small logo, ~3"',      sil:'bag', rect:{x:17,y:35,w:8, h:6}  },
+      'bag-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Devant du sac',  desc: 'Main panel print',     sil:'bag', rect:{x:13,y:22,w:16,h:14} },
+      'bag-back':        { loc: 'back',  size: 'medium',      cx: 0.50, cy: 0.45, label: 'Dos du sac',   desc: 'Reverse panel',        sil:'bag', rect:{x:13,y:22,w:16,h:14} },
+      'bag-pocket':      { loc: 'front', size: 'small',       cx: 0.50, cy: 0.65, label: 'Poche avant',  desc: 'Small logo, ~3"',      sil:'bag', rect:{x:17,y:35,w:8, h:6}  },
       // Pants / shorts / joggers
-      'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Left Hip',      desc: 'Small logo at hip',    sil:'pants', rect:{x:13,y:9, w:6, h:4} },
-      'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Right Hip',     desc: 'Small logo at hip',    sil:'pants', rect:{x:23,y:9, w:6, h:4} },
-      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Back Pocket',   desc: 'Back-pocket logo',     sil:'pants', rect:{x:14,y:14,w:6, h:4} },
-      'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Leg Side',      desc: 'Vertical stripe',      sil:'pants', rect:{x:13,y:18,w:5, h:18} },
+      'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Hanche gauche',      desc: 'Small logo at hip',    sil:'pants', rect:{x:13,y:9, w:6, h:4} },
+      'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Hanche droite',     desc: 'Small logo at hip',    sil:'pants', rect:{x:23,y:9, w:6, h:4} },
+      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Poche arrière',   desc: 'Back-pocket logo',     sil:'pants', rect:{x:14,y:14,w:6, h:4} },
+      'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Côté de jambe',      desc: 'Vertical stripe',      sil:'pants', rect:{x:13,y:18,w:5, h:18} },
       // Apron
-      'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Chest',         desc: 'Upper bib area',       sil:'apron', rect:{x:14,y:12,w:14,h:8}  },
-      'apron-pocket':    { loc: 'front', size: 'small',       cx: 0.50, cy: 0.55, label: 'Pocket',        desc: 'On the front pocket',  sil:'apron', rect:{x:16,y:28,w:10,h:6}  },
-      'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',    desc: 'Large front panel',    sil:'apron', rect:{x:12,y:16,w:18,h:22} }
+      'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Poitrine',         desc: 'Upper bib area',       sil:'apron', rect:{x:14,y:12,w:14,h:8}  },
+      'apron-pocket':    { loc: 'front', size: 'small',       cx: 0.50, cy: 0.55, label: 'Poche',        desc: 'On the front pocket',  sil:'apron', rect:{x:16,y:28,w:10,h:6}  },
+      'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Devant complet',    desc: 'Large front panel',    sil:'apron', rect:{x:12,y:16,w:18,h:22} }
     };
 
     // --------------------------------------------------------------
@@ -2628,84 +2644,84 @@
     var PLACEMENT_GROUPS_BY_GARMENT = {
       // ---- Shirt-like (the default) ----
       tshirt: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       longsleeve: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       polo: [
         // No oversized — polos are usually corporate
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       performance_shirt: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       workshirt: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       hivis: [
         // Reflective hi-vis — front + back only, no sleeve printing (interferes with safety strips)
-        { label: 'Front',   ids: ['left-chest', 'center-chest'] },
-        { label: 'Back',    ids: ['back-across', 'back-full'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest'] },
+        { label: 'Arrière',    ids: ['back-across', 'back-full'] }
       ],
 
       // ---- Hoodies / Sweatshirts / Outerwear ----
       hoodie: [
         // No "Oversized Front" because the front pouch + zipper break that print
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Hood',    ids: ['hood'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Capuchon',    ids: ['hood'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       crewneck: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       sweater: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       cardigan: [
-        { label: 'Front',   ids: ['left-chest'] },  // chest only — cardigan opens down the middle
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest'] },  // chest only — cardigan opens down the middle
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       pullover_jacket: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       softshell: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       chore_coat: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       vest: [
         // No sleeves
-        { label: 'Front', ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',  ids: ['back-top', 'back-across', 'back-full'] }
+        { label: 'Avant', ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',  ids: ['back-top', 'back-across', 'back-full'] }
       ],
       coverall: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across', 'back-full'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] },
         { label: 'Leg',     ids: ['leg-left-hip', 'leg-right-hip'] }
       ],
 
@@ -2721,33 +2737,33 @@
 
       // ---- Bottoms ----
       joggers: [
-        { label: 'Front', ids: ['leg-left-hip', 'leg-right-hip'] },
-        { label: 'Back',  ids: ['leg-back-pocket'] },
+        { label: 'Avant', ids: ['leg-left-hip', 'leg-right-hip'] },
+        { label: 'Arrière',  ids: ['leg-back-pocket'] },
         { label: 'Side',  ids: ['leg-side'] }
       ],
       shorts: [
-        { label: 'Front', ids: ['leg-left-hip', 'leg-right-hip'] },
-        { label: 'Back',  ids: ['leg-back-pocket'] }
+        { label: 'Avant', ids: ['leg-left-hip', 'leg-right-hip'] },
+        { label: 'Arrière',  ids: ['leg-back-pocket'] }
       ],
       scrub_pants: [
-        { label: 'Front', ids: ['leg-left-hip'] }
+        { label: 'Avant', ids: ['leg-left-hip'] }
       ],
 
       // ---- Medical / hospitality ----
       chef_coat: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
-        { label: 'Back',    ids: ['back-top', 'back-across'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest', 'full-front'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       scrub_top: [
-        { label: 'Front', ids: ['left-chest', 'center-chest'] },
-        { label: 'Back',  ids: ['back-across'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant', ids: ['left-chest', 'center-chest'] },
+        { label: 'Arrière',  ids: ['back-across'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
       lab_coat: [
-        { label: 'Front',   ids: ['left-chest', 'center-chest'] },
-        { label: 'Back',    ids: ['back-top', 'back-across'] },
-        { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+        { label: 'Avant',   ids: ['left-chest', 'center-chest'] },
+        { label: 'Arrière',    ids: ['back-top', 'back-across'] },
+        { label: 'Manches', ids: ['left-sleeve', 'right-sleeve'] }
       ],
 
       // ---- Aprons ----
@@ -4287,31 +4303,711 @@
       }
     })();
 
-    function handlePayment() {
-      alert('Submitting quote with payment option enabled. You will receive an invoice by email.');
-      // For now, just trigger form submission. Later, integrate with Stripe Checkout.
-      // Commented Stripe code below for future implementation:
-      /*
-      var qty = parseInt(document.getElementById('sizeTotal').textContent) || 0;
-      var amount = parseFloat(document.getElementById('priceTotal').textContent.replace('$', '')) || 0;
+    // ===== DIRECT ORDER / SELF-SERVE CHECKOUT =====
+    // The CRM's public checkout endpoint. It re-prices the cart server-side
+    // (never trusts the client total), writes an inbound_request flagged
+    // flow='shop_order' status='pending_payment', creates a Stripe Checkout
+    // session, and returns { payment_url }. The Stripe webhook promotes the
+    // request to a real `orders` row once payment clears. The "Request a
+    // quote instead" path (the form below) is unchanged — it still POSTs to
+    // /api/inbound. This is the pay-now path only.
+    var SHOP_CHECKOUT_API = 'https://singhsprint-crm.vercel.app/api/shop/checkout';
 
-      fetch('/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product: state.garment,
-          service: state.service,
-          quantity: qty,
-          amount: amount
-        })
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.url) window.location.href = data.url;
-      })
-      .catch(function(err) { console.error('Payment error:', err); });
-      */
+    // Collect every design file the customer attached, from the same two
+    // sources the quote-submit path uses (placementFiles = single-product /
+    // global; cartItemFiles = per-cart-item, keyed "<itemIdx>_<presetId>").
+    // Returns [{ placement, cart_item_index, file }].
+    function spCollectPendingFiles() {
+      var pending = [];
+      try {
+        if (typeof placementFiles === 'object' && placementFiles) {
+          Object.keys(placementFiles).forEach(function(presetId) {
+            var f = placementFiles[presetId];
+            if (f instanceof File) pending.push({ placement: presetId, cart_item_index: null, file: f });
+          });
+        }
+        if (typeof cartItemFiles === 'object' && cartItemFiles) {
+          Object.keys(cartItemFiles).forEach(function(key) {
+            var f = cartItemFiles[key];
+            if (!(f instanceof File)) return;
+            var split = key.indexOf('_');
+            var idxNum = split > -1 ? parseInt(key.slice(0, split), 10) : NaN;
+            var placement = split > -1 ? key.slice(split + 1) : null;
+            pending.push({ placement: placement, cart_item_index: Number.isFinite(idxNum) ? idxNum : null, file: f });
+          });
+        }
+      } catch (e) { /* never let file collection break checkout */ }
+      return pending;
     }
+
+    // Build the items[] payload for /api/shop/checkout from the current page
+    // state — works in both multi-item cart mode and single-product mode.
+    // Field names match the CRM's ShopCartItemInput; the server re-prices
+    // from product_id/variant_id + color_id + qty + placements, so we only
+    // need to pass identifiers, not money.
+    function spBuildCheckoutItems() {
+      // Multi-item cart flow (catalog "add to cart").
+      if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+        return SinghsCart.read().items.map(function(it) {
+          return {
+            product_id:        it.product_id || null,
+            variant_id:        it.variant_id || null,
+            color_id:          it.color_id || null,
+            qty:               parseInt(it.qty, 10) || 0,
+            sizes:             (it.sizes && typeof it.sizes === 'object') ? it.sizes : {},
+            placements:        Array.isArray(it.placements) ? it.placements : [],
+            decoration_method: (it.decoration_type || '').toLowerCase() || 'dtf',
+            brand:             it.brand || null,
+            style_number:      it.style_number || null,
+            name:              it.name || null,
+            color_name:        (it.color_name || '').replace(/_\d+$/, '') || null,
+            garment_type:      it.garment_type || null,
+            // Customer-approved mockups + artwork from the live customizer
+            // (spOpenCustomizer stores these on the cart item). Empty until
+            // they preview — the order still works without them.
+            mockups:           Array.isArray(it.mockups) ? it.mockups : [],
+            design_url:        it.design_url || null,
+            design_path:       it.design_path || null
+          };
+        });
+      }
+      // Single-product flow (?product=… deep link).
+      if (!catalogPick || !catalogPick.product_id) return [];
+      var sizes = {};
+      ['xs','s','m','l','xl','2xl','3xl','4xl','5xl'].forEach(function(s) {
+        var inp = document.querySelector('input[name="size_' + s + '"]');
+        var v = inp ? (parseInt(inp.value, 10) || 0) : 0;
+        if (v > 0) sizes[s.toUpperCase()] = v;
+      });
+      var qty = Object.keys(sizes).reduce(function(a, k) { return a + sizes[k]; }, 0)
+              || (parseInt(document.getElementById('sizeTotal').textContent, 10) || 0);
+      var placements = [];
+      try { placements = Object.values(presetByLocation || {}).filter(Boolean); } catch (e) {}
+      var colorIdInp = document.getElementById('catalogColorId');
+      return [{
+        product_id:        catalogPick.product_id,
+        color_id:          (colorIdInp && colorIdInp.value) || null,
+        qty:               qty,
+        sizes:             sizes,
+        placements:        placements,
+        decoration_method: (state.service || '').toLowerCase() || 'dtf',
+        brand:             catalogPick.brand || null,
+        style_number:      catalogPick.style_number || null,
+        name:              catalogPick.name || state.product || null,
+        color_name:        state.colorName || null,
+        garment_type:      catalogPick.garment_type || state.garment || null,
+        // Customer-approved mockups + artwork from the live customizer.
+        mockups:           Array.isArray(window.__spSingleMockups) ? window.__spSingleMockups : [],
+        design_url:        (window.__spSingleDesign && window.__spSingleDesign.signed_url) || null,
+        design_path:       (window.__spSingleDesign && window.__spSingleDesign.path) || null
+      }];
+    }
+
+    function handlePayment() {
+      var nameEl    = document.getElementById('name');
+      var emailEl   = document.getElementById('email');
+      var phoneEl   = document.getElementById('phone');
+      var companyEl = document.getElementById('company');
+      var name  = (nameEl  && nameEl.value  || '').trim();
+      var email = (emailEl && emailEl.value || '').trim();
+
+      // Email + name are required to own the order + send the receipt. If
+      // they're missing, route the customer to the contact step and focus
+      // the field rather than failing silently at the API.
+      function focusContact(el) {
+        try { if (typeof goToStep === 'function') goToStep(3); } catch (e) {}
+        if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      }
+      if (!name) { alert('Veuillez indiquer votre nom afin que nous puissions l’inscrire sur la commande.'); focusContact(nameEl); return; }
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        alert('Veuillez entrer un courriel valide — c’est là que nous enverrons votre reçu et les mises à jour de votre commande.');
+        focusContact(emailEl); return;
+      }
+
+      var items = spBuildCheckoutItems();
+      if (!items.length || !items.some(function(i) { return i.qty > 0; })) {
+        alert('Ajoutez au moins un article avec une quantité avant de commander.');
+        return;
+      }
+
+      // Aggregate size breakdown across items (powers the CRM inbox UI).
+      var sizeBreakdown = {};
+      items.forEach(function(it) {
+        Object.keys(it.sizes || {}).forEach(function(k) {
+          sizeBreakdown[k] = (sizeBreakdown[k] || 0) + (it.sizes[k] || 0);
+        });
+      });
+
+      // Attribution breadcrumbs.
+      var utm = {};
+      try {
+        var sp = new URLSearchParams(location.search);
+        ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid','promo'].forEach(function(k) {
+          var v = sp.get(k); if (v) utm[k] = v;
+        });
+      } catch (e) {}
+
+      // Disable both possible triggers (panel button + bottom order button)
+      // to prevent a double-submit; the overlay carries the progress message.
+      var payBtns = [document.getElementById('payButton'), document.getElementById('orderPayBtn')].filter(Boolean);
+      var legacyPayBtn = document.getElementById('payButton');
+      payBtns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.65'; b.style.cursor = 'progress'; });
+      if (legacyPayBtn) {
+        if (!legacyPayBtn.dataset._label) legacyPayBtn.dataset._label = legacyPayBtn.textContent;
+        legacyPayBtn.textContent = 'Ouverture du paiement sécurisé…';
+      }
+      if (typeof spShowUploadOverlay === 'function') spShowUploadOverlay('Préparation de votre commande…');
+
+      function restoreBtn() {
+        if (typeof spHideUploadOverlay === 'function') spHideUploadOverlay();
+        payBtns.forEach(function(b) { b.disabled = false; b.style.opacity = ''; b.style.cursor = ''; });
+        if (legacyPayBtn && legacyPayBtn.dataset._label) legacyPayBtn.textContent = legacyPayBtn.dataset._label;
+      }
+
+      // Upload any attached artwork first (best-effort — a failed/oversize
+      // upload must NOT block payment; production can chase the file later
+      // via the request row). Then attach a design_url per item and POST.
+      var pending = (typeof spCollectPendingFiles === 'function') ? spCollectPendingFiles() : [];
+      var uploadAll = pending.length
+        ? Promise.all(pending.map(function(p) {
+            return uploadDesignFile(p.file)
+              .then(function(r) {
+                return {
+                  placement:       p.placement,
+                  cart_item_index: p.cart_item_index,
+                  path:            (r && (r.path || r.key)) || null,
+                  signed_url:      (r && (r.signed_url || r.url || r.signedUrl)) || null
+                };
+              })
+              .catch(function() { return null; });
+          })).then(function(arr) { return arr.filter(Boolean); })
+        : Promise.resolve([]);
+
+      uploadAll.then(function(uploaded) {
+        items.forEach(function(it, idx) {
+          var match = null;
+          for (var i = 0; i < uploaded.length; i++) {
+            if (uploaded[i].cart_item_index === idx) { match = uploaded[i]; break; }
+          }
+          if (!match) {
+            for (var j = 0; j < uploaded.length; j++) {
+              if (uploaded[j].cart_item_index == null) { match = uploaded[j]; break; }
+            }
+          }
+          // Only fill design from this upload pass if the customizer didn't
+          // already attach one; never overwrite a customizer-approved design.
+          if (match) {
+            if (!it.design_url)  it.design_url  = match.signed_url || null;
+            if (!it.design_path) it.design_path = match.path || null;
+          }
+          // Preserve customer-approved mockups from the live customizer; only
+          // default to empty when none were baked (server makes them later).
+          if (!Array.isArray(it.mockups)) it.mockups = [];
+        });
+
+        return fetch(SHOP_CHECKOUT_API, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_email: email,
+            contact_name:   name || null,
+            phone:          (phoneEl   && phoneEl.value)   || null,
+            company:        (companyEl && companyEl.value) || null,
+            items:          items,
+            size_breakdown: sizeBreakdown,
+            deposit_choice: 'full',
+            source_url:     location.href,
+            meta:           utm
+          })
+        }).then(function(r) {
+          return r.json().then(function(j) { return { ok: r.ok, body: j }; })
+                          .catch(function() { return { ok: r.ok, body: {} }; });
+        });
+      }).then(function(res) {
+        if (res.ok && res.body && res.body.payment_url) {
+          if (window.spTrack) {
+            try { window.spTrack('shop_checkout_start', { total: res.body.total, kind: res.body.kind, currency: 'CAD' }); } catch (e) {}
+          }
+          window.location.href = res.body.payment_url;
+        } else {
+          throw new Error((res.body && res.body.error) || 'Le paiement est temporairement indisponible.');
+        }
+      }).catch(function(err) {
+        restoreBtn();
+        alert('Nous n’avons pas pu ouvrir le paiement sécurisé : ' + ((err && err.message) || err) +
+              '\n\nVous pouvez tout de même soumettre le formulaire ci-dessous pour demander une soumission; nous vous enverrons un lien de paiement.');
+      });
+    }
+
+    // =========================================================================
+    // LIVE MOCKUP CUSTOMIZER — drag + scale artwork on the chosen garment and
+    // bake a photoreal preview via the public /api/shop/compose endpoint. The
+    // same normalized {x,y,w} box the operator editor uses; the server runs the
+    // identical sharp composite, so the preview matches the finished mockup.
+    // Optional: a customer can order without it; if they bake one it rides
+    // along on the order line (items[].mockups[]).
+    // =========================================================================
+    var SHOP_COMPOSE_API = 'https://singhsprint-crm.vercel.app/api/shop/compose';
+
+    // Upload each File at most once (compose needs a server-fetchable URL/path,
+    // not a blob: URL). Cached by File identity.
+    var __spUploadCache = (typeof WeakMap !== 'undefined') ? new WeakMap() : null;
+    function spUploadDesignOnce(file) {
+      if (!file) return Promise.resolve(null);
+      if (__spUploadCache && __spUploadCache.has(file)) return Promise.resolve(__spUploadCache.get(file));
+      return uploadDesignFile(file).then(function(r) {
+        var info = { path: (r && (r.path || r.key)) || null, signed_url: (r && (r.signed_url || r.url || r.signedUrl)) || null };
+        if (__spUploadCache) __spUploadCache.set(file, info);
+        return info;
+      });
+    }
+
+    // Which garment side a placement renders on — mirrors viewFor() server-side.
+    function spSideFor(p) { p = (p || '').toLowerCase(); if (/back/.test(p)) return 'back'; if (/sleeve/.test(p)) return 'side'; return 'front'; }
+
+    // Seed a sensible default {x,y,w} from the placement preset's centre + size.
+    function spDefaultBox(presetId) {
+      var pre = placementPresets[presetId] || {};
+      var sizeW = { 'left-chest': 0.18, 'right-chest': 0.18, 'small': 0.16, 'medium': 0.34, 'large': 0.5, 'xl': 0.62 };
+      var w = sizeW[pre.size] || 0.3;
+      var cx = (typeof pre.cx === 'number') ? pre.cx : 0.5;
+      var cy = (typeof pre.cy === 'number') ? pre.cy : 0.4;
+      return { x: Math.max(0, Math.min(1 - w, cx - w / 2)), y: Math.max(0, Math.min(1 - w, cy - w / 2)), w: w };
+    }
+
+    function spInjectCustomizerCSS() {
+      if (document.getElementById('spCustomizerCSS')) return;
+      var st = document.createElement('style');
+      st.id = 'spCustomizerCSS';
+      st.textContent =
+        '.sp-cz-overlay{position:fixed;inset:0;background:rgba(15,15,15,.82);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit}' +
+        '.sp-cz{background:#1a1a1a;border:1px solid #333;border-radius:18px;width:100%;max-width:560px;max-height:94vh;overflow:auto;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,.5)}' +
+        '.sp-cz-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #2a2a2a}' +
+        '.sp-cz-h h3{font-family:inherit;font-size:1rem;font-weight:700;margin:0}' +
+        '.sp-cz-x{background:transparent;border:none;color:#aaa;font-size:1.4rem;line-height:1;cursor:pointer;padding:4px 8px}' +
+        '.sp-cz-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:14px 20px 0}' +
+        '.sp-cz-tab{background:#262626;border:1px solid #333;color:#ccc;border-radius:50px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer}' +
+        '.sp-cz-tab.active{background:#e8ff3c;color:#1a1a1a;border-color:#e8ff3c}' +
+        '.sp-cz-tab:disabled{opacity:.4;cursor:not-allowed}' +
+        '.sp-cz-stage{position:relative;margin:14px 20px;background:#fff;border-radius:12px;overflow:hidden;aspect-ratio:1/1;width:calc(100% - 40px);touch-action:none;user-select:none}' +
+        '.sp-cz-garment{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}' +
+        '.sp-cz-art{position:absolute;cursor:move;touch-action:none;user-select:none;-webkit-user-drag:none}' +
+        '.sp-cz-ctl{padding:4px 20px 0}' +
+        '.sp-cz-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:.85rem;color:#ddd}' +
+        '.sp-cz-row input[type=range]{flex:1;accent-color:#e8ff3c}' +
+        '.sp-cz-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 20px 20px;border-top:1px solid #2a2a2a;margin-top:8px}' +
+        '.sp-cz-btn{border:none;border-radius:50px;padding:11px 18px;font-weight:700;font-size:.86rem;cursor:pointer;font-family:inherit}' +
+        '.sp-cz-btn--primary{background:#e8ff3c;color:#1a1a1a}' +
+        '.sp-cz-btn--ghost{background:transparent;color:#ccc;border:1px solid #444}' +
+        '.sp-cz-btn:disabled{opacity:.5;cursor:not-allowed}' +
+        '.sp-cz-status{font-size:.78rem;color:#9a9a9a;flex:1;min-width:120px}' +
+        '.sp-cz-spin{width:16px;height:16px;border:2px solid #555;border-top-color:#e8ff3c;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:6px;animation:spCzSpin .8s linear infinite}' +
+        '@keyframes spCzSpin{to{transform:rotate(360deg)}}' +
+        // Sticky footer so the action buttons are always reachable under the
+        // tall square stage. Header sticky too so the title/close stay put.
+        '.sp-cz-h{position:sticky;top:0;background:#1a1a1a;z-index:2}' +
+        '.sp-cz-foot{position:sticky;bottom:0;background:#1a1a1a;z-index:2}' +
+        // Mobile: full-bleed sheet, square stage capped to keep controls in
+        // view, and stacked full-width buttons (primary on top).
+        '@media (max-width:560px){' +
+          '.sp-cz-overlay{padding:0;align-items:stretch}' +
+          '.sp-cz{max-width:none;max-height:100vh;height:100vh;border-radius:0;display:flex;flex-direction:column}' +
+          '.sp-cz-stage{aspect-ratio:auto;height:min(56vh,60vw);flex:0 0 auto}' +
+          '.sp-cz-foot{flex-wrap:wrap}' +
+          '.sp-cz-status{flex:1 0 100%;order:1;margin-bottom:4px}' +
+          '.sp-cz-btn{flex:1;order:2;padding:13px 16px;font-size:.92rem}' +
+          '.sp-cz-btn--primary{order:1;flex:1 0 100%}' +
+        '}';
+      document.head.appendChild(st);
+    }
+
+    // opts: { colorId, garment:{front,back,side}, placements:[presetId], fileFor:fn(presetId)->File|null,
+    //         initial:{boxes,removeBg}, sessionId, onDone:fn(result) }
+    // result: { mockups:[{placement,url}], boxes:{}, removeBg, design:{path,signed_url} }
+    function spOpenCustomizer(opts) {
+      spInjectCustomizerCSS();
+      var placements = (opts.placements || []).filter(Boolean);
+      if (!placements.length) placements = ['center-chest'];
+
+      // Resolve the design File per placement (fall back to the first art the
+      // customer attached, so every selected placement previews something).
+      var firstFile = null;
+      var fileByP = {};
+      placements.forEach(function(p) {
+        var f = opts.fileFor ? opts.fileFor(p) : null;
+        if (f instanceof File) { fileByP[p] = f; if (!firstFile) firstFile = f; }
+      });
+      if (!firstFile) {
+        alert('Ajoutez d’abord votre image (le champ de téléversement), puis touchez « Personnaliser et prévisualiser ».');
+        return;
+      }
+      placements.forEach(function(p) { if (!fileByP[p]) fileByP[p] = firstFile; });
+
+      var boxes = {};
+      placements.forEach(function(p) {
+        boxes[p] = (opts.initial && opts.initial.boxes && opts.initial.boxes[p]) || spDefaultBox(p);
+      });
+      var removeBg = !!(opts.initial && opts.initial.removeBg);
+      var active = 0;
+      var objURLs = {};
+      function artURL(p) {
+        var f = fileByP[p];
+        if (!objURLs[f.name + f.size]) objURLs[f.name + f.size] = URL.createObjectURL(f);
+        return objURLs[f.name + f.size];
+      }
+      function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+      var overlay = document.createElement('div');
+      overlay.className = 'sp-cz-overlay';
+      overlay.innerHTML =
+        '<div class="sp-cz" role="dialog" aria-modal="true">' +
+          '<div class="sp-cz-h"><h3>Personnalisez votre maquette</h3><button type="button" class="sp-cz-x" aria-label="Close">×</button></div>' +
+          '<div class="sp-cz-tabs"></div>' +
+          '<div class="sp-cz-stage"><img class="sp-cz-garment" alt="garment"/><img class="sp-cz-art" alt="your design" draggable="false"/></div>' +
+          '<div class="sp-cz-ctl">' +
+            '<div class="sp-cz-row"><span>Taille</span><input type="range" min="0.08" max="0.9" step="0.01"></div>' +
+            '<label class="sp-cz-row" style="cursor:pointer"><input type="checkbox" class="sp-cz-bg"> Retirer le fond blanc autour de mon logo</label>' +
+          '</div>' +
+          '<div class="sp-cz-foot">' +
+            '<span class="sp-cz-status">Glissez votre image, ajustez la taille, puis prévisualisez.</span>' +
+            '<button type="button" class="sp-cz-btn sp-cz-btn--ghost sp-cz-preview">Prévisualiser sur le vêtement</button>' +
+            '<button type="button" class="sp-cz-btn sp-cz-btn--primary sp-cz-done">Utiliser cette maquette</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      // Scroll-lock that preserves position. Just toggling body overflow leaves
+      // mobile Safari scrolled/shifted ("page off the screen") after close, so
+      // pin the body at the current scroll offset and restore it on close.
+      var _lockY = window.scrollY || window.pageYOffset || 0;
+      var _prevBody = { position: document.body.style.position, top: document.body.style.top, left: document.body.style.left, right: document.body.style.right, width: document.body.style.width, overflow: document.body.style.overflow };
+      document.body.style.position = 'fixed';
+      document.body.style.top = (-_lockY) + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      var tabsEl  = overlay.querySelector('.sp-cz-tabs');
+      var garImg  = overlay.querySelector('.sp-cz-garment');
+      var artImg  = overlay.querySelector('.sp-cz-art');
+      var stage   = overlay.querySelector('.sp-cz-stage');
+      var slider  = overlay.querySelector('input[type=range]');
+      var bgChk   = overlay.querySelector('.sp-cz-bg');
+      var statusEl= overlay.querySelector('.sp-cz-status');
+      var previewBtn = overlay.querySelector('.sp-cz-preview');
+      var doneBtn = overlay.querySelector('.sp-cz-done');
+      bgChk.checked = removeBg;
+
+      var bakedMockups = []; // [{placement,url}]
+
+      function curP() { return placements[Math.min(active, placements.length - 1)]; }
+      function renderTabs() {
+        tabsEl.innerHTML = '';
+        placements.forEach(function(p, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'sp-cz-tab' + (i === active ? ' active' : '');
+          b.textContent = (placementPresets[p] && placementPresets[p].label) || p;
+          b.onclick = function() { active = i; paint(); };
+          tabsEl.appendChild(b);
+        });
+      }
+      function garmentFor(p) {
+        var g = opts.garment || {};
+        var side = spSideFor(p);
+        return g[side] || g.front || g.back || g.side || '';
+      }
+      function paint() {
+        var p = curP();
+        renderTabs();
+        var gp = garmentFor(p);
+        garImg.src = gp ? (typeof imgUrl === 'function' ? imgUrl(gp) : gp) : '';
+        garImg.style.display = gp ? '' : 'none';
+        artImg.src = artURL(p);
+        slider.value = boxes[p].w;
+        positionArt();
+      }
+      function positionArt() {
+        var b = boxes[curP()];
+        artImg.style.left   = (b.x * 100) + '%';
+        artImg.style.top    = (b.y * 100) + '%';
+        artImg.style.width  = (b.w * 100) + '%';
+        artImg.style.height = 'auto';
+      }
+
+      // Drag.
+      var grab = null;
+      function frac(e) {
+        var r = stage.getBoundingClientRect();
+        return { px: (e.clientX - r.left) / r.width, py: (e.clientY - r.top) / r.height };
+      }
+      artImg.addEventListener('pointerdown', function(e) {
+        var b = boxes[curP()]; var f = frac(e);
+        grab = { dx: f.px - b.x, dy: f.py - b.y };
+        try { artImg.setPointerCapture(e.pointerId); } catch (_) {}
+        e.preventDefault();
+      });
+      artImg.addEventListener('pointermove', function(e) {
+        if (!grab) return;
+        var b = boxes[curP()]; var f = frac(e);
+        b.x = clamp(f.px - grab.dx, 0, 1 - b.w);
+        b.y = clamp(f.py - grab.dy, 0, 1 - 0.02);
+        positionArt();
+      });
+      function endDrag() { grab = null; }
+      artImg.addEventListener('pointerup', endDrag);
+      artImg.addEventListener('pointercancel', endDrag);
+
+      slider.addEventListener('input', function() {
+        var b = boxes[curP()]; var n = Number(slider.value);
+        b.w = n; b.x = clamp(b.x, 0, 1 - n); positionArt();
+      });
+      bgChk.addEventListener('change', function() { removeBg = bgChk.checked; });
+
+      function setBusy(busy, msg) {
+        previewBtn.disabled = busy; doneBtn.disabled = busy;
+        statusEl.innerHTML = (busy ? '<span class="sp-cz-spin"></span>' : '') + (msg || '');
+      }
+      function close() {
+        Object.keys(objURLs).forEach(function(k) { try { URL.revokeObjectURL(objURLs[k]); } catch (_) {} });
+        // Restore the exact pre-open body styles, then jump back to where the
+        // page was scrolled so the layout never ends up shifted off-screen.
+        document.body.style.position = _prevBody.position;
+        document.body.style.top = _prevBody.top;
+        document.body.style.left = _prevBody.left;
+        document.body.style.right = _prevBody.right;
+        document.body.style.width = _prevBody.width;
+        document.body.style.overflow = _prevBody.overflow;
+        window.scrollTo(0, _lockY);
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }
+      overlay.querySelector('.sp-cz-x').onclick = close;
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+
+      // Bake every placement that has art, via /api/shop/compose.
+      function bakeAll() {
+        if (!opts.colorId) { alert('Choisissez d’abord une couleur de vêtement.'); return Promise.resolve([]); }
+        setBusy(true, 'Création de votre maquette…');
+        var design = null;
+        var results = [];
+        // Upload art once, then compose each placement sequentially (gentle on
+        // the rate-limited endpoint).
+        return spUploadDesignOnce(firstFile).then(function(info) {
+          design = info;
+          if (!info || (!info.path && !info.signed_url)) throw new Error('échec du téléversement de l’image');
+          var chain = Promise.resolve();
+          placements.forEach(function(p) {
+            chain = chain.then(function() {
+              return spUploadDesignOnce(fileByP[p]).then(function(di) {
+                var b = boxes[p];
+                return fetch(SHOP_COMPOSE_API, {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    color_id: opts.colorId, placement: p,
+                    design_path: (di && di.path) || null,
+                    design_url:  (di && di.signed_url) || null,
+                    box: b, remove_bg: removeBg, session_id: opts.sessionId || null
+                  })
+                }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+                  .then(function(res) {
+                    if (res.ok && res.j && res.j.mockup_url) results.push({ placement: p, url: res.j.mockup_url });
+                    else throw new Error((res.j && res.j.error) || 'preview failed');
+                  });
+              });
+            });
+          });
+          return chain.then(function() { return { mockups: results, design: design }; });
+        });
+      }
+
+      previewBtn.onclick = function() {
+        bakeAll().then(function(out) {
+          bakedMockups = out.mockups;
+          // Show the active placement's baked image in the stage as confirmation.
+          var m = bakedMockups.filter(function(x) { return x.placement === curP(); })[0] || bakedMockups[0];
+          if (m) { garImg.src = m.url; artImg.style.display = 'none'; }
+          setBusy(false, 'Ça vous plaît? Touchez « Utiliser cette maquette ».');
+        }).catch(function(e) {
+          setBusy(false, 'Échec de la prévisualisation : ' + ((e && e.message) || e));
+        });
+      };
+
+      doneBtn.onclick = function() {
+        // If they never previewed, bake now so the order still carries a mockup.
+        var go = bakedMockups.length ? Promise.resolve({ mockups: bakedMockups, design: null }) : bakeAll();
+        setBusy(true, 'Enregistrement…');
+        go.then(function(out) {
+          var mocks = out.mockups || bakedMockups;
+          spUploadDesignOnce(firstFile).then(function(design) {
+            if (typeof opts.onDone === 'function') {
+              opts.onDone({ mockups: mocks, boxes: boxes, removeBg: removeBg, design: design });
+            }
+            close();
+          });
+        }).catch(function(e) { setBusy(false, 'Impossible d’enregistrer : ' + ((e && e.message) || e)); });
+      };
+
+      paint();
+    }
+
+    // ---- Universal entry point + inline preview --------------------------
+    // The prominent "Customize & preview" button routes to the right flow:
+    // a multi-item cart customizes per row (open the first; the rest have
+    // their own buttons), otherwise the single-product flow.
+    function spLaunchCustomizer() {
+      var hasCart = (typeof SinghsCart !== 'undefined' && SinghsCart.count && SinghsCart.count() > 0);
+      if (hasCart) {
+        var items = SinghsCart.read().items;
+        if (items.length > 1) {
+          // Point them at the per-item buttons so it's clear each item is
+          // customized separately, then open the first as a head start.
+          var host = document.getElementById('cartList') || document.querySelector('.cart-item');
+          if (host && host.scrollIntoView) host.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        spLaunchCartCustomizer(0);
+      } else {
+        spLaunchSingleCustomizer();
+      }
+    }
+
+    // Render baked mockups inline on the page (in the right panel) so the
+    // customer sees their design on the garment without re-opening the modal.
+    function spShowInlineMockups(mockups, onEdit) {
+      var host = document.getElementById('spInlinePreview');
+      if (!host) return;
+      if (!mockups || !mockups.length) { host.style.display = 'none'; host.innerHTML = ''; return; }
+      function lbl(p) { return (placementPresets[p] && placementPresets[p].label) || p; }
+      var imgs = mockups.map(function(m) {
+        return '<figure style="margin:0;flex:1;min-width:120px;max-width:200px">' +
+          '<img src="' + m.url + '" alt="' + lbl(m.placement) + ' mockup" style="width:100%;border-radius:10px;border:1px solid #eee;background:#fff;display:block"/>' +
+          '<figcaption style="font-size:.7rem;color:#888;text-align:center;margin-top:5px;font-weight:600">' + lbl(m.placement) + '</figcaption>' +
+        '</figure>';
+      }).join('');
+      host.innerHTML =
+        '<div style="background:#fff;border:1px solid #e8e8e8;border-radius:16px;padding:16px 16px 14px;box-shadow:0 2px 12px rgba(0,0,0,.05)">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">' +
+            '<div style="display:flex;align-items:center;gap:7px;font-weight:700;font-size:.85rem;color:#1a1a1a"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18)"></span>Votre maquette</div>' +
+            '<button type="button" id="spInlineEdit" style="background:transparent;border:1px solid #d8d8d8;border-radius:50px;padding:6px 13px;font-size:.76rem;font-weight:700;cursor:pointer;color:#1a1a1a">Modifier</button>' +
+          '</div>' +
+          '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">' + imgs + '</div>' +
+        '</div>';
+      host.style.display = 'block';
+      var eb = document.getElementById('spInlineEdit');
+      if (eb) eb.onclick = (typeof onEdit === 'function') ? onEdit : function() {};
+    }
+
+    // ---- Single-product wiring -------------------------------------------
+    function spSingleColor() {
+      var cidEl = document.getElementById('catalogColorId');
+      var cid = cidEl && cidEl.value;
+      var colors = (catalogPick && catalogPick.colors) || [];
+      var c = null;
+      for (var i = 0; i < colors.length; i++) { if (colors[i].color_id === cid) { c = colors[i]; break; } }
+      if (!c && colors.length) c = colors[0];
+      return { cid: cid || (c && c.color_id) || null, color: c || {} };
+    }
+    function spMarkCustomized(mockups) {
+      var btn = document.getElementById('spCustomizeBtn');
+      if (!btn) return;
+      var n = (mockups && mockups.length) || 0;
+      btn.querySelector('span').textContent = n ? ('✓ Maquette prête — touchez pour modifier' + (n > 1 ? ' (' + n + ' vues)' : '')) : 'Personnaliser et prévisualiser sur le vêtement';
+      if (n) { btn.style.background = '#143a14'; btn.style.color = '#9dff9d'; }
+    }
+    function spLaunchSingleCustomizer() {
+      if (!catalogPick || !catalogPick.product_id) { alert('Choisissez d’abord un produit.'); return; }
+      var sc = spSingleColor();
+      if (!sc.cid) { alert('Choisissez d’abord une couleur de vêtement.'); return; }
+      var c = sc.color;
+      var placements = [];
+      try { placements = Object.values(presetByLocation || {}).filter(Boolean); } catch (e) {}
+      if (!placements.length) placements = ['center-chest'];
+      spOpenCustomizer({
+        colorId: sc.cid,
+        garment: { front: c.mockup_front_url, back: c.mockup_back_url, side: c.mockup_side_url },
+        placements: placements,
+        fileFor: function(p) { return (typeof placementFiles === 'object' && placementFiles[p] instanceof File) ? placementFiles[p] : null; },
+        initial: { boxes: window.__spSingleBoxes || null, removeBg: !!window.__spSingleRemoveBg },
+        sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
+        onDone: function(res) {
+          window.__spSingleMockups   = res.mockups || [];
+          window.__spSingleBoxes     = res.boxes;
+          window.__spSingleRemoveBg  = res.removeBg;
+          window.__spSingleDesign    = res.design || null;
+          spMarkCustomized(res.mockups);
+          spShowInlineMockups(res.mockups, spLaunchSingleCustomizer);
+        }
+      });
+    }
+
+    // ---- Cart-mode wiring -------------------------------------------------
+    function spLaunchCartCustomizer(idx) {
+      var items = SinghsCart.read().items;
+      var it = items[idx];
+      if (!it) return;
+      if (!it.color_id) { alert('Cet article nécessite d’abord une couleur.'); return; }
+      var placements = (Array.isArray(it.placements) && it.placements.length) ? it.placements : ['center-chest'];
+      fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          var c = {};
+          var colors = (d && d.products && d.products[0] && d.products[0].colors) || [];
+          for (var i = 0; i < colors.length; i++) { if (colors[i].color_id === it.color_id) { c = colors[i]; break; } }
+          spOpenCustomizer({
+            colorId: it.color_id,
+            garment: { front: c.mockup_front_url || it.hero_url, back: c.mockup_back_url, side: c.mockup_side_url },
+            placements: placements,
+            fileFor: function(p) {
+              if (typeof cartItemFiles !== 'object' || !cartItemFiles) return null;
+              var k = idx + '_' + p;
+              if (cartItemFiles[k] instanceof File) return cartItemFiles[k];
+              for (var kk in cartItemFiles) { if (kk.indexOf(idx + '_') === 0 && cartItemFiles[kk] instanceof File) return cartItemFiles[kk]; }
+              return null;
+            },
+            initial: { boxes: it.design_boxes || null, removeBg: !!it.design_remove_bg },
+            sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
+            onDone: function(res) {
+              SinghsCart.updateSilent(idx, {
+                mockups: res.mockups || [],
+                design_boxes: res.boxes,
+                design_remove_bg: res.removeBg,
+                design_url: (res.design && res.design.signed_url) || it.design_url || null,
+                design_path: (res.design && res.design.path) || it.design_path || null
+              });
+              var n = (res.mockups && res.mockups.length) || 0;
+              var b = document.getElementById('spCartCzBtn-' + idx);
+              if (b) {
+                b.textContent = n ? '✓ Maquette prête · modifier' : 'Personnaliser';
+                if (n) { b.style.background = '#143a14'; b.style.color = '#9dff9d'; }
+              }
+              // Swap the cart row thumbnail to the baked front mockup so the
+              // customer sees their design right on the item, inline.
+              if (n) {
+                var front = (res.mockups.filter(function(m){ return spSideFor(m.placement) === 'front'; })[0] || res.mockups[0]);
+                var thumb = document.getElementById('ci-img-' + idx);
+                if (thumb && front) { thumb.src = front.url; thumb.style.objectFit = 'contain'; thumb.style.background = '#fff'; }
+              }
+              // Show the inline preview panel + reflect on the primary button.
+              spShowInlineMockups(res.mockups, function() { spLaunchCartCustomizer(idx); });
+              spMarkCustomized(res.mockups);
+            }
+          });
+        })
+        .catch(function() { alert('Impossible de charger ce produit pour la personnalisation. Veuillez réessayer.'); });
+    }
+
+    // Reveal the customize button whenever there's something to customize —
+    // a picked single product OR items in the cart. (The router sends each to
+    // the right flow.) Hide it only when there's nothing yet.
+    (function() {
+      var iv = setInterval(function() {
+        var btn = document.getElementById('spCustomizeBtn');
+        if (!btn) return;
+        var hasCart = (typeof SinghsCart !== 'undefined' && SinghsCart.count && SinghsCart.count() > 0);
+        var hasSingle = (typeof catalogPick !== 'undefined' && catalogPick && catalogPick.product_id);
+        btn.style.display = (hasCart || hasSingle) ? 'flex' : 'none';
+      }, 600);
+    })();
+
 
     // Hook price calculation to size changes
     document.addEventListener('change', function(e) {
@@ -5346,6 +6042,7 @@
           '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblQty +
           '      <input type="number" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
           '    </label>' +
+          '    <button type="button" id="spCartCzBtn-' + idx + '" onclick="spLaunchCartCustomizer(' + idx + ')" style="' + (Array.isArray(it.mockups) && it.mockups.length ? 'background:#143a14;color:#9dff9d;' : 'background:#1a1a1a;color:#e8ff3c;') + 'border:none;cursor:pointer;font-size:.78rem;font-weight:700;padding:7px 12px;border-radius:50px">' + (Array.isArray(it.mockups) && it.mockups.length ? '✓ Maquette prête' : 'Personnaliser') + '</button>' +
           '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
           '  </div>' +
           placementsHtml +
