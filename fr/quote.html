@@ -4548,6 +4548,11 @@
     // along on the order line (items[].mockups[]).
     // =========================================================================
     var SHOP_COMPOSE_API = 'https://singhsprint-crm.vercel.app/api/shop/compose';
+    // Side-view sleeve render — pre-bake placeholder + fallback. The photoreal,
+    // colour-matched sleeve is produced server-side by /api/shop/compose
+    // (sleeve-ai); this gives the sleeve tab a side-view surface before baking.
+    var SP_SLEEVE_RENDER   = '/images/sleeve-left.png';
+    var SP_SLEEVE_RENDER_R = '/images/sleeve-right.png';
 
     // Upload each File at most once (compose needs a server-fetchable URL/path,
     // not a blob: URL). Cached by File identity.
@@ -4567,6 +4572,13 @@
 
     // Seed a sensible default {x,y,w} from the placement preset's centre + size.
     function spDefaultBox(presetId) {
+      // Sleeve placements preview on the standard tee render — seed the box
+      // over the correct sleeve (left vs right) instead of using the chest-
+      // tuned preset centre.
+      if (/sleeve/i.test(presetId)) {
+        var isRight = /right/i.test(presetId);
+        return { x: isRight ? 0.565 : 0.305, y: 0.20, w: 0.13 };
+      }
       var pre = placementPresets[presetId] || {};
       var sizeW = { 'left-chest': 0.18, 'right-chest': 0.18, 'small': 0.16, 'medium': 0.34, 'large': 0.5, 'xl': 0.62 };
       var w = sizeW[pre.size] || 0.3;
@@ -4715,6 +4727,9 @@
       function garmentFor(p) {
         var g = opts.garment || {};
         var side = spSideFor(p);
+        // No catalog side photos exist — sleeve placements use the standard
+        // sleeve render so the preview matches what the server composites.
+        if (side === 'side' && !g.side) return /right/i.test(p) ? SP_SLEEVE_RENDER_R : SP_SLEEVE_RENDER;
         return g[side] || g.front || g.back || g.side || '';
       }
       function paint() {
