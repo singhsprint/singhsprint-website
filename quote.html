@@ -4687,6 +4687,16 @@
           '</div>' +
         '</div>';
       document.body.appendChild(overlay);
+      // Scroll-lock that preserves position. Just toggling body overflow leaves
+      // mobile Safari scrolled/shifted ("page off the screen") after close, so
+      // pin the body at the current scroll offset and restore it on close.
+      var _lockY = window.scrollY || window.pageYOffset || 0;
+      var _prevBody = { position: document.body.style.position, top: document.body.style.top, left: document.body.style.left, right: document.body.style.right, width: document.body.style.width, overflow: document.body.style.overflow };
+      document.body.style.position = 'fixed';
+      document.body.style.top = (-_lockY) + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
 
       var tabsEl  = overlay.querySelector('.sp-cz-tabs');
@@ -4772,7 +4782,15 @@
       }
       function close() {
         Object.keys(objURLs).forEach(function(k) { try { URL.revokeObjectURL(objURLs[k]); } catch (_) {} });
-        document.body.style.overflow = '';
+        // Restore the exact pre-open body styles, then jump back to where the
+        // page was scrolled so the layout never ends up shifted off-screen.
+        document.body.style.position = _prevBody.position;
+        document.body.style.top = _prevBody.top;
+        document.body.style.left = _prevBody.left;
+        document.body.style.right = _prevBody.right;
+        document.body.style.width = _prevBody.width;
+        document.body.style.overflow = _prevBody.overflow;
+        window.scrollTo(0, _lockY);
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
       }
       overlay.querySelector('.sp-cz-x').onclick = close;
