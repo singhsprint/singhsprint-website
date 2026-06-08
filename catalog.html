@@ -176,7 +176,7 @@
     /* z-index 2000 puts the filter panel above the sticky navbar
        (z:1000) and above the catalog cart bar (z:60). Otherwise the
        nav covers "Refine results" and the X-close on mobile. */
-    .filter-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;box-shadow:-8px 0 24px rgba(0,0,0,.08);transform:translateX(100%);transition:transform .25s ease;z-index:2000;display:flex;flex-direction:column}
+    .filter-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;box-shadow:-8px 0 24px rgba(0,0,0,.08);transform:translateX(100%);transition:transform .25s ease;z-index:2147483000;display:flex;flex-direction:column}
     .filter-panel.open{transform:translateX(0)}
     .filter-panel header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
     .filter-panel header h3{font-family:'Playfair Display',serif;font-size:1.2rem}
@@ -190,7 +190,7 @@
     .filter-group h4{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:10px}
     .filter-group label{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:.9rem;cursor:pointer}
     .filter-group label input{width:16px;height:16px;accent-color:var(--ink)}
-    .filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:1999}
+    .filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2147482999}
     .filter-overlay.open{opacity:1;pointer-events:auto}
 
     /* Product detail modal — "View details" on each card opens this */
@@ -648,7 +648,7 @@
     </div>
     <footer>
       <button class="clear" onclick="clearAllFilters()" data-i18n="cat.filter.clear">Clear all</button>
-      <button class="apply" onclick="applyFilters()" data-i18n="cat.filter.apply">Apply</button>
+      <button class="apply" onclick="closeFilterPanel()" data-i18n="cat.filter.done">Done</button>
     </footer>
   </aside>
 
@@ -2173,17 +2173,16 @@
             <span>In stock only</span>
           </label>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
-            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked" style="accent-color:var(--ink);width:15px;height:15px"/>
+            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked; commitFilters()" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>🇨🇦 Canadian-made blanks</span>
           </label>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0">
-            <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked" style="accent-color:var(--ink);width:15px;height:15px"/>
+            <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked; commitFilters()" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>CSA / Hi-vis certified</span>
           </label>
         </div>
 
         ${renderColorFamilyGroup()}
-        ${renderGenderGroup()}
         ${renderFabricGroup()}
         ${renderSizesGroup()}
         ${renderWeightGroup()}
@@ -2299,11 +2298,11 @@
       <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:12px">Price per unit (CAD)</div>
       <div style="display:flex;gap:10px;align-items:center">
         <input type="number" min="0" step="1" placeholder="Min" value="${min}"
-          oninput="state.filters.priceMin = this.value ? Number(this.value) : null"
+          oninput="state.filters.priceMin = this.value ? Number(this.value) : null; commitFiltersDebounced()"
           style="width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;background:#fafaf7"/>
         <span style="color:var(--soft);font-size:.86rem">to</span>
         <input type="number" min="0" step="1" placeholder="Max" value="${max}"
-          oninput="state.filters.priceMax = this.value ? Number(this.value) : null"
+          oninput="state.filters.priceMax = this.value ? Number(this.value) : null; commitFiltersDebounced()"
           style="width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.86rem;font-family:inherit;background:#fafaf7"/>
         <span style="color:var(--soft);font-size:.78rem">at qty 50</span>
       </div>
@@ -2316,11 +2315,11 @@
     const cur = state.filters[arrName] || [];
     state.filters[arrName] = cur.includes(val) ? cur.filter(x => x !== val) : cur.concat([val]);
   }
-  window.toggleColor   = function (v) { multiToggle('colorFamilies',  v); renderFilterPanel(); };
-  window.toggleGender  = function (v) { multiToggle('genders',        v); renderFilterPanel(); };
-  window.toggleFabric  = function (v) { multiToggle('fabricFamilies', v); renderFilterPanel(); };
-  window.toggleWeight  = function (v) { multiToggle('weightClasses',  v); renderFilterPanel(); };
-  window.toggleSize    = function (v) { multiToggle('sizes',          v); renderFilterPanel(); };
+  window.toggleColor   = function (v) { multiToggle('colorFamilies',  v); renderFilterPanel(); commitFilters(); };
+  window.toggleGender  = function (v) { multiToggle('genders',        v); renderFilterPanel(); commitFilters(); };
+  window.toggleFabric  = function (v) { multiToggle('fabricFamilies', v); renderFilterPanel(); commitFilters(); };
+  window.toggleWeight  = function (v) { multiToggle('weightClasses',  v); renderFilterPanel(); commitFilters(); };
+  window.toggleSize    = function (v) { multiToggle('sizes',          v); renderFilterPanel(); commitFilters(); };
 
   // Brand search inside the filter panel — purely client-side; toggles
   // visibility of the label rows by substring match on lowercased brand name.
@@ -2446,9 +2445,7 @@
     closeFilterPanel();
     resetAndFetch();
   }
-  function applyFilters()     {
-    closeFilterPanel();
-    // Refresh the chip row + filter pill, then re-fetch with the new filters
+  function updateFilterPill() {
     const activeCount =
       (state.filters.type ? 1 : 0) +
       state.filters.brand.length +
@@ -2465,8 +2462,16 @@
       pill.textContent = activeCount;
       pill.style.display = activeCount ? 'inline-block' : 'none';
     }
-    resetAndFetch();
   }
+  // Filters now apply LIVE — there's no Apply button. Every panel control
+  // commits immediately so results refresh as the customer refines. Exposed
+  // on window because inline on* handlers run in global scope (they can't see
+  // top-level const/let bindings).
+  function commitFilters() { updateFilterPill(); resetAndFetch(); }
+  window.commitFilters = commitFilters;
+  window.commitFiltersDebounced = debounce(commitFilters, 250);
+  // Back-compat shim — anything still calling applyFilters() commits + closes.
+  function applyFilters() { updateFilterPill(); closeFilterPanel(); resetAndFetch(); }
 
   document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
     state.filters.q = e.target.value.trim();
