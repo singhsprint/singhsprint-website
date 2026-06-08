@@ -4681,6 +4681,9 @@
         // tall square stage. Header sticky too so the title/close stay put.
         '.sp-cz-h{position:sticky;top:0;background:#1a1a1a;z-index:2}' +
         '.sp-cz-foot{position:sticky;bottom:0;background:#1a1a1a;z-index:2}' +
+        // Desktop: cap the square stage by viewport height so the size slider
+        // and action buttons stay on-screen without scrolling.
+        '@media (min-width:561px){.sp-cz-stage{width:min(calc(100% - 40px),50vh);height:auto;margin-left:auto;margin-right:auto}}' +
         // Mobile: full-bleed sheet, square stage capped to keep controls in
         // view, and stacked full-width buttons (primary on top).
         '@media (max-width:560px){' +
@@ -5053,10 +5056,10 @@
             placements: placements,
             fileFor: function(p) {
               if (typeof cartItemFiles !== 'object' || !cartItemFiles) return null;
+              // Only the art uploaded for THIS placement — no fallback to another
+              // placement's file, so one design never bleeds onto the others.
               var k = idx + '_' + p;
-              if (cartItemFiles[k] instanceof File) return cartItemFiles[k];
-              for (var kk in cartItemFiles) { if (kk.indexOf(idx + '_') === 0 && cartItemFiles[kk] instanceof File) return cartItemFiles[kk]; }
-              return null;
+              return (cartItemFiles[k] instanceof File) ? cartItemFiles[k] : null;
             },
             initial: { boxes: it.design_boxes || null, removeBg: !!it.design_remove_bg },
             sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
