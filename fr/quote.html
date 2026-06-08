@@ -4611,8 +4611,8 @@
     // Side-view sleeve render — pre-bake placeholder + fallback. The photoreal,
     // colour-matched sleeve is produced server-side by /api/shop/compose
     // (sleeve-ai); this gives the sleeve tab a side-view surface before baking.
-    var SP_SLEEVE_RENDER   = '/images/sleeve-left.png';
-    var SP_SLEEVE_RENDER_R = '/images/sleeve-right.png';
+    var SP_SLEEVE_RENDER   = '/images/sleeve-left.png?v=2';
+    var SP_SLEEVE_RENDER_R = '/images/sleeve-right.png?v=2';
 
     // Upload each File at most once (compose needs a server-fetchable URL/path,
     // not a blob: URL). Cached by File identity.
@@ -4637,7 +4637,9 @@
       // tuned preset centre.
       if (/sleeve/i.test(presetId)) {
         var isRight = /right/i.test(presetId);
-        return { x: isRight ? 0.565 : 0.305, y: 0.20, w: 0.13 };
+        // Centre the art on the sleeve print zone of the photo render
+        // (left photo: sleeve at x~0.58; right render is the mirror at x~0.42).
+        return { x: isRight ? 0.32 : 0.48, y: 0.35, w: 0.20 };
       }
       var pre = placementPresets[presetId] || {};
       var sizeW = { 'left-chest': 0.18, 'right-chest': 0.18, 'small': 0.16, 'medium': 0.34, 'large': 0.5, 'xl': 0.62 };
@@ -4701,8 +4703,10 @@
       var placements = (opts.placements || []).filter(Boolean);
       if (!placements.length) placements = ['center-chest'];
 
-      // Resolve the design File per placement (fall back to the first art the
-      // customer attached, so every selected placement previews something).
+      // Resolve the design File per placement. Each placement only previews the
+      // art that was actually uploaded for it — placements without their own art
+      // stay blank (no fallback), so e.g. a front-only design never bleeds onto
+      // the back tab.
       var firstFile = null;
       var fileByP = {};
       placements.forEach(function(p) {
@@ -4713,7 +4717,7 @@
         alert('Ajoutez d’abord votre image (le champ de téléversement), puis touchez « Personnaliser et prévisualiser ».');
         return;
       }
-      placements.forEach(function(p) { if (!fileByP[p]) fileByP[p] = firstFile; });
+      function hasArt(p) { return fileByP[p] instanceof File; }
 
       var boxes = {};
       placements.forEach(function(p) {
@@ -4724,6 +4728,7 @@
       var objURLs = {};
       function artURL(p) {
         var f = fileByP[p];
+        if (!f) return '';
         if (!objURLs[f.name + f.size]) objURLs[f.name + f.size] = URL.createObjectURL(f);
         return objURLs[f.name + f.size];
       }
@@ -4798,9 +4803,21 @@
         var gp = garmentFor(p);
         garImg.src = gp ? (typeof imgUrl === 'function' ? imgUrl(gp) : gp) : '';
         garImg.style.display = gp ? '' : 'none';
-        artImg.src = artURL(p);
-        slider.value = boxes[p].w;
-        positionArt();
+        if (hasArt(p)) {
+          artImg.src = artURL(p);
+          artImg.style.display = '';
+          slider.disabled = false;
+          slider.value = boxes[p].w;
+          positionArt();
+          statusEl.textContent = 'Glissez votre image, ajustez la taille, puis prévisualisez.';
+        } else {
+          // Aucune image téléversée pour cet emplacement — n’afficher que le vêtement.
+          artImg.src = '';
+          artImg.style.display = 'none';
+          slider.disabled = true;
+          var lbl = (placementPresets[p] && placementPresets[p].label) || p;
+          statusEl.textContent = 'Aucune image téléversée pour « ' + lbl + ' » — téléversez-en une pour la personnaliser.';
+        }
       }
       function positionArt() {
         var b = boxes[curP()];
@@ -4872,6 +4889,7 @@
           if (!info || (!info.path && !info.signed_url)) throw new Error('échec du téléversement de l’image');
           var chain = Promise.resolve();
           placements.forEach(function(p) {
+            if (!hasArt(p)) return; // skip placements with no uploaded art
             chain = chain.then(function() {
               return spUploadDesignOnce(fileByP[p]).then(function(di) {
                 var b = boxes[p];
@@ -4899,7 +4917,9 @@
         bakeAll().then(function(out) {
           bakedMockups = out.mockups;
           // Show the active placement's baked image in the stage as confirmation.
-          var m = bakedMockups.filter(function(x) { return x.placement === curP(); })[0] || bakedMockups[0];
+          // Only swap in a mockup that belongs to the current placement, so a
+          // blank tab (no art) keeps showing the plain garment.
+          var m = bakedMockups.filter(function(x) { return x.placement === curP(); })[0];
           if (m) { garImg.src = m.url; artImg.style.display = 'none'; }
           setBusy(false, 'Ça vous plaît? Touchez « Utiliser cette maquette ».');
         }).catch(function(e) {
