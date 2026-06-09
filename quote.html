@@ -6059,8 +6059,8 @@
           ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
             .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = ''; });
           document.querySelectorAll('.form-group, .color-section').forEach(function(g){
-            var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
-            if (t === 'garment source' || t === 'garment color') g.style.display = '';
+            var lbl = g.querySelector('label'); var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
+            if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = '';
           });
           // dropZoneWrapper stays permanently hidden — per-placement uploads
           // in Step 1 are the only upload path. (Old fallback removed.)
@@ -6091,8 +6091,8 @@
       ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
         .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = 'none'; });
       document.querySelectorAll('.form-group, .color-section').forEach(function(g){
-        var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
-        if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
+        var lbl = g.querySelector('label'); var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
+        if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = 'none';
       });
       var dz = document.getElementById('dropZoneWrapper'); if (dz) dz.style.display = 'none';
       // Hide the GLOBAL placement section + its upload list — placements are
@@ -6750,8 +6750,8 @@
           // walk the catalog-pick parent to find and hide them by label text.
           document.querySelectorAll('.form-group, .color-section').forEach(function(g) {
             var lbl = g.querySelector('label');
-            var t = lbl ? (lbl.textContent || '').trim().toLowerCase() : '';
-            if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
+            var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
+            if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = 'none';
           });
 
           // Wire state so the rest of the form knows which garment we're on
@@ -7334,13 +7334,23 @@
     }
 
     function spReadDeclaredValue() {
-      // Live price total from the sidebar drives the declared customs
-      // value. Conservative fallback at $100 if total isn't computed yet.
+      // The running order total drives both the declared customs value and the
+      // "Add $X more for FREE shipping" gap. It surfaces in different elements
+      // depending on the flow: the sidebar strip (livePriceTotal — populated in
+      // BOTH the single-product and cart flows), the step-2 breakdown
+      // (priceTotal — single-product only; stays $0.00 in cart mode), or the
+      // bring-your-own box (byoPriceTotal). Read them all and take the highest
+      // non-zero so cart orders no longer fall back to the $100 default.
+      // Conservative $100 fallback before any total is computed.
+      function read(id) {
+        var el = document.getElementById(id);
+        if (!el) return 0;
+        var n = parseFloat((el.textContent || '').replace(/[^0-9.]/g, ''));
+        return Number.isFinite(n) && n > 0 ? n : 0;
+      }
       try {
-        var el = document.getElementById('priceTotal') || document.getElementById('livePriceTotal');
-        var t = el ? (el.textContent || '').replace(/[^0-9.]/g, '') : '';
-        var n = parseFloat(t);
-        return Number.isFinite(n) && n > 0 ? Math.min(n, 100000) : 100;
+        var v = Math.max(read('livePriceTotal'), read('priceTotal'), read('byoPriceTotal'));
+        return v > 0 ? Math.min(v, 100000) : 100;
       } catch (e) { return 100; }
     }
 

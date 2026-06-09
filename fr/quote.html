@@ -907,7 +907,7 @@
             <div id="cartAddMore" class="cart-add-more" style="display:none">
               <a href="/fr/catalog" class="cart-add-more__btn"  data-i18n="quote.cart.addmore">+ Ajouter un autre article du catalogue</a>
               <p class="cart-add-more__hint" data-i18n="quote.cart.addmore.hint">
-                Each item can have its own print method and sizes — mix DTG, DTF, embroidery freely.
+                Chaque article peut avoir sa propre méthode d'impression et ses tailles — mélangez DTG, DTF et broderie librement.
               </p>
             </div>
 
@@ -1708,7 +1708,7 @@
             <div class="toolbar-group">
               <button type="button" class="toolbar-btn toolbar-btn--design" id="centerBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/></svg>Center</button>
               <button type="button" class="toolbar-btn toolbar-btn--design" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Flip</button>
-              <button type="button" class="toolbar-btn toolbar-btn--danger toolbar-btn--design" id="deleteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/></svg>Remove</button>
+              <button type="button" class="toolbar-btn toolbar-btn--danger toolbar-btn--design" id="deleteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/></svg>Retirer</button>
             </div>
             <div class="toolbar-sep"></div>
             <div class="size-selector">
@@ -2069,7 +2069,7 @@
         var sidesEl = document.getElementById('byoPriceSides');
         if (sidesEl) {
           if (placements.length > 0) {
-            sidesEl.textContent = placements.length + ' location' + (placements.length === 1 ? '' : 's');
+            sidesEl.textContent = placements.length + ' emplacement' + (placements.length === 1 ? '' : 's');
           } else {
             sidesEl.textContent = sides + ' side' + (sides > 1 ? 's' : '');
           }
@@ -2091,7 +2091,7 @@
           if (stripUnit)   stripUnit.textContent   = '$' + unit.toFixed(2);
           if (stripSuffix) stripSuffix.textContent = '/garment';
           var locLabel = placements.length > 0
-            ? (placements.length + ' location' + (placements.length === 1 ? '' : 's'))
+            ? (placements.length + ' emplacement' + (placements.length === 1 ? '' : 's'))
             : (sides + ' side' + (sides > 1 ? 's' : ''));
           if (stripQty) stripQty.textContent =
             qty + ' garment' + (qty === 1 ? '' : 's') +
@@ -2197,7 +2197,7 @@
       // showed $24.95 in this table while the live card showed $34.95).
       if (catalogPick && catalogPick.product_id) {
         if (nameEl) nameEl.textContent = catalogPick.brand + ' ' + catalogPick.style_number;
-        host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Loading tier prices…</p>';
+        host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Chargement des prix par palier…</p>';
         fetch(PRICING_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(catalogPick.product_id) + '&matrix=1')
           .then(function(r){ return r.ok ? r.json() : null; })
           .then(function(d){
@@ -2220,7 +2220,7 @@
       var garment = state.garment;
       var service = (state.service || 'DTG').toLowerCase();
       if (!garment || !b2bPricing[garment]) {
-        host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Pick a product above to see the tier pricing.</p>';
+        host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Choisissez un produit ci-dessus pour voir les prix par palier.</p>';
         if (nameEl) nameEl.textContent = 'your product';
         return;
       }
@@ -2557,7 +2557,7 @@
       return {cx: cw * loc.cx, cy: ch * loc.cy, w: w, h: h, left: cw * loc.cx - w/2, top: ch * loc.cy - h/2};
     }
 
-    var nameMap = {'front':'Front','back':'Back','left-sleeve':'Left Sleeve','right-sleeve':'Right Sleeve'};
+    var nameMap = {'front':'Avant','back':'Arrière','left-sleeve':'Manche gauche','right-sleeve':'Manche droite'};
 
     // ===== LOCATION CHECKBOXES (in form) — drive selection =====
     // ===== PLACEMENT PRESETS =====
@@ -2627,7 +2627,7 @@
       // Pants / shorts / joggers
       'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Hanche gauche',      desc: 'Small logo at hip',    sil:'pants', rect:{x:13,y:9, w:6, h:4} },
       'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Hanche droite',     desc: 'Small logo at hip',    sil:'pants', rect:{x:23,y:9, w:6, h:4} },
-      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Poche arrière',   desc: 'Back-pocket logo',     sil:'pants', rect:{x:14,y:14,w:6, h:4} },
+      'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Poche arrière',   desc: 'Logo poche arrière',     sil:'pants', rect:{x:14,y:14,w:6, h:4} },
       'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Côté de jambe',      desc: 'Vertical stripe',      sil:'pants', rect:{x:13,y:18,w:5, h:18} },
       // Apron
       'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Poitrine',         desc: 'Upper bib area',       sil:'apron', rect:{x:14,y:12,w:14,h:8}  },
@@ -2869,7 +2869,7 @@
         });
         summaryEl.textContent = labels.length
           ? labels.join(', ') + (labels.length > 1 ? ' — ' + labels.length + ' prints, billed per location.' : ' selected.')
-          : 'Pick at least one placement.';
+          : 'Choisissez au moins un emplacement.';
       }
       if (typeof updateLocationSelection === 'function') updateLocationSelection();
       if (typeof renderPlacementUploads === 'function')  renderPlacementUploads();
@@ -3008,7 +3008,7 @@
         var labels = activePresets.map(function(id) { return placementPresets[id].label; });
         summaryEl.textContent = labels.length
           ? labels.join(', ') + (labels.length > 1 ? ' — ' + labels.length + ' prints, billed per location.' : ' selected.')
-          : 'Pick at least one placement.';
+          : 'Choisissez au moins un emplacement.';
       }
 
       // Rebuild per-placement upload list so customer can attach a separate
@@ -3039,7 +3039,7 @@
       var activePresets = Object.values(presetByLocation);
 
       if (activePresets.length === 0) {
-        host.innerHTML = '<div class="placement-upload-list__hint">Pick at least one placement above to upload artwork.</div>';
+        host.innerHTML = '<div class="placement-upload-list__hint">Choisissez au moins un emplacement ci-dessus pour téléverser un visuel.</div>';
         return;
       }
 
@@ -3053,10 +3053,10 @@
           '<label class="placement-upload ' + (has ? 'has-file' : '') + '" for="design_' + presetId + '">' +
           '  <div class="placement-upload__icon">' + (has ? '✓' : '⇧') + '</div>' +
           '  <div class="placement-upload__copy">' +
-          '    <strong>' + (has ? 'Design for ' : 'Upload design for ') + p.label + '</strong>' +
+          '    <strong>' + (has ? 'Design pour ' : 'Téléverser un design pour ') + p.label + '</strong>' +
           '    <span>' + escapeAttr(fileLabel) + '</span>' +
           '  </div>' +
-          (has ? '<button type="button" class="placement-upload__remove" onclick="event.preventDefault(); event.stopPropagation(); clearPlacementFile(\'' + presetId + '\')">Remove</button>' : '') +
+          (has ? '<button type="button" class="placement-upload__remove" onclick="event.preventDefault(); event.stopPropagation(); clearPlacementFile(\'' + presetId + '\')">Retirer</button>' : '') +
           '  <input type="file" id="design_' + presetId + '" name="design_' + presetId + '"' +
           '    accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg" style="display:none"' +
           '    onchange="attachPlacementFile(\'' + presetId + '\', this.files && this.files[0])"/>' +
@@ -3118,7 +3118,7 @@
 
       // Update badge
       var badge = document.getElementById('locCountBadge');
-      if (badge) badge.textContent = printCount + ' location' + (printCount > 1 ? 's' : '');
+      if (badge) badge.textContent = printCount + ' emplacement' + (printCount > 1 ? 's' : '');
 
       // Update summary text
       var summaryEl = document.getElementById('placementSummary');
@@ -3433,7 +3433,7 @@
       var puTitle = document.getElementById('placementUploadTitle');
       var puHint  = document.getElementById('placementUploadHint');
       if (pu)      pu.classList.remove('has-file');
-      if (puTitle) puTitle.textContent = 'Upload your design for these placements';
+      if (puTitle) puTitle.textContent = 'Téléversez votre design pour ces emplacements';
       if (puHint)  puHint.textContent  = 'PNG, JPG, PDF, AI, PSD, SVG — up to 10MB';
       toggleDesignToolbar(false);
       canvas.renderAll();
@@ -5449,10 +5449,10 @@
           ? ' <small class="ci-chip__surcharge">+$' + surcharge + '</small>'
           : '';
         return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) + surchargeBadge +
-               '<button type="button" class="ci-chip__remove" aria-label="Remove ' + escapeAttr(_placementLabel(p)) +
+               '<button type="button" class="ci-chip__remove" aria-label="Retirer ' + escapeAttr(_placementLabel(p)) +
                '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button></span>';
       }).join('');
-      var addLabel = picked.length === 0 ? '+ Pick a placement' : '+ Add placement';
+      var addLabel = picked.length === 0 ? '+ Choisir un emplacement' : '+ Ajouter un emplacement';
       var addBtn = '<button type="button" class="ci-chip ci-chip--add" onclick="cartTogglePicker(' + idx + ')">' + addLabel + '</button>';
       var picker = pickerOpen ? renderCartPlacementPicker(idx, picked, garmentType) : '';
       return '<div class="ci-placements">' +
@@ -5542,7 +5542,7 @@
         html += '  </div>';
         html += '</div>';
       });
-      html += '<button type="button" class="ci-picker__close" onclick="cartTogglePicker(' + idx + ')">Done</button>';
+      html += '<button type="button" class="ci-picker__close" onclick="cartTogglePicker(' + idx + ')">Terminé</button>';
       return '<div class="ci-picker open">' + html + '</div>';
     }
     // Render the per-placement upload zones for one cart row.
@@ -5557,10 +5557,10 @@
         return '<label class="ci-upload ' + (has?'has-file':'') + '" for="' + fileInputId + '">' +
                '  <span class="ci-upload__icon">' + (has?'✓':'⇧') + '</span>' +
                '  <div class="ci-upload__copy">' +
-               '    <strong>' + (has?'Design for ':'Upload design for ') + escapeAttr(_placementLabel(p)) + '</strong>' +
+               '    <strong>' + (has?'Design pour ':'Téléverser un design pour ') + escapeAttr(_placementLabel(p)) + '</strong>' +
                '    <span>' + escapeAttr(sub) + '</span>' +
                '  </div>' +
-               (has ? '<button type="button" class="ci-upload__remove" onclick="event.preventDefault();event.stopPropagation();cartClearItemFile(' + idx + ',\'' + p + '\')">Remove</button>' : '') +
+               (has ? '<button type="button" class="ci-upload__remove" onclick="event.preventDefault();event.stopPropagation();cartClearItemFile(' + idx + ',\'' + p + '\')">Retirer</button>' : '') +
                '  <input type="file" id="' + fileInputId + '" name="' + fileInputId + '"' +
                '    accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg" style="display:none"' +
                '    onchange="cartAttachItemFile(' + idx + ',\'' + p + '\',this.files && this.files[0])"/>' +
@@ -5639,7 +5639,7 @@
       if (embroideryOnly) {
         hint = '<span class="ci-method-hint">Caps are embroidery-only on our press</span>';
       } else if (!current) {
-        hint = '<span class="ci-method-hint">Pick how each item gets decorated</span>';
+        hint = '<span class="ci-method-hint">Choisissez comment chaque article est décoré</span>';
       } else {
         hint = '';
       }
@@ -5697,7 +5697,7 @@
         customRow = '<div class="ci-sizes__custom-row">' +
           custom.map(function(k) {
             return '<span class="ci-sizes__custom-chip">' + k + ': ' + Number(sizes[k]) +
-              ' <button type="button" aria-label="Remove ' + k + '" ' +
+              ' <button type="button" aria-label="Retirer ' + k + '" ' +
               'onclick="onCartItemSizeChange(' + idx + ', \'' + k + '\', 0)">×</button>' +
               '</span>';
           }).join('') +
@@ -6048,8 +6048,8 @@
           ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
             .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = ''; });
           document.querySelectorAll('.form-group, .color-section').forEach(function(g){
-            var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
-            if (t === 'garment source' || t === 'garment color') g.style.display = '';
+            var lbl = g.querySelector('label'); var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
+            if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = '';
           });
           // dropZoneWrapper stays permanently hidden — per-placement uploads
           // in Step 1 are the only upload path. (Old fallback removed.)
@@ -6080,8 +6080,8 @@
       ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
         .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = 'none'; });
       document.querySelectorAll('.form-group, .color-section').forEach(function(g){
-        var lbl = g.querySelector('label'); var t = lbl ? (lbl.textContent||'').trim().toLowerCase() : '';
-        if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
+        var lbl = g.querySelector('label'); var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
+        if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = 'none';
       });
       var dz = document.getElementById('dropZoneWrapper'); if (dz) dz.style.display = 'none';
       // Hide the GLOBAL placement section + its upload list — placements are
@@ -6301,8 +6301,8 @@
         host.innerHTML =
           '<details style="margin-top:4px" ' + (isMobile ? '' : 'open') + '>' +
             '<summary style="cursor:pointer;font-size:.72rem;font-weight:600;color:#666;letter-spacing:.04em;text-transform:uppercase;padding:6px 0;list-style:none">' +
-              '▾ Tier pricing for this item' +
-              '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— current row highlighted, change qty to reprice</span>' +
+              '▾ Prix par palier pour cet article' +
+              '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— ligne actuelle en surbrillance, changez la quantité pour recalculer</span>' +
             '</summary>' +
             inner +
           '</details>';
@@ -6501,10 +6501,10 @@
         if (items.length === 1 && avgUnitPrice != null) {
           document.getElementById('livePriceUnit').textContent =
             '$' + avgUnitPrice.toFixed(2);
-          if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
+          if (suf) { suf.style.display = ''; suf.textContent = '/unité'; }
         } else {
           document.getElementById('livePriceUnit').textContent =
-            items.length + ' items';
+            items.length + ' articles';
           if (suf) suf.style.display = 'none';
         }
         // Below the headline, show pieces count + any size-grid drift.
@@ -6513,9 +6513,9 @@
         // surface that so it doesn't silently mismatch what the rep
         // sees on the CRM.
         document.getElementById('livePriceQty').textContent =
-          cartUnits + (cartUnits === 1 ? ' piece' : ' pieces') +
+          cartUnits + (cartUnits === 1 ? ' pièce' : ' pièces') +
           (cartSizeTotal > 0 && cartSizeTotal !== cartUnits
-            ? ' · sizes filled: ' + cartSizeTotal
+            ? ' · tailles saisies : ' + cartSizeTotal
             : '');
         totalWrap.style.display = 'block';
         document.getElementById('livePriceTotal').textContent =
@@ -6528,10 +6528,10 @@
           '$' + avgUnitPrice.toFixed(2);
         if (suf) {
           suf.style.display = '';
-          suf.textContent = '/unit est.';
+          suf.textContent = '/unité est.';
         }
         document.getElementById('livePriceQty').textContent =
-          effectiveUnits + ' pieces · pricing in progress…';
+          effectiveUnits + ' pièces · calcul du prix en cours…';
         totalWrap.style.display = 'block';
         document.getElementById('livePriceTotal').textContent =
           '$' + (avgUnitPrice * effectiveUnits + sur.surchargeTotal).toFixed(2);
@@ -6541,7 +6541,7 @@
         // unit price to multiply yet.
         document.getElementById('livePriceUnit').textContent = '$—';
         document.getElementById('livePriceQty').textContent =
-          effectiveUnits + (effectiveUnits === 1 ? ' piece' : ' pieces') + ' · loading…';
+          effectiveUnits + (effectiveUnits === 1 ? ' pièce' : ' pièces') + ' · chargement…';
         totalWrap.style.display = 'none';
       }
     }
@@ -6739,8 +6739,8 @@
           // walk the catalog-pick parent to find and hide them by label text.
           document.querySelectorAll('.form-group, .color-section').forEach(function(g) {
             var lbl = g.querySelector('label');
-            var t = lbl ? (lbl.textContent || '').trim().toLowerCase() : '';
-            if (t === 'garment source' || t === 'garment color') g.style.display = 'none';
+            var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
+            if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = 'none';
           });
 
           // Wire state so the rest of the form knows which garment we're on
@@ -6877,7 +6877,7 @@
       el.innerHTML =
         '<div style="background:#1a1a1a;border:1px solid #333;border-radius:16px;padding:28px 32px;text-align:center;max-width:380px;width:90%;">' +
           '<div style="width:48px;height:48px;border:3px solid #333;border-top-color:#e8ff3c;border-radius:50%;margin:0 auto 16px;animation:spSpin 0.9s linear infinite"></div>' +
-          '<div class="sp-upload-overlay__label" style="color:#fff;font-weight:600;font-size:0.95rem;line-height:1.4">' + (label || 'Uploading your design…') + '</div>' +
+          '<div class="sp-upload-overlay__label" style="color:#fff;font-weight:600;font-size:0.95rem;line-height:1.4">' + (label || 'Téléversement de votre design…') + '</div>' +
           '<div style="color:#888;font-size:0.78rem;margin-top:8px">This usually takes a few seconds.</div>' +
         '</div>' +
         '<style>@keyframes spSpin{to{transform:rotate(360deg)}}</style>';
@@ -6894,11 +6894,11 @@
       existing.innerHTML =
         '<div style="background:#1a1a1a;border:1px solid #4a1f1f;border-radius:16px;padding:28px 32px;max-width:420px;width:90%;text-align:center">' +
           '<div style="font-size:32px;margin-bottom:8px">⚠️</div>' +
-          '<div style="color:#fff;font-weight:700;font-size:1rem;margin-bottom:8px">Upload didn’t go through</div>' +
+          '<div style="color:#fff;font-weight:700;font-size:1rem;margin-bottom:8px">Le téléversement a échoué</div>' +
           '<div style="color:#ddd;font-size:0.86rem;line-height:1.5;margin-bottom:18px">' + message + '</div>' +
           '<div style="display:flex;gap:8px;justify-content:center">' +
-            '<button type="button" id="spUploadRetry" style="background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:10px 18px;font-weight:700;cursor:pointer">Try again</button>' +
-            '<button type="button" id="spUploadSkip"  style="background:transparent;color:#bbb;border:1px solid #444;border-radius:50px;padding:10px 18px;font-weight:600;cursor:pointer">Send without design</button>' +
+            '<button type="button" id="spUploadRetry" style="background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:10px 18px;font-weight:700;cursor:pointer">Réessayer</button>' +
+            '<button type="button" id="spUploadSkip"  style="background:transparent;color:#bbb;border:1px solid #444;border-radius:50px;padding:10px 18px;font-weight:600;cursor:pointer">Envoyer sans design</button>' +
           '</div>' +
         '</div>';
     }
@@ -7027,8 +7027,8 @@
         var fileCount = pendingFiles.length;
         spShowUploadOverlay(
           fileCount === 0 ? 'Sending your request…' :
-          fileCount === 1 ? 'Uploading your design…' :
-          ('Uploading ' + fileCount + ' designs…')
+          fileCount === 1 ? 'Téléversement de votre design…' :
+          ('Téléversement de ' + fileCount + ' designs…')
         );
 
         function finishAndSubmit() {
@@ -7254,7 +7254,7 @@
           // because the customer should see the error before navigating.
           clearTimeout(bailoutTimer);
           console.warn('[design upload] failed:', err);
-          spShowUploadError((err && err.message) || 'Something went wrong uploading your design.');
+          spShowUploadError((err && err.message) || 'Un problème est survenu lors du téléversement de votre design.');
           var retry = document.getElementById('spUploadRetry');
           var skip  = document.getElementById('spUploadSkip');
           if (retry) retry.addEventListener('click', function(){
@@ -7323,13 +7323,22 @@
     }
 
     function spReadDeclaredValue() {
-      // Live price total from the sidebar drives the declared customs
-      // value. Conservative fallback at $100 if total isn't computed yet.
+      // The running order total drives both the declared customs value and the
+      // "Add $X more for FREE shipping" gap. It surfaces in different elements
+      // depending on the flow: the sidebar strip (livePriceTotal — populated in
+      // BOTH the single-product and cart flows), the step-2 breakdown
+      // (priceTotal — single-product only; stays $0.00 in cart mode), or the
+      // bring-your-own box (byoPriceTotal). Read them all and take the highest
+      // non-zero so cart orders no longer fall back to the $100 default.
+      function read(id) {
+        var el = document.getElementById(id);
+        if (!el) return 0;
+        var n = parseFloat((el.textContent || '').replace(/[^0-9.]/g, ''));
+        return Number.isFinite(n) && n > 0 ? n : 0;
+      }
       try {
-        var el = document.getElementById('priceTotal') || document.getElementById('livePriceTotal');
-        var t = el ? (el.textContent || '').replace(/[^0-9.]/g, '') : '';
-        var n = parseFloat(t);
-        return Number.isFinite(n) && n > 0 ? Math.min(n, 100000) : 100;
+        var v = Math.max(read('livePriceTotal'), read('priceTotal'), read('byoPriceTotal'));
+        return v > 0 ? Math.min(v, 100000) : 100;
       } catch (e) { return 100; }
     }
 
