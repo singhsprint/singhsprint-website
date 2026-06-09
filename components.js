@@ -1209,6 +1209,11 @@ function loadStickyCTA() {
   // CTA on top of it causes them to overlap on mobile. Skip on catalog too.
   if (path === '/catalog' || path === '/catalog/' || path.indexOf('/catalog/') === 0) return;
   if (path === '/fr/catalog' || path === '/fr/catalog/' || path.indexOf('/fr/catalog/') === 0) return;
+  // /jerseys is its own build-a-team → quote flow (with "Add team to quote"
+  // + "Choose your sport"), so the generic "Get a Quote" bar is redundant and
+  // overlaps the grid — skip it like /catalog.
+  if (path === '/jerseys' || path === '/jerseys/' || path.indexOf('/jerseys/') === 0) return;
+  if (path === '/fr/jerseys' || path === '/fr/jerseys/' || path.indexOf('/fr/jerseys/') === 0) return;
   // Homepage already has its own .sticky-cta in source; skip to avoid double-up.
   if (document.querySelector('.sticky-cta')) return;
 
