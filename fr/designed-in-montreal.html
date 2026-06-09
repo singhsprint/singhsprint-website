@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Singhs Print × Rue Saint-Patrick — Vêtements conçus à Montréal, décorés à l'interne</title>
+  <meta name="description" content="Une collaboration montréalaise : Singhs Print décore à l'interne les vêtements vierges haut de gamme de Rue Saint-Patrick (option coton biologique) en DTG, DTF et broderie. T-shirts, henleys, polos, hoodies, molleton et casquettes d'une marque de vêtements pour homme de Montréal.">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/designed-in-montreal">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/designed-in-montreal">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/designed-in-montreal">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/designed-in-montreal">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
+  <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap">
+
+  <style>
+    :root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+
+    /* Hero */
+    .dm-hero{max-width:1100px;margin:0 auto;padding:54px 24px 18px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+    .dm-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;border:1px solid var(--line);border-radius:50px;font-weight:600;font-size:.8rem;letter-spacing:.02em;margin-bottom:18px;text-transform:uppercase}
+    .dm-badge .x{color:var(--soft);font-weight:500}
+    .dm-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.55rem;font-weight:800;line-height:1.08;margin-bottom:14px}
+    .dm-hero h1 .hl{background:linear-gradient(transparent 60%, var(--hi) 60%)}
+    .dm-hero p{color:var(--muted);font-size:1.06rem;max-width:540px;margin-bottom:22px}
+    .dm-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .dm-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:14px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:transform .15s}
+    .dm-btn:hover{transform:translateY(-1px)}
+    .dm-btn.primary{background:var(--ink);color:#fff}
+    .dm-btn.accent{background:var(--hi);color:var(--ink)}
+    .dm-btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+    .dm-hero-img{border-radius:18px;overflow:hidden;aspect-ratio:4/5;background:#eceae4}
+    .dm-hero-img img{width:100%;height:100%;object-fit:cover}
+
+    /* Trust strip */
+    .dm-strip{background:#13110d;color:#fff;margin-top:24px}
+    .dm-strip-inner{max-width:1100px;margin:0 auto;padding:26px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+    .dm-strip h3{color:var(--hi);font-size:.98rem;font-weight:700;margin-bottom:4px}
+    .dm-strip p{color:#b7b2a8;font-size:.88rem}
+
+    /* Story */
+    .dm-story{max-width:1000px;margin:0 auto;padding:52px 24px 8px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+    .dm-story .tag{display:inline-block;padding:4px 12px;background:#fff;border:1px solid var(--line);border-radius:50px;font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .dm-story h2{font-family:'Playfair Display',Georgia,serif;font-size:1.7rem;font-weight:700;margin-bottom:12px;line-height:1.2}
+    .dm-story p{color:var(--muted);font-size:1rem;margin-bottom:12px}
+    .dm-story-img{border-radius:18px;overflow:hidden;aspect-ratio:1/1;background:#eceae4}
+    .dm-story-img img{width:100%;height:100%;object-fit:cover}
+
+    /* Collection */
+    .dm-coll{max-width:1100px;margin:0 auto;padding:44px 24px 12px}
+    .dm-coll-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+    .dm-coll h2{font-family:'Playfair Display',Georgia,serif;font-size:1.7rem;font-weight:700}
+    .dm-coll .sub{color:var(--muted);font-size:.95rem;margin-bottom:22px}
+    .dm-coll-head a{font-weight:600;font-size:.9rem;color:var(--ink);border-bottom:2px solid var(--hi);padding-bottom:2px;white-space:nowrap}
+    .dm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+    .dm-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s}
+    .dm-card:hover{box-shadow:0 12px 28px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .dm-card .photo{aspect-ratio:3/4;background:#f2f0ea;overflow:hidden}
+    .dm-card .photo img{width:100%;height:100%;object-fit:cover}
+    .dm-card .body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:3px;flex:1}
+    .dm-card .cat{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);font-weight:600}
+    .dm-card .name{font-size:.92rem;font-weight:600;line-height:1.3;min-height:2.3em}
+    .dm-card .price{font-size:.82rem;color:var(--muted);margin-top:auto;padding-top:6px}
+    .dm-card .price strong{color:var(--ink)}
+    .dm-card .view{font-size:.78rem;color:var(--ink);font-weight:600;margin-top:8px;opacity:0;transition:opacity .15s}
+    .dm-card:hover .view{opacity:1}
+    .dm-loading,.dm-empty{color:var(--muted);font-size:.95rem;padding:24px 0}
+
+    /* CTA band */
+    .dm-band{max-width:1100px;margin:28px auto 64px;padding:40px 24px;text-align:center;background:#fff;border:1px solid var(--line);border-radius:20px}
+    .dm-band h2{font-family:'Playfair Display',Georgia,serif;font-size:1.8rem;font-weight:700;margin-bottom:10px}
+    .dm-band p{color:var(--muted);max-width:520px;margin:0 auto 20px}
+
+    @media (max-width:760px){
+      .dm-hero,.dm-story{grid-template-columns:1fr;gap:24px;padding-top:34px}
+      .dm-hero h1{font-size:2rem}
+      .dm-strip-inner{grid-template-columns:1fr;gap:14px}
+    }
+  </style>
+</head>
+<body>
+  <!-- En-tete, bandeau promo, pied de page + bouton "Texto" injectes par
+       components.js (loadNav -> #nav-placeholder, loadFooter -> #footer-placeholder). -->
+  <div id="nav-placeholder"></div>
+
+  <section class="dm-hero">
+    <div>
+      <span class="dm-badge" data-i18n="dm.badge">Singhs Print <span class="x">×</span> Rue Saint-Patrick</span>
+      <h1 data-i18n="dm.hero.h1">Deux artisans montréalais, <span class="hl">une collection locale.</span></h1>
+      <p data-i18n="dm.hero.p">Nous nous sommes associés à <strong>Rue Saint-Patrick</strong> — la marque de vêtements pour homme de Montréal nommée d'après l'ancienne rue irlandaise longeant le canal de Lachine — pour décorer à l'interne leurs vêtements vierges haut de gamme (option coton biologique). Leurs vêtements, votre design, imprimés et brodés ici, dans l'Ouest-de-l'Île.</p>
+      <div class="dm-cta">
+        <a href="/catalog?canadian=1" class="dm-btn accent" data-i18n="dm.hero.shop">Magasiner la collection dans notre catalogue →</a>
+        <a href="/quote" class="dm-btn ghost" data-i18n="dm.hero.quote">Demander une soumission</a>
+      </div>
+    </div>
+    <div class="dm-hero-img">
+      <img src="https://cdn.shopify.com/s/files/1/0478/6005/products/60100-001-M.0107-front-1.jpg" alt="T-shirt en coton biologique Rue Saint-Patrick" referrerpolicy="no-referrer" loading="lazy">
+    </div>
+  </section>
+
+  <section class="dm-strip">
+    <div class="dm-strip-inner">
+      <div><h3 data-i18n="dm.s1.h">Une vraie marque montréalaise</h3><p data-i18n="dm.s1.p">Rue Saint-Patrick conçoit ses vêtements pour homme à Montréal — une véritable histoire locale, pas une importation générique.</p></div>
+      <div><h3 data-i18n="dm.s2.h">Options en coton biologique</h3><p data-i18n="dm.s2.p">Plusieurs modèles sont en coton 100 % biologique — un choix écolo crédible pour les clients qui le demandent.</p></div>
+      <div><h3 data-i18n="dm.s3.h">Décorés à l'interne</h3><p data-i18n="dm.s3.p">Nous imprimons et brodons chaque pièce nous-mêmes — DTG, DTF et broderie, délai de 3 à 5 jours.</p></div>
+    </div>
+  </section>
+
+  <section class="dm-story">
+    <div>
+      <span class="tag" data-i18n="dm.story.tag">Le partenaire</span>
+      <h2 data-i18n="dm.story.h">À propos de Rue Saint-Patrick</h2>
+      <p data-i18n="dm.story.p1">Fondée par Ivan Green — originaire du comté de Down et fort de plus de 40 ans dans l'industrie du vêtement — et bâtie aux côtés de ses fils, Rue Saint-Patrick a vu le jour en 2017 comme la première marque de vêtements pour homme irlandaise en ligne en Amérique du Nord.</p>
+      <p data-i18n="dm.story.p2">Elle tire son nom de la rue qui longe le canal de Lachine à Montréal, à travers Pointe-Saint-Charles, au cœur de l'une des plus anciennes communautés irlandaises d'Amérique du Nord. La marque allie une coupe traditionnelle à des tissus modernes et faciles d'entretien — des vêtements pour homme de qualité, conçus à Montréal.</p>
+      <p data-i18n="dm.story.p3">Nous offrons les pièces lisses et faciles à décorer de leur ligne — t-shirts, henleys, polos, hoodies, molleton, chandails et casquettes — et nous les décorons à l'interne pour votre équipe, votre marque ou votre événement.</p>
+    </div>
+    <div class="dm-story-img">
+      <img src="https://cdn.shopify.com/s/files/1/0478/6005/products/60110-850.jpg" alt="Henley en coton biologique Rue Saint-Patrick" referrerpolicy="no-referrer" loading="lazy">
+    </div>
+  </section>
+
+  <section class="dm-coll">
+    <div class="dm-coll-head">
+      <div>
+        <h2 data-i18n="dm.coll.h">La collection</h2>
+      </div>
+      <a href="/catalog?canadian=1" data-i18n="dm.coll.all">Voir tout au catalogue →</a>
+    </div>
+    <p class="sub" data-i18n="dm.coll.sub">Les t-shirts et chemises d'abord, puis les tricots et les casquettes. Cliquez sur une pièce pour l'ouvrir dans notre catalogue.</p>
+    <div class="dm-grid" id="dmGrid"><div class="dm-loading" data-i18n="dm.loading">Chargement de la collection…</div></div>
+  </section>
+
+  <section class="dm-band">
+    <h2 data-i18n="dm.band.h">Ajoutez-la à votre prochaine commande</h2>
+    <p data-i18n="dm.band.p">Indiquez-nous les modèles, les couleurs et les quantités — nous chiffrons le vêtement vierge plus la décoration et envoyons un échantillon avant la production.</p>
+    <a href="/quote" class="dm-btn accent" data-i18n="dm.band.cta">Demander une soumission →</a>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="components.js" defer></script>
+  <script src="consent.js" defer></script>
+  <script src="lang.js" defer></script>
+  <script src="ai-translate.js" defer></script>
+
+  <script>
+  (function(){
+    'use strict';
+    var API = 'https://singhsprint-crm.vercel.app/api/catalog';
+    function t(key, fb){ try { if (window.SP_LANG && SP_LANG.t){ var v = SP_LANG.t(key); if (v) return v; } } catch(e){} return fb; }
+    function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    // T-shirts/chemises d'abord, puis tricots, puis casquettes.
+    var ORDER = { tshirt:1, longsleeve:2, polo:3, hoodie:4, sweatpants:5, quarter_zip:6, sweater:7, crewneck:7, hat:8 };
+    var LABEL = { tshirt:'T-shirt', longsleeve:'Manches longues', polo:'Polo', hoodie:'Hoodie', sweatpants:'Pantalon de jogging', quarter_zip:'Molleton / Zip', sweater:'Chandail', crewneck:'Chandail', hat:'Casquette' };
+    function catKey(p){ return p.category_effective || p.category || p.garment_type || ''; }
+
+    function load(){
+      var grid = document.getElementById('dmGrid');
+      fetch(API + '?canadian=1&limit=120').then(function(r){ return r.json(); }).then(function(j){
+        var p = (j && j.products) || [];
+        if (!p.length){ grid.innerHTML = '<div class="dm-empty">'+t('dm.empty','Collection en cours de synchronisation — revenez bientôt, ou appelez le 438-544-3800.')+'</div>'; return; }
+        // Chemises/t-shirts d'abord, puis par prix dans une categorie.
+        p.sort(function(a,b){
+          var oa = ORDER[catKey(a)] || 99, ob = ORDER[catKey(b)] || 99;
+          if (oa !== ob) return oa - ob;
+          return (a.price_from||9999) - (b.price_from||9999);
+        });
+        grid.innerHTML = '';
+        p.forEach(function(prod){
+          var c0 = (prod.colors||[])[0] || {};
+          var photo = c0.mockup_front_url || prod.hero_image_url || '';
+          var price = (typeof prod.price_from==='number' && prod.price_from>0)
+            ? ('<span>'+t('dm.from','À partir de')+'</span> <strong>'+prod.price_from.toFixed(2)+' $</strong>')
+            : '<strong>'+t('dm.quote','Demander une soumission')+'</strong>';
+          var cat = LABEL[catKey(prod)] || '';
+          // Lien profond vers le vrai catalogue, pre-filtre Fait au Canada et
+          // cible sur ce produit, pour diriger vers le catalogue plutot que
+          // d'etre une grille sans issue.
+          var href = '/catalog?canadian=1&product=' + encodeURIComponent(prod.product_id || '');
+          var a = document.createElement('a');
+          a.className = 'dm-card';
+          a.href = href;
+          a.innerHTML =
+            '<div class="photo">'+(photo?'<img src="'+esc(photo)+'" alt="'+esc(prod.name||'')+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+'</div>'
+            + '<div class="body">'
+            + '<div class="cat">'+esc(cat)+'</div>'
+            + '<div class="name">'+esc(prod.name||'')+'</div>'
+            + '<div class="price">'+price+'</div>'
+            + '<div class="view">'+t('dm.view','Voir au catalogue →')+'</div>'
+            + '</div>';
+          grid.appendChild(a);
+        });
+      }).catch(function(){
+        grid.innerHTML = '<div class="dm-empty">'+t('dm.empty','Collection en cours de synchronisation — revenez bientôt, ou appelez le 438-544-3800.')+'</div>';
+      });
+    }
+    if (document.readyState !== 'loading') load(); else document.addEventListener('DOMContentLoaded', load);
+  })();
+  </script>
+</body>
+</html>
