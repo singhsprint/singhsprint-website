@@ -51,6 +51,7 @@ var SP_LANG = (function() {
     'nav.youth': { en: 'Youth Initiative', fr: 'Initiative Jeunesse' },
     'nav.businesses': { en: 'For Businesses', fr: 'Pour entreprises' },
     'nav.about': { en: 'About', fr: 'À propos' },
+    'nav.more': { en: 'More', fr: 'Plus' },
     'nav.login': { en: 'Login', fr: 'Connexion' },
     'nav.quote': { en: 'Get a Quote', fr: 'Soumission' },
 
