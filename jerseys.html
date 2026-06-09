@@ -615,10 +615,10 @@
         var ev = el.tagName==='SELECT' ? 'change' : 'input';
         el.addEventListener(ev, function(){
           var i = parseInt(el.getAttribute('data-i'),10); var f = el.getAttribute('data-f');
-          if (cz.roster[i]){ cz.roster[i][f] = el.value; if (i===cz.previewRow && (f==='name'||f==='number')) renderPreview(); renderSummary(); }
+          if (cz.roster[i]){ cz.roster[i][f] = el.value; if (i===cz.previewRow && (f==='name'||f==='number')) updateLettering(); renderSummary(); }
         });
         if (el.tagName!=='SELECT'){
-          el.addEventListener('focus', function(){ var i=parseInt(el.getAttribute('data-i'),10); cz.previewRow=i; renderPreview(); });
+          el.addEventListener('focus', function(){ var i=parseInt(el.getAttribute('data-i'),10); cz.previewRow=i; updateLettering(); });
         }
       });
       host.querySelectorAll('.rmrow').forEach(function(b){
@@ -656,14 +656,16 @@
         ? '<img id="czLogoArt" src="'+esc(cz.logoPreviewUrl)+'" alt="" draggable="false" style="position:absolute;top:'+box.y+'%;left:'+box.x+'%;width:'+box.w+'%;transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;'+(cz.logoRemoveBg?'mix-blend-mode:multiply;':'')+'filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">'
         : '';
       var html = '';
-      if (img) html += '<div id="czStage" style="position:relative;width:100%;background:#fff;border-radius:10px;overflow:hidden;touch-action:none">'
+      // min-height reserves space so re-rendering the image doesn't collapse
+      // the layout and jump the page scroll (notably on mobile).
+      if (img) html += '<div id="czStage" style="position:relative;width:100%;min-height:200px;background:#fff;border-radius:10px;overflow:hidden;touch-action:none">'
         + '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;display:block;pointer-events:none" loading="lazy" decoding="async">'
         + logoOverlay
         + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#9b958a;pointer-events:none">'+t('jersey.cz.front','Front')+'</span></div>';
       html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:14px 12px 16px;text-align:center;position:relative">'
         + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:'+ink+';opacity:.5">'+t('jersey.cz.back','Back')+'</span>'
-        + '<div style="font-family:'+fam+';font-size:22px;color:'+ink+';letter-spacing:1px;line-height:1">'+esc(name)+'</div>'
-        + '<div style="font-family:'+fam+';font-size:58px;color:'+ink+';line-height:1.02">'+esc(num)+'</div>'
+        + '<div id="czBackName" style="font-family:'+fam+';font-size:22px;color:'+ink+';letter-spacing:1px;line-height:1">'+esc(name)+'</div>'
+        + '<div id="czBackNum" style="font-family:'+fam+';font-size:58px;color:'+ink+';line-height:1.02">'+esc(num)+'</div>'
         + '</div>';
       document.getElementById('czSvg').innerHTML = html;
       var tools = document.getElementById('czLogoTools');
@@ -675,6 +677,22 @@
       }
       var cn = prettyColor(col.color_name);
       document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (hasLogo ? ' · + logo' : '');
+    }
+    // Lightweight update for the BACK name/number as the customer types — only
+    // touches text, never rebuilds the image. This avoids the reflow/scroll
+    // jump a full renderPreview() caused on every keystroke (mobile bug).
+    function updateLettering(){
+      if (!cz) return;
+      var row = cz.roster[cz.previewRow] || cz.roster[0] || blankRow();
+      var name = (row.name||'').toUpperCase() || 'NAME';
+      var num  = row.number || '00';
+      var bn = document.getElementById('czBackName'); if (bn) bn.textContent = name;
+      var bx = document.getElementById('czBackNum');  if (bx) bx.textContent = num;
+      var col = (cz.prod.colors||[])[cz.colorIdx] || {};
+      var cn = prettyColor(col.color_name);
+      var hasLogo = cz.logoMethod !== 'none' && cz.logoPreviewUrl;
+      var hint = document.getElementById('czPrevHint');
+      if (hint) hint.textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (hasLogo ? ' · + logo' : '');
     }
     // Drag the logo around the front jersey image; updates cz.logoBox live.
     function attachLogoDrag(){
