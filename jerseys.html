@@ -719,30 +719,49 @@
     // ============ add to quote ============
     function logoPlacementLabel(id){ for(var i=0;i<LOGO_PLACEMENTS.length;i++){ if(LOGO_PLACEMENTS[i].id===id) return t(LOGO_PLACEMENTS[i].label, LOGO_PLACEMENTS[i].fallback); } return id; }
 
-    // Per-jersey price is ALL-IN via /api/pricing — the SAME engine the rest
-    // of the site uses. That price already includes the blank PLUS each
-    // decoration side, so we must NOT add decoration again (that was a
-    // double-charge). Name + number = 1 side DTF on the back; a DTF front
-    // logo adds a 2nd side; an embroidery logo is added as a decoration-only
-    // surcharge on top (the all-in already covers the garment + lettering).
-    // cb({ unit, allin, logo_emb }).
+    // Per-jersey price is ALL-IN and QUANTITY-AWARE — priced at the team's
+    // size (roster qty), via the SAME engine the rest of the site uses. The
+    // engine price already includes the blank PLUS each decoration side, so
+    // we never add the name/number again (that was a double-charge).
+    //   Primary:  /api/pricing — qty + sides aware (name/number = 1 side on
+    //             the back; a DTF logo adds a 2nd side).
+    //   Fallback: some catalog entries have no variant/stock data so
+    //             /api/pricing can't price them — fall back to the qty-aware
+    //             catalog price (1 side) and, for a DTF logo, add it via
+    //             decoration-only. NEVER fall back to a static/non-qty price.
+    // Embroidery logos are always a decoration-only add (the base covers the
+    // garment + lettering). cb({ unit, allin, logo_add }).
     function computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, cb){
       var placeId = { left_chest:'left-chest', center_chest:'center-chest', full_front:'full-front' }[logoPlacement] || 'center-chest';
-      var dtfSides = (logoMethod === 'dtf') ? 2 : 1;                       // name/number (+ DTF logo)
-      var places   = (logoMethod === 'dtf') ? ('full-back,' + placeId) : 'full-back';
-      var dtfUrl = PRICING_API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty
-                 + '&sides=' + dtfSides + '&decoration_method=dtf&embroidery_placements=' + encodeURIComponent(places);
-      var dtfP = fetch(dtfUrl).then(function(r){ return r.ok?r.json():null; })
-        .then(function(j){ return (j && typeof j.unit_price==='number') ? j.unit_price : null; }).catch(function(){ return null; });
-      var embP = Promise.resolve(0);
-      if (logoMethod === 'embroidery'){
-        embP = fetch(DECO_API + '?qty=' + qty + '&method=embroidery&placements=' + encodeURIComponent(placeId))
+      var sides  = (logoMethod === 'dtf') ? 2 : 1;
+      var places = (logoMethod === 'dtf') ? ('full-back,' + placeId) : 'full-back';
+      function decoOnly(method){
+        return fetch(DECO_API + '?qty=' + qty + '&method=' + method + '&placements=' + encodeURIComponent(placeId))
           .then(function(r){ return r.ok?r.json():null; }).then(function(j){ return (j && typeof j.unit_price==='number') ? j.unit_price : 0; }).catch(function(){ return 0; });
       }
-      Promise.all([dtfP, embP]).then(function(a){
-        var allin = (a[0] != null) ? a[0] : ((typeof prod.price_from==='number' && prod.price_from>0) ? prod.price_from : 0);
-        cb({ unit: round95(allin + a[1]), allin: allin, logo_emb: a[1] });
-      });
+      // Embroidery logo: always a decoration-only add-on.
+      var embP = (logoMethod === 'embroidery') ? decoOnly('embroidery') : Promise.resolve(0);
+      // Base via the full engine (qty + sides + placements).
+      var engineUrl = PRICING_API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty
+                    + '&sides=' + sides + '&decoration_method=dtf&embroidery_placements=' + encodeURIComponent(places);
+      fetch(engineUrl).then(function(r){ return r.ok?r.json():null; })
+        .then(function(j){ return (j && typeof j.unit_price==='number') ? { price: j.unit_price, full: true } : null; })
+        .catch(function(){ return null; })
+        .then(function(res){
+          if (res) return res;
+          // Fallback: qty-aware catalog price (1 side, blank + name/number).
+          return fetch(API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty)
+            .then(function(r){ return r.ok?r.json():null; })
+            .then(function(d){ var p=(d&&d.products&&d.products[0]&&typeof d.products[0].price_from==='number')?d.products[0].price_from:((typeof prod.price_from==='number'&&prod.price_from>0)?prod.price_from:0); return { price:p, full:false }; })
+            .catch(function(){ return { price:(typeof prod.price_from==='number'&&prod.price_from>0)?prod.price_from:0, full:false }; });
+        })
+        .then(function(res){
+          // If we fell back (1 side only) and the logo is DTF, add it.
+          var dtfLogoP = (!res.full && logoMethod === 'dtf') ? decoOnly('dtf') : Promise.resolve(0);
+          Promise.all([dtfLogoP, embP]).then(function(adds){
+            cb({ unit: round95(res.price + adds[0] + adds[1]), allin: res.price, logo_add: adds[0] + adds[1] });
+          });
+        });
     }
 
     function addToQuote(){
@@ -785,7 +804,7 @@
           jersey_names_numbers: { method:'dtf', placement: NAME_NUMBER_PLACEMENT },
           jersey_front_logo: logo,
           jersey_unit_price: price.unit,
-          jersey_price_breakdown: { allin_blank_plus_decoration: price.allin, embroidery_logo_addon: price.logo_emb },
+          jersey_price_breakdown: { allin_blank_plus_decoration: price.allin, logo_addon: price.logo_add },
           roster:       rows.map(function(r){ return { name:r.name||'', number:r.number||'', size:r.size||'L', font:fontId }; })
         };
         SinghsCart.add(item);
