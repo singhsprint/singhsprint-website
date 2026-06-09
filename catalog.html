@@ -2386,7 +2386,7 @@
     });
 
     // Qualifier toggles — Canadian / Hi-Vis
-    row.appendChild(makeChip('🇨🇦 Canadian-made', state.filters.canadian ? 'active' : 'passive', () => {
+    row.appendChild(makeChip('🇨🇦 Canadian', state.filters.canadian ? 'active' : 'passive', () => {
       state.filters.canadian = !state.filters.canadian; resetAndFetch();
     }));
     row.appendChild(makeChip('Hi-Vis / CSA', state.filters.csa ? 'active' : 'passive', () => {
