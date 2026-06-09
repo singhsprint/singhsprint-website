@@ -44,8 +44,12 @@
     .jh-sport svg{width:18px;height:18px}
 
     /* Result meta */
-    .jh-meta{max-width:1100px;margin:18px auto 8px;padding:0 24px;font-size:.85rem;color:var(--muted)}
+    .jh-bar{max-width:1100px;margin:18px auto 8px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .jh-meta{font-size:.85rem;color:var(--muted)}
     .jh-meta strong{color:var(--ink)}
+    .jh-sort{display:inline-flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+    .jh-sort select{font-family:inherit;font-size:.85rem;padding:7px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);cursor:pointer}
+    .jh-sort select:focus{outline:none;border-color:var(--ink)}
 
     /* Grid */
     .jh-grid{max-width:1100px;margin:0 auto;padding:8px 24px 64px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
@@ -102,6 +106,8 @@
     .cz-roster .col-no input{text-align:center}
     .cz-roster .rmrow{background:none;border:none;color:var(--soft);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px}
     .cz-roster .rmrow:hover{color:#c0392b}
+    .cz-toggle{display:flex;align-items:center;gap:9px;font-size:.86rem;color:var(--ink);cursor:pointer;padding:6px 0}
+    .cz-toggle input{width:18px;height:18px;accent-color:var(--ink);cursor:pointer;flex-shrink:0}
     .cz-rowbtns{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
     .cz-linkbtn{background:none;border:none;color:var(--ink);font-weight:600;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:6px 0}
     .cz-foot{border-top:1px solid var(--line);background:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
@@ -153,7 +159,18 @@
 
   <div class="jh-sports" id="sportPicker"></div>
 
-  <div class="jh-meta" id="jhMeta"></div>
+  <div class="jh-bar">
+    <div class="jh-meta" id="jhMeta"></div>
+    <label class="jh-sort" id="jhSortWrap" style="display:none">
+      <span data-i18n="jersey.sort.label">Sort</span>
+      <select id="jhSort">
+        <option value="featured" data-i18n="jersey.sort.featured">Featured</option>
+        <option value="price_asc" data-i18n="jersey.sort.priceasc">Price: Low to High</option>
+        <option value="price_desc" data-i18n="jersey.sort.pricedesc">Price: High to Low</option>
+        <option value="name" data-i18n="jersey.sort.name">Name: A–Z</option>
+      </select>
+    </label>
+  </div>
   <div class="jh-grid" id="jhGrid"></div>
 
   <!-- Customizer modal -->
@@ -176,6 +193,18 @@
               <input type="checkbox" id="czLogoRemoveBg"> <span data-i18n="jersey.cz.removebg">Remove white background</span>
             </label>
             <div style="color:#9b958a;font-size:.66rem;margin-top:6px" data-i18n="jersey.cz.draghint">Drag the logo on the jersey to position it.</div>
+          </div>
+          <div id="czFrontTools" style="display:none;width:100%;max-width:280px;margin-top:8px">
+            <div id="czFrontNumSizeRow" style="display:none;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
+              <span data-i18n="jersey.cz.frontnumsize">Front number size</span>
+              <input type="range" id="czFrontNumSize" min="14" max="64" value="34" step="1" style="flex:1">
+            </div>
+            <div id="czFrontNameSizeRow" style="display:none;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem;margin-top:7px">
+              <span data-i18n="jersey.cz.frontnamesize">Team name size</span>
+              <input type="range" id="czFrontNameSize" min="10" max="40" value="18" step="1" style="flex:1">
+            </div>
+            <button type="button" id="czFrontSave" style="margin-top:9px;background:var(--hi,#e8ff3c);color:#1a1a1a;border:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit" data-i18n="jersey.cz.savelayout">Save layout</button>
+            <span id="czFrontSaved" style="display:none;color:#8fe39a;font-size:.72rem;margin-left:8px" data-i18n="jersey.cz.layoutsaved">Layout saved</span>
           </div>
           <div class="cz-prevhint" id="czPrevHint"></div>
         </div>
@@ -218,6 +247,14 @@
                 <span id="czLogoFileName" style="font-size:.78rem;color:var(--muted)"></span>
               </div>
             </div>
+          </div>
+
+          <div class="cz-field">
+            <label data-i18n="jersey.cz.frontextra">Front of jersey (optional)</label>
+            <label class="cz-toggle"><input type="checkbox" id="czFrontNumber"><span data-i18n="jersey.cz.frontnum">Player number on front</span></label>
+            <label class="cz-toggle"><input type="checkbox" id="czFrontName"><span data-i18n="jersey.cz.frontname">Team name on front</span></label>
+            <input type="text" id="czTeamName" maxlength="22" placeholder="" style="display:none;width:100%;margin-top:8px;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff">
+            <div id="czFrontHint" style="display:none;font-size:.72rem;color:var(--soft);margin-top:7px" data-i18n="jersey.cz.fronthint">Drag the number and name on the front preview to place them, then Save layout.</div>
           </div>
 
           <div class="cz-field">
@@ -360,7 +397,27 @@
     }
 
     // ============ state ============
-    var state = { sport: null, products: [] };
+    var state = { sport: null, products: [], sort: 'featured' };
+    // Sort the loaded jerseys for display. Keeps state.products in fetch order
+    // ('featured') and returns a sorted copy; price sorts use the discounted
+    // team price and push quote-on-request (no price) to the end.
+    function sortedProducts(){
+      var list = state.products.slice();
+      var s = state.sort;
+      function pr(p){ return (typeof p.price_from==='number' && p.price_from>0) ? teamPrice(p.price_from) : null; }
+      if (s === 'price_asc' || s === 'price_desc'){
+        list.sort(function(a,b){
+          var pa = pr(a), pb = pr(b);
+          if (pa == null && pb == null) return 0;
+          if (pa == null) return 1;
+          if (pb == null) return -1;
+          return s === 'price_asc' ? pa - pb : pb - pa;
+        });
+      } else if (s === 'name'){
+        list.sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+      }
+      return list;
+    }
     var cz = null; // active customizer state
 
     // ============ sport picker ============
@@ -415,15 +472,18 @@
       var grid = document.getElementById('jhGrid');
       var meta = document.getElementById('jhMeta');
       var p = state.products;
+      var sortWrap = document.getElementById('jhSortWrap');
       if (!p.length){
         meta.innerHTML = '';
+        if (sortWrap) sortWrap.style.display = 'none';
         grid.innerHTML = '<div class="jh-empty">' + t('jersey.empty','No jerseys found for this sport yet — call us at 438-544-3800 and we will source them.') + '</div>';
         return;
       }
       meta.innerHTML = '<strong>' + p.length + '</strong> ' + t('jersey.count','jerseys')
         + (state.sport ? ' · ' + t('nav.jerseys.'+state.sport, cap(state.sport)) : '');
+      if (sortWrap) sortWrap.style.display = '';
       grid.innerHTML = '';
-      p.forEach(function(prod, idx){
+      sortedProducts().forEach(function(prod, idx){
         var c0 = (prod.colors||[])[0] || {};
         var photo = imgUrl(c0.mockup_front_url || prod.hero_image_url);
         var tags = (prod.sports||[]).slice(0,3).map(function(s){ return '<span class="sporttag">'+esc(s)+'</span>'; }).join('');
@@ -468,6 +528,15 @@
         logoPreviewUrl: null,          // local object URL for the on-jersey preview
         logoBox: null,                 // { x, y, w } as % of the front image — drag/size
         logoRemoveBg: false,           // remove white background around the logo
+        // Front-of-jersey extras. Each player's own number on the front
+        // (frontNumber) and/or one team name across the front (frontName +
+        // teamName). Boxes hold drag position { x, y } in % of the front
+        // image plus a font size in px. They lazily default on first render.
+        frontNumber: false,
+        frontName: false,
+        teamName: '',
+        frontNumBox: null,             // { x, y, size }
+        frontNameBox: null,            // { x, y, size }
         roster: [ blankRow(), blankRow() ],
         previewRow: 0
       };
@@ -496,6 +565,7 @@
       renderKeeperSwatches();
       renderFonts();
       renderLogo();
+      resetFrontControls();
       renderRoster();
       renderPreview();
       renderSummary();
@@ -734,6 +804,21 @@
       });
     }
 
+    function toggleFrontHint(){
+      var h = document.getElementById('czFrontHint');
+      if (h) h.style.display = (cz && (cz.frontNumber || cz.frontName)) ? 'block' : 'none';
+    }
+    // The front toggles / team-name input are static DOM, so reset them to the
+    // fresh cz state every time the customizer opens (otherwise a previous
+    // jersey's choices linger).
+    function resetFrontControls(){
+      var n = document.getElementById('czFrontNumber'); if (n) n.checked = false;
+      var m = document.getElementById('czFrontName');   if (m) m.checked = false;
+      var ti = document.getElementById('czTeamName');
+      if (ti){ ti.value = ''; ti.style.display = 'none'; ti.placeholder = t('jersey.cz.teamnameph','Team name (e.g. Thunder)'); }
+      toggleFrontHint();
+    }
+
     function renderPreview(){
       var row = cz.roster[cz.previewRow] || cz.roster[0] || blankRow();
       var name = (row.name||'').toUpperCase() || 'NAME';
@@ -758,12 +843,26 @@
       var logoOverlay = hasLogo
         ? '<img id="czLogoArt" src="'+esc(cz.logoPreviewUrl)+'" alt="" draggable="false" style="position:absolute;top:'+box.y+'%;left:'+box.x+'%;width:'+box.w+'%;transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;'+(cz.logoRemoveBg?'mix-blend-mode:multiply;':'')+'filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">'
         : '';
+      // Front extras: each player's own number and/or one team name, dragged
+      // onto the front photo. Lazily default their boxes (position % + px size).
+      var hasFrontNum  = !!cz.frontNumber;
+      var hasFrontName = !!cz.frontName && !!(cz.teamName||'').trim();
+      if (hasFrontNum  && !cz.frontNumBox)  cz.frontNumBox  = { x:50, y:32, size:34 };
+      if (hasFrontName && !cz.frontNameBox) cz.frontNameBox = { x:50, y:15, size:18 };
+      var fnumBox  = cz.frontNumBox  || { x:50, y:32, size:34 };
+      var fnameBox = cz.frontNameBox || { x:50, y:15, size:18 };
+      var frontNumOverlay = hasFrontNum
+        ? '<div id="czFrontNumArt" style="position:absolute;top:'+fnumBox.y+'%;left:'+fnumBox.x+'%;transform:translate(-50%,-50%);font-family:'+fam+';font-size:'+fnumBox.size+'px;line-height:1;color:'+ink+';cursor:move;touch-action:none;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.35)">'+esc(num)+'</div>'
+        : '';
+      var frontNameOverlay = hasFrontName
+        ? '<div id="czFrontNameArt" style="position:absolute;top:'+fnameBox.y+'%;left:'+fnameBox.x+'%;transform:translate(-50%,-50%);font-family:'+fam+';font-size:'+fnameBox.size+'px;line-height:1;letter-spacing:1px;color:'+ink+';cursor:move;touch-action:none;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.35)">'+esc((cz.teamName||'').toUpperCase())+'</div>'
+        : '';
       var html = '';
       // min-height reserves space so re-rendering the image doesn't collapse
       // the layout and jump the page scroll (notably on mobile).
       if (img) html += '<div id="czStage" style="position:relative;width:100%;min-height:200px;background:#fff;border-radius:10px;overflow:hidden;touch-action:none">'
         + '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;display:block;pointer-events:none" loading="lazy" decoding="async">'
-        + logoOverlay
+        + frontNameOverlay + frontNumOverlay + logoOverlay
         + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#9b958a;pointer-events:none">'+t('jersey.cz.front','Front')+'</span></div>';
       html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:14px 12px 16px;text-align:center;position:relative">'
         + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:'+ink+';opacity:.5">'+t('jersey.cz.back','Back')+'</span>'
@@ -776,10 +875,22 @@
       if (hasLogo){
         var sizeEl = document.getElementById('czLogoSize'); if (sizeEl) sizeEl.value = Math.round(box.w);
         var bgEl = document.getElementById('czLogoRemoveBg'); if (bgEl) bgEl.checked = !!cz.logoRemoveBg;
-        attachLogoDrag();
+        makeDragEl('czLogoArt', cz.logoBox || (cz.logoBox = box));
       }
+      // Front number / team name: draggable, with a size slider each + Save.
+      if (hasFrontNum)  makeDragEl('czFrontNumArt',  cz.frontNumBox);
+      if (hasFrontName) makeDragEl('czFrontNameArt', cz.frontNameBox);
+      var ftools = document.getElementById('czFrontTools');
+      if (ftools) ftools.style.display = (hasFrontNum || hasFrontName) ? 'block' : 'none';
+      var numRow = document.getElementById('czFrontNumSizeRow');
+      if (numRow){ numRow.style.display = hasFrontNum ? 'flex' : 'none';
+        var ns = document.getElementById('czFrontNumSize'); if (ns) ns.value = Math.round(fnumBox.size); }
+      var nameRow = document.getElementById('czFrontNameSizeRow');
+      if (nameRow){ nameRow.style.display = hasFrontName ? 'flex' : 'none';
+        var nms = document.getElementById('czFrontNameSize'); if (nms) nms.value = Math.round(fnameBox.size); }
       var cn = prettyColor(col.color_name);
-      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (hasLogo ? ' · + logo' : '');
+      var extras = (hasFrontName ? ' · front name' : '') + (hasFrontNum ? ' · front #' : '') + (hasLogo ? ' · + logo' : '');
+      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + extras;
     }
     // Lightweight update for the BACK name/number as the customer types — only
     // touches text, never rebuilds the image. This avoids the reflow/scroll
@@ -791,6 +902,7 @@
       var num  = row.number || '00';
       var bn = document.getElementById('czBackName'); if (bn) bn.textContent = name;
       var bx = document.getElementById('czBackNum');  if (bx) bx.textContent = num;
+      var fnum = document.getElementById('czFrontNumArt'); if (fnum) fnum.textContent = num;  // front number is per-player
       var useKeeper = czRole() && row && row.keeper;
       var col = (useKeeper ? (cz.prod.colors||[])[cz.keeperColorIdx] : (cz.prod.colors||[])[cz.colorIdx]) || (cz.prod.colors||[])[cz.colorIdx] || {};
       var cn = prettyColor(col.color_name);
@@ -798,22 +910,22 @@
       var hint = document.getElementById('czPrevHint');
       if (hint) hint.textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (hasLogo ? ' · + logo' : '');
     }
-    // Drag the logo around the front jersey image; updates cz.logoBox live.
-    function attachLogoDrag(){
-      var stage = document.getElementById('czStage'), art = document.getElementById('czLogoArt');
-      if (!stage || !art) return;
+    // Make any overlay (logo image, front number, team name) draggable around
+    // the front jersey image; mutates the passed box's x/y (% of the stage).
+    function makeDragEl(id, box){
+      var stage = document.getElementById('czStage'), el = document.getElementById(id);
+      if (!stage || !el || !box) return;
       var dragging = false;
-      art.addEventListener('pointerdown', function(e){ dragging = true; try{ art.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); });
-      art.addEventListener('pointermove', function(e){
+      el.addEventListener('pointerdown', function(e){ dragging = true; try{ el.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); e.stopPropagation(); });
+      el.addEventListener('pointermove', function(e){
         if (!dragging || !cz) return;
         var r = stage.getBoundingClientRect();
-        cz.logoBox = cz.logoBox || { x:50, y:32, w:24 };
-        cz.logoBox.x = Math.max(4, Math.min(96, ((e.clientX - r.left) / r.width) * 100));
-        cz.logoBox.y = Math.max(4, Math.min(96, ((e.clientY - r.top) / r.height) * 100));
-        art.style.left = cz.logoBox.x + '%'; art.style.top = cz.logoBox.y + '%';
+        box.x = Math.max(4, Math.min(96, ((e.clientX - r.left) / r.width) * 100));
+        box.y = Math.max(4, Math.min(96, ((e.clientY - r.top) / r.height) * 100));
+        el.style.left = box.x + '%'; el.style.top = box.y + '%';
       });
-      var end = function(e){ dragging = false; try{ art.releasePointerCapture(e.pointerId); }catch(_){} };
-      art.addEventListener('pointerup', end); art.addEventListener('pointercancel', end);
+      var end = function(e){ dragging = false; try{ el.releasePointerCapture(e.pointerId); }catch(_){} };
+      el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
     }
     // Pick black or white lettering for legibility on the jersey color.
     function contrastInk(hex){
@@ -869,19 +981,22 @@
     //             decoration-only. NEVER fall back to a static/non-qty price.
     // Embroidery logos are always a decoration-only add (the base covers the
     // garment + lettering). cb({ unit, allin, logo_add }).
-    function computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, cb){
-      var placeId = { left_chest:'left-chest', center_chest:'center-chest', full_front:'full-front' }[logoPlacement] || 'center-chest';
-      var sides  = (logoMethod === 'dtf') ? 2 : 1;
-      var places = (logoMethod === 'dtf') ? ('full-back,' + placeId) : 'full-back';
-      function decoOnly(method){
-        return fetch(DECO_API + '?qty=' + qty + '&method=' + method + '&placements=' + encodeURIComponent(placeId))
+    // frontDeco describes the ONE front decoration (or null): the combined
+    // logo / front-number / team-name print. { method, placement }. Pricing:
+    //   base  = blank + back name/number (full-back, 1 side) via /api/pricing —
+    //           exactly the figure the catalog "From" already reflects, so the
+    //           back lettering is never double-charged.
+    //   front = a single decoration-only add at the effective placement
+    //           (center-chest for text, the logo's spot for a logo alone, or
+    //           oversized when a logo is combined with front text).
+    function computeJerseyUnitPrice(prod, qty, frontDeco, cb){
+      function decoOnly(method, placement){
+        return fetch(DECO_API + '?qty=' + qty + '&method=' + method + '&placements=' + encodeURIComponent(placement))
           .then(function(r){ return r.ok?r.json():null; }).then(function(j){ return (j && typeof j.unit_price==='number') ? j.unit_price : 0; }).catch(function(){ return 0; });
       }
-      // Embroidery logo: always a decoration-only add-on.
-      var embP = (logoMethod === 'embroidery') ? decoOnly('embroidery') : Promise.resolve(0);
-      // Base via the full engine (qty + sides + placements).
+      var frontP = frontDeco ? decoOnly(frontDeco.method, frontDeco.placement) : Promise.resolve(0);
       var engineUrl = PRICING_API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty
-                    + '&sides=' + sides + '&decoration_method=dtf&embroidery_placements=' + encodeURIComponent(places);
+                    + '&sides=1&decoration_method=dtf&embroidery_placements=' + encodeURIComponent('full-back');
       fetch(engineUrl).then(function(r){ return r.ok?r.json():null; })
         .then(function(j){ return (j && typeof j.unit_price==='number') ? { price: j.unit_price, full: true } : null; })
         .catch(function(){ return null; })
@@ -894,10 +1009,8 @@
             .catch(function(){ return { price:(typeof prod.price_from==='number'&&prod.price_from>0)?prod.price_from:0, full:false }; });
         })
         .then(function(res){
-          // If we fell back (1 side only) and the logo is DTF, add it.
-          var dtfLogoP = (!res.full && logoMethod === 'dtf') ? decoOnly('dtf') : Promise.resolve(0);
-          Promise.all([dtfLogoP, embP]).then(function(adds){
-            cb({ unit: teamPrice(res.price + adds[0] + adds[1]), allin: res.price, logo_add: adds[0] + adds[1], team_discount: TEAM_DISCOUNT });
+          frontP.then(function(add){
+            cb({ unit: teamPrice(res.price + add), allin: res.price, logo_add: add, front_add: add, team_discount: TEAM_DISCOUNT });
           });
         });
     }
@@ -915,10 +1028,22 @@
       var qty = rows.length;
       var logoMethod = cz.logoMethod, logoPlacement = cz.logoPlacement, logoUrl = cz.logoUrl, logoPath = cz.logoPath, logoName = cz.logoName, fontId = cz.fontId;
       var logoBox = cz.logoBox ? { x:cz.logoBox.x, y:cz.logoBox.y, w:cz.logoBox.w } : null, logoRemoveBg = !!cz.logoRemoveBg;
+      // Resolve the ONE front decoration + its price tier.
+      var teamName = (cz.frontName && (cz.teamName||'').trim()) ? cz.teamName.trim() : null;
+      var hasFrontText = !!cz.frontNumber || !!teamName;
+      var hasLogo = logoMethod !== 'none';
+      var logoPlaceKey = { left_chest:'left-chest', center_chest:'center-chest', full_front:'full-front' }[logoPlacement] || 'center-chest';
+      var frontDeco = null, frontKind = null;
+      if (hasLogo && hasFrontText){ frontDeco = { method:'dtf', placement:'oversized' }; frontKind = 'oversized'; }
+      else if (hasLogo){ frontDeco = { method: logoMethod, placement: logoPlaceKey }; frontKind = 'logo'; }
+      else if (hasFrontText){ frontDeco = { method:'dtf', placement:'center-chest' }; frontKind = 'front-text'; }
+      var fNumBox  = (cz.frontNumber && cz.frontNumBox)  ? { x:cz.frontNumBox.x,  y:cz.frontNumBox.y,  size:cz.frontNumBox.size }  : null;
+      var fNameBox = (teamName && cz.frontNameBox)       ? { x:cz.frontNameBox.x, y:cz.frontNameBox.y, size:cz.frontNameBox.size } : null;
       var btn = document.getElementById('czAdd'), prevTxt = btn.textContent;
       btn.disabled = true; btn.textContent = t('jersey.cz.adding','Pricing…');
-      computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, function(price){
+      computeJerseyUnitPrice(prod, qty, frontDeco, function(price){
         var logo = (logoMethod === 'none') ? null : { method: logoMethod, placement: logoPlacement, placement_label: logoPlacementLabel(logoPlacement), url: logoUrl || null, path: logoPath || null, filename: logoName || null, box: logoBox, remove_bg: logoRemoveBg };
+        var frontPrint = frontDeco ? { kind: frontKind, placement: frontDeco.placement, method: frontDeco.method, has_number: !!cz.frontNumber, has_team_name: !!teamName, number_box: fNumBox, name_box: fNameBox } : null;
         var item = {
           product_id:   prod.product_id,
           color_id:     color.color_id || null,
@@ -944,8 +1069,15 @@
           jersey_font_url: 'https://fonts.google.com/specimen/' + encodeURIComponent(fontGoogle(fontId).replace(/ /g,'+')),
           jersey_names_numbers: { method:'dtf', placement: NAME_NUMBER_PLACEMENT },
           jersey_front_logo: logo,
+          // Front-of-jersey extras: each player's own number on the front
+          // and/or the team name across the front. jersey_front_print is the
+          // single combined front decoration we priced (front-text / logo /
+          // oversized when both) with the customer's drag positions.
+          jersey_front_number: !!cz.frontNumber,
+          jersey_team_name: teamName,
+          jersey_front_print: frontPrint,
           jersey_unit_price: price.unit,
-          jersey_price_breakdown: { allin_blank_plus_decoration: price.allin, logo_addon: price.logo_add },
+          jersey_price_breakdown: { allin_blank_plus_decoration: price.allin, front_addon: price.front_add, logo_addon: price.logo_add },
           // Goalie (or other contrasting-color player): same blank, alternate
           // colorway. Counted in the same qty/price; only the color differs.
           jersey_keeper: anyKeeper ? { role: role, color_id: (kColor && kColor.color_id) || null, color_name: kColor ? (kColor.color_name||'').replace(/_\d+$/,'') : null } : null,
@@ -993,6 +1125,31 @@
       if (ls) ls.addEventListener('input', function(){ if(!cz) return; cz.logoBox = cz.logoBox || defaultLogoBox(cz.logoPlacement); cz.logoBox.w = parseInt(this.value,10)||24; var a=document.getElementById('czLogoArt'); if(a) a.style.width = cz.logoBox.w + '%'; });
       var lb = document.getElementById('czLogoRemoveBg');
       if (lb) lb.addEventListener('change', function(){ if(!cz) return; cz.logoRemoveBg = this.checked; renderPreview(); });
+
+      // Front-of-jersey extras: toggles, team-name input, size sliders, Save.
+      var fNum = document.getElementById('czFrontNumber');
+      if (fNum) fNum.addEventListener('change', function(){ if(!cz) return; cz.frontNumber = this.checked; toggleFrontHint(); renderPreview(); });
+      var fName = document.getElementById('czFrontName');
+      if (fName) fName.addEventListener('change', function(){
+        if(!cz) return; cz.frontName = this.checked;
+        var ti = document.getElementById('czTeamName'); if (ti) ti.style.display = this.checked ? 'block' : 'none';
+        toggleFrontHint(); renderPreview();
+      });
+      var tName = document.getElementById('czTeamName');
+      if (tName) tName.addEventListener('input', function(){ if(!cz) return; cz.teamName = this.value; renderPreview(); });
+      var fns = document.getElementById('czFrontNumSize');
+      if (fns) fns.addEventListener('input', function(){ if(!cz||!cz.frontNumBox) return; cz.frontNumBox.size = parseInt(this.value,10)||34; var a=document.getElementById('czFrontNumArt'); if(a) a.style.fontSize = cz.frontNumBox.size + 'px'; });
+      var fnms = document.getElementById('czFrontNameSize');
+      if (fnms) fnms.addEventListener('input', function(){ if(!cz||!cz.frontNameBox) return; cz.frontNameBox.size = parseInt(this.value,10)||18; var a=document.getElementById('czFrontNameArt'); if(a) a.style.fontSize = cz.frontNameBox.size + 'px'; });
+      var fsave = document.getElementById('czFrontSave');
+      if (fsave) fsave.addEventListener('click', function(){
+        var s = document.getElementById('czFrontSaved'); if (!s) return;
+        s.style.display = 'inline'; clearTimeout(fsave._t);
+        fsave._t = setTimeout(function(){ s.style.display = 'none'; }, 1800);
+      });
+
+      var sortSel = document.getElementById('jhSort');
+      if (sortSel) sortSel.addEventListener('change', function(){ state.sort = this.value; renderGrid(); });
 
       renderSportPicker();
       setSport(qp('sport'), false);

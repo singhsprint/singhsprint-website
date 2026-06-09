@@ -87,7 +87,7 @@ var SP_LANG = (function() {
     'home.hero.h1a': { en: "West Island's", fr: "L'Ouest-de-l'Île," },
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
-      en: "DTG, DTF & Embroidery done in-house in Montreal's West Island. Low minimums, 3&ndash;5 day turnaround with rush options, and a real sample before every run. $20 off your first order of $100+.",
+      en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and real sample approval before production.",
       fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
@@ -95,7 +95,7 @@ var SP_LANG = (function() {
     'home.hero.guarantee': { en: 'Quality Guarantee: Love it or we reprint it.', fr: 'Garantie qualité : Satisfait ou on réimprime.' },
     // Inline hero social-proof line (replaces old hero-stats block)
     'home.heroproof.orders': { en: 'orders',         fr: 'commandes' },
-    'home.heroproof.rating': { en: '(21 reviews)',   fr: '(21 avis)' },
+    'home.heroproof.rating': { en: '(23 reviews)',   fr: '(23 avis)' },
     'home.heroproof.local':  { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'home.stats.orders': { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.stats.turnaround': { en: 'Day Avg Turnaround', fr: 'Jours délai moyen' },
@@ -144,7 +144,7 @@ var SP_LANG = (function() {
     // Proof bar
     'home.proof.orders':     { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.proof.clients':    { en: 'Happy Clients', fr: 'Clients satisfaits' },
-    'home.proof.rating-num': { en: '5.0/5 (27 reviews)', fr: '5,0/5 (21 avis)' },
+    'home.proof.rating-num': { en: '5.0/5 (23 reviews)', fr: '5,5.0/5 (23 avis)' },
     'home.proof.rating':     { en: 'Google Reviews', fr: 'Avis Google' },
     'home.proof.production': { en: 'In-House Production', fr: 'Production sur place' },
     // Why us
@@ -251,7 +251,7 @@ var SP_LANG = (function() {
     // Reviews
     'home.reviews.label':        { en: 'What Our Clients Say',          fr: 'Ce que disent nos clients' },
     'home.reviews.h':            { en: 'Real reviews from real customers', fr: 'De vrais avis de vrais clients' },
-    'home.reviews.avg':          { en: '5.0/5 (27 reviews) average',    fr: '5,0/5 (21 avis) en moyenne' },
+    'home.reviews.avg':          { en: '5.0/5 (23 reviews) average',    fr: '5,5.0/5 (23 avis) en moyenne' },
     'home.reviews.readall':      { en: 'Read all reviews →',            fr: 'Lire tous les avis →' },
     'home.reviews.author.label': { en: 'Google Review',                  fr: 'Avis Google' },
 
@@ -281,7 +281,7 @@ var SP_LANG = (function() {
     },
 
     'about.stats.orders':  { en: 'Orders decorated',                fr: 'Commandes décorées' },
-    'about.stats.rating':  { en: 'Google rating · 21 reviews',      fr: 'Note Google · 21 avis' },
+    'about.stats.rating':  { en: 'Google rating · 23 reviews',      fr: 'Note Google · 23 avis' },
     'about.stats.blanks':  { en: 'Blank styles in catalog',         fr: 'Styles vierges au catalogue' },
     'about.stats.quote':   { en: 'Typical quote turnaround',        fr: 'Délai typique de soumission' },
 
@@ -741,6 +741,20 @@ var SP_LANG = (function() {
     // Customizer
     'jersey.cz.title':    { en: 'Build your team', fr: 'Montez votre équipe' },
     'jersey.cz.color':    { en: 'Jersey color', fr: 'Couleur du maillot' },
+    'jersey.cz.frontextra':   { en: 'Front of jersey (optional)', fr: 'Devant du maillot (optionnel)' },
+    'jersey.cz.frontnum':     { en: 'Player number on front', fr: 'Numero du joueur au devant' },
+    'jersey.cz.frontname':    { en: 'Team name on front', fr: 'Nom de l\'equipe au devant' },
+    'jersey.cz.teamnameph':   { en: 'Team name (e.g. Thunder)', fr: 'Nom de l\'equipe (ex. Thunder)' },
+    'jersey.cz.fronthint':    { en: 'Drag the number and name on the front preview to place them, then Save layout.', fr: 'Glissez le numero et le nom sur l\'apercu avant pour les placer, puis Enregistrer la disposition.' },
+    'jersey.cz.frontnumsize': { en: 'Front number size', fr: 'Taille du numero avant' },
+    'jersey.cz.frontnamesize':{ en: 'Team name size', fr: 'Taille du nom' },
+    'jersey.cz.savelayout':   { en: 'Save layout', fr: 'Enregistrer la disposition' },
+    'jersey.cz.layoutsaved':  { en: 'Layout saved', fr: 'Disposition enregistree' },
+    'jersey.sort.label':      { en: 'Sort', fr: 'Trier' },
+    'jersey.sort.featured':   { en: 'Featured', fr: 'En vedette' },
+    'jersey.sort.priceasc':   { en: 'Price: Low to High', fr: 'Prix : croissant' },
+    'jersey.sort.pricedesc':  { en: 'Price: High to Low', fr: 'Prix : décroissant' },
+    'jersey.sort.name':       { en: 'Name: A-Z', fr: 'Nom : A-Z' },
     'jersey.cz.goalie':       { en: 'Goalie', fr: 'Gardien' },
     'jersey.cz.goalies':      { en: 'goalies', fr: 'gardiens' },
     'jersey.cz.libero':       { en: 'Libero', fr: 'Libéro' },
@@ -1088,7 +1102,7 @@ var SP_LANG = (function() {
     'rfp.rail.terms.li3': { en: 'Free quote — no obligation, no commitment until you approve the sample.', fr: 'Soumission gratuite — sans obligation, aucun engagement avant l\'approbation de l\'échantillon.' },
     'rfp.rail.terms.li4': { en: '5.0 stars on Google from 25 verified Montreal clients.', fr: '5,0 étoiles sur Google par 25 clients montréalais vérifiés.' },
     'rfp.rail.quote.body': { en: 'Perfect quality and excellent service. Definitely worth checking out!', fr: 'Qualité parfaite et excellent service. Vaut vraiment la peine d\'essayer !' },
-    'rfp.rail.quote.attr': { en: '— Bavneet Kaur, verified Google review (5.0 / 25 on Google)', fr: '— Bavneet Kaur, avis Google vérifié (5,0 / 25 sur Google)' },
+    'rfp.rail.quote.attr': { en: '— Bavneet Kaur, verified Google review (5.0 / 23 on Google)', fr: '— Bavneet Kaur, avis Google vérifié (5,0 / 23 sur Google)' },
 
     // ===== INDUSTRIES =====
     // Construction
