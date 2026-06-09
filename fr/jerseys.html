@@ -336,6 +336,15 @@
     }
 
     var SIZES = ['YS','YM','YL','XS','S','M','L','XL','2XL','3XL'];
+    // Suppliers use verbose size labels ("Mens-XL", "Youth-L") that overflow
+    // the size picker. Normalize to clean standard sizes: adult → bare
+    // (Mens-XL → XL), youth → Y-prefixed (Youth-L → YL). Unambiguous + short.
+    function sizeLabel(s){
+      var m = String(s||'').trim();
+      var y = m.match(/^youth[\s\-_]*(.+)$/i); if (y) return ('Y' + y[1]).toUpperCase().replace(/\s+/g,'');
+      var a = m.match(/^(?:adult|mens?|men|unisex)[\s\-_]*(.+)$/i); if (a) return a[1].toUpperCase().replace(/\s+/g,'');
+      return m.toUpperCase().replace(/\s+/g,'');
+    }
 
     // ============ state ============
     var state = { sport: null, products: [] };
@@ -460,7 +469,7 @@
       if (prod.weight_oz) specs.push(esc(prod.weight_oz) + ' oz');
       if (prod.gender && String(prod.gender).toLowerCase() !== 'unisex') specs.push(esc(prod.gender));
       var sizeSet = {};
-      (prod.colors||[]).forEach(function(c){ (c.sizes_in_stock||[]).forEach(function(s){ sizeSet[s]=1; }); });
+      (prod.colors||[]).forEach(function(c){ (c.sizes_in_stock||[]).forEach(function(s){ sizeSet[sizeLabel(s)]=1; }); });
       var SORD = ['YXS','YS','YM','YL','YXL','XS','S','M','L','XL','2XL','XXL','3XL','XXXL','4XL','5XL'];
       var sizes = Object.keys(sizeSet).sort(function(a,b){ var ia=SORD.indexOf(a), ib=SORD.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
       // The roster size picker only offers sizes the supplier actually stocks
@@ -754,7 +763,7 @@
         if (!parts.length || !parts.join('')) return;
         var name = parts[0]||'';
         var number = (parts[1]||'').replace(/[^0-9]/g,'').slice(0,3);
-        var size = (parts[2]||'').toUpperCase();
+        var size = sizeLabel(parts[2]||'');
         if (sizeList.indexOf(size)<0) size = defSize;
         if (name || number) rows.push({ name:name, number:number, size:size });
       });
