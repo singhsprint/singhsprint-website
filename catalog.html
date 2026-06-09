@@ -1397,16 +1397,21 @@
   // Garment types we surface in the filter panel + chips, with friendly labels
   // matching the seed in pricing_configs. Keep in sync if a new garment_type
   // ever ships in the CRM.
+  // 2026-06-10: switched from the old garment_type buckets to the corrected
+  // `category` taxonomy (catalog re-tag). The sidebar now reads p.category and
+  // the chips send ?type=<category> (the API maps it to category_effective).
   const GARMENT_TYPES = [
-    ['tshirt','T-shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
-    ['longsleeve','Long sleeves'], ['polo','Polos'], ['performance_shirt','Performance / fishing'],
-    ['workshirt','Work shirts'], ['hat','Hats / caps'], ['tote','Totes / bags'],
-    ['joggers','Joggers'], ['shorts','Shorts'], ['hivis','Hi-vis safety'],
-    ['vest','Vests'], ['coverall','Coveralls'], ['chore_coat','Chore / insulated'],
-    ['softshell','Softshells'], ['pullover_jacket','Pullover jackets'],
-    ['cardigan','Cardigans'], ['sweater','Sweaters'], ['chef_coat','Chef coats'],
-    ['scrub_top','Scrub tops'], ['scrub_pants','Scrub pants'], ['lab_coat','Lab coats'],
-    ['apron','Aprons'], ['other','Other / workwear'],
+    ['tshirt','T-shirts'], ['longsleeve','Long sleeves'], ['tank','Tank tops'],
+    ['performance_shirt','Performance / tech'], ['polo','Polos'], ['woven_shirt','Button-up shirts'],
+    ['hoodie','Hoodies'], ['crewneck','Crewnecks'], ['quarter_zip','Quarter-zips'],
+    ['sweater','Sweaters'], ['cardigan','Cardigans'], ['jacket','Jackets & outerwear'],
+    ['vest','Vests'], ['joggers','Joggers'], ['sweatpants','Sweatpants'],
+    ['shorts','Shorts'], ['pants','Pants'], ['leggings','Leggings'],
+    ['jersey','Sports jerseys'], ['coverall','Coveralls'], ['scrubs','Scrubs'],
+    ['apron','Aprons'], ['hat','Hats / caps'], ['beanie','Beanies / toques'],
+    ['visor','Visors'], ['bag','Bags / backpacks'], ['scarf','Scarves'],
+    ['gloves','Gloves'], ['socks','Socks'], ['headband','Headbands'],
+    ['blanket','Blankets'], ['towel','Towels'], ['other','Other'],
   ];
 
   // Catalog API endpoint — singhsprint-crm Vercel project
@@ -2116,8 +2121,9 @@
 
     const typeCounts = {};
     state.products.forEach(p => {
-      if (!p.garment_type) return;
-      typeCounts[p.garment_type] = (typeCounts[p.garment_type] || 0) + 1;
+      const cat = p.category || p.garment_type;
+      if (!cat) return;
+      typeCounts[cat] = (typeCounts[cat] || 0) + 1;
     });
 
     // Sort types by count desc, then alphabetically — most populous shows

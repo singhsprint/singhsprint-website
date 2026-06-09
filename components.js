@@ -280,58 +280,83 @@ function loadNav() {
   // Category dropdowns — sub-counts in comments come from the live /api/catalog
   // facet probe so any future editor knows what they're working with.
   var CATS = [
+    // 2026-06-10 catalog re-tag: the whole catalog was reclassified into a
+    // corrected `category` taxonomy (gpt-4o-mini backfill; ~1,520 'other' rows
+    // resolved, ~1,000 jackets surfaced). These ?type= values now resolve
+    // against catalog_public.category_effective in /api/catalog, so each link
+    // returns real, filterable results instead of mostly-empty garment_type.
     {
       en: 'T-Shirts', fr: 'T-shirts', i18n: 'nav.tshirts',
       href: BASE + '/catalog?type=tshirt',
       subs: [
         { en: 'All t-shirts',        fr: 'Tous les t-shirts',   href: BASE + '/catalog?type=tshirt' },
         { en: 'Long sleeve',         fr: 'Manches longues',     href: BASE + '/catalog?type=longsleeve' },
+        { en: 'Tank tops',           fr: 'Camisoles',           href: BASE + '/catalog?type=tank' },
         { en: 'Performance / tech',  fr: 'Performance',         href: BASE + '/catalog?type=performance_shirt' },
         { en: 'Canadian-made',       fr: 'Fait au Canada',      href: BASE + '/catalog?type=tshirt&canadian=1' }
       ]
     },
     {
-      en: 'Hoodies', fr: 'Hoodies', i18n: 'nav.hoodies',
+      en: 'Hoodies & Sweatshirts', fr: 'Hoodies et pulls', i18n: 'nav.hoodies',
       href: BASE + '/catalog?type=hoodie',
       subs: [
         { en: 'Hoodies',             fr: 'Hoodies',             href: BASE + '/catalog?type=hoodie' },
         { en: 'Crewneck sweatshirts',fr: 'Pulls col rond',      href: BASE + '/catalog?type=crewneck' },
+        { en: 'Quarter-zips',        fr: 'Quarts de zip',       href: BASE + '/catalog?type=quarter_zip' },
         { en: 'Sweaters',            fr: 'Pulls',               href: BASE + '/catalog?type=sweater' },
-        { en: 'Cardigans',           fr: 'Cardigans',           href: BASE + '/catalog?type=cardigan' },
-        { en: 'Canadian-made',       fr: 'Fait au Canada',      href: BASE + '/catalog?type=hoodie&canadian=1' }
+        { en: 'Cardigans',           fr: 'Cardigans',           href: BASE + '/catalog?type=cardigan' }
       ]
     },
     {
-      en: 'Polos', fr: 'Polos', i18n: 'nav.polos',
+      en: 'Polos & Shirts', fr: 'Polos et chemises', i18n: 'nav.polos',
       href: BASE + '/catalog?type=polo',
       subs: [
         { en: 'Polos',               fr: 'Polos',               href: BASE + '/catalog?type=polo' },
+        { en: 'Button-up shirts',    fr: 'Chemises',            href: BASE + '/catalog?type=woven_shirt' }
+      ]
+    },
+    {
+      en: 'Jackets & Outerwear', fr: 'Vestes et manteaux', i18n: 'nav.jackets',
+      href: BASE + '/catalog?type=jacket',
+      subs: [
+        { en: 'All jackets',         fr: 'Toutes les vestes',   href: BASE + '/catalog?type=jacket' },
+        { en: 'Vests',               fr: 'Gilets',              href: BASE + '/catalog?type=vest' },
+        { en: 'Canadian-made',       fr: 'Fait au Canada',      href: BASE + '/catalog?type=jacket&canadian=1' }
+      ]
+    },
+    {
+      en: 'Bottoms', fr: 'Bas', i18n: 'nav.bottoms',
+      href: BASE + '/catalog?type=joggers',
+      subs: [
         { en: 'Joggers',             fr: 'Joggers',             href: BASE + '/catalog?type=joggers' },
+        { en: 'Sweatpants',          fr: 'Pantalons de jogging',href: BASE + '/catalog?type=sweatpants' },
         { en: 'Shorts',              fr: 'Shorts',              href: BASE + '/catalog?type=shorts' },
-        { en: 'Pullover jackets',    fr: 'Vestes pull-over',    href: BASE + '/catalog?type=pullover_jacket' },
-        { en: 'Aprons',              fr: 'Tabliers',            href: BASE + '/catalog?type=apron' }
+        { en: 'Pants',               fr: 'Pantalons',           href: BASE + '/catalog?type=pants' },
+        { en: 'Leggings',            fr: 'Leggings',            href: BASE + '/catalog?type=leggings' }
       ]
     },
     {
       en: 'Workwear', fr: 'Vêtements de travail', i18n: 'nav.workwear',
-      href: BASE + '/catalog?type=vest',
+      href: BASE + '/catalog?csa=1',
       subs: [
-        { en: 'Hi-vis vests',        fr: 'Vestes haute visibilité', href: BASE + '/catalog?type=vest' },
-        { en: 'Softshell jackets',   fr: 'Vestes softshell',    href: BASE + '/catalog?type=softshell' },
+        { en: 'Hi-vis & CSA',        fr: 'Haute visibilité / CSA', href: BASE + '/catalog?csa=1' },
         { en: 'Coveralls',           fr: 'Combinaisons',        href: BASE + '/catalog?type=coverall' },
-        { en: 'Chore coats',         fr: 'Manteaux de travail', href: BASE + '/catalog?type=chore_coat' },
-        { en: 'CSA-certified',       fr: 'Certifié CSA',        href: BASE + '/catalog?csa=1' }
+        { en: 'Scrubs',              fr: 'Uniformes médicaux',  href: BASE + '/catalog?type=scrubs' },
+        { en: 'Aprons',              fr: 'Tabliers',            href: BASE + '/catalog?type=apron' }
       ]
     },
     {
-      // Bags + Hats merged into one Accessories dropdown (each only had a
-      // single sub) to keep the product row on one line after Sports
-      // Jerseys was added. Both garment types still reachable via the subs.
       en: 'Accessories', fr: 'Accessoires', i18n: 'nav.accessories',
       href: BASE + '/catalog?type=hat',
       subs: [
         { en: 'Hats & caps',         fr: 'Chapeaux',            href: BASE + '/catalog?type=hat' },
-        { en: 'Bags & backpacks',    fr: 'Sacs',                href: BASE + '/catalog?type=tote' }
+        { en: 'Beanies & toques',    fr: 'Tuques',              href: BASE + '/catalog?type=beanie' },
+        { en: 'Visors',              fr: 'Visières',            href: BASE + '/catalog?type=visor' },
+        { en: 'Bags & backpacks',    fr: 'Sacs',                href: BASE + '/catalog?type=bag' },
+        { en: 'Scarves',             fr: 'Foulards',            href: BASE + '/catalog?type=scarf' },
+        { en: 'Gloves',              fr: 'Gants',               href: BASE + '/catalog?type=gloves' },
+        { en: 'Socks',               fr: 'Chaussettes',         href: BASE + '/catalog?type=socks' },
+        { en: 'Blankets & towels',   fr: 'Couvertures et serviettes', href: BASE + '/catalog?type=blanket' }
       ]
     },
     {
@@ -514,7 +539,7 @@ function loadNav() {
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=bag">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/jerseys">' + ICON.jersey + '<span>' + t('Jerseys', 'Maillots') + '</span></a>'
     + '</nav>'
