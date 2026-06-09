@@ -393,14 +393,58 @@
     }
     function blankRow(){ return { name:'', number:'', size:'L' }; }
 
+    // ---- Colorway helpers -------------------------------------------------
+    // Catalog jersey colors carry NO hex_code and only placeholder swatch
+    // images, but their color_name encodes the colorway, e.g.
+    // "Black-Charcoal_grey-Red". Map the name tokens to representative hexes
+    // so swatches + the lettering preview show real colors instead of gray.
+    var COLORMAP = {
+      'black':'#1a1a1a','jet black':'#1a1a1a','white':'#f4f4f2','grey':'#9aa0a6','gray':'#9aa0a6',
+      'charcoal':'#3a3d42','charcoal grey':'#3a3d42','graphite':'#3a3d42','silver':'#c8ccd0','steel':'#8a9099','steel grey':'#8a9099',
+      'red':'#c8102e','av red':'#a4133c','cardinal':'#8c1d24','maroon':'#6a1a2a','crimson':'#b00020','scarlet':'#c8102e','dark red':'#7a0c1c',
+      'navy':'#0a1f44','navy blue':'#0a1f44','royal':'#1f3a93','royal blue':'#1f3a93','blue':'#1d4ed8','columbia':'#6cace4','columbia blue':'#6cace4','carolina':'#6cace4','carolina blue':'#6cace4','sky':'#6cace4','sky blue':'#6cace4','powder':'#9bb7d4','light blue':'#7fb0e0',
+      'green':'#1b7a3d','dark green':'#14532d','kelly':'#1b7a3d','kelly green':'#1b7a3d','forest':'#14532d','forest green':'#14532d','lime':'#7cb518','lime green':'#7cb518','mint':'#8fd9b6',
+      'teal':'#0e8c8c','aqua':'#2dd4bf','turquoise':'#1fb6a6',
+      'gold':'#d4af37','vegas gold':'#c5b358','old gold':'#cda434','athletic gold':'#ffc72c','sun gold':'#ffc72c','yellow':'#ffd200','athletic yellow':'#ffd200',
+      'orange':'#e35205','texas orange':'#bf5700','burnt orange':'#bf5700',
+      'purple':'#5b2a86','violet':'#7140a3',
+      'pink':'#e0457b','hot pink':'#e0457b','neon pink':'#ff4fa3',
+      'sand':'#d8c79a','vegas sand':'#d8c79a','tan':'#cda878','khaki':'#bfae86','cream':'#f1e7cf','natural':'#efe6d0','brown':'#5a3b22'
+    };
+    function _colNorm(s){ return String(s||'').toLowerCase().replace(/_/g,' ').trim(); }
+    function colorHexes(name){
+      var parts = _colNorm(name).split('-').map(function(s){ return s.trim(); }).filter(Boolean);
+      var out = [];
+      parts.forEach(function(tok){
+        if (COLORMAP[tok]) { out.push(COLORMAP[tok]); return; }
+        var words = tok.split(/\s+/), hit = null;
+        for (var n=words.length; n>=1 && !hit; n--){
+          for (var i=0; i+n<=words.length && !hit; i++){ var k=words.slice(i,i+n).join(' '); if (COLORMAP[k]) hit=COLORMAP[k]; }
+        }
+        if (hit) out.push(hit);
+      });
+      return out.length ? out : ['#9aa0a6'];
+    }
+    function swatchBg(c){
+      if (c.hex_code) return c.hex_code;
+      var hs = colorHexes(c.color_name);
+      if (hs.length === 1) return hs[0];
+      var n=hs.length, step=100/n, stops=[];
+      for (var i=0;i<n;i++){ stops.push(hs[i]+' '+(i*step).toFixed(1)+'%'); stops.push(hs[i]+' '+((i+1)*step).toFixed(1)+'%'); }
+      return 'linear-gradient(135deg,'+stops.join(',')+')';
+    }
+    function primaryHex(c){ return c.hex_code || colorHexes(c.color_name)[0]; }
+    function prettyColor(name){
+      return _colNorm(name).replace(/\s+\d+$/,'').split('-').map(function(s){ s=s.trim(); return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }).filter(Boolean).join(' / ');
+    }
+
     function renderSwatches(){
       var host = document.getElementById('czSwatches');
       var colors = cz.prod.colors||[];
       if (!colors.length){ document.getElementById('czColorField').style.display='none'; return; }
       document.getElementById('czColorField').style.display='';
       host.innerHTML = colors.map(function(c,i){
-        var hex = c.hex_code || '#cccccc';
-        return '<span class="cz-swatch'+(i===cz.colorIdx?' sel':'')+'" data-idx="'+i+'" title="'+esc(c.color_name||'')+'" style="background:'+esc(hex)+'"></span>';
+        return '<span class="cz-swatch'+(i===cz.colorIdx?' sel':'')+'" data-idx="'+i+'" title="'+esc(prettyColor(c.color_name))+'" style="background:'+esc(swatchBg(c))+'"></span>';
       }).join('');
       host.querySelectorAll('.cz-swatch').forEach(function(s){
         s.addEventListener('click', function(){ cz.colorIdx = parseInt(s.getAttribute('data-idx'),10)||0; renderSwatches(); renderPreview(); });
@@ -463,22 +507,24 @@
       var name = (row.name||'').toUpperCase() || 'NAME';
       var num  = row.number || '00';
       var colors = cz.prod.colors||[];
-      var hex = (colors[cz.colorIdx] && colors[cz.colorIdx].hex_code) || '#1f3a93';
+      var col = colors[cz.colorIdx] || {};
+      var hex = primaryHex(col);
       var ink = contrastInk(hex);
       var fam = fontCss(cz.fontId);
-      // Simple back-of-jersey silhouette with arched name + big number.
-      var svg =
-        '<svg viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">'
-        + '<defs><path id="arch" d="M 50 90 Q 140 55 230 90"/></defs>'
-        + '<path d="M70 40 L110 30 Q140 48 170 30 L210 40 L250 80 L222 110 L210 96 L210 290 Q140 304 70 290 L70 96 L58 110 L30 80 Z" '
-        +   'fill="'+esc(hex)+'" stroke="rgba(0,0,0,.18)" stroke-width="2"/>'
-        + '<text font-family="'+fam+'" font-size="26" fill="'+ink+'" text-anchor="middle" letter-spacing="1">'
-        +   '<textPath href="#arch" startOffset="50%">'+esc(name)+'</textPath></text>'
-        + '<text x="140" y="210" font-family="'+fam+'" font-size="120" fill="'+ink+'" text-anchor="middle" dominant-baseline="middle">'+esc(num)+'</text>'
-        + '</svg>';
-      document.getElementById('czSvg').innerHTML = svg;
-      var cn = (colors[cz.colorIdx] && colors[cz.colorIdx].color_name) ? colors[cz.colorIdx].color_name.replace(/_\d+$/,'') : '';
-      document.getElementById('czPrevHint').textContent = cn ? (cn + ' · ' + name + ' ' + num) : (name + ' ' + num);
+      // Show the REAL product photo for the selected colorway (jersey colors
+      // have no flat hex, so the photo is the honest "real thing"), then the
+      // name + number rendered in the chosen team font on a chip tinted with
+      // the colorway's primary color so the lettering + font read clearly.
+      var img = imgUrl(col.mockup_front_url || cz.prod.hero_image_url);
+      var html = '';
+      if (img) html += '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;background:#fff;border-radius:10px" loading="lazy" decoding="async">';
+      html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:14px 12px 16px;text-align:center">'
+        + '<div style="font-family:'+fam+';font-size:22px;color:'+ink+';letter-spacing:1px;line-height:1">'+esc(name)+'</div>'
+        + '<div style="font-family:'+fam+';font-size:58px;color:'+ink+';line-height:1.02">'+esc(num)+'</div>'
+        + '</div>';
+      document.getElementById('czSvg').innerHTML = html;
+      var cn = prettyColor(col.color_name);
+      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num;
     }
     // Pick black or white lettering for legibility on the jersey color.
     function contrastInk(hex){
