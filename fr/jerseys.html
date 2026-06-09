@@ -66,7 +66,7 @@
     .jh-empty,.jh-loading{max-width:1100px;margin:0 auto;padding:40px 24px;color:var(--muted);font-size:.95rem}
 
     /* ===== Customizer modal ===== */
-    .cz-overlay{position:fixed;inset:0;background:rgba(20,18,14,.5);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+    .cz-overlay{position:fixed;inset:0;background:rgba(20,18,14,.5);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
     .cz-overlay.open{display:flex}
     .cz{background:var(--bg);border-radius:20px;max-width:1040px;width:100%;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden}
     .cz-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line);background:#fff}
@@ -476,11 +476,27 @@
       renderPreview();
       renderSummary();
       document.getElementById('czOverlay').classList.add('open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
+    }
+    // iOS-safe background scroll lock: body { overflow:hidden } alone doesn't
+    // stop iOS Safari from scrolling the page behind a fixed overlay, so we
+    // pin the body in place and restore the scroll position on close.
+    var _lockY = 0;
+    function lockScroll(){
+      _lockY = window.scrollY || window.pageYOffset || 0;
+      var b = document.body;
+      b.style.position = 'fixed'; b.style.top = (-_lockY) + 'px';
+      b.style.left = '0'; b.style.right = '0'; b.style.width = '100%';
+      b.style.overflow = 'hidden';
+    }
+    function unlockScroll(){
+      var b = document.body;
+      b.style.position = ''; b.style.top = ''; b.style.left = ''; b.style.right = ''; b.style.width = ''; b.style.overflow = '';
+      window.scrollTo(0, _lockY);
     }
     function closeCustomizer(){
       document.getElementById('czOverlay').classList.remove('open');
-      document.body.style.overflow = '';
+      unlockScroll();
       cz = null;
     }
     function blankRow(){ return { name:'', number:'', size:'L' }; }
