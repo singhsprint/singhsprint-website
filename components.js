@@ -314,12 +314,11 @@ function loadNav() {
       ]
     },
     {
-      en: 'Polos & Shirts', fr: 'Polos et chemises', i18n: 'nav.polos',
-      href: BASE + '/catalog?type=polo',
-      subs: [
-        { en: 'Polos',               fr: 'Polos',               href: BASE + '/catalog?type=polo' },
-        { en: 'Button-up shirts',    fr: 'Chemises',            href: BASE + '/catalog?type=woven_shirt' }
-      ]
+      // Polos only — no sub-categories, so this renders as a plain link
+      // straight to the polo catalog (the button-up/woven_shirt filter had
+      // no products, so it was removed).
+      en: 'Polos', fr: 'Polos', i18n: 'nav.polos',
+      href: BASE + '/catalog?type=polo'
     },
     {
       en: 'Jackets', fr: 'Vestes', i18n: 'nav.jackets',
@@ -478,6 +477,12 @@ function loadNav() {
 
   var row2Cats = CATS.map(function (c) {
     var active = isActive(c.href) ? ' is-active' : '';
+    // Items with sub-links render a hover dropdown + chevron; items without
+    // (e.g. Polos, which has no meaningful sub-categories) are a plain link.
+    if (!c.subs || !c.subs.length) {
+      return '<a class="sp-nav-item' + active + '" href="' + c.href + '" data-i18n="' + c.i18n + '">'
+        + t(c.en, c.fr) + '</a>';
+    }
     return '<span class="sp-nav-parent">'
       + '<a class="sp-nav-item' + active + '" href="' + c.href + '" data-i18n="' + c.i18n + '">'
       + t(c.en, c.fr) + ICON.chevD + '</a>'
