@@ -62,6 +62,11 @@
       name:             h.name,
       description:      h.description || null,
       garment_type:     h.garment_type,
+      // Corrected retail category (drives the sidebar count + active-chip
+      // label). Falls back to garment_type for any record synced before the
+      // re-tag. catalog.html reads p.category.
+      category:         h.category_effective || h.garment_type || null,
+      category_effective: h.category_effective || h.garment_type || null,
       gender:           h.gender || null,
       weight_oz:        h.weight_oz,
       fabric:           h.fabric,
@@ -86,7 +91,9 @@
 
   function buildFacetFilters(opts) {
     var f = [];
-    if (opts.type)       f.push('garment_type:' + opts.type);
+    // Category chips filter on the corrected taxonomy (category_effective),
+    // not the legacy garment_type — see the 2026-06-10 catalog re-tag.
+    if (opts.type)       f.push('category_effective:' + opts.type);
     if (opts.canadian)   f.push('is_canadian_made:true');
     if (opts.csa)        f.push('is_hivis_or_csa:true');
     if (opts.inStockOnly) f.push('in_stock:true');
@@ -154,7 +161,7 @@
     'weight_class',
     'sizes_available',
   ];
-  var ALL_FACETS = ['brand_norm', 'garment_type'].concat(DISJUNCTIVE_FACETS);
+  var ALL_FACETS = ['brand_norm', 'category_effective'].concat(DISJUNCTIVE_FACETS);
 
   // Build a per-category filter set: the same facetFilters minus the entries
   // belonging to `category`. Used to compute "what would the counts be if

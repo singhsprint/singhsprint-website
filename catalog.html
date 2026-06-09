@@ -931,7 +931,7 @@
     if (p.weight_oz)     metaBits.push(p.weight_oz + ' oz');
     if (p.fabric)        metaBits.push(p.fabric);
     if (p.gender)        metaBits.push(p.gender);
-    if (p.garment_type)  metaBits.push(p.garment_type);
+    if (p.category || p.garment_type)  metaBits.push((p.category || p.garment_type).replace(/_/g, ' '));
     if (p.colors)        metaBits.push(p.colors.length + ' color' + (p.colors.length === 1 ? '' : 's'));
     document.getElementById('detailModalMeta').textContent = metaBits.join('  ·  ');
     document.getElementById('detailModalCount').textContent = (p.colors || []).length;
@@ -2375,7 +2375,7 @@
     const types = [
       ['tshirt','T-Shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
       ['polo','Polos'], ['longsleeve','Long Sleeves'], ['hat','Hats / Caps'],
-      ['tote','Tote Bags']
+      ['bag','Tote Bags']
     ];
     types.forEach(([t, label]) => {
       const isActive = state.filters.type === t;
