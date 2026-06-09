@@ -51,8 +51,8 @@
     .jh-grid{max-width:1100px;margin:0 auto;padding:8px 24px 64px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
     .jh-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s}
     .jh-card:hover{box-shadow:0 12px 28px rgba(0,0,0,.08);transform:translateY(-2px)}
-    .jh-card .photo{aspect-ratio:1/1;background:#f2f0ea;display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .jh-card .photo img{width:100%;height:100%;object-fit:cover}
+    .jh-card .photo{aspect-ratio:1/1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+    .jh-card .photo img{width:100%;height:100%;object-fit:contain}
     .jh-card .body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
     .jh-card .brand-row{font-size:.7rem;letter-spacing:.04em;color:var(--soft);font-weight:600}
     .jh-card .name{font-size:.92rem;font-weight:600;line-height:1.3;min-height:2.4em}
@@ -317,6 +317,10 @@
     var DECO_API = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only';
     var PRICING_API = 'https://singhsprint-crm.vercel.app/api/pricing';
     var UPLOAD_API = 'https://singhsprint-crm.vercel.app/api/inbound/upload';
+    // Team discount applied to jersey prices only (not the wider catalog) to
+    // sit at the competitive low end while staying well above cost.
+    var TEAM_DISCOUNT = 0.12;
+    function teamPrice(p){ return round95(p * (1 - TEAM_DISCOUNT)); }
     var NAME_NUMBER_PLACEMENT = 'full_back';      // oversized DTF on the back
     var LOGO_METHODS = [
       { id:'none',       label:'jersey.cz.logo.none', fallback:'No logo' },
@@ -418,7 +422,7 @@
         var photo = imgUrl(c0.mockup_front_url || prod.hero_image_url);
         var tags = (prod.sports||[]).slice(0,3).map(function(s){ return '<span class="sporttag">'+esc(s)+'</span>'; }).join('');
         var price = (typeof prod.price_from==='number' && prod.price_from>0)
-          ? ('<span data-i18n="jersey.from">'+t('jersey.from','From')+'</span> <strong>$'+prod.price_from.toFixed(2)+'</strong><span data-i18n="jersey.perunit">'+t('jersey.perunit','/unit')+'</span>')
+          ? ('<span data-i18n="jersey.from">'+t('jersey.from','From')+'</span> <strong>$'+teamPrice(prod.price_from).toFixed(2)+'</strong><span data-i18n="jersey.perunit">'+t('jersey.perunit','/unit')+'</span>')
           : '<strong>Quote on request</strong>';
         var card = document.createElement('div');
         card.className = 'jh-card';
@@ -816,7 +820,7 @@
           // If we fell back (1 side only) and the logo is DTF, add it.
           var dtfLogoP = (!res.full && logoMethod === 'dtf') ? decoOnly('dtf') : Promise.resolve(0);
           Promise.all([dtfLogoP, embP]).then(function(adds){
-            cb({ unit: round95(res.price + adds[0] + adds[1]), allin: res.price, logo_add: adds[0] + adds[1] });
+            cb({ unit: teamPrice(res.price + adds[0] + adds[1]), allin: res.price, logo_add: adds[0] + adds[1], team_discount: TEAM_DISCOUNT });
           });
         });
     }
