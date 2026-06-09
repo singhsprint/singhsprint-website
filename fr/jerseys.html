@@ -127,7 +127,10 @@
 </head>
 <body>
   <!-- Header, promo bar, footer, search + "Text us" widget are all injected
-       by components.js (loadNav/loadFooter on DOMContentLoaded). -->
+       by components.js (loadNav/loadFooter on DOMContentLoaded). loadNav
+       mounts into #nav-placeholder and loadFooter into #footer-placeholder —
+       both must be present or the header/footer silently don't render. -->
+  <div id="nav-placeholder"></div>
 
   <section class="jh-hero">
     <h1 data-i18n="jersey.hero.h1">Maillots d'équipe, personnalisés joueur par joueur</h1>
@@ -205,6 +208,8 @@
   </div>
 
   <div class="cz-toast" id="czToast"></div>
+
+  <div id="footer-placeholder"></div>
 
   <script src="components.js" defer></script>
   <script src="consent.js" defer></script>
