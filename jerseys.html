@@ -498,8 +498,12 @@
       'sand':'#d8c79a','vegas sand':'#d8c79a','tan':'#cda878','khaki':'#bfae86','cream':'#f1e7cf','natural':'#efe6d0','brown':'#5a3b22'
     };
     function _colNorm(s){ return String(s||'').toLowerCase().replace(/_/g,' ').trim(); }
+    // Split a colorway name into its color tokens. Brands use different
+    // separators: Athletic Knit "Black-Red-White", Augusta "Royal/White",
+    // some "Black & Gold" — split on hyphen, slash, and ampersand.
+    function _colSplit(name){ return _colNorm(name).split(/[\-\/&]/).map(function(s){ return s.trim(); }).filter(Boolean); }
     function colorHexes(name){
-      var parts = _colNorm(name).split('-').map(function(s){ return s.trim(); }).filter(Boolean);
+      var parts = _colSplit(name);
       var out = [];
       parts.forEach(function(tok){
         if (COLORMAP[tok]) { out.push(COLORMAP[tok]); return; }
@@ -521,7 +525,7 @@
     }
     function primaryHex(c){ return c.hex_code || colorHexes(c.color_name)[0]; }
     function prettyColor(name){
-      return _colNorm(name).replace(/\s+\d+$/,'').split('-').map(function(s){ s=s.trim(); return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }).filter(Boolean).join(' / ');
+      return _colSplit(_colNorm(name).replace(/\s+\d+$/,'')).map(function(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }).filter(Boolean).join(' / ');
     }
 
     function renderSwatches(){
