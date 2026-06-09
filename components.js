@@ -383,11 +383,15 @@ function loadNav() {
       // deep-link the catalog's existing ?canadian=1 filter (supplier-scoped to
       // rue_sainte_patrick). en/fr inline so no lang.js key is required.
       en: 'Canadian-Made', fr: 'Fait au Canada',
-      href: BASE + '/designed-in-montreal',
+      // Points straight at the catalog with the Canadian filter applied — it's
+      // the live catalog (same cards, pricing slider, detail view), not a
+      // separate hard-coded grid. The RSP story page is just a sub-link.
+      href: BASE + '/catalog?canadian=1',
       subs: [
-        { en: 'Designed in Montreal', fr: 'Conçu à Montréal',    href: BASE + '/designed-in-montreal' },
-        { en: 'Shop Canadian blanks', fr: 'Vêtements canadiens', href: BASE + '/catalog?canadian=1' },
-        { en: 'Organic cotton tees',  fr: 'T-shirts coton bio',  href: BASE + '/catalog?canadian=1&type=tshirt' }
+        { en: 'All Canadian-made',     fr: 'Tout le fait au Canada', href: BASE + '/catalog?canadian=1' },
+        { en: 'Organic cotton tees',   fr: 'T-shirts coton bio',     href: BASE + '/catalog?canadian=1&type=tshirt' },
+        { en: 'Hoodies & fleece',      fr: 'Hoodies et molleton',    href: BASE + '/catalog?canadian=1&type=hoodie' },
+        { en: 'The Rue Saint-Patrick story', fr: 'L\'histoire Rue Saint-Patrick', href: BASE + '/designed-in-montreal' }
       ]
     }
   ];
