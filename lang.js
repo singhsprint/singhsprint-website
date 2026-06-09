@@ -741,6 +741,10 @@ var SP_LANG = (function() {
     // Customizer
     'jersey.cz.title':    { en: 'Build your team', fr: 'Montez votre équipe' },
     'jersey.cz.color':    { en: 'Jersey color', fr: 'Couleur du maillot' },
+    'jersey.cz.goalie':       { en: 'Goalie', fr: 'Gardien' },
+    'jersey.cz.goalies':      { en: 'goalies', fr: 'gardiens' },
+    'jersey.cz.goaliecolor':  { en: 'Goalie color', fr: 'Couleur du gardien' },
+    'jersey.cz.goaliehint':   { en: 'Tick "G" next to a player to give them this color.', fr: 'Cochez « G » à côté d\'un joueur pour lui donner cette couleur.' },
     'jersey.cz.font':     { en: 'Team font', fr: 'Police d\'équipe' },
     'jersey.cz.decoration': { en: 'Decoration', fr: 'Décoration' },
     'jersey.cz.deco.print':  { en: 'Printed', fr: 'Imprimé' },

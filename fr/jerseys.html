@@ -218,7 +218,7 @@
             <label><span data-i18n="jersey.cz.roster">Roster</span></label>
             <table class="cz-roster">
               <thead>
-                <tr>
+                <tr id="czRosterHeadRow">
                   <th style="width:48%" data-i18n="jersey.cz.name">Player name</th>
                   <th style="width:16%" data-i18n="jersey.cz.number">No.</th>
                   <th style="width:26%" data-i18n="jersey.cz.size">Size</th>
@@ -452,6 +452,7 @@
       cz = {
         prod: prod,
         colorIdx: 0,
+        keeperColorIdx: defaultKeeperIdx(colors),   // alt color for goalies
         fontId: FONTS[0].id,
         logoMethod: 'none',            // none | dtf | embroidery
         logoPlacement: 'left_chest',   // left_chest | center_chest | full_front
@@ -486,6 +487,7 @@
       if (sizes.length) specHtml += (specHtml?'<br>':'') + t('jersey.cz.sizes','Sizes')+': ' + sizes.join(', ');
       document.getElementById('czSpecs').innerHTML = specHtml;
       renderSwatches();
+      renderKeeperSwatches();
       renderFonts();
       renderLogo();
       renderRoster();
@@ -515,7 +517,49 @@
       unlockScroll();
       cz = null;
     }
-    function blankRow(){ return { name:'', number:'', size:'L' }; }
+    function blankRow(){ return { name:'', number:'', size:'L', keeper:false }; }
+    // Sports where one player wears a contrasting-color jersey. Only hockey and
+    // soccer have a goalie; the picker also needs 2+ colorways to make sense.
+    function czRole(){
+      if (!cz || !cz.prod) return null;
+      if ((cz.prod.colors||[]).length < 2) return null;
+      var sp = (cz.prod.sports||[]).slice();
+      if (state && state.sport) sp.push(state.sport);
+      sp = sp.map(function(s){ return String(s||'').toLowerCase(); });
+      if (sp.indexOf('hockey') >= 0 || sp.indexOf('soccer') >= 0) return t('jersey.cz.goalie','Goalie');
+      return null;
+    }
+    // Default the goalie color to the product colorway that contrasts most with
+    // the team's first color, so the alt jersey actually stands out.
+    function defaultKeeperIdx(colors){
+      if (!colors || colors.length < 2) return 0;
+      function lum(c){ try { var h=primaryHex(c).replace('#',''); if(h.length===3) h=h.split('').map(function(x){return x+x;}).join(''); var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16); return (0.299*r+0.587*g+0.114*b)/255; } catch(e){ return 0.5; } }
+      var l0=lum(colors[0]), best=1, bd=-1;
+      for (var i=1;i<colors.length;i++){ var d=Math.abs(lum(colors[i])-l0); if (d>bd){ bd=d; best=i; } }
+      return best;
+    }
+    function renderKeeperSwatches(){
+      var field = document.getElementById('czKeeperField');
+      if (!field) return;
+      var role = czRole();
+      if (!role){ field.style.display='none'; return; }
+      field.style.display='';
+      var lbl = document.getElementById('czKeeperLabel');
+      if (lbl) lbl.textContent = t('jersey.cz.goaliecolor', role + ' color');
+      var host = document.getElementById('czKeeperSwatches');
+      var colors = cz.prod.colors||[];
+      host.innerHTML = colors.map(function(c,i){
+        return '<span class="cz-swatch'+(i===cz.keeperColorIdx?' sel':'')+'" data-kidx="'+i+'" title="'+esc(prettyColor(c.color_name))+'" style="background:'+esc(swatchBg(c))+'"></span>';
+      }).join('');
+      host.querySelectorAll('.cz-swatch').forEach(function(s){
+        s.addEventListener('click', function(){
+          cz.keeperColorIdx = parseInt(s.getAttribute('data-kidx'),10)||0;
+          renderKeeperSwatches();
+          var pr = cz.roster[cz.previewRow];
+          if (pr && pr.keeper) renderPreview();
+        });
+      });
+    }
 
     // ---- Colorway helpers -------------------------------------------------
     // Catalog jersey colors carry NO hex_code and only placeholder swatch
@@ -630,6 +674,17 @@
     function renderRoster(){
       var host = document.getElementById('czRoster');
       host.innerHTML = '';
+      var role = czRole();
+      // Rebuild the header so the goalie ("G") column only appears for keeper sports.
+      var headRow = document.getElementById('czRosterHeadRow');
+      if (headRow){
+        headRow.innerHTML =
+          '<th style="width:'+(role?'42%':'48%')+'">'+t('jersey.cz.name','Player name')+'</th>'
+          + '<th style="width:14%">'+t('jersey.cz.number','No.')+'</th>'
+          + '<th style="width:'+(role?'22%':'26%')+'">'+t('jersey.cz.size','Size')+'</th>'
+          + (role ? ('<th style="width:12%;text-align:center" title="'+esc(role)+'">'+esc(role.charAt(0).toUpperCase())+'</th>') : '')
+          + '<th style="width:10%"></th>';
+      }
       var sizeList = (cz.sizes && cz.sizes.length) ? cz.sizes : SIZES;
       var defSize = (sizeList.indexOf('L') >= 0) ? 'L' : (sizeList[Math.floor(sizeList.length/2)] || sizeList[0]);
       cz.roster.forEach(function(row, i){
@@ -640,10 +695,17 @@
           '<td><input data-f="name" data-i="'+i+'" value="'+esc(row.name)+'" placeholder="'+t('jersey.cz.name','Player name')+'"></td>'
           + '<td class="col-no"><input data-f="number" data-i="'+i+'" value="'+esc(row.number)+'" maxlength="3" inputmode="numeric" placeholder="00"></td>'
           + '<td><select data-f="size" data-i="'+i+'" style="width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff">'+sizeOpts+'</select></td>'
+          + (role ? ('<td style="text-align:center"><input type="checkbox" data-f="keeper" data-i="'+i+'"'+(row.keeper?' checked':'')+' aria-label="'+esc(role)+'" title="'+esc(role)+'" style="width:18px;height:18px;accent-color:var(--ink);cursor:pointer"></td>') : '')
           + '<td><button class="rmrow" data-rm="'+i+'" aria-label="'+t('jersey.cz.remove','Remove')+'">&times;</button></td>';
         host.appendChild(tr);
       });
-      host.querySelectorAll('input[data-f],select[data-f]').forEach(function(el){
+      host.querySelectorAll('input[type=checkbox][data-f="keeper"]').forEach(function(cb){
+        cb.addEventListener('change', function(){
+          var i = parseInt(cb.getAttribute('data-i'),10);
+          if (cz.roster[i]){ cz.roster[i].keeper = cb.checked; if (i===cz.previewRow) renderPreview(); renderSummary(); }
+        });
+      });
+      host.querySelectorAll('input[data-f]:not([type=checkbox]),select[data-f]').forEach(function(el){
         var ev = el.tagName==='SELECT' ? 'change' : 'input';
         el.addEventListener(ev, function(){
           var i = parseInt(el.getAttribute('data-i'),10); var f = el.getAttribute('data-f');
@@ -669,7 +731,8 @@
       var name = (row.name||'').toUpperCase() || 'NAME';
       var num  = row.number || '00';
       var colors = cz.prod.colors||[];
-      var col = colors[cz.colorIdx] || {};
+      var useKeeper = czRole() && row && row.keeper;
+      var col = (useKeeper ? colors[cz.keeperColorIdx] : colors[cz.colorIdx]) || colors[cz.colorIdx] || {};
       var hex = primaryHex(col);
       var ink = contrastInk(hex);
       var fam = fontCss(cz.fontId);
@@ -720,7 +783,8 @@
       var num  = row.number || '00';
       var bn = document.getElementById('czBackName'); if (bn) bn.textContent = name;
       var bx = document.getElementById('czBackNum');  if (bx) bx.textContent = num;
-      var col = (cz.prod.colors||[])[cz.colorIdx] || {};
+      var useKeeper = czRole() && row && row.keeper;
+      var col = (useKeeper ? (cz.prod.colors||[])[cz.keeperColorIdx] : (cz.prod.colors||[])[cz.colorIdx]) || (cz.prod.colors||[])[cz.colorIdx] || {};
       var cn = prettyColor(col.color_name);
       var hasLogo = cz.logoMethod !== 'none' && cz.logoPreviewUrl;
       var hint = document.getElementById('czPrevHint');
@@ -755,8 +819,12 @@
 
     function filledRows(){ return cz.roster.filter(function(r){ return (r.name||'').trim() || (r.number||'').trim(); }); }
     function renderSummary(){
-      var n = filledRows().length;
-      document.getElementById('czSummary').innerHTML = '<strong>'+n+'</strong> '+t('jersey.cz.players','players');
+      var fr = filledRows();
+      var n = fr.length;
+      var role = czRole();
+      var gk = role ? fr.filter(function(r){ return r.keeper; }).length : 0;
+      var extra = gk ? (' · ' + gk + ' ' + (gk===1 ? role.toLowerCase() : t('jersey.cz.goalies', role.toLowerCase()+'s'))) : '';
+      document.getElementById('czSummary').innerHTML = '<strong>'+n+'</strong> '+t('jersey.cz.players','players')+esc(extra);
       document.getElementById('czAdd').disabled = n===0;
     }
 
@@ -830,6 +898,9 @@
       if (!rows.length) return;
       var prod = cz.prod;
       var color = (prod.colors||[])[cz.colorIdx] || {};
+      var role = czRole();
+      var anyKeeper = !!role && rows.some(function(r){ return r.keeper; });
+      var kColor = (role ? ((prod.colors||[])[cz.keeperColorIdx] || null) : null);
       var sizes = {};
       rows.forEach(function(r){ sizes[r.size] = (sizes[r.size]||0) + 1; });
       var qty = rows.length;
@@ -866,7 +937,10 @@
           jersey_front_logo: logo,
           jersey_unit_price: price.unit,
           jersey_price_breakdown: { allin_blank_plus_decoration: price.allin, logo_addon: price.logo_add },
-          roster:       rows.map(function(r){ return { name:r.name||'', number:r.number||'', size:r.size||'L', font:fontId }; })
+          // Goalie (or other contrasting-color player): same blank, alternate
+          // colorway. Counted in the same qty/price; only the color differs.
+          jersey_keeper: anyKeeper ? { role: role, color_id: (kColor && kColor.color_id) || null, color_name: kColor ? (kColor.color_name||'').replace(/_\d+$/,'') : null } : null,
+          roster:       rows.map(function(r){ return { name:r.name||'', number:r.number||'', size:r.size||'L', font:fontId, keeper: !!r.keeper, color_name: (r.keeper && kColor) ? (kColor.color_name||'').replace(/_\d+$/,'') : ((color.color_name||'').replace(/_\d+$/,'')) }; })
         };
         SinghsCart.add(item);
         try { if (window.spTrack) window.spTrack('jersey_add_to_quote', { product_id:prod.product_id, sport:item.sport, players:qty, font:fontId, logo:logoMethod, unit:price.unit }); } catch(e){}
