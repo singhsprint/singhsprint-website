@@ -173,7 +173,7 @@ function loadNav() {
       '#langToggle:hover{border-color:#1a1a1a}',
       '.sp-cta{background:#1a1a1a;color:#fff !important;font-size:.86rem;font-weight:600;padding:10px 18px;border-radius:50px;text-decoration:none;flex-shrink:0;transition:background .15s}',
       '.sp-cta:hover{background:#333}',
-      '.sp-row2{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:22px;padding:0 24px 12px 24px;font-size:.88rem;color:#1a1a1a;flex-wrap:wrap}',
+      '.sp-row2{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 24px 12px 24px;font-size:.88rem;color:#1a1a1a;flex-wrap:wrap}',
       '.sp-nav-item{display:inline-flex;align-items:center;gap:3px;color:#1a1a1a;text-decoration:none;padding:6px 0;position:relative;font-weight:500}',
       '.sp-nav-item:hover{opacity:.7}',
       '.sp-nav-item.is-active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#1a1a1a}',
@@ -316,7 +316,7 @@ function loadNav() {
       ]
     },
     {
-      en: 'Jackets & Outerwear', fr: 'Vestes et manteaux', i18n: 'nav.jackets',
+      en: 'Jackets', fr: 'Vestes', i18n: 'nav.jackets',
       href: BASE + '/catalog?type=jacket',
       subs: [
         { en: 'All jackets',         fr: 'Toutes les vestes',   href: BASE + '/catalog?type=jacket' },
