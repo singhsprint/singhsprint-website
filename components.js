@@ -173,7 +173,13 @@ function loadNav() {
       '#langToggle:hover{border-color:#1a1a1a}',
       '.sp-cta{background:#1a1a1a;color:#fff !important;font-size:.86rem;font-weight:600;padding:10px 18px;border-radius:50px;text-decoration:none;flex-shrink:0;transition:background .15s}',
       '.sp-cta:hover{background:#333}',
-      '.sp-row2{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 24px 12px 24px;font-size:.88rem;color:#1a1a1a;flex-wrap:wrap}',
+      '.sp-row2{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 24px 8px 24px;font-size:.88rem;color:#1a1a1a;flex-wrap:wrap}',
+      // Secondary row: company / brand links. Lighter and smaller so the
+      // product categories above read as the primary navigation.
+      '.sp-row2--sub{padding-top:9px;padding-bottom:12px;border-top:1px solid #f0eee7;gap:20px;font-size:.81rem}',
+      '.sp-row2--sub .sp-nav-item{color:#5a5a5a;font-weight:500}',
+      '.sp-row2--sub .sp-nav-item:hover{color:#1a1a1a;opacity:1}',
+      '.sp-row2--sub .sp-dropdown a{font-weight:400}',
       '.sp-nav-item{display:inline-flex;align-items:center;gap:3px;color:#1a1a1a;text-decoration:none;padding:6px 0;position:relative;font-weight:500}',
       '.sp-nav-item:hover{opacity:.7}',
       '.sp-nav-item.is-active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#1a1a1a}',
@@ -181,9 +187,6 @@ function loadNav() {
       '.sp-nav-divider{opacity:.3;margin:0 2px;user-select:none}',
       '.sp-nav-parent{position:relative}',
       '.sp-dropdown{position:absolute;top:100%;left:-14px;background:#fff;border:1px solid #ece9df;border-radius:0 0 12px 12px;padding:14px 16px;min-width:260px;display:none;z-index:50;box-shadow:0 12px 24px rgba(0,0,0,.08)}',
-      // Right-anchored variant for parents near the end of the bar (e.g. "More"),
-      // so the panel opens toward the viewport instead of overflowing past the edge.
-      '.sp-dropdown--right{left:auto;right:-14px}',
       '.sp-nav-parent:hover .sp-dropdown,.sp-nav-parent:focus-within .sp-dropdown{display:block}',
       '.sp-dropdown a{display:block;color:#1a1a1a;text-decoration:none;padding:6px 0;font-size:.86rem;font-weight:400}',
       '.sp-dropdown a:hover{text-decoration:underline}',
@@ -430,15 +433,7 @@ function loadNav() {
     // — Drops is a new revenue channel and deserves the eyeball-
     // grabbing position, not buried after the niche programs.
     { en: 'Drops',     fr: 'Drops',     i18n: 'nav.drops',     href: BASE + '/shop' },
-    { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' }
-  ];
-
-  // 2026-06-09 — With Jerseys added, 15 top-level links overflowed the
-  // 1240px bar and wrapped ("Youth Initiative" dropped to a 2nd line).
-  // The three lowest-priority links now live under a single "More" parent
-  // so the bar fits at every width. They still render flat in the mobile
-  // drawer (vertical space isn't constrained there).
-  var MORE_LINKS = [
+    { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' },
     { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
     { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },
     { en: 'Youth Initiative', fr: 'Initiative Jeunesse', i18n: 'nav.youth', href: BASE + '/youth-initiative' }
@@ -501,16 +496,6 @@ function loadNav() {
     }
     return '<a class="sp-nav-item' + active + '" href="' + l.href + '" data-i18n="' + l.i18n + '">' + t(l.en, l.fr) + '</a>';
   }).join('');
-  // "More" parent — a hover/focus dropdown holding the lower-priority links.
-  // The trigger doesn't navigate (href="#", onclick returns false); it's just
-  // the dropdown opener. Marked active when the current page is one of them.
-  var moreActive = MORE_LINKS.some(function (l) { return isActive(l.href); }) ? ' is-active' : '';
-  var moreItems = MORE_LINKS.map(function (l) {
-    return '<a href="' + l.href + '" data-i18n="' + l.i18n + '">' + t(l.en, l.fr) + '</a>';
-  }).join('');
-  row2Edit += '<span class="sp-nav-parent">'
-    + '<a class="sp-nav-item' + moreActive + '" href="#" onclick="return false" aria-haspopup="true" data-i18n="nav.more">' + t('More', 'Plus') + ICON.chevD + '</a>'
-    + '<div class="sp-dropdown sp-dropdown--right">' + moreItems + '</div></span>';
   var drawerCats = CATS.map(function (c) {
     return '<a href="' + c.href + '" class="sp-drawer-link" data-i18n="' + c.i18n + '">' + t(c.en, c.fr) + ICON.chevR + '</a>';
   }).join('');
@@ -524,10 +509,6 @@ function loadNav() {
       return '<a href="' + sub.href + '" class="sp-drawer-link" style="padding-left:14px;font-weight:400;color:#444;font-size:.88rem">' + t(sub.en, sub.fr) + '</a>';
     }).join('');
     return head + children;
-  }).join('');
-  // The "More" links render flat in the drawer (mobile has the vertical room).
-  drawerEdit += MORE_LINKS.map(function (l) {
-    return '<a href="' + l.href + '" class="sp-drawer-link" data-i18n="' + l.i18n + '">' + t(l.en, l.fr) + '</a>';
   }).join('');
 
   var searchPlaceholder = t('Search 1,100+ blanks', 'Chercher parmi 1 100+ vêtements');
@@ -561,9 +542,10 @@ function loadNav() {
     + '    <a href="' + BASE + '/quote" class="sp-cta" data-i18n="nav.quote">' + t('Get a Quote', 'Soumission') + '</a>'
     + '    <a href="' + BASE + '/quote" class="sp-mobile-quote" data-i18n="nav.quote.short">' + t('Quote', 'Devis') + '</a>'
     + '  </div>'
-    + '  <nav class="sp-row2" aria-label="' + t('Site sections', 'Sections du site') + '">'
+    + '  <nav class="sp-row2" aria-label="' + t('Shop categories', 'Catégories') + '">'
     +      row2Cats
-    + '    <span class="sp-nav-divider">|</span>'
+    + '  </nav>'
+    + '  <nav class="sp-row2 sp-row2--sub" aria-label="' + t('More from Singh\'s Print', 'Plus chez Singh\'s Print') + '">'
     +      row2Edit
     + '  </nav>'
     + '</header>'
