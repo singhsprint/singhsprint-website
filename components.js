@@ -336,6 +336,24 @@ function loadNav() {
       subs: [
         { en: 'All hats & caps',     fr: 'Tous les chapeaux',   href: BASE + '/catalog?type=hat' }
       ]
+    },
+    {
+      // Sports Jerseys is its own destination (the /jerseys hub), not a
+      // catalog garment_type filter. The subs deep-link the hub to each
+      // sport via ?sport=. Only the sports our catalog can actually source
+      // are listed (hockey/soccer/basketball/baseball best stocked;
+      // football/volleyball thinner but present). The hub reads the jersey
+      // classification layer via /api/catalog?sport=.
+      en: 'Sports Jerseys', fr: 'Maillots de sport', i18n: 'nav.jerseys',
+      href: BASE + '/jerseys',
+      subs: [
+        { en: 'Hockey',     fr: 'Hockey',     i18n: 'nav.jerseys.hockey',     href: BASE + '/jerseys?sport=hockey' },
+        { en: 'Soccer',     fr: 'Soccer',     i18n: 'nav.jerseys.soccer',     href: BASE + '/jerseys?sport=soccer' },
+        { en: 'Basketball', fr: 'Basketball', i18n: 'nav.jerseys.basketball', href: BASE + '/jerseys?sport=basketball' },
+        { en: 'Baseball',   fr: 'Baseball',   i18n: 'nav.jerseys.baseball',   href: BASE + '/jerseys?sport=baseball' },
+        { en: 'Football',   fr: 'Football',   i18n: 'nav.jerseys.football',   href: BASE + '/jerseys?sport=football' },
+        { en: 'Volleyball', fr: 'Volleyball', i18n: 'nav.jerseys.volleyball', href: BASE + '/jerseys?sport=volleyball' }
+      ]
     }
   ];
 
@@ -395,6 +413,8 @@ function loadNav() {
     workwear:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h4l3 4 3-4h4v15H5z"/><path d="M9 10v9M15 10v9"/></svg>',
     bagicon:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
     hat:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17c0-5 3.5-9 8-9s8 4 8 9"/><path d="M2 17h20"/></svg>',
+    // Sports jersey — sleeveless/short-sleeve athletic top with a number.
+    jersey:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4 5 6 3 9l2.5 2L7 9v11h10V9l1.5 2L21 9l-2-3-3-2-1.5 2c-.9.9-2 1.4-2.5 1.4S9.4 6.9 8.5 6L8 4z"/><path d="M11 13h2"/></svg>',
     grid:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
   };
 
@@ -499,6 +519,7 @@ function loadNav() {
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tote">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/jerseys">' + ICON.jersey + '<span>' + t('Jerseys', 'Maillots') + '</span></a>'
     + '</nav>'
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
     + '  <div class="sp-drawer-head">'

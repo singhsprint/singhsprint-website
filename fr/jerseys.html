@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maillots d'équipe personnalisés | Singhs Print — Vêtements personnalisés Montréal</title>
+  <meta name="description" content="Créez des maillots d'équipe personnalisés pour le hockey, le soccer, le basketball, le baseball, le football et le volleyball. Choisissez un maillot, ajoutez le nom, le numéro et une police pour chaque joueur, et obtenez une seule soumission pour toute l'équipe.">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/jerseys">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/jerseys">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/jerseys">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/jerseys">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
+  <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
+  <!-- Inter/Playfair for the page chrome (matches catalog.html), plus a small
+       set of open-source athletic display faces (SIL OFL) used ONLY for the
+       jersey lettering live-preview. These approximate our press styles; the
+       final lettering uses our licensed jersey fonts (see fontnote string). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Anton&family=Oswald:wght@500;700&family=Saira+Condensed:wght@600;700&family=Archivo+Black&family=Teko:wght@600;700&display=swap">
+
+  <style>
+    :root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+
+    /* Hero */
+    .jh-hero{max-width:1100px;margin:0 auto;padding:54px 24px 26px}
+    .jh-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.5rem;font-weight:700;line-height:1.08;margin-bottom:12px;max-width:780px}
+    .jh-hero p{color:var(--muted);font-size:1.05rem;max-width:640px}
+    .jh-hero .jh-cta{display:inline-flex;align-items:center;gap:8px;margin-top:20px;background:var(--ink);color:#fff;padding:13px 24px;border-radius:14px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:transform .15s}
+    .jh-hero .jh-cta:hover{transform:translateY(-1px)}
+
+    /* Sport picker */
+    .jh-sports{max-width:1100px;margin:0 auto;padding:8px 24px 4px;display:flex;gap:10px;flex-wrap:wrap}
+    .jh-sport{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:50px;border:1.5px solid var(--line);background:#fff;color:var(--ink);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .15s}
+    .jh-sport:hover{border-color:var(--ink)}
+    .jh-sport.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .jh-sport svg{width:18px;height:18px}
+
+    /* Result meta */
+    .jh-meta{max-width:1100px;margin:18px auto 8px;padding:0 24px;font-size:.85rem;color:var(--muted)}
+    .jh-meta strong{color:var(--ink)}
+
+    /* Grid */
+    .jh-grid{max-width:1100px;margin:0 auto;padding:8px 24px 64px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+    .jh-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s}
+    .jh-card:hover{box-shadow:0 12px 28px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .jh-card .photo{aspect-ratio:1/1;background:#f2f0ea;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .jh-card .photo img{width:100%;height:100%;object-fit:cover}
+    .jh-card .body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+    .jh-card .brand-row{font-size:.7rem;letter-spacing:.04em;color:var(--soft);font-weight:600}
+    .jh-card .name{font-size:.92rem;font-weight:600;line-height:1.3;min-height:2.4em}
+    .jh-card .sporttags{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 4px}
+    .jh-card .sporttag{font-size:.66rem;font-weight:600;color:var(--muted);background:#f2f0ea;border-radius:50px;padding:2px 9px;text-transform:capitalize}
+    .jh-card .price{font-size:.82rem;color:var(--muted);margin-top:auto;padding-top:6px}
+    .jh-card .price strong{color:var(--ink)}
+    .jh-card .jh-add{margin-top:10px;width:100%;background:var(--ink);color:#fff;border:none;border-radius:11px;padding:11px;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit;transition:background .15s}
+    .jh-card .jh-add:hover{background:#333}
+
+    .jh-empty,.jh-loading{max-width:1100px;margin:0 auto;padding:40px 24px;color:var(--muted);font-size:.95rem}
+
+    /* ===== Customizer modal ===== */
+    .cz-overlay{position:fixed;inset:0;background:rgba(20,18,14,.5);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+    .cz-overlay.open{display:flex}
+    .cz{background:var(--bg);border-radius:20px;max-width:1040px;width:100%;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden}
+    .cz-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line);background:#fff}
+    .cz-head h2{font-family:'Playfair Display',Georgia,serif;font-size:1.3rem}
+    .cz-head .cz-close{background:none;border:none;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--muted)}
+    .cz-body{display:grid;grid-template-columns:340px 1fr;gap:0}
+    .cz-preview{background:#13110d;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:0}
+    .cz-preview .cz-prev-label{color:#cfc9bb;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;align-self:flex-start}
+    .cz-svgwrap{width:100%;max-width:280px}
+    .cz-prevhint{color:#9b958a;font-size:.72rem;text-align:center;line-height:1.5}
+    .cz-form{padding:22px 24px;display:flex;flex-direction:column;gap:18px;max-height:78vh;overflow-y:auto}
+    .cz-prodline{display:flex;gap:12px;align-items:center}
+    .cz-prodline img{width:54px;height:54px;border-radius:10px;object-fit:cover;background:#f2f0ea}
+    .cz-prodline .pn{font-weight:600;font-size:.92rem}
+    .cz-prodline .pb{font-size:.72rem;color:var(--soft);font-weight:600;letter-spacing:.03em}
+    .cz-field label{display:block;font-size:.78rem;font-weight:600;margin-bottom:7px;color:var(--ink)}
+    .cz-swatches{display:flex;gap:8px;flex-wrap:wrap}
+    .cz-swatch{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;transition:transform .12s}
+    .cz-swatch:hover{transform:scale(1.08)}
+    .cz-swatch.sel{box-shadow:0 0 0 2px var(--ink)}
+    .cz-chips{display:flex;gap:8px;flex-wrap:wrap}
+    .cz-chip{padding:8px 14px;border-radius:50px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .12s}
+    .cz-chip:hover{border-color:var(--ink)}
+    .cz-chip.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .cz-fontchip{padding:7px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:1rem;transition:all .12s}
+    .cz-fontchip.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+    /* Roster table */
+    .cz-roster{width:100%;border-collapse:collapse;font-size:.86rem}
+    .cz-roster th{text-align:left;font-size:.72rem;color:var(--soft);font-weight:600;padding:0 8px 6px}
+    .cz-roster td{padding:3px 6px 3px 0}
+    .cz-roster input{width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff}
+    .cz-roster input:focus{outline:none;border-color:var(--ink)}
+    .cz-roster .col-no input{text-align:center}
+    .cz-roster .rmrow{background:none;border:none;color:var(--soft);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px}
+    .cz-roster .rmrow:hover{color:#c0392b}
+    .cz-rowbtns{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .cz-linkbtn{background:none;border:none;color:var(--ink);font-weight:600;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:6px 0}
+    .cz-foot{border-top:1px solid var(--line);background:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .cz-foot .cz-summary{font-size:.85rem;color:var(--muted)}
+    .cz-foot .cz-summary strong{color:var(--ink)}
+    .cz-addbtn{background:var(--ink);color:#fff;border:none;border-radius:13px;padding:13px 26px;font-weight:600;font-size:.92rem;cursor:pointer;font-family:inherit;transition:transform .15s}
+    .cz-addbtn:hover{transform:translateY(-1px)}
+    .cz-addbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .cz-note{font-size:.72rem;color:var(--soft);line-height:1.5}
+    .cz-paste-ta{width:100%;min-height:120px;padding:11px;border:1.5px solid var(--line);border-radius:11px;font-family:inherit;font-size:.85rem;resize:vertical}
+    /* Success toast */
+    .cz-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(120%);background:var(--ink);color:#fff;padding:14px 22px;border-radius:14px;font-size:.9rem;z-index:1200;transition:transform .25s;display:flex;align-items:center;gap:14px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+    .cz-toast.show{transform:translateX(-50%) translateY(0)}
+    .cz-toast a{color:var(--hi);font-weight:700;text-decoration:underline}
+
+    @media (max-width:760px){
+      .jh-hero h1{font-size:1.9rem}
+      .cz-body{grid-template-columns:1fr}
+      .cz-preview{position:static;flex-direction:row;flex-wrap:wrap;justify-content:center}
+      .cz-svgwrap{max-width:200px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header, promo bar, footer, search + "Text us" widget are all injected
+       by components.js (loadNav/loadFooter on DOMContentLoaded). -->
+
+  <section class="jh-hero">
+    <h1 data-i18n="jersey.hero.h1">Maillots d'équipe, personnalisés joueur par joueur</h1>
+    <p data-i18n="jersey.hero.p">Choisissez un maillot pour votre sport, puis montez votre alignement — chaque joueur obtient son <strong>nom, son numéro et une police d'équipe</strong>. On imprime ou brode toute l'équipe et on envoie une seule soumission.</p>
+    <button class="jh-cta" id="heroCta" data-i18n="jersey.hero.cta">Choisissez votre sport</button>
+  </section>
+
+  <div class="jh-sports" id="sportPicker"></div>
+
+  <div class="jh-meta" id="jhMeta"></div>
+  <div class="jh-grid" id="jhGrid"></div>
+
+  <!-- Customizer modal -->
+  <div class="cz-overlay" id="czOverlay" role="dialog" aria-modal="true" aria-labelledby="czTitle">
+    <div class="cz">
+      <div class="cz-head">
+        <h2 id="czTitle" data-i18n="jersey.cz.title">Montez votre équipe</h2>
+        <button class="cz-close" id="czClose" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="cz-body">
+        <div class="cz-preview">
+          <span class="cz-prev-label" data-i18n="jersey.cz.preview">Live preview</span>
+          <div class="cz-svgwrap" id="czSvg"></div>
+          <div class="cz-prevhint" id="czPrevHint"></div>
+        </div>
+        <div class="cz-form">
+          <div class="cz-prodline" id="czProd"></div>
+
+          <div class="cz-field" id="czColorField">
+            <label data-i18n="jersey.cz.color">Jersey color</label>
+            <div class="cz-swatches" id="czSwatches"></div>
+          </div>
+
+          <div class="cz-field">
+            <label data-i18n="jersey.cz.font">Team font</label>
+            <div class="cz-chips" id="czFonts"></div>
+          </div>
+
+          <div class="cz-field">
+            <label data-i18n="jersey.cz.decoration">Decoration</label>
+            <div class="cz-chips" id="czDeco"></div>
+          </div>
+
+          <div class="cz-field">
+            <label><span data-i18n="jersey.cz.roster">Roster</span></label>
+            <table class="cz-roster">
+              <thead>
+                <tr>
+                  <th style="width:48%" data-i18n="jersey.cz.name">Player name</th>
+                  <th style="width:16%" data-i18n="jersey.cz.number">No.</th>
+                  <th style="width:26%" data-i18n="jersey.cz.size">Size</th>
+                  <th style="width:10%"></th>
+                </tr>
+              </thead>
+              <tbody id="czRoster"></tbody>
+            </table>
+            <div class="cz-rowbtns">
+              <button class="cz-linkbtn" id="czAddRow" data-i18n="jersey.cz.addrow">+ Add player</button>
+              <button class="cz-linkbtn" id="czPasteToggle" data-i18n="jersey.cz.paste">Paste a list</button>
+            </div>
+            <div id="czPasteWrap" style="display:none;margin-top:10px">
+              <textarea class="cz-paste-ta" id="czPasteTa" placeholder="Sidney Crosby, 87, L&#10;Connor McDavid, 97, M"></textarea>
+              <div class="cz-note" data-i18n="jersey.cz.paste.hint">One player per line: Name, Number, Size</div>
+            </div>
+          </div>
+
+          <div class="cz-note" data-i18n="jersey.cz.fontnote">Preview fonts approximate our press styles. Final lettering uses our licensed jersey fonts.</div>
+        </div>
+      </div>
+      <div class="cz-foot">
+        <div class="cz-summary" id="czSummary"></div>
+        <button class="cz-addbtn" id="czAdd" data-i18n="jersey.cz.add">Add team to quote</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cz-toast" id="czToast"></div>
+
+  <script src="components.js" defer></script>
+  <script src="consent.js" defer></script>
+  <script src="lang.js" defer></script>
+  <script src="ai-translate.js" defer></script>
+
+  <script>
+  (function(){
+    'use strict';
+    var API   = 'https://singhsprint-crm.vercel.app/api/catalog';
+    var IMAGE_PROXY   = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+    var PROXIED_HOSTS = ['ssactivewear.com','blanks.ca','sanmarcanada.com'];
+    var SPORTS = ['hockey','soccer','basketball','baseball','football','volleyball'];
+
+    // Tiny i18n shim — uses SP_LANG when present, else the inline fallback.
+    function t(key, fallback){
+      try { if (window.SP_LANG && SP_LANG.t){ var v = SP_LANG.t(key); if (v) return v; } } catch(e){}
+      return fallback;
+    }
+    function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    function qp(name){ try { return new URLSearchParams(location.search).get(name); } catch(e){ return null; } }
+    function imgUrl(raw){
+      if (!raw) return '/images/product-tshirt-white.jpg';
+      if (raw.charAt(0)==='/' || raw.indexOf('singhsprint.com')>=0) return raw;
+      for (var i=0;i<PROXIED_HOSTS.length;i++){ if (raw.indexOf(PROXIED_HOSTS[i])>=0) return IMAGE_PROXY + '?url=' + encodeURIComponent(raw); }
+      return raw;
+    }
+
+    // ---- Shared cart (same sessionStorage module as catalog.html / quote.html)
+    var SinghsCart = {
+      key: 'singhsCart_v1',
+      read: function(){ try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
+      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} try { window.dispatchEvent(new Event('singhsCartChange')); } catch(e){} },
+      add: function(item){ var c=this.read(); c.items.push(item); this.write(c); },
+      count: function(){ return this.read().items.length; }
+    };
+
+    // ---- Sport icons (line-art, inherit currentColor)
+    var SICON = {
+      hockey:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5v9c0 3 3 5 8 5s8-2 8-5V5"/><circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none"/></svg>',
+      soccer:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 5h-5L8 10z"/></svg>',
+      basketball:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18M5 5c4 3 4 11 0 14M19 5c-4 3-4 11 0 14"/></svg>',
+      baseball:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M6 6c2 2 2 10 0 12M18 6c-2 2-2 10 0 12"/></svg>',
+      football:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12c0-4 3-7 7-7s7 3 7 7-3 7-7 7-7-3-7-7z"/><path d="M9 12h6M12 10v4"/></svg>',
+      volleyball:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 3c3 4 3 14-4 17M21 10c-5 1-13-2-15-7"/></svg>'
+    };
+
+    // ---- Fonts offered for the jersey lettering preview (single team font).
+    // Open-source faces (SIL OFL) loaded in <head>. value = CSS font-family.
+    var FONTS = [
+      { id:'anton',   label:'Block',     css:"'Anton',sans-serif" },
+      { id:'oswald',  label:'Condensed', css:"'Oswald',sans-serif" },
+      { id:'saira',   label:'Athletic',  css:"'Saira Condensed',sans-serif" },
+      { id:'archivo', label:'Heavy',     css:"'Archivo Black',sans-serif" },
+      { id:'teko',    label:'Tall',      css:"'Teko',sans-serif" }
+    ];
+    function fontCss(id){ for (var i=0;i<FONTS.length;i++){ if (FONTS[i].id===id) return FONTS[i].css; } return FONTS[0].css; }
+
+    var DECO = [
+      { id:'print', label:'jersey.cz.deco.print',  fallback:'Printed' },
+      { id:'twill', label:'jersey.cz.deco.twill',  fallback:'Sewn twill' },
+      { id:'heat',  label:'jersey.cz.deco.heat',   fallback:'Heat-press vinyl' }
+    ];
+
+    var SIZES = ['YS','YM','YL','XS','S','M','L','XL','2XL','3XL'];
+
+    // ============ state ============
+    var state = { sport: null, products: [] };
+    var cz = null; // active customizer state
+
+    // ============ sport picker ============
+    function renderSportPicker(){
+      var host = document.getElementById('sportPicker');
+      var html = '<button class="jh-sport' + (!state.sport?' active':'') + '" data-sport="">'
+               + '<span data-i18n="jersey.all">' + t('jersey.all','All jerseys') + '</span></button>';
+      SPORTS.forEach(function(s){
+        html += '<button class="jh-sport' + (state.sport===s?' active':'') + '" data-sport="'+s+'">'
+              + (SICON[s]||'') + '<span data-i18n="nav.jerseys.'+s+'">' + t('nav.jerseys.'+s, cap(s)) + '</span></button>';
+      });
+      host.innerHTML = html;
+      host.querySelectorAll('.jh-sport').forEach(function(b){
+        b.addEventListener('click', function(){
+          var s = b.getAttribute('data-sport') || null;
+          setSport(s, true);
+        });
+      });
+    }
+    function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    function setSport(s, push){
+      state.sport = (s && SPORTS.indexOf(s)>=0) ? s : null;
+      renderSportPicker();
+      if (push){
+        var url = state.sport ? ('?sport='+state.sport) : location.pathname;
+        try { history.replaceState({}, '', url); } catch(e){}
+      }
+      load();
+    }
+
+    // ============ fetch + grid ============
+    function load(){
+      var grid = document.getElementById('jhGrid');
+      var meta = document.getElementById('jhMeta');
+      grid.innerHTML = '';
+      meta.innerHTML = '<span class="jh-loading">' + t('jersey.loading','Loading jerseys…') + '</span>';
+      var url = API + '?limit=120&' + (state.sport ? ('sport='+state.sport) : 'jerseys=1');
+      fetch(url).then(function(r){ return r.json(); }).then(function(j){
+        state.products = (j && j.products) || [];
+        renderGrid();
+      }).catch(function(){
+        meta.innerHTML = '';
+        grid.innerHTML = '<div class="jh-empty">' + t('jersey.empty','No jerseys found for this sport yet.') + '</div>';
+      });
+    }
+
+    function renderGrid(){
+      var grid = document.getElementById('jhGrid');
+      var meta = document.getElementById('jhMeta');
+      var p = state.products;
+      if (!p.length){
+        meta.innerHTML = '';
+        grid.innerHTML = '<div class="jh-empty">' + t('jersey.empty','No jerseys found for this sport yet — call us at 438-544-3800 and we will source them.') + '</div>';
+        return;
+      }
+      meta.innerHTML = '<strong>' + p.length + '</strong> ' + t('jersey.count','jerseys')
+        + (state.sport ? ' · ' + t('nav.jerseys.'+state.sport, cap(state.sport)) : '');
+      grid.innerHTML = '';
+      p.forEach(function(prod, idx){
+        var c0 = (prod.colors||[])[0] || {};
+        var photo = imgUrl(c0.mockup_front_url || prod.hero_image_url);
+        var tags = (prod.sports||[]).slice(0,3).map(function(s){ return '<span class="sporttag">'+esc(s)+'</span>'; }).join('');
+        var price = (typeof prod.price_from==='number' && prod.price_from>0)
+          ? ('<span data-i18n="jersey.from">'+t('jersey.from','From')+'</span> <strong>$'+prod.price_from.toFixed(2)+'</strong><span data-i18n="jersey.perunit">'+t('jersey.perunit','/unit')+'</span>')
+          : '<strong>Quote on request</strong>';
+        var card = document.createElement('div');
+        card.className = 'jh-card';
+        card.innerHTML =
+          '<div class="photo">' + (photo?'<img src="'+esc(photo)+'" alt="'+esc((prod.brand||'')+' '+(prod.style_number||''))+'" loading="lazy" decoding="async">':'') + '</div>'
+          + '<div class="body">'
+          + '<div class="brand-row">' + esc((prod.brand||'').toUpperCase()) + (prod.style_number?(' · '+esc(prod.style_number)):'') + '</div>'
+          + '<div class="name">' + esc(prod.name||'') + '</div>'
+          + (tags?('<div class="sporttags">'+tags+'</div>'):'')
+          + '<div class="price">' + price + '</div>'
+          + '<button class="jh-add" data-idx="'+idx+'">' + t('jersey.card.cta','Customize this jersey') + '</button>'
+          + '</div>';
+        card.querySelector('.jh-add').addEventListener('click', function(){ openCustomizer(prod); });
+        grid.appendChild(card);
+      });
+    }
+
+    // ============ customizer ============
+    function openCustomizer(prod){
+      var colors = (prod.colors||[]);
+      cz = {
+        prod: prod,
+        colorIdx: 0,
+        fontId: FONTS[0].id,
+        deco: 'print',
+        roster: [ blankRow(), blankRow() ],
+        previewRow: 0
+      };
+      // product line
+      var c0 = colors[0] || {};
+      document.getElementById('czProd').innerHTML =
+        '<img src="'+esc(imgUrl(c0.mockup_front_url||prod.hero_image_url))+'" alt="">'
+        + '<div><div class="pb">'+esc((prod.brand||'').toUpperCase())+(prod.style_number?(' · '+esc(prod.style_number)):'')+'</div>'
+        + '<div class="pn">'+esc(prod.name||'')+'</div></div>';
+      renderSwatches();
+      renderFonts();
+      renderDeco();
+      renderRoster();
+      renderPreview();
+      renderSummary();
+      document.getElementById('czOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCustomizer(){
+      document.getElementById('czOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      cz = null;
+    }
+    function blankRow(){ return { name:'', number:'', size:'L' }; }
+
+    function renderSwatches(){
+      var host = document.getElementById('czSwatches');
+      var colors = cz.prod.colors||[];
+      if (!colors.length){ document.getElementById('czColorField').style.display='none'; return; }
+      document.getElementById('czColorField').style.display='';
+      host.innerHTML = colors.map(function(c,i){
+        var hex = c.hex_code || '#cccccc';
+        return '<span class="cz-swatch'+(i===cz.colorIdx?' sel':'')+'" data-idx="'+i+'" title="'+esc(c.color_name||'')+'" style="background:'+esc(hex)+'"></span>';
+      }).join('');
+      host.querySelectorAll('.cz-swatch').forEach(function(s){
+        s.addEventListener('click', function(){ cz.colorIdx = parseInt(s.getAttribute('data-idx'),10)||0; renderSwatches(); renderPreview(); });
+      });
+    }
+    function renderFonts(){
+      var host = document.getElementById('czFonts');
+      host.innerHTML = FONTS.map(function(f){
+        return '<span class="cz-fontchip'+(f.id===cz.fontId?' sel':'')+'" data-id="'+f.id+'" style="font-family:'+f.css+'">'+esc(f.label.toUpperCase())+'</span>';
+      }).join('');
+      host.querySelectorAll('.cz-fontchip').forEach(function(c){
+        c.addEventListener('click', function(){ cz.fontId = c.getAttribute('data-id'); renderFonts(); renderPreview(); });
+      });
+    }
+    function renderDeco(){
+      var host = document.getElementById('czDeco');
+      host.innerHTML = DECO.map(function(d){
+        return '<span class="cz-chip'+(d.id===cz.deco?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
+      }).join('');
+      host.querySelectorAll('.cz-chip').forEach(function(c){
+        c.addEventListener('click', function(){ cz.deco = c.getAttribute('data-id'); renderDeco(); });
+      });
+    }
+    function renderRoster(){
+      var host = document.getElementById('czRoster');
+      host.innerHTML = '';
+      cz.roster.forEach(function(row, i){
+        var tr = document.createElement('tr');
+        var sizeOpts = SIZES.map(function(s){ return '<option'+(s===row.size?' selected':'')+'>'+s+'</option>'; }).join('');
+        tr.innerHTML =
+          '<td><input data-f="name" data-i="'+i+'" value="'+esc(row.name)+'" placeholder="'+t('jersey.cz.name','Player name')+'"></td>'
+          + '<td class="col-no"><input data-f="number" data-i="'+i+'" value="'+esc(row.number)+'" maxlength="3" inputmode="numeric" placeholder="00"></td>'
+          + '<td><select data-f="size" data-i="'+i+'" style="width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff">'+sizeOpts+'</select></td>'
+          + '<td><button class="rmrow" data-rm="'+i+'" aria-label="'+t('jersey.cz.remove','Remove')+'">&times;</button></td>';
+        host.appendChild(tr);
+      });
+      host.querySelectorAll('input[data-f],select[data-f]').forEach(function(el){
+        var ev = el.tagName==='SELECT' ? 'change' : 'input';
+        el.addEventListener(ev, function(){
+          var i = parseInt(el.getAttribute('data-i'),10); var f = el.getAttribute('data-f');
+          if (cz.roster[i]){ cz.roster[i][f] = el.value; if (i===cz.previewRow && (f==='name'||f==='number')) renderPreview(); renderSummary(); }
+        });
+        if (el.tagName!=='SELECT'){
+          el.addEventListener('focus', function(){ var i=parseInt(el.getAttribute('data-i'),10); cz.previewRow=i; renderPreview(); });
+        }
+      });
+      host.querySelectorAll('.rmrow').forEach(function(b){
+        b.addEventListener('click', function(){
+          var i = parseInt(b.getAttribute('data-rm'),10);
+          cz.roster.splice(i,1);
+          if (!cz.roster.length) cz.roster.push(blankRow());
+          cz.previewRow = Math.min(cz.previewRow, cz.roster.length-1);
+          renderRoster(); renderPreview(); renderSummary();
+        });
+      });
+    }
+
+    function renderPreview(){
+      var row = cz.roster[cz.previewRow] || cz.roster[0] || blankRow();
+      var name = (row.name||'').toUpperCase() || 'NAME';
+      var num  = row.number || '00';
+      var colors = cz.prod.colors||[];
+      var hex = (colors[cz.colorIdx] && colors[cz.colorIdx].hex_code) || '#1f3a93';
+      var ink = contrastInk(hex);
+      var fam = fontCss(cz.fontId);
+      // Simple back-of-jersey silhouette with arched name + big number.
+      var svg =
+        '<svg viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">'
+        + '<defs><path id="arch" d="M 50 90 Q 140 55 230 90"/></defs>'
+        + '<path d="M70 40 L110 30 Q140 48 170 30 L210 40 L250 80 L222 110 L210 96 L210 290 Q140 304 70 290 L70 96 L58 110 L30 80 Z" '
+        +   'fill="'+esc(hex)+'" stroke="rgba(0,0,0,.18)" stroke-width="2"/>'
+        + '<text font-family="'+fam+'" font-size="26" fill="'+ink+'" text-anchor="middle" letter-spacing="1">'
+        +   '<textPath href="#arch" startOffset="50%">'+esc(name)+'</textPath></text>'
+        + '<text x="140" y="210" font-family="'+fam+'" font-size="120" fill="'+ink+'" text-anchor="middle" dominant-baseline="middle">'+esc(num)+'</text>'
+        + '</svg>';
+      document.getElementById('czSvg').innerHTML = svg;
+      var cn = (colors[cz.colorIdx] && colors[cz.colorIdx].color_name) ? colors[cz.colorIdx].color_name.replace(/_\d+$/,'') : '';
+      document.getElementById('czPrevHint').textContent = cn ? (cn + ' · ' + name + ' ' + num) : (name + ' ' + num);
+    }
+    // Pick black or white lettering for legibility on the jersey color.
+    function contrastInk(hex){
+      try {
+        var h = hex.replace('#',''); if (h.length===3) h=h.split('').map(function(x){return x+x;}).join('');
+        var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+        var lum = (0.299*r+0.587*g+0.114*b)/255;
+        return lum>0.6 ? '#1a1a1a' : '#ffffff';
+      } catch(e){ return '#ffffff'; }
+    }
+
+    function filledRows(){ return cz.roster.filter(function(r){ return (r.name||'').trim() || (r.number||'').trim(); }); }
+    function renderSummary(){
+      var n = filledRows().length;
+      document.getElementById('czSummary').innerHTML = '<strong>'+n+'</strong> '+t('jersey.cz.players','players');
+      document.getElementById('czAdd').disabled = n===0;
+    }
+
+    // Paste-a-list parsing: "Name, Number, Size" per line (commas or tabs).
+    function parsePaste(text){
+      var rows = [];
+      (text||'').split(/\r?\n/).forEach(function(line){
+        var parts = line.split(/[,\t]/).map(function(s){ return s.trim(); });
+        if (!parts.length || !parts.join('')) return;
+        var name = parts[0]||'';
+        var number = (parts[1]||'').replace(/[^0-9]/g,'').slice(0,3);
+        var size = (parts[2]||'L').toUpperCase();
+        if (SIZES.indexOf(size)<0) size='L';
+        if (name || number) rows.push({ name:name, number:number, size:size });
+      });
+      return rows;
+    }
+
+    // ============ add to quote ============
+    function addToQuote(){
+      var rows = filledRows();
+      if (!rows.length) return;
+      var prod = cz.prod;
+      var color = (prod.colors||[])[cz.colorIdx] || {};
+      // size breakdown for the CRM size matrix
+      var sizes = {};
+      rows.forEach(function(r){ sizes[r.size] = (sizes[r.size]||0) + 1; });
+      var item = {
+        product_id:   prod.product_id,
+        color_id:     color.color_id || null,
+        color_name:   (color.color_name||'').replace(/_\d+$/,''),
+        brand:        prod.brand || '',
+        style_number: prod.style_number || '',
+        name:         prod.name || '',
+        garment_type: prod.garment_type || 'jersey',
+        hero_url:     imgUrl(color.mockup_front_url || prod.hero_image_url),
+        qty:          rows.length,
+        sides:        2,
+        placements:   ['back-name','back-number'],
+        decoration_type: cz.deco === 'twill' ? 'embroidery' : (cz.deco === 'heat' ? 'dtf' : 'dtg'),
+        sizes:        sizes,
+        // ----- jersey-specific structured data (rides along in cart_items JSONB) -----
+        is_jersey:    true,
+        sport:        state.sport || (prod.sports && prod.sports[0]) || null,
+        jersey_font:  cz.fontId,
+        jersey_font_label: (function(){ for(var i=0;i<FONTS.length;i++){ if(FONTS[i].id===cz.fontId) return FONTS[i].label; } return cz.fontId; })(),
+        jersey_decoration: cz.deco,
+        roster:       rows.map(function(r){ return { name:r.name||'', number:r.number||'', size:r.size||'L', font:cz.fontId }; })
+      };
+      SinghsCart.add(item);
+      try { if (window.spTrack) window.spTrack('jersey_add_to_quote', { product_id:prod.product_id, sport:item.sport, players:rows.length, font:cz.fontId }); } catch(e){}
+      closeCustomizer();
+      showToast(rows.length);
+    }
+
+    function showToast(n){
+      var el = document.getElementById('czToast');
+      el.innerHTML = '<span>' + t('jersey.cz.added','Team added to your quote') + ' · <strong>'+n+'</strong> '+t('jersey.cz.players','players')+'</span>'
+        + '<a href="/quote#cart" data-i18n="jersey.cz.viewquote">' + t('jersey.cz.viewquote','Review quote') + '</a>';
+      el.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(function(){ el.classList.remove('show'); }, 4200);
+    }
+
+    // ============ wire-up ============
+    function init(){
+      // hero CTA scrolls to sport picker
+      document.getElementById('heroCta').addEventListener('click', function(){
+        document.getElementById('sportPicker').scrollIntoView({ behavior:'smooth', block:'center' });
+      });
+      document.getElementById('czClose').addEventListener('click', closeCustomizer);
+      document.getElementById('czOverlay').addEventListener('click', function(e){ if (e.target.id==='czOverlay') closeCustomizer(); });
+      document.addEventListener('keydown', function(e){ if (e.key==='Escape' && cz) closeCustomizer(); });
+      document.getElementById('czAddRow').addEventListener('click', function(){ cz.roster.push(blankRow()); renderRoster(); renderSummary(); });
+      document.getElementById('czPasteToggle').addEventListener('click', function(){
+        var w = document.getElementById('czPasteWrap');
+        w.style.display = w.style.display==='none' ? 'block' : 'none';
+      });
+      document.getElementById('czPasteTa').addEventListener('input', function(){
+        var rows = parsePaste(this.value);
+        if (rows.length){ cz.roster = rows.concat([blankRow()]); cz.previewRow = 0; renderRoster(); renderPreview(); renderSummary(); }
+      });
+      document.getElementById('czAdd').addEventListener('click', addToQuote);
+
+      renderSportPicker();
+      setSport(qp('sport'), false);
+    }
+    if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
+  })();
+  </script>
+</body>
+</html>
