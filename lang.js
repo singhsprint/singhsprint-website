@@ -780,6 +780,9 @@ var SP_LANG = (function() {
     'jersey.cz.nologo':       { en: 'No file chosen yet', fr: 'Aucun fichier choisi' },
     'jersey.cz.front':        { en: 'Front',            fr: 'Devant' },
     'jersey.cz.back':         { en: 'Back',             fr: 'Dos' },
+    'jersey.cz.logosize':     { en: 'Logo size',        fr: 'Taille du logo' },
+    'jersey.cz.removebg':     { en: 'Remove white background', fr: 'Retirer le fond blanc' },
+    'jersey.cz.draghint':     { en: 'Drag the logo on the jersey to position it.', fr: 'Glissez le logo sur le maillot pour le positionner.' },
     // Jersey line item on the quote page.
     'quote.cart.jersey.subtotal':     { en: 'subtotal',     fr: 'sous-total' },
     'quote.cart.jersey.quoted':       { en: 'Priced with your quote', fr: 'Chiffré avec votre soumission' },

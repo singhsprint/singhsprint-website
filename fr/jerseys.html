@@ -154,6 +154,16 @@
         <div class="cz-preview">
           <span class="cz-prev-label" data-i18n="jersey.cz.preview">Live preview</span>
           <div class="cz-svgwrap" id="czSvg"></div>
+          <div id="czLogoTools" style="display:none;width:100%;max-width:280px;margin-top:2px">
+            <div style="display:flex;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
+              <span data-i18n="jersey.cz.logosize">Logo size</span>
+              <input type="range" id="czLogoSize" min="8" max="70" value="24" step="1" style="flex:1">
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;color:#cfc9bb;font-size:.72rem;margin-top:7px;cursor:pointer">
+              <input type="checkbox" id="czLogoRemoveBg"> <span data-i18n="jersey.cz.removebg">Remove white background</span>
+            </label>
+            <div style="color:#9b958a;font-size:.66rem;margin-top:6px" data-i18n="jersey.cz.draghint">Drag the logo on the jersey to position it.</div>
+          </div>
           <div class="cz-prevhint" id="czPrevHint"></div>
         </div>
         <div class="cz-form">
@@ -302,6 +312,14 @@
       { id:'full_front',   label:'jersey.cz.place.full',   fallback:'Full front' }
     ];
     function round95(p){ return (Number(p) % 1 === 0.95) ? Number(p) : Math.ceil(p) - 0.05; }
+    // Default on-jersey logo box (center x/y + width, % of the front image) per
+    // placement. Left chest = wearer's left = viewer's right. Used as the
+    // starting point; the customer then drags/resizes it on the jersey.
+    function defaultLogoBox(placement){
+      if (placement === 'left_chest')  return { x:64, y:33, w:18 };
+      if (placement === 'full_front')  return { x:50, y:48, w:52 };
+      return { x:50, y:32, w:24 };  // center_chest
+    }
 
     var SIZES = ['YS','YM','YL','XS','S','M','L','XL','2XL','3XL'];
 
@@ -401,6 +419,8 @@
         logoUrl: null,                 // uploaded logo URL (set after upload)
         logoName: '',                  // uploaded file name
         logoPreviewUrl: null,          // local object URL for the on-jersey preview
+        logoBox: null,                 // { x, y, w } as % of the front image — drag/size
+        logoRemoveBg: false,           // remove white background around the logo
         roster: [ blankRow(), blankRow() ],
         previewRow: 0
       };
@@ -508,7 +528,7 @@
         return '<span class="cz-chip'+(d.id===cz.logoPlacement?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
       }).join('');
       ph.querySelectorAll('.cz-chip').forEach(function(c){
-        c.addEventListener('click', function(){ cz.logoPlacement = c.getAttribute('data-id'); renderLogo(); renderPreview(); });
+        c.addEventListener('click', function(){ cz.logoPlacement = c.getAttribute('data-id'); cz.logoBox = defaultLogoBox(cz.logoPlacement); renderLogo(); renderPreview(); });
       });
       var fn = document.getElementById('czLogoFileName');
       if (fn) fn.textContent = cz.logoName || t('jersey.cz.nologo','No file chosen yet');
@@ -522,6 +542,7 @@
       cz.logoName = file.name;
       try { if (cz.logoPreviewUrl) URL.revokeObjectURL(cz.logoPreviewUrl); cz.logoPreviewUrl = URL.createObjectURL(file); } catch(e){ cz.logoPreviewUrl = null; }
       if (cz.logoMethod === 'none') { cz.logoMethod = 'dtf'; renderLogo(); }
+      if (!cz.logoBox) cz.logoBox = defaultLogoBox(cz.logoPlacement);
       renderPreview();  // show the logo on the jersey right away
       if (fn) fn.textContent = t('jersey.cz.uploading','Uploading…');
       var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
@@ -578,28 +599,52 @@
       // name + number rendered in the chosen team font on a chip tinted with
       // the colorway's primary color so the lettering + font read clearly.
       var img = imgUrl(col.mockup_front_url || cz.prod.hero_image_url);
-      // Composite the uploaded logo onto the FRONT jersey photo at the chosen
-      // placement (approximate preview — the shop finalizes exact position).
-      var logoOverlay = '';
-      if (cz.logoMethod !== 'none' && cz.logoPreviewUrl){
-        // Left chest = the wearer's left = the VIEWER's right on a front photo.
-        var POS = { left_chest:{t:33,l:64,w:18}, center_chest:{t:32,l:50,w:24}, full_front:{t:48,l:50,w:52} };
-        var p = POS[cz.logoPlacement] || POS.center_chest;
-        logoOverlay = '<img src="'+esc(cz.logoPreviewUrl)+'" alt="" style="position:absolute;top:'+p.t+'%;left:'+p.l+'%;width:'+p.w+'%;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">';
-      }
+      // Composite the uploaded logo onto the FRONT jersey photo. The customer
+      // drags it to position and uses the Size slider to scale it — a real
+      // manual mockup. Box = { x, y, w } as % of the front image.
+      var hasLogo = cz.logoMethod !== 'none' && cz.logoPreviewUrl;
+      if (hasLogo && !cz.logoBox) cz.logoBox = defaultLogoBox(cz.logoPlacement);
+      var box = cz.logoBox || { x:50, y:32, w:24 };
+      var logoOverlay = hasLogo
+        ? '<img id="czLogoArt" src="'+esc(cz.logoPreviewUrl)+'" alt="" draggable="false" style="position:absolute;top:'+box.y+'%;left:'+box.x+'%;width:'+box.w+'%;transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;'+(cz.logoRemoveBg?'mix-blend-mode:multiply;':'')+'filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">'
+        : '';
       var html = '';
-      if (img) html += '<div style="position:relative;width:100%;background:#fff;border-radius:10px;overflow:hidden">'
-        + '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;display:block" loading="lazy" decoding="async">'
+      if (img) html += '<div id="czStage" style="position:relative;width:100%;background:#fff;border-radius:10px;overflow:hidden;touch-action:none">'
+        + '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;display:block;pointer-events:none" loading="lazy" decoding="async">'
         + logoOverlay
-        + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#9b958a">'+t('jersey.cz.front','Front')+'</span></div>';
+        + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#9b958a;pointer-events:none">'+t('jersey.cz.front','Front')+'</span></div>';
       html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:14px 12px 16px;text-align:center;position:relative">'
         + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:'+ink+';opacity:.5">'+t('jersey.cz.back','Back')+'</span>'
         + '<div style="font-family:'+fam+';font-size:22px;color:'+ink+';letter-spacing:1px;line-height:1">'+esc(name)+'</div>'
         + '<div style="font-family:'+fam+';font-size:58px;color:'+ink+';line-height:1.02">'+esc(num)+'</div>'
         + '</div>';
       document.getElementById('czSvg').innerHTML = html;
+      var tools = document.getElementById('czLogoTools');
+      if (tools) tools.style.display = hasLogo ? 'block' : 'none';
+      if (hasLogo){
+        var sizeEl = document.getElementById('czLogoSize'); if (sizeEl) sizeEl.value = Math.round(box.w);
+        var bgEl = document.getElementById('czLogoRemoveBg'); if (bgEl) bgEl.checked = !!cz.logoRemoveBg;
+        attachLogoDrag();
+      }
       var cn = prettyColor(col.color_name);
-      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (cz.logoMethod!=='none' && cz.logoPreviewUrl ? ' · + logo' : '');
+      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (hasLogo ? ' · + logo' : '');
+    }
+    // Drag the logo around the front jersey image; updates cz.logoBox live.
+    function attachLogoDrag(){
+      var stage = document.getElementById('czStage'), art = document.getElementById('czLogoArt');
+      if (!stage || !art) return;
+      var dragging = false;
+      art.addEventListener('pointerdown', function(e){ dragging = true; try{ art.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); });
+      art.addEventListener('pointermove', function(e){
+        if (!dragging || !cz) return;
+        var r = stage.getBoundingClientRect();
+        cz.logoBox = cz.logoBox || { x:50, y:32, w:24 };
+        cz.logoBox.x = Math.max(4, Math.min(96, ((e.clientX - r.left) / r.width) * 100));
+        cz.logoBox.y = Math.max(4, Math.min(96, ((e.clientY - r.top) / r.height) * 100));
+        art.style.left = cz.logoBox.x + '%'; art.style.top = cz.logoBox.y + '%';
+      });
+      var end = function(e){ dragging = false; try{ art.releasePointerCapture(e.pointerId); }catch(_){} };
+      art.addEventListener('pointerup', end); art.addEventListener('pointercancel', end);
     }
     // Pick black or white lettering for legibility on the jersey color.
     function contrastInk(hex){
@@ -671,10 +716,11 @@
       rows.forEach(function(r){ sizes[r.size] = (sizes[r.size]||0) + 1; });
       var qty = rows.length;
       var logoMethod = cz.logoMethod, logoPlacement = cz.logoPlacement, logoUrl = cz.logoUrl, logoName = cz.logoName, fontId = cz.fontId;
+      var logoBox = cz.logoBox ? { x:cz.logoBox.x, y:cz.logoBox.y, w:cz.logoBox.w } : null, logoRemoveBg = !!cz.logoRemoveBg;
       var btn = document.getElementById('czAdd'), prevTxt = btn.textContent;
       btn.disabled = true; btn.textContent = t('jersey.cz.adding','Pricing…');
       computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, function(price){
-        var logo = (logoMethod === 'none') ? null : { method: logoMethod, placement: logoPlacement, placement_label: logoPlacementLabel(logoPlacement), url: logoUrl || null, filename: logoName || null };
+        var logo = (logoMethod === 'none') ? null : { method: logoMethod, placement: logoPlacement, placement_label: logoPlacementLabel(logoPlacement), url: logoUrl || null, filename: logoName || null, box: logoBox, remove_bg: logoRemoveBg };
         var item = {
           product_id:   prod.product_id,
           color_id:     color.color_id || null,
@@ -738,6 +784,10 @@
       document.getElementById('czAdd').addEventListener('click', addToQuote);
       var lf = document.getElementById('czLogoFile');
       if (lf) lf.addEventListener('change', function(){ handleLogoFile(this.files && this.files[0]); });
+      var ls = document.getElementById('czLogoSize');
+      if (ls) ls.addEventListener('input', function(){ if(!cz) return; cz.logoBox = cz.logoBox || defaultLogoBox(cz.logoPlacement); cz.logoBox.w = parseInt(this.value,10)||24; var a=document.getElementById('czLogoArt'); if(a) a.style.width = cz.logoBox.w + '%'; });
+      var lb = document.getElementById('czLogoRemoveBg');
+      if (lb) lb.addEventListener('change', function(){ if(!cz) return; cz.logoRemoveBg = this.checked; renderPreview(); });
 
       renderSportPicker();
       setSport(qp('sport'), false);
