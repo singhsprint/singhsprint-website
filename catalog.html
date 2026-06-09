@@ -1305,7 +1305,10 @@
     filters: {                       // active filter state — drives Algolia query
       type: getQueryParam('type') || null,
       brand: [],
-      canadian: false,
+      // Hydrate from `?canadian=1` so deep links from the nav's Canadian-Made
+      // dropdown and the /designed-in-montreal page land on the catalog
+      // pre-filtered to Rue Saint-Patrick / Canadian-made blanks.
+      canadian: getQueryParam('canadian') === '1',
       csa: false,
       // Hydrate from `?q=` so deep links from the nav's search dropdown
       // (e.g. /catalog?q=hoodies) actually pre-filter the catalog instead
