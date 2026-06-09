@@ -378,7 +378,10 @@
       meta.innerHTML = '<span class="jh-loading">' + t('jersey.loading','Loading jerseys…') + '</span>';
       var url = API + '?limit=300&' + (state.sport ? ('sport='+state.sport) : 'jerseys=1');
       fetch(url).then(function(r){ return r.json(); }).then(function(j){
-        state.products = (j && j.products) || [];
+        // Only show jerseys our supplier actually has in stock (in_stock is
+        // synced daily from S&S/Blanks). This also drops incomplete catalog
+        // entries with no variants (which report in_stock=false).
+        state.products = (((j && j.products) || []).filter(function(p){ return p.in_stock === true; }));
         renderGrid();
       }).catch(function(){
         meta.innerHTML = '';
