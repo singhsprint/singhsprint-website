@@ -191,7 +191,7 @@
           <div class="cz-field" id="czKeeperField" style="display:none">
             <label id="czKeeperLabel" data-i18n="jersey.cz.goaliecolor">Goalie color</label>
             <div class="cz-swatches" id="czKeeperSwatches"></div>
-            <div style="font-size:.72rem;color:var(--soft);margin-top:4px" data-i18n="jersey.cz.goaliehint">Tick "G" next to a player to give them this color.</div>
+            <div style="font-size:.72rem;color:var(--soft);margin-top:4px" data-i18n="jersey.cz.goaliehint">Tick the box next to a player to give them this color.</div>
           </div>
 
           <div class="cz-field">
@@ -533,6 +533,7 @@
       if (state && state.sport) sp.push(state.sport);
       sp = sp.map(function(s){ return String(s||'').toLowerCase(); });
       if (sp.indexOf('hockey') >= 0 || sp.indexOf('soccer') >= 0) return t('jersey.cz.goalie','Goalie');
+      if (sp.indexOf('volleyball') >= 0) return t('jersey.cz.libero','Libero');   // libero wears a contrasting jersey by rule
       return null;
     }
     // Default the goalie color to the product colorway that contrasts most with
@@ -551,7 +552,8 @@
       if (!role){ field.style.display='none'; return; }
       field.style.display='';
       var lbl = document.getElementById('czKeeperLabel');
-      if (lbl) lbl.textContent = t('jersey.cz.goaliecolor', role + ' color');
+      var labelKey = (role.toLowerCase().indexOf('libero') >= 0) ? 'jersey.cz.liberocolor' : 'jersey.cz.goaliecolor';
+      if (lbl) lbl.textContent = t(labelKey, role + ' color');
       var host = document.getElementById('czKeeperSwatches');
       var colors = cz.prod.colors||[];
       host.innerHTML = colors.map(function(c,i){
@@ -829,7 +831,8 @@
       var n = fr.length;
       var role = czRole();
       var gk = role ? fr.filter(function(r){ return r.keeper; }).length : 0;
-      var extra = gk ? (' · ' + gk + ' ' + (gk===1 ? role.toLowerCase() : t('jersey.cz.goalies', role.toLowerCase()+'s'))) : '';
+      var pluralKey = (role && role.toLowerCase().indexOf('libero') >= 0) ? 'jersey.cz.liberos' : 'jersey.cz.goalies';
+      var extra = gk ? (' · ' + gk + ' ' + (gk===1 ? role.toLowerCase() : t(pluralKey, role.toLowerCase()+'s'))) : '';
       document.getElementById('czSummary').innerHTML = '<strong>'+n+'</strong> '+t('jersey.cz.players','players')+esc(extra);
       document.getElementById('czAdd').disabled = n===0;
     }
