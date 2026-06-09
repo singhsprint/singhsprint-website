@@ -761,7 +761,7 @@ var SP_LANG = (function() {
     'jersey.cz.close':    { en: 'Close', fr: 'Fermer' },
     'jersey.cz.remove':   { en: 'Remove', fr: 'Retirer' },
     'jersey.cz.empty':    { en: 'Add at least one player to continue.', fr: 'Ajoutez au moins un joueur pour continuer.' },
-    'jersey.cz.fontnote': { en: 'Preview fonts approximate our press styles. Final lettering uses our licensed jersey fonts.', fr: 'Les polices d\'aperçu approximent nos styles. Le lettrage final utilise nos polices de maillot sous licence.' },
+    'jersey.cz.fontnote': { en: 'All fonts are free Google Fonts — your printed lettering uses the exact font shown here.', fr: 'Toutes les polices sont des polices Google gratuites — votre lettrage imprimé utilise exactement la police affichée ici.' },
     // Decoration model: names/numbers always DTF; optional front logo DTF or embroidery.
     'jersey.cz.namesnumbers': { en: 'Names & numbers', fr: 'Noms et numéros' },
     'jersey.cz.dtfstd':       { en: 'DTF print',       fr: 'Impression DTF' },

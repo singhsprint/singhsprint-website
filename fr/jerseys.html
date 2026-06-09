@@ -119,9 +119,19 @@
 
     @media (max-width:760px){
       .jh-hero h1{font-size:1.9rem}
+      /* Full-screen modal on phones: single column (preview on top, form
+         below), no inner scroll trap — the overlay itself scrolls. */
+      .cz-overlay{padding:0;align-items:stretch}
+      .cz{border-radius:0;max-width:100%;min-height:100%}
       .cz-body{grid-template-columns:1fr}
-      .cz-preview{position:static;flex-direction:row;flex-wrap:wrap;justify-content:center}
-      .cz-svgwrap{max-width:200px}
+      .cz-preview{position:static;padding:16px 16px 8px}
+      .cz-svgwrap{max-width:230px}
+      .cz-form{max-height:none;overflow:visible;padding:16px;gap:16px}
+      .cz-head{padding:14px 16px}
+      .cz-foot{padding:12px 16px}
+      .cz-foot .cz-addbtn{padding:13px 18px}
+      /* Bigger touch targets for the draggable logo + roster inputs. */
+      .cz-roster input,.cz-roster select{font-size:16px}
     }
   </style>
 </head>
@@ -283,16 +293,19 @@
       volleyball:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 3c3 4 3 14-4 17M21 10c-5 1-13-2-15-7"/></svg>'
     };
 
-    // ---- Fonts offered for the jersey lettering preview (single team font).
-    // Open-source faces (SIL OFL) loaded in <head>. value = CSS font-family.
+    // ---- Fonts offered for the jersey lettering (single team font).
+    // ALL are Google Fonts (open-source SIL OFL) — downloadable for print so
+    // the shop reproduces the exact lettering, nothing proprietary/site-only.
+    // `google` = the real font family name to download from fonts.google.com.
     var FONTS = [
-      { id:'anton',   label:'Block',     css:"'Anton',sans-serif" },
-      { id:'oswald',  label:'Condensed', css:"'Oswald',sans-serif" },
-      { id:'saira',   label:'Athletic',  css:"'Saira Condensed',sans-serif" },
-      { id:'archivo', label:'Heavy',     css:"'Archivo Black',sans-serif" },
-      { id:'teko',    label:'Tall',      css:"'Teko',sans-serif" }
+      { id:'anton',   label:'Block',     css:"'Anton',sans-serif",           google:'Anton' },
+      { id:'oswald',  label:'Condensed', css:"'Oswald',sans-serif",          google:'Oswald' },
+      { id:'saira',   label:'Athletic',  css:"'Saira Condensed',sans-serif", google:'Saira Condensed' },
+      { id:'archivo', label:'Heavy',     css:"'Archivo Black',sans-serif",   google:'Archivo Black' },
+      { id:'teko',    label:'Tall',      css:"'Teko',sans-serif",            google:'Teko' }
     ];
     function fontCss(id){ for (var i=0;i<FONTS.length;i++){ if (FONTS[i].id===id) return FONTS[i].css; } return FONTS[0].css; }
+    function fontGoogle(id){ for (var i=0;i<FONTS.length;i++){ if (FONTS[i].id===id) return FONTS[i].google; } return FONTS[0].google; }
 
     // Decoration model (per shop): names + numbers are ALWAYS DTF, priced
     // like an oversized DTF on the back (full_back placement). An optional
@@ -416,7 +429,8 @@
         fontId: FONTS[0].id,
         logoMethod: 'none',            // none | dtf | embroidery
         logoPlacement: 'left_chest',   // left_chest | center_chest | full_front
-        logoUrl: null,                 // uploaded logo URL (set after upload)
+        logoUrl: null,                 // uploaded logo signed URL (set after upload)
+        logoPath: null,                // storage path (durable; CRM re-signs)
         logoName: '',                  // uploaded file name
         logoPreviewUrl: null,          // local object URL for the on-jersey preview
         logoBox: null,                 // { x, y, w } as % of the front image — drag/size
@@ -547,8 +561,9 @@
       if (fn) fn.textContent = t('jersey.cz.uploading','Uploading…');
       var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
       fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
-        cz.logoUrl = (j && (j.signed_url || j.url || j.path)) || null;
-        if (fn) fn.textContent = cz.logoUrl ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
+        cz.logoUrl  = (j && (j.signed_url || j.url)) || null;
+        cz.logoPath = (j && j.path) || null;   // durable; CRM re-signs from this
+        if (fn) fn.textContent = (cz.logoUrl || cz.logoPath) ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
       }).catch(function(){ if (fn) fn.textContent = file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'); });
     }
     function renderRoster(){
@@ -715,12 +730,12 @@
       var sizes = {};
       rows.forEach(function(r){ sizes[r.size] = (sizes[r.size]||0) + 1; });
       var qty = rows.length;
-      var logoMethod = cz.logoMethod, logoPlacement = cz.logoPlacement, logoUrl = cz.logoUrl, logoName = cz.logoName, fontId = cz.fontId;
+      var logoMethod = cz.logoMethod, logoPlacement = cz.logoPlacement, logoUrl = cz.logoUrl, logoPath = cz.logoPath, logoName = cz.logoName, fontId = cz.fontId;
       var logoBox = cz.logoBox ? { x:cz.logoBox.x, y:cz.logoBox.y, w:cz.logoBox.w } : null, logoRemoveBg = !!cz.logoRemoveBg;
       var btn = document.getElementById('czAdd'), prevTxt = btn.textContent;
       btn.disabled = true; btn.textContent = t('jersey.cz.adding','Pricing…');
       computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, function(price){
-        var logo = (logoMethod === 'none') ? null : { method: logoMethod, placement: logoPlacement, placement_label: logoPlacementLabel(logoPlacement), url: logoUrl || null, filename: logoName || null, box: logoBox, remove_bg: logoRemoveBg };
+        var logo = (logoMethod === 'none') ? null : { method: logoMethod, placement: logoPlacement, placement_label: logoPlacementLabel(logoPlacement), url: logoUrl || null, path: logoPath || null, filename: logoName || null, box: logoBox, remove_bg: logoRemoveBg };
         var item = {
           product_id:   prod.product_id,
           color_id:     color.color_id || null,
@@ -740,6 +755,10 @@
           sport:        state.sport || (prod.sports && prod.sports[0]) || null,
           jersey_font:  fontId,
           jersey_font_label: (function(){ for(var i=0;i<FONTS.length;i++){ if(FONTS[i].id===fontId) return FONTS[i].label; } return fontId; })(),
+          // Exact Google Font so the shop downloads the real face for print.
+          jersey_font_family: fontGoogle(fontId),
+          jersey_font_source: 'Google Fonts',
+          jersey_font_url: 'https://fonts.google.com/specimen/' + encodeURIComponent(fontGoogle(fontId).replace(/ /g,'+')),
           jersey_names_numbers: { method:'dtf', placement: NAME_NUMBER_PLACEMENT },
           jersey_front_logo: logo,
           jersey_unit_price: price.unit,
