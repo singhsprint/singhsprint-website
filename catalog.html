@@ -2584,6 +2584,19 @@
     // Show the floating cart bar if items were added in a previous tab visit.
     renderCartBar();
     fetchPage();
+    // Deep-link: ?product=<id> opens that product's detail modal directly, so a
+    // click from the Designed-in-Montreal / Canadian collection lands on the
+    // actual product card inside the catalog — not just the filtered list.
+    (function openProductFromUrl() {
+      try {
+        var pid = new URLSearchParams(location.search).get('product');
+        if (!pid) return;
+        fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' + encodeURIComponent(pid) + '&qty=' + state.qty + '&limit=1')
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) { var p = d && d.products && d.products[0]; if (p) openProductDetail(p); })
+          .catch(function () {});
+      } catch (e) {}
+    })();
   });
   </script>
 
