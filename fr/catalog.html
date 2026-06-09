@@ -390,13 +390,14 @@
        Customer can also tap a tick or type a custom number. The whole bar
        collapses to two rows on mobile so the slider stays touch-friendly. -->
   <style>
-    .qty-bar{max-width:1200px;margin:-4px auto 18px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .qty-bar{max-width:1200px;margin:-4px auto 18px;padding:14px 18px;background:linear-gradient(180deg,#fffdf0,#fdf6c9);border:1.5px solid var(--hi);border-radius:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 6px 22px rgba(190,205,30,.22)}
+    .qty-bar__badge{background:var(--ink);color:var(--hi);font-size:.66rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:50px;white-space:nowrap;flex-shrink:0}
     .qty-bar__label{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);flex-shrink:0}
     .qty-bar__label strong{color:var(--ink);font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
     .qty-bar__slider-wrap{flex:1;min-width:200px;position:relative;padding:2px 0 18px}
-    .qty-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:50px;background:linear-gradient(to right,var(--ink) var(--qty-pct,80%),#e8e6df var(--qty-pct,80%));outline:none;margin:0;cursor:pointer}
-    .qty-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.18)}
-    .qty-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+    .qty-slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:50px;background:linear-gradient(to right,var(--ink) var(--qty-pct,80%),#e4e0c8 var(--qty-pct,80%));outline:none;margin:0;cursor:pointer}
+    .qty-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 0 0 3px var(--hi),0 1px 5px rgba(0,0,0,.28)}
+    .qty-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 0 0 3px var(--hi),0 1px 5px rgba(0,0,0,.28)}
     .qty-ticks{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;font-size:.66rem;color:var(--soft);font-weight:500;pointer-events:none}
     .qty-ticks span{cursor:pointer;pointer-events:auto;transition:color .15s;padding:2px 4px;margin:0 -4px}
     .qty-ticks span:hover,.qty-ticks span.active{color:var(--ink);font-weight:700}
@@ -411,8 +412,9 @@
   </style>
   <div id="qtyPricingBar" class="qty-bar">
     <div class="qty-bar__label">
+      <span class="qty-bar__badge">💰 Prix en gros</span>
       <span  data-i18n="cat.qty.label">Prix pour</span> <strong><span id="qtyReadout">200</span> <span  data-i18n="cat.qty.units">unités</span></strong>
-      <span style="font-size:.72rem;color:var(--soft);font-weight:500"  data-i18n="cat.qty.oneside">· 1 côté imprimé</span>
+      <span style="font-size:.72rem;color:var(--soft);font-weight:500"  data-i18n="cat.qty.oneside">· 1 côté imprimé · glissez pour comparer</span>
     </div>
     <div class="qty-bar__slider-wrap">
       <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
