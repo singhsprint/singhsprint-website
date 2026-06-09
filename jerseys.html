@@ -463,6 +463,9 @@
       (prod.colors||[]).forEach(function(c){ (c.sizes_in_stock||[]).forEach(function(s){ sizeSet[s]=1; }); });
       var SORD = ['YXS','YS','YM','YL','YXL','XS','S','M','L','XL','2XL','XXL','3XL','XXXL','4XL','5XL'];
       var sizes = Object.keys(sizeSet).sort(function(a,b){ var ia=SORD.indexOf(a), ib=SORD.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
+      // The roster size picker only offers sizes the supplier actually stocks
+      // for this jersey (falls back to the generic list if the feed has none).
+      cz.sizes = sizes.length ? sizes : SIZES.slice();
       var specHtml = specs.length ? specs.join(' · ') : '';
       if (sizes.length) specHtml += (specHtml?'<br>':'') + t('jersey.cz.sizes','Sizes')+': ' + sizes.join(', ');
       document.getElementById('czSpecs').innerHTML = specHtml;
@@ -595,9 +598,12 @@
     function renderRoster(){
       var host = document.getElementById('czRoster');
       host.innerHTML = '';
+      var sizeList = (cz.sizes && cz.sizes.length) ? cz.sizes : SIZES;
+      var defSize = (sizeList.indexOf('L') >= 0) ? 'L' : (sizeList[Math.floor(sizeList.length/2)] || sizeList[0]);
       cz.roster.forEach(function(row, i){
+        if (sizeList.indexOf(row.size) < 0) row.size = defSize;   // coerce to a stocked size
         var tr = document.createElement('tr');
-        var sizeOpts = SIZES.map(function(s){ return '<option'+(s===row.size?' selected':'')+'>'+s+'</option>'; }).join('');
+        var sizeOpts = sizeList.map(function(s){ return '<option'+(s===row.size?' selected':'')+'>'+s+'</option>'; }).join('');
         tr.innerHTML =
           '<td><input data-f="name" data-i="'+i+'" value="'+esc(row.name)+'" placeholder="'+t('jersey.cz.name','Player name')+'"></td>'
           + '<td class="col-no"><input data-f="number" data-i="'+i+'" value="'+esc(row.number)+'" maxlength="3" inputmode="numeric" placeholder="00"></td>'
@@ -707,13 +713,15 @@
     // Paste-a-list parsing: "Name, Number, Size" per line (commas or tabs).
     function parsePaste(text){
       var rows = [];
+      var sizeList = (cz && cz.sizes && cz.sizes.length) ? cz.sizes : SIZES;
+      var defSize = (sizeList.indexOf('L') >= 0) ? 'L' : (sizeList[Math.floor(sizeList.length/2)] || sizeList[0]);
       (text||'').split(/\r?\n/).forEach(function(line){
         var parts = line.split(/[,\t]/).map(function(s){ return s.trim(); });
         if (!parts.length || !parts.join('')) return;
         var name = parts[0]||'';
         var number = (parts[1]||'').replace(/[^0-9]/g,'').slice(0,3);
-        var size = (parts[2]||'L').toUpperCase();
-        if (SIZES.indexOf(size)<0) size='L';
+        var size = (parts[2]||'').toUpperCase();
+        if (sizeList.indexOf(size)<0) size = defSize;
         if (name || number) rows.push({ name:name, number:number, size:size });
       });
       return rows;
