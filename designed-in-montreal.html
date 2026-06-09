@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Designed in Montreal — Canadian-Made Blanks | Singhs Print</title>
+  <meta name="description" content="Print and embroider on Rue Saint-Patrick blanks — designed in Montreal, organic-cotton options, Canadian-made supplier. Tees, hoodies, polos, fleece and caps decorated in-house at Singhs Print.">
+  <link rel="canonical" href="https://www.singhsprint.com/designed-in-montreal">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/designed-in-montreal">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/designed-in-montreal">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/designed-in-montreal">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
+  <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap">
+
+  <style>
+    :root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+
+    /* Hero */
+    .dm-hero{max-width:1100px;margin:0 auto;padding:54px 24px 18px;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+    .dm-flag{display:inline-block;padding:5px 14px;background:#fff;border:1px solid var(--line);border-radius:50px;font-weight:600;font-size:.82rem;margin-bottom:16px}
+    .dm-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.6rem;font-weight:800;line-height:1.08;margin-bottom:14px}
+    .dm-hero h1 .hl{background:linear-gradient(transparent 60%, var(--hi) 60%)}
+    .dm-hero p{color:var(--muted);font-size:1.06rem;max-width:520px;margin-bottom:22px}
+    .dm-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .dm-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:14px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:transform .15s}
+    .dm-btn:hover{transform:translateY(-1px)}
+    .dm-btn.primary{background:var(--ink);color:#fff}
+    .dm-btn.accent{background:var(--hi);color:var(--ink)}
+    .dm-btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+    .dm-hero-img{border-radius:18px;overflow:hidden;aspect-ratio:4/5;background:#eceae4}
+    .dm-hero-img img{width:100%;height:100%;object-fit:cover}
+
+    /* Trust strip */
+    .dm-strip{background:#13110d;color:#fff;margin-top:24px}
+    .dm-strip-inner{max-width:1100px;margin:0 auto;padding:26px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+    .dm-strip h3{color:var(--hi);font-size:.98rem;font-weight:700;margin-bottom:4px}
+    .dm-strip p{color:#b7b2a8;font-size:.88rem}
+
+    /* Collection */
+    .dm-coll{max-width:1100px;margin:0 auto;padding:44px 24px 12px}
+    .dm-coll h2{font-family:'Playfair Display',Georgia,serif;font-size:1.7rem;font-weight:700;margin-bottom:4px}
+    .dm-coll .sub{color:var(--muted);font-size:.95rem;margin-bottom:22px}
+    .dm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+    .dm-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s}
+    .dm-card:hover{box-shadow:0 12px 28px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .dm-card .photo{aspect-ratio:3/4;background:#f2f0ea;overflow:hidden}
+    .dm-card .photo img{width:100%;height:100%;object-fit:cover}
+    .dm-card .body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:3px;flex:1}
+    .dm-card .cat{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);font-weight:600}
+    .dm-card .name{font-size:.92rem;font-weight:600;line-height:1.3;min-height:2.3em}
+    .dm-card .price{font-size:.82rem;color:var(--muted);margin-top:auto;padding-top:6px}
+    .dm-card .price strong{color:var(--ink)}
+    .dm-loading,.dm-empty{color:var(--muted);font-size:.95rem;padding:24px 0}
+
+    /* CTA band */
+    .dm-band{max-width:1100px;margin:28px auto 64px;padding:40px 24px;text-align:center;background:#fff;border:1px solid var(--line);border-radius:20px}
+    .dm-band h2{font-family:'Playfair Display',Georgia,serif;font-size:1.8rem;font-weight:700;margin-bottom:10px}
+    .dm-band p{color:var(--muted);max-width:520px;margin:0 auto 20px}
+
+    @media (max-width:760px){
+      .dm-hero{grid-template-columns:1fr;gap:24px;padding-top:34px}
+      .dm-hero h1{font-size:2rem}
+      .dm-strip-inner{grid-template-columns:1fr;gap:14px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header, promo bar, footer + "Text us" widget are injected by components.js
+       (loadNav into #nav-placeholder, loadFooter into #footer-placeholder).
+       Both placeholders MUST be present or the chrome silently won't render. -->
+  <div id="nav-placeholder"></div>
+
+  <section class="dm-hero">
+    <div>
+      <span class="dm-flag" data-i18n="dm.flag">🇨🇦 Designed in Montreal · Canadian-made supplier</span>
+      <h1 data-i18n="dm.hero.h1">Print on blanks that are <span class="hl">designed down the street.</span></h1>
+      <p data-i18n="dm.hero.p">We now decorate <strong>Rue Saint-Patrick</strong> — a Montreal-designed label of premium, organic-cotton-option blanks. Same in-house DTG, DTF &amp; embroidery, on garments with a local story your customers care about.</p>
+      <div class="dm-cta">
+        <a href="/catalog?canadian=1" class="dm-btn accent" data-i18n="dm.hero.shop">Shop the Canadian collection →</a>
+        <a href="/quote" class="dm-btn ghost" data-i18n="dm.hero.quote">Get a quote</a>
+      </div>
+    </div>
+    <div class="dm-hero-img">
+      <img src="https://cdn.shopify.com/s/files/1/0478/6005/products/60100-001-M.0107-front-1.jpg" alt="Organic cotton t-shirt designed in Montreal" referrerpolicy="no-referrer" loading="lazy">
+    </div>
+  </section>
+
+  <section class="dm-strip">
+    <div class="dm-strip-inner">
+      <div><h3 data-i18n="dm.s1.h">Designed in Montreal</h3><p data-i18n="dm.s1.p">A local label, not a generic import — a story your buyers connect with.</p></div>
+      <div><h3 data-i18n="dm.s2.h">Organic cotton options</h3><p data-i18n="dm.s2.p">Certified organic-cotton tees &amp; henleys for the sustainability-minded.</p></div>
+      <div><h3 data-i18n="dm.s3.h">Decorated in-house</h3><p data-i18n="dm.s3.p">DTG, DTF &amp; embroidery on every piece, 3–5 day turnaround.</p></div>
+    </div>
+  </section>
+
+  <section class="dm-coll">
+    <h2 data-i18n="dm.coll.h">The Canadian collection</h2>
+    <p class="sub" data-i18n="dm.coll.sub">Smooth, decoratable blanks — tees, long-sleeves, polos, hoodies, sweatpants, sweaters, fleece &amp; caps.</p>
+    <div class="dm-grid" id="dmGrid"><div class="dm-loading" data-i18n="dm.loading">Loading the collection…</div></div>
+  </section>
+
+  <section class="dm-band">
+    <h2 data-i18n="dm.band.h">Want it on your next order?</h2>
+    <p data-i18n="dm.band.p">Tell us the style, colours and quantities — we'll quote the blank plus decoration and send a sample before the run.</p>
+    <a href="/quote" class="dm-btn accent" data-i18n="dm.band.cta">Get a quote →</a>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="components.js" defer></script>
+  <script src="consent.js" defer></script>
+  <script src="lang.js" defer></script>
+  <script src="ai-translate.js" defer></script>
+
+  <script>
+  (function(){
+    'use strict';
+    var API = 'https://singhsprint-crm.vercel.app/api/catalog';
+    var IMAGE_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+    var PROXIED_HOSTS = ['ssactivewear.com','blanks.ca','sanmarcanada.com'];
+    function t(key, fb){ try { if (window.SP_LANG && SP_LANG.t){ var v = SP_LANG.t(key); if (v) return v; } } catch(e){} return fb; }
+    function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    function imgUrl(raw){
+      if (!raw) return '/images/product-tshirt-white.jpg';
+      if (raw.charAt(0)==='/' || raw.indexOf('singhsprint.com')>=0 || raw.indexOf('cdn.shopify.com')>=0) return raw;
+      for (var i=0;i<PROXIED_HOSTS.length;i++){ if (raw.indexOf(PROXIED_HOSTS[i])>=0) return IMAGE_PROXY + '?url=' + encodeURIComponent(raw); }
+      return raw;
+    }
+    var TYPE_LABEL = { tshirt:'T-Shirt', longsleeve:'Long Sleeve', polo:'Polo', hoodie:'Hoodie',
+      sweatpants:'Sweatpants', joggers:'Joggers', sweater:'Sweater', quarter_zip:'Fleece / Zip', hat:'Cap' };
+
+    function load(){
+      var grid = document.getElementById('dmGrid');
+      fetch(API + '?canadian=1&limit=120').then(function(r){ return r.json(); }).then(function(j){
+        var p = (j && j.products) || [];
+        if (!p.length){ grid.innerHTML = '<div class="dm-empty">'+t('dm.empty','Collection syncing — check back shortly, or call 438-544-3800.')+'</div>'; return; }
+        grid.innerHTML = '';
+        p.forEach(function(prod){
+          var c0 = (prod.colors||[])[0] || {};
+          var photo = imgUrl(c0.mockup_front_url || prod.hero_image_url);
+          var price = (typeof prod.price_from==='number' && prod.price_from>0)
+            ? ('<span>'+t('dm.from','From')+'</span> <strong>$'+prod.price_from.toFixed(2)+'</strong>')
+            : '<strong>'+t('dm.quote','Quote on request')+'</strong>';
+          var cat = TYPE_LABEL[prod.category_effective || prod.garment_type] || '';
+          var a = document.createElement('a');
+          a.className = 'dm-card';
+          a.href = '/catalog?canadian=1';
+          a.innerHTML =
+            '<div class="photo">'+(photo?'<img src="'+esc(photo)+'" alt="'+esc(prod.name||'')+'" loading="lazy" decoding="async">':'')+'</div>'
+            + '<div class="body">'
+            + '<div class="cat">'+esc(cat)+'</div>'
+            + '<div class="name">'+esc(prod.name||'')+'</div>'
+            + '<div class="price">'+price+'</div>'
+            + '</div>';
+          grid.appendChild(a);
+        });
+      }).catch(function(){
+        grid.innerHTML = '<div class="dm-empty">'+t('dm.empty','Collection syncing — check back shortly, or call 438-544-3800.')+'</div>';
+      });
+    }
+    if (document.readyState !== 'loading') load(); else document.addEventListener('DOMContentLoaded', load);
+  })();
+  </script>
+</body>
+</html>

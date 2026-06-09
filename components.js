@@ -376,6 +376,19 @@ function loadNav() {
         { en: 'Football',   fr: 'Football',   i18n: 'nav.jerseys.football',   href: BASE + '/jerseys?sport=football' },
         { en: 'Volleyball', fr: 'Volleyball', i18n: 'nav.jerseys.volleyball', href: BASE + '/jerseys?sport=volleyball' }
       ]
+    },
+    {
+      // Rue Saint-Patrick — Montreal-designed, Canadian-made blanks. Own hub at
+      // /designed-in-montreal (brand story + the Canadian collection grid). Subs
+      // deep-link the catalog's existing ?canadian=1 filter (supplier-scoped to
+      // rue_sainte_patrick). en/fr inline so no lang.js key is required.
+      en: 'Canadian-Made', fr: 'Fait au Canada',
+      href: BASE + '/designed-in-montreal',
+      subs: [
+        { en: 'Designed in Montreal', fr: 'Conçu à Montréal',    href: BASE + '/designed-in-montreal' },
+        { en: 'Shop Canadian blanks', fr: 'Vêtements canadiens', href: BASE + '/catalog?canadian=1' },
+        { en: 'Organic cotton tees',  fr: 'T-shirts coton bio',  href: BASE + '/catalog?canadian=1&type=tshirt' }
+      ]
     }
   ];
 
