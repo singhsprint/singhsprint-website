@@ -6036,6 +6036,55 @@
 
     // Render the cart list on Step 1. Each item is a row with hero image,
     // brand+style+name, editable qty + sides, per-unit + subtotal, remove.
+    // Jersey cart items are fully customized on the /jerseys page (roster,
+    // font, names+numbers DTF, optional logo) and carry their own engine-
+    // computed unit price (jersey_unit_price). Render them as a FINISHED
+    // line item — not through the generic placement/method/upload editor,
+    // which would re-prompt for art and double-charge decoration.
+    function jEsc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function jerseyCartItemHtml(it, idx){
+      var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      var label = (it.color_name || '').replace(/_\d+$/, '');
+      var qty = (it.roster && it.roster.length) || it.qty || 0;
+      var unit = (typeof it.jersey_unit_price === 'number') ? it.jersey_unit_price : null;
+      var priceHtml = unit != null
+        ? '<strong style="color:#1a1a1a">$' + unit.toFixed(2) + '</strong> /unit · ' + (_t('quote.cart.jersey.subtotal')||'subtotal') + ' <strong style="color:#1a1a1a">$' + (unit*qty).toFixed(2) + '</strong>'
+        : (_t('quote.cart.jersey.quoted')||'Priced with your quote');
+      var rosterRows = (it.roster||[]).map(function(p,i){
+        return '<tr style="color:#444"><td style="color:#aaa;padding:2px 10px 2px 0">'+(i+1)+'</td>'
+          + '<td style="padding:2px 10px 2px 0">'+jEsc(p.name||'—')+'</td>'
+          + '<td style="padding:2px 10px 2px 0;text-align:center">'+jEsc(p.number||'—')+'</td>'
+          + '<td style="padding:2px 0">'+jEsc(p.size||'—')+'</td></tr>';
+      }).join('');
+      var logo = it.jersey_front_logo;
+      var chip = function(txt){ return '<span style="display:inline-block;background:#f0eee5;border-radius:50px;padding:3px 10px;font-size:.72rem;color:#444;margin:2px 6px 2px 0">'+txt+'</span>'; };
+      var deco = chip((_t('quote.cart.jersey.namesnumbers')||'Names & numbers')+' — DTF');
+      if (logo) deco += chip((_t('quote.cart.jersey.logo')||'Front logo')+' — '+(logo.method==='embroidery'?(_t('jersey.cz.logo.emb')||'Embroidery'):(_t('jersey.cz.logo.dtf')||'DTF'))+' · '+jEsc(logo.placement_label||logo.placement||'')+(logo.url?' ✓':''));
+      var font = it.jersey_font_label || it.jersey_font || '';
+      return '' +
+        '<div class="cart-item" data-idx="'+idx+'" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap;max-width:100%;box-sizing:border-box">' +
+        '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
+        '    <img src="'+imgUrl(it.hero_url||'')+'" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
+        '  </div>' +
+        '  <div style="flex:1;min-width:220px">' +
+        '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">'+(it.brand||'')+' · '+(it.style_number||'')+(it.sport?(' · '+jEsc(it.sport)):'')+'</div>' +
+        '    <div style="font-size:.95rem;font-weight:600;line-height:1.3">'+jEsc(it.name||'')+'</div>' +
+        '    <div style="font-size:.78rem;color:#666;margin-top:4px">'+(_t('quote.cart.item.color')||'Color:')+' <strong style="color:#1a1a1a">'+(jEsc(label)||'—')+'</strong> · '+(_t('quote.cart.jersey.font')||'Font')+': <strong style="color:#1a1a1a">'+jEsc(font)+'</strong></div>' +
+        '    <div style="margin-top:6px">'+deco+'</div>' +
+        '    <div class="cart-item-price" id="ci-price-'+idx+'" style="font-size:.82rem;color:#666;margin-top:6px">'+priceHtml+'</div>' +
+        '  </div>' +
+        '  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">' +
+        '    <div style="font-size:.72rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.04em">'+qty+' '+(_t('jersey.cz.players')||'players')+'</div>' +
+        '    <a href="/jerseys'+(it.sport?('?sport='+encodeURIComponent(it.sport)):'')+'" style="font-size:.76rem;font-weight:700;color:#1a1a1a;text-decoration:underline">'+(_t('quote.cart.jersey.edit')||'Edit on jerseys page')+'</a>' +
+        '    <button type="button" onclick="removeCartItem('+idx+')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.82rem;font-weight:600;padding:2px 4px">'+(_t('quote.cart.item.remove')||'Remove')+'</button>' +
+        '  </div>' +
+        '  <div style="flex-basis:100%;border-top:1px solid #f0eee5;margin-top:6px;padding-top:8px">' +
+        '    <div style="font-size:.7rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'+(_t('quote.cart.jersey.roster')||'Roster')+'</div>' +
+        '    <table style="font-size:.8rem;border-collapse:collapse"><tbody>'+rosterRows+'</tbody></table>' +
+        '  </div>' +
+        '</div>';
+    }
+
     function renderCartList() {
       var host = document.getElementById('cartList');
       var addMore = document.getElementById('cartAddMore');
@@ -6120,6 +6169,7 @@
       var lblQty    = _t('quote.cart.item.qty')    || 'Qty';
       var lblRemove = _t('quote.cart.item.remove') || 'Remove';
       host.innerHTML = items.map(function(it, idx) {
+        if (it.is_jersey) return jerseyCartItemHtml(it, idx);
         var label = (it.color_name || '').replace(/_\d+$/, '');
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
         var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
@@ -6168,6 +6218,10 @@
 
       // Inject per-row swatches + fetch live unit prices.
       items.forEach(function(it, idx) {
+        // Jersey lines carry their own engine-computed price and a fixed
+        // roster — skip the generic swatch/live-price/tier-matrix fetches
+        // (they would overwrite the jersey price and re-prompt decoration).
+        if (it.is_jersey) { updateCartTotal(); return; }
         // Fetch the product's full colour list once so the customer can
         // switch colours per cart row without going back to the catalog.
         fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
@@ -6463,13 +6517,22 @@
       // predate the per-item picker.
       var cartUnitSum = 0, cartUnits = 0, cartLineTotal = 0, knownAll = true;
       items.forEach(function (it) {
-        var qty   = Number(it.qty) || 0;
+        var qty = Number(it.qty) || ((it.roster && it.roster.length) || 0);
+        cartUnits += qty;
+        // Jersey lines price themselves (blank + DTF name/number + optional
+        // logo, via the decoration engine) at add-to-cart time. Use that
+        // stored unit price directly instead of the sides-based cache.
+        if (it.is_jersey) {
+          var ju = it.jersey_unit_price;
+          if (typeof ju === 'number') { cartUnitSum += ju; cartLineTotal += ju * qty; }
+          else knownAll = false;
+          return;
+        }
         var sides = it.sides || 1;
         var pk    = (it.placements || []).join(',');
         var rawM  = (it.decoration_type || '').toLowerCase();
         var method = rawM === 'embroidery' ? 'embroidery' : (rawM ? 'dtf' : currentDecorationMethod());
         var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk];
-        cartUnits += qty;
         if (typeof p === 'number') {
           cartUnitSum  += p;
           cartLineTotal += p * qty;

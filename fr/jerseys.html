@@ -170,8 +170,24 @@
           </div>
 
           <div class="cz-field">
-            <label data-i18n="jersey.cz.decoration">Decoration</label>
-            <div class="cz-chips" id="czDeco"></div>
+            <label data-i18n="jersey.cz.namesnumbers">Names &amp; numbers</label>
+            <div class="cz-chips"><span class="cz-chip sel" style="cursor:default"><span data-i18n="jersey.cz.dtfstd">DTF print</span></span></div>
+          </div>
+
+          <div class="cz-field">
+            <label data-i18n="jersey.cz.frontlogo">Front logo (optional)</label>
+            <div class="cz-chips" id="czLogoMethod"></div>
+            <div id="czLogoOpts" style="display:none;margin-top:10px">
+              <div style="font-size:.72rem;color:var(--soft);margin-bottom:6px" data-i18n="jersey.cz.logoplace">Logo placement</div>
+              <div class="cz-chips" id="czLogoPlace"></div>
+              <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <label class="cz-linkbtn" style="border:1.5px solid var(--line);border-radius:9px;padding:8px 12px;text-decoration:none;cursor:pointer">
+                  <span data-i18n="jersey.cz.uploadlogo">Upload logo</span>
+                  <input type="file" id="czLogoFile" accept="image/*,.pdf,.ai,.eps,.svg" style="display:none">
+                </label>
+                <span id="czLogoFileName" style="font-size:.78rem;color:var(--muted)"></span>
+              </div>
+            </div>
           </div>
 
           <div class="cz-field">
@@ -268,11 +284,24 @@
     ];
     function fontCss(id){ for (var i=0;i<FONTS.length;i++){ if (FONTS[i].id===id) return FONTS[i].css; } return FONTS[0].css; }
 
-    var DECO = [
-      { id:'print', label:'jersey.cz.deco.print',  fallback:'Printed' },
-      { id:'twill', label:'jersey.cz.deco.twill',  fallback:'Sewn twill' },
-      { id:'heat',  label:'jersey.cz.deco.heat',   fallback:'Heat-press vinyl' }
+    // Decoration model (per shop): names + numbers are ALWAYS DTF, priced
+    // like an oversized DTF on the back (full_back placement). An optional
+    // front logo can be DTF or embroidery at a chest placement, priced via
+    // the same engine the quote builder uses for Bring-Your-Own decoration.
+    var DECO_API = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only';
+    var UPLOAD_API = 'https://singhsprint-crm.vercel.app/api/inbound/upload';
+    var NAME_NUMBER_PLACEMENT = 'full_back';      // oversized DTF on the back
+    var LOGO_METHODS = [
+      { id:'none',       label:'jersey.cz.logo.none', fallback:'No logo' },
+      { id:'dtf',        label:'jersey.cz.logo.dtf',  fallback:'DTF print' },
+      { id:'embroidery', label:'jersey.cz.logo.emb',  fallback:'Embroidery' }
     ];
+    var LOGO_PLACEMENTS = [
+      { id:'left_chest',   label:'jersey.cz.place.left',   fallback:'Left chest' },
+      { id:'center_chest', label:'jersey.cz.place.center', fallback:'Center chest' },
+      { id:'full_front',   label:'jersey.cz.place.full',   fallback:'Full front' }
+    ];
+    function round95(p){ return (Number(p) % 1 === 0.95) ? Number(p) : Math.ceil(p) - 0.05; }
 
     var SIZES = ['YS','YM','YL','XS','S','M','L','XL','2XL','3XL'];
 
@@ -367,7 +396,10 @@
         prod: prod,
         colorIdx: 0,
         fontId: FONTS[0].id,
-        deco: 'print',
+        logoMethod: 'none',            // none | dtf | embroidery
+        logoPlacement: 'left_chest',   // left_chest | center_chest | full_front
+        logoUrl: null,                 // uploaded logo URL (set after upload)
+        logoName: '',                  // uploaded file name
         roster: [ blankRow(), blankRow() ],
         previewRow: 0
       };
@@ -379,7 +411,7 @@
         + '<div class="pn">'+esc(prod.name||'')+'</div></div>';
       renderSwatches();
       renderFonts();
-      renderDeco();
+      renderLogo();
       renderRoster();
       renderPreview();
       renderSummary();
@@ -459,14 +491,38 @@
         c.addEventListener('click', function(){ cz.fontId = c.getAttribute('data-id'); renderFonts(); renderPreview(); });
       });
     }
-    function renderDeco(){
-      var host = document.getElementById('czDeco');
-      host.innerHTML = DECO.map(function(d){
-        return '<span class="cz-chip'+(d.id===cz.deco?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
+    function renderLogo(){
+      var mh = document.getElementById('czLogoMethod');
+      mh.innerHTML = LOGO_METHODS.map(function(d){
+        return '<span class="cz-chip'+(d.id===cz.logoMethod?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
       }).join('');
-      host.querySelectorAll('.cz-chip').forEach(function(c){
-        c.addEventListener('click', function(){ cz.deco = c.getAttribute('data-id'); renderDeco(); });
+      mh.querySelectorAll('.cz-chip').forEach(function(c){
+        c.addEventListener('click', function(){ cz.logoMethod = c.getAttribute('data-id'); renderLogo(); });
       });
+      var opts = document.getElementById('czLogoOpts');
+      opts.style.display = (cz.logoMethod === 'none') ? 'none' : 'block';
+      if (cz.logoMethod === 'none') return;
+      var ph = document.getElementById('czLogoPlace');
+      ph.innerHTML = LOGO_PLACEMENTS.map(function(d){
+        return '<span class="cz-chip'+(d.id===cz.logoPlacement?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
+      }).join('');
+      ph.querySelectorAll('.cz-chip').forEach(function(c){
+        c.addEventListener('click', function(){ cz.logoPlacement = c.getAttribute('data-id'); renderLogo(); });
+      });
+      var fn = document.getElementById('czLogoFileName');
+      if (fn) fn.textContent = cz.logoName || t('jersey.cz.nologo','No file chosen yet');
+    }
+    // Upload the chosen logo immediately so its URL rides on the cart item.
+    function handleLogoFile(file){
+      if (!file) return;
+      if (file.size && file.size > 15*1024*1024){ alert('Logo file is over 15 MB. Please compress it or email sales@singhsprint.com.'); return; }
+      var fn = document.getElementById('czLogoFileName');
+      cz.logoName = file.name; if (fn) fn.textContent = t('jersey.cz.uploading','Uploading…');
+      var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
+      fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+        cz.logoUrl = (j && (j.signed_url || j.url || j.path)) || null;
+        if (fn) fn.textContent = cz.logoUrl ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
+      }).catch(function(){ if (fn) fn.textContent = file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'); });
     }
     function renderRoster(){
       var host = document.getElementById('czRoster');
@@ -559,40 +615,78 @@
     }
 
     // ============ add to quote ============
+    function logoPlacementLabel(id){ for(var i=0;i<LOGO_PLACEMENTS.length;i++){ if(LOGO_PLACEMENTS[i].id===id) return t(LOGO_PLACEMENTS[i].label, LOGO_PLACEMENTS[i].fallback); } return id; }
+
+    // Per-jersey price = blank (at this qty) + DTF name/number (oversized
+    // back) + optional front logo (DTF or embroidery at a chest placement),
+    // all via /api/pricing/decoration-only — the same engine the quote
+    // builder uses for decoration. cb({unit, blank, deco_dtf, deco_emb}).
+    function computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, cb){
+      var blank = (typeof prod.price_from==='number' && prod.price_from>0) ? prod.price_from : 0;
+      fetch(API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty)
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(d){ if (d && d.products && d.products[0] && typeof d.products[0].price_from==='number') blank = d.products[0].price_from; })
+        .catch(function(){})
+        .then(function(){
+          var dtfPlacements = [NAME_NUMBER_PLACEMENT];
+          var embPromise = Promise.resolve(0);
+          if (logoMethod === 'dtf') dtfPlacements.push(logoPlacement);
+          else if (logoMethod === 'embroidery') {
+            embPromise = fetch(DECO_API + '?qty=' + qty + '&method=embroidery&placements=' + encodeURIComponent(logoPlacement))
+              .then(function(r){ return r.ok?r.json():null; }).then(function(j){ return (j && typeof j.unit_price==='number') ? j.unit_price : 0; }).catch(function(){ return 0; });
+          }
+          var dtfPromise = fetch(DECO_API + '?qty=' + qty + '&method=dtf&placements=' + encodeURIComponent(dtfPlacements.join(',')))
+            .then(function(r){ return r.ok?r.json():null; }).then(function(j){ return (j && typeof j.unit_price==='number') ? j.unit_price : 0; }).catch(function(){ return 0; });
+          Promise.all([dtfPromise, embPromise]).then(function(a){
+            cb({ unit: round95(blank + a[0] + a[1]), blank: blank, deco_dtf: a[0], deco_emb: a[1] });
+          });
+        });
+    }
+
     function addToQuote(){
       var rows = filledRows();
       if (!rows.length) return;
       var prod = cz.prod;
       var color = (prod.colors||[])[cz.colorIdx] || {};
-      // size breakdown for the CRM size matrix
       var sizes = {};
       rows.forEach(function(r){ sizes[r.size] = (sizes[r.size]||0) + 1; });
-      var item = {
-        product_id:   prod.product_id,
-        color_id:     color.color_id || null,
-        color_name:   (color.color_name||'').replace(/_\d+$/,''),
-        brand:        prod.brand || '',
-        style_number: prod.style_number || '',
-        name:         prod.name || '',
-        garment_type: prod.garment_type || 'jersey',
-        hero_url:     imgUrl(color.mockup_front_url || prod.hero_image_url),
-        qty:          rows.length,
-        sides:        2,
-        placements:   ['back-name','back-number'],
-        decoration_type: cz.deco === 'twill' ? 'embroidery' : (cz.deco === 'heat' ? 'dtf' : 'dtg'),
-        sizes:        sizes,
-        // ----- jersey-specific structured data (rides along in cart_items JSONB) -----
-        is_jersey:    true,
-        sport:        state.sport || (prod.sports && prod.sports[0]) || null,
-        jersey_font:  cz.fontId,
-        jersey_font_label: (function(){ for(var i=0;i<FONTS.length;i++){ if(FONTS[i].id===cz.fontId) return FONTS[i].label; } return cz.fontId; })(),
-        jersey_decoration: cz.deco,
-        roster:       rows.map(function(r){ return { name:r.name||'', number:r.number||'', size:r.size||'L', font:cz.fontId }; })
-      };
-      SinghsCart.add(item);
-      try { if (window.spTrack) window.spTrack('jersey_add_to_quote', { product_id:prod.product_id, sport:item.sport, players:rows.length, font:cz.fontId }); } catch(e){}
-      closeCustomizer();
-      showToast(rows.length);
+      var qty = rows.length;
+      var logoMethod = cz.logoMethod, logoPlacement = cz.logoPlacement, logoUrl = cz.logoUrl, logoName = cz.logoName, fontId = cz.fontId;
+      var btn = document.getElementById('czAdd'), prevTxt = btn.textContent;
+      btn.disabled = true; btn.textContent = t('jersey.cz.adding','Pricing…');
+      computeJerseyUnitPrice(prod, qty, logoMethod, logoPlacement, function(price){
+        var logo = (logoMethod === 'none') ? null : { method: logoMethod, placement: logoPlacement, placement_label: logoPlacementLabel(logoPlacement), url: logoUrl || null, filename: logoName || null };
+        var item = {
+          product_id:   prod.product_id,
+          color_id:     color.color_id || null,
+          color_name:   (color.color_name||'').replace(/_\d+$/,''),
+          brand:        prod.brand || '',
+          style_number: prod.style_number || '',
+          name:         prod.name || '',
+          garment_type: prod.garment_type || 'jersey',
+          hero_url:     imgUrl(color.mockup_front_url || prod.hero_image_url),
+          qty:          qty,
+          sides:        1,
+          placements:   [],                 // jersey is priced via jersey_unit_price, not the sides model
+          decoration_type: 'dtf',
+          sizes:        sizes,
+          // ----- jersey-specific structured data (rides in cart_items JSONB) -----
+          is_jersey:    true,
+          sport:        state.sport || (prod.sports && prod.sports[0]) || null,
+          jersey_font:  fontId,
+          jersey_font_label: (function(){ for(var i=0;i<FONTS.length;i++){ if(FONTS[i].id===fontId) return FONTS[i].label; } return fontId; })(),
+          jersey_names_numbers: { method:'dtf', placement: NAME_NUMBER_PLACEMENT },
+          jersey_front_logo: logo,
+          jersey_unit_price: price.unit,
+          jersey_price_breakdown: { blank: price.blank, name_number_dtf: price.deco_dtf, logo_embroidery: price.deco_emb },
+          roster:       rows.map(function(r){ return { name:r.name||'', number:r.number||'', size:r.size||'L', font:fontId }; })
+        };
+        SinghsCart.add(item);
+        try { if (window.spTrack) window.spTrack('jersey_add_to_quote', { product_id:prod.product_id, sport:item.sport, players:qty, font:fontId, logo:logoMethod, unit:price.unit }); } catch(e){}
+        btn.disabled = false; btn.textContent = prevTxt;
+        closeCustomizer();
+        showToast(qty);
+      });
     }
 
     function showToast(n){
@@ -623,6 +717,8 @@
         if (rows.length){ cz.roster = rows.concat([blankRow()]); cz.previewRow = 0; renderRoster(); renderPreview(); renderSummary(); }
       });
       document.getElementById('czAdd').addEventListener('click', addToQuote);
+      var lf = document.getElementById('czLogoFile');
+      if (lf) lf.addEventListener('change', function(){ handleLogoFile(this.files && this.files[0]); });
 
       renderSportPicker();
       setSport(qp('sport'), false);
