@@ -400,6 +400,7 @@
         logoPlacement: 'left_chest',   // left_chest | center_chest | full_front
         logoUrl: null,                 // uploaded logo URL (set after upload)
         logoName: '',                  // uploaded file name
+        logoPreviewUrl: null,          // local object URL for the on-jersey preview
         roster: [ blankRow(), blankRow() ],
         previewRow: 0
       };
@@ -497,7 +498,7 @@
         return '<span class="cz-chip'+(d.id===cz.logoMethod?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
       }).join('');
       mh.querySelectorAll('.cz-chip').forEach(function(c){
-        c.addEventListener('click', function(){ cz.logoMethod = c.getAttribute('data-id'); renderLogo(); });
+        c.addEventListener('click', function(){ cz.logoMethod = c.getAttribute('data-id'); renderLogo(); renderPreview(); });
       });
       var opts = document.getElementById('czLogoOpts');
       opts.style.display = (cz.logoMethod === 'none') ? 'none' : 'block';
@@ -507,17 +508,22 @@
         return '<span class="cz-chip'+(d.id===cz.logoPlacement?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
       }).join('');
       ph.querySelectorAll('.cz-chip').forEach(function(c){
-        c.addEventListener('click', function(){ cz.logoPlacement = c.getAttribute('data-id'); renderLogo(); });
+        c.addEventListener('click', function(){ cz.logoPlacement = c.getAttribute('data-id'); renderLogo(); renderPreview(); });
       });
       var fn = document.getElementById('czLogoFileName');
       if (fn) fn.textContent = cz.logoName || t('jersey.cz.nologo','No file chosen yet');
     }
-    // Upload the chosen logo immediately so its URL rides on the cart item.
+    // Capture the logo: show it on the jersey instantly via a local object
+    // URL, and upload it in the background so its URL rides on the cart item.
     function handleLogoFile(file){
       if (!file) return;
       if (file.size && file.size > 15*1024*1024){ alert('Logo file is over 15 MB. Please compress it or email sales@singhsprint.com.'); return; }
       var fn = document.getElementById('czLogoFileName');
-      cz.logoName = file.name; if (fn) fn.textContent = t('jersey.cz.uploading','Uploading…');
+      cz.logoName = file.name;
+      try { if (cz.logoPreviewUrl) URL.revokeObjectURL(cz.logoPreviewUrl); cz.logoPreviewUrl = URL.createObjectURL(file); } catch(e){ cz.logoPreviewUrl = null; }
+      if (cz.logoMethod === 'none') { cz.logoMethod = 'dtf'; renderLogo(); }
+      renderPreview();  // show the logo on the jersey right away
+      if (fn) fn.textContent = t('jersey.cz.uploading','Uploading…');
       var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
       fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
         cz.logoUrl = (j && (j.signed_url || j.url || j.path)) || null;
@@ -572,15 +578,27 @@
       // name + number rendered in the chosen team font on a chip tinted with
       // the colorway's primary color so the lettering + font read clearly.
       var img = imgUrl(col.mockup_front_url || cz.prod.hero_image_url);
+      // Composite the uploaded logo onto the FRONT jersey photo at the chosen
+      // placement (approximate preview — the shop finalizes exact position).
+      var logoOverlay = '';
+      if (cz.logoMethod !== 'none' && cz.logoPreviewUrl){
+        var POS = { left_chest:{t:33,l:34,w:20}, center_chest:{t:32,l:50,w:24}, full_front:{t:48,l:50,w:52} };
+        var p = POS[cz.logoPlacement] || POS.center_chest;
+        logoOverlay = '<img src="'+esc(cz.logoPreviewUrl)+'" alt="" style="position:absolute;top:'+p.t+'%;left:'+p.l+'%;width:'+p.w+'%;transform:translate(-50%,-50%);object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">';
+      }
       var html = '';
-      if (img) html += '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;background:#fff;border-radius:10px" loading="lazy" decoding="async">';
-      html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:14px 12px 16px;text-align:center">'
+      if (img) html += '<div style="position:relative;width:100%;background:#fff;border-radius:10px;overflow:hidden">'
+        + '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;display:block" loading="lazy" decoding="async">'
+        + logoOverlay
+        + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#9b958a">'+t('jersey.cz.front','Front')+'</span></div>';
+      html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:14px 12px 16px;text-align:center;position:relative">'
+        + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:'+ink+';opacity:.5">'+t('jersey.cz.back','Back')+'</span>'
         + '<div style="font-family:'+fam+';font-size:22px;color:'+ink+';letter-spacing:1px;line-height:1">'+esc(name)+'</div>'
         + '<div style="font-family:'+fam+';font-size:58px;color:'+ink+';line-height:1.02">'+esc(num)+'</div>'
         + '</div>';
       document.getElementById('czSvg').innerHTML = html;
       var cn = prettyColor(col.color_name);
-      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num;
+      document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + (cz.logoMethod!=='none' && cz.logoPreviewUrl ? ' · + logo' : '');
     }
     // Pick black or white lettering for legibility on the jersey color.
     function contrastInk(hex){

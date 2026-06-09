@@ -776,6 +776,8 @@ var SP_LANG = (function() {
     'jersey.cz.uploading':    { en: 'Uploading…',      fr: 'Téléversement…' },
     'jersey.cz.uploadfail':   { en: 'upload failed, we will collect it with your quote', fr: 'échec du téléversement, nous le récupérerons avec votre soumission' },
     'jersey.cz.nologo':       { en: 'No file chosen yet', fr: 'Aucun fichier choisi' },
+    'jersey.cz.front':        { en: 'Front',            fr: 'Devant' },
+    'jersey.cz.back':         { en: 'Back',             fr: 'Dos' },
     // Jersey line item on the quote page.
     'quote.cart.jersey.subtotal':     { en: 'subtotal',     fr: 'sous-total' },
     'quote.cart.jersey.quoted':       { en: 'Priced with your quote', fr: 'Chiffré avec votre soumission' },
