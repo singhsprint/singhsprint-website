@@ -315,7 +315,7 @@
       var meta = document.getElementById('jhMeta');
       grid.innerHTML = '';
       meta.innerHTML = '<span class="jh-loading">' + t('jersey.loading','Loading jerseys…') + '</span>';
-      var url = API + '?limit=120&' + (state.sport ? ('sport='+state.sport) : 'jerseys=1');
+      var url = API + '?limit=300&' + (state.sport ? ('sport='+state.sport) : 'jerseys=1');
       fetch(url).then(function(r){ return r.json(); }).then(function(j){
         state.products = (j && j.products) || [];
         renderGrid();
