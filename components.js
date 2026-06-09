@@ -291,7 +291,7 @@ function loadNav() {
       ]
     },
     {
-      en: 'Hoodies & Sweatshirts', fr: 'Hoodies et pulls', i18n: 'nav.hoodies',
+      en: 'Hoodies', fr: 'Hoodies', i18n: 'nav.hoodies',
       href: BASE + '/catalog?type=hoodie',
       subs: [
         { en: 'Hoodies',             fr: 'Hoodies',             href: BASE + '/catalog?type=hoodie' },
@@ -302,7 +302,7 @@ function loadNav() {
       ]
     },
     {
-      en: 'Polos & Apparel', fr: 'Polos et vêtements', i18n: 'nav.polos',
+      en: 'Polos', fr: 'Polos', i18n: 'nav.polos',
       href: BASE + '/catalog?type=polo',
       subs: [
         { en: 'Polos',               fr: 'Polos',               href: BASE + '/catalog?type=polo' },
@@ -324,17 +324,14 @@ function loadNav() {
       ]
     },
     {
-      en: 'Bags', fr: 'Sacs', i18n: 'nav.bags',
-      href: BASE + '/catalog?type=tote',
-      subs: [
-        { en: 'All bags & backpacks',fr: 'Tous les sacs',       href: BASE + '/catalog?type=tote' }
-      ]
-    },
-    {
-      en: 'Hats', fr: 'Chapeaux', i18n: 'nav.hats',
+      // Bags + Hats merged into one Accessories dropdown (each only had a
+      // single sub) to keep the product row on one line after Sports
+      // Jerseys was added. Both garment types still reachable via the subs.
+      en: 'Accessories', fr: 'Accessoires', i18n: 'nav.accessories',
       href: BASE + '/catalog?type=hat',
       subs: [
-        { en: 'All hats & caps',     fr: 'Tous les chapeaux',   href: BASE + '/catalog?type=hat' }
+        { en: 'Hats & caps',         fr: 'Chapeaux',            href: BASE + '/catalog?type=hat' },
+        { en: 'Bags & backpacks',    fr: 'Sacs',                href: BASE + '/catalog?type=tote' }
       ]
     },
     {
@@ -344,7 +341,7 @@ function loadNav() {
       // are listed (hockey/soccer/basketball/baseball best stocked;
       // football/volleyball thinner but present). The hub reads the jersey
       // classification layer via /api/catalog?sport=.
-      en: 'Sports Jerseys', fr: 'Maillots de sport', i18n: 'nav.jerseys',
+      en: 'Jerseys', fr: 'Maillots', i18n: 'nav.jerseys',
       href: BASE + '/jerseys',
       subs: [
         { en: 'Hockey',     fr: 'Hockey',     i18n: 'nav.jerseys.hockey',     href: BASE + '/jerseys?sport=hockey' },
