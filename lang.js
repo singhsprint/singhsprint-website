@@ -780,6 +780,7 @@ var SP_LANG = (function() {
     'jersey.cz.nologo':       { en: 'No file chosen yet', fr: 'Aucun fichier choisi' },
     'jersey.cz.front':        { en: 'Front',            fr: 'Devant' },
     'jersey.cz.back':         { en: 'Back',             fr: 'Dos' },
+    'jersey.cz.sizes':        { en: 'Sizes',            fr: 'Tailles' },
     'jersey.cz.logosize':     { en: 'Logo size',        fr: 'Taille du logo' },
     'jersey.cz.removebg':     { en: 'Remove white background', fr: 'Retirer le fond blanc' },
     'jersey.cz.draghint':     { en: 'Drag the logo on the jersey to position it.', fr: 'Glissez le logo sur le maillot pour le positionner.' },
