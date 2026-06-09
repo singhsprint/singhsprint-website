@@ -342,6 +342,13 @@
   <section class="cat-hero">
     <h1 data-i18n="cat.hero.h1">Our blanks catalog</h1>
     <p data-i18n="cat.hero.p">Browse <strong id="catCount">4,500+</strong> blanks from S&amp;S Activewear, SanMar Canada &amp; Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
+    <!-- Rue Saint-Patrick collection banner — shown only when the Canadian-made
+         filter is active (?canadian=1), so /catalog?canadian=1 reads as the
+         RSP collection rather than a generic filtered list. Toggled in fetchPage(). -->
+    <div id="rspBanner" style="display:none;margin-top:18px;padding:18px 20px;background:#13110d;color:#fff;border-radius:16px;max-width:920px">
+      <div style="font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;font-weight:700;margin-bottom:6px">Singhs Print × Rue Saint-Patrick · Canadian-made</div>
+      <div style="font-size:1.04rem;line-height:1.5">You're viewing our <strong>Rue Saint-Patrick</strong> collection — a Montreal menswear label, decorated in-house: tees, henleys, polos, hoodies, fleece &amp; caps. <a href="/designed-in-montreal" style="color:#e8ff3c;font-weight:600;text-decoration:underline">Read the story →</a></div>
+    </div>
     <!-- Auto-translation badge — only visible when FR is active. The
          supplier feeds (S&S Activewear) only provide English copy, so we
          machine-translate product/color/spec text on the fly. -->
@@ -1449,6 +1456,8 @@
   // Fetch
   // =========================================================================
   async function fetchPage() {
+    var _rspB = document.getElementById('rspBanner');
+    if (_rspB) _rspB.style.display = state.filters.canadian ? 'block' : 'none';
     if (state.loading || state.done) return;
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';

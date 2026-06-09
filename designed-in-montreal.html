@@ -185,7 +185,7 @@
           // Deep-link into the real catalog, pre-filtered to Canadian-made and
           // searched to this product, so the page funnels into the catalog
           // instead of being a dead-end grid.
-          var href = '/catalog?canadian=1&q=' + encodeURIComponent(prod.name||'');
+          var href = '/catalog?canadian=1';
           var a = document.createElement('a');
           a.className = 'dm-card';
           a.href = href;
