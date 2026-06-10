@@ -194,9 +194,9 @@
     .filter-overlay.open{opacity:1;pointer-events:auto}
 
     /* Product detail modal — "View details" on each card opens this */
-    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:200}
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2147483644}
     .detail-overlay.open{opacity:1;pointer-events:auto}
-    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:201;pointer-events:none}
+    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:2147483645;pointer-events:none}
     .detail-modal.open{pointer-events:auto}
     .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
     .detail-modal.open .detail-modal__inner{transform:scale(1);opacity:1}
@@ -256,9 +256,15 @@
     .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
     @media (max-width:640px){
       .detail-modal{padding:0}
+      /* 100dvh = the VISIBLE viewport (excludes the iOS browser toolbar).
+         Plain 100vh ran the modal — and its footer Add button — off the
+         bottom of the screen behind Safari's chrome. */
       .detail-modal__inner{max-height:100vh;max-height:100dvh;border-radius:0}
       .detail-modal__hero{grid-template-columns:1fr}
       .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+      /* Stack the footer so the Add-to-quote button is full-width and
+         always visible (it was wrapping below the qty row and off-screen).
+         Pad for the home indicator. */
       .detail-modal__foot{flex-direction:column;align-items:stretch;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
       .detail-modal__foot .detail-modal__qty{justify-content:center;gap:14px}
       #detailModalAddBtn{width:100%;box-sizing:border-box;text-align:center}
@@ -279,7 +285,15 @@
     body.sp-detail-modal-open,
     body:has(.detail-modal.open){padding-bottom:0 !important}
     /* ---- In-modal product customizer (print method + placements + uploads) ---- */
-    .dmcz{margin:22px 0;border-top:1px solid #eee;padding-top:20px}
+    .dmcz{margin:20px 0 4px}
+    .dmcz__toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #1a1a1a;background:#fff;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:.92rem;font-weight:700;color:#1a1a1a;cursor:pointer;transition:background .15s}
+    .dmcz__toggle:hover{background:#f4f2eb}
+    .dmcz__toggle-label{display:flex;align-items:center;gap:9px}
+    .dmcz__toggle-ic{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+    .dmcz__chev{transition:transform .3s ease;color:#999;font-size:.9rem}
+    .dmcz__toggle[aria-expanded="true"] .dmcz__chev{transform:rotate(180deg)}
+    .dmcz__panel{max-height:0;opacity:0;overflow:hidden;transition:max-height .4s ease,opacity .3s ease}
+    .dmcz__panel.open{max-height:2400px;opacity:1;margin-top:6px}
     .dmcz__heading{font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;font-weight:600}
     .dmcz__sub{font-size:.72rem;color:#888;letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin:18px 0 8px}
     .dmcz__methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -652,6 +666,24 @@
             <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;margin-top:4px"></div>
           </div>
         </div>
+
+                <!-- In-modal product customizer: print method + placements + per-placement
+             artwork upload + live all-in price. Populated by renderDmczCustomizer(). -->
+        <div class="dmcz" id="dmczCustomizer">
+          <button type="button" class="dmcz__toggle" id="dmczToggle" aria-expanded="false" aria-controls="dmczPanel">
+            <span class="dmcz__toggle-label"><span class="dmcz__toggle-ic" aria-hidden="true">✎</span><span data-i18n="cat.detail.customizecta">Personnaliser ce produit</span></span>
+            <span class="dmcz__chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="dmcz__panel" id="dmczPanel">
+            <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Méthode d'impression</div>
+            <div class="dmcz__methods" id="dmczMethods"></div>
+            <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Emplacements</div>
+            <div class="dmcz__groups" id="dmczPlacements"></div>
+            <div class="dmcz__sub" data-i18n="cat.detail.artwork">Votre visuel</div>
+            <div class="dmcz__uploads" id="dmczUploads"></div>
+          </div>
+        </div>
+
         <!-- Tech specs — parsed from the S&S product description. -->
         <div id="detailModalSpecsWrap" style="margin-bottom:22px;display:none">
           <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"  data-i18n="cat.detail.specs">Spécifications techniques</div>
@@ -661,17 +693,6 @@
         <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
         <div class="detail-modal__swatches" id="detailModalSwatches"></div>
 
-        <!-- In-modal product customizer: print method + placements + per-placement
-             artwork upload + live all-in price. Populated by renderDmczCustomizer(). -->
-        <div class="dmcz" id="dmczCustomizer">
-          <div class="dmcz__heading" data-i18n="cat.detail.customize">Personnaliser</div>
-          <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Méthode d'impression</div>
-          <div class="dmcz__methods" id="dmczMethods"></div>
-          <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Où imprimer</div>
-          <div class="dmcz__groups" id="dmczPlacements"></div>
-          <div class="dmcz__sub" data-i18n="cat.detail.artwork">Votre visuel</div>
-          <div class="dmcz__uploads" id="dmczUploads"></div>
-        </div>
       </div>
       <div class="detail-modal__foot">
         <div class="detail-modal__qty">
@@ -871,7 +892,7 @@
 
   // 2026-05-24 — Cart-bar touch fallback + tap-feedback animation.
   //
-  // Touch fallback: the entire pill (`#cartBar`) is an <a href="/fr/quote">,
+  // Touch fallback: the entire pill (`#cartBar`) is an <a href="/quote">,
   // but iOS Safari can still drop the native click when the anchor sits
   // inside a position:fixed container that just transitioned
   // (display:none → display:flex via the `.open` class). The touchend
@@ -1127,6 +1148,20 @@
     renderDmczPlacements();
     renderDmczUploads();
     refreshDmczPrice();
+    // Collapse the customizer by default; the "Customize this product" button
+    // slides it open. onclick is reassigned each open (idempotent), so it
+    // never double-binds.
+    var tog = document.getElementById('dmczToggle');
+    var panel = document.getElementById('dmczPanel');
+    if (panel) panel.classList.remove('open');
+    if (tog) {
+      tog.setAttribute('aria-expanded', 'false');
+      tog.onclick = function () {
+        var open = panel.classList.toggle('open');
+        tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) { try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }
+      };
+    }
   }
 
   // Render the three method cards.
@@ -1361,7 +1396,7 @@
     // paint, then a second paintDetailHero() once the fat payload lands.
     if (p && p.product_id) {
       fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
-            encodeURIComponent(p.product_id) + '&limit=1', { cache: 'force-cache' })
+            encodeURIComponent(p.product_id) + '&limit=1', { cache: 'no-store' })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) {
           var full = (d && d.products && d.products[0]) || null;
@@ -1854,7 +1889,10 @@
     filters: {                       // active filter state — drives Algolia query
       type: getQueryParam('type') || null,
       brand: [],
-      canadian: false,
+      // Hydrate from `?canadian=1` so deep links from the nav's Canadian-Made
+      // dropdown and the /designed-in-montreal page land on the catalog
+      // pre-filtered to Rue Saint-Patrick / Canadian-made blanks.
+      canadian: getQueryParam('canadian') === '1',
       csa: false,
       // Hydrate from `?q=` so deep links from the nav's search dropdown
       // (e.g. /catalog?q=hoodies) actually pre-filter the catalog instead
@@ -1946,16 +1984,21 @@
   // Garment types we surface in the filter panel + chips, with friendly labels
   // matching the seed in pricing_configs. Keep in sync if a new garment_type
   // ever ships in the CRM.
+  // 2026-06-10: switched from the old garment_type buckets to the corrected
+  // `category` taxonomy (catalog re-tag). The sidebar now reads p.category and
+  // the chips send ?type=<category> (the API maps it to category_effective).
   const GARMENT_TYPES = [
-    ['tshirt','T-shirts'], ['hoodie','Hoodies'], ['crewneck','Crewnecks'],
-    ['longsleeve','Long sleeves'], ['polo','Polos'], ['performance_shirt','Performance / fishing'],
-    ['workshirt','Work shirts'], ['hat','Hats / caps'], ['tote','Totes / bags'],
-    ['joggers','Joggers'], ['shorts','Shorts'], ['hivis','Hi-vis safety'],
-    ['vest','Vests'], ['coverall','Coveralls'], ['chore_coat','Chore / insulated'],
-    ['softshell','Softshells'], ['pullover_jacket','Pullover jackets'],
-    ['cardigan','Cardigans'], ['sweater','Sweaters'], ['chef_coat','Chef coats'],
-    ['scrub_top','Scrub tops'], ['scrub_pants','Scrub pants'], ['lab_coat','Lab coats'],
-    ['apron','Aprons'], ['other','Other / workwear'],
+    ['tshirt','T-shirts'], ['longsleeve','Long sleeves'], ['tank','Tank tops'],
+    ['performance_shirt','Performance / tech'], ['polo','Polos'], ['woven_shirt','Button-up shirts'],
+    ['hoodie','Hoodies'], ['crewneck','Crewnecks'], ['quarter_zip','Quarter-zips'],
+    ['sweater','Sweaters'], ['cardigan','Cardigans'], ['jacket','Jackets & outerwear'],
+    ['vest','Vests'], ['joggers','Joggers'], ['sweatpants','Sweatpants'],
+    ['shorts','Shorts'], ['pants','Pants'], ['leggings','Leggings'],
+    ['jersey','Sports jerseys'], ['coverall','Coveralls'], ['scrubs','Scrubs'],
+    ['apron','Aprons'], ['hat','Hats / caps'], ['beanie','Beanies / toques'],
+    ['visor','Visors'], ['bag','Bags / backpacks'], ['scarf','Scarves'],
+    ['gloves','Gloves'], ['socks','Socks'], ['headband','Headbands'],
+    ['blanket','Blankets'], ['towel','Towels'], ['other','Other'],
   ];
 
   // Catalog API endpoint — singhsprint-crm Vercel project
@@ -1990,6 +2033,8 @@
   // Fetch
   // =========================================================================
   async function fetchPage() {
+    var _rspB = document.getElementById('rspBanner');
+    if (_rspB) _rspB.style.display = state.filters.canadian ? 'block' : 'none';
     if (state.loading || state.done) return;
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
@@ -2175,7 +2220,7 @@
       var AGGREGATE_RATING = {
         '@type': 'AggregateRating',
         'ratingValue': '5.0',
-        'reviewCount': '21',
+        'reviewCount': '23',
         'bestRating':  '5',
         'worstRating': '1'
       };
@@ -2384,12 +2429,12 @@
       : (firstInStockIdx >= 0 ? firstInStockIdx : 0);
 
     let badge = '';
-    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos"  data-i18n="cat.card.oos">En rupture</div>`;
+    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos" data-i18n="cat.card.oos">Out of stock</div>`;
     else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2)
-                                                                         badge = `<div class="badge badge--low"  data-i18n="cat.card.low">Stock faible</div>`;
-    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller"  data-i18n="cat.card.bestseller">★ Populaire</div>`;
-    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian"  data-i18n="cat.card.canadian">🇨🇦 Canadien</div>`;
-    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa"  data-i18n="cat.card.csa">CSA hi-vis</div>`;
+                                                                         badge = `<div class="badge badge--low" data-i18n="cat.card.low">Low stock</div>`;
+    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller" data-i18n="cat.card.bestseller">★ Bestseller</div>`;
+    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian" data-i18n="cat.card.canadian">🇨🇦 Canadian</div>`;
+    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa" data-i18n="cat.card.csa">CSA Hi-Vis</div>`;
 
     // Catalog cards display up to 24 swatches in a 2-row wrap (16px × 2 rows
     // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
@@ -2447,10 +2492,10 @@
         <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span  data-i18n="cat.card.from">À partir de</span> <strong>$${p.price_from.toFixed(2)}</strong><span  data-i18n="cat.card.perunit">/unité</span> · <span class="price-meta"  data-i18n="cat.card.oneside">Impression 1 côté</span>` : `<strong  data-i18n="cat.card.quote-on-request">Sur demande</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>` : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
-          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span  data-i18n="cat.card.units-at-tier">unités · qté ajustable ensuite</span></span>
+          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span></span>
         </div>
       </div>
     `;
@@ -2510,8 +2555,8 @@
     a.href = '/quote.html?source=byo';
     a.innerHTML = `
       <div class="add">+</div>
-      <strong  data-i18n="cat.byo.title">Apportez votre propre vêtement</strong>
-      <span  data-i18n="cat.byo.sub">Vous avez un SKU ou un dossier technique ? Envoyez-le-nous — on le source et on vous fait une soumission.</span>
+      <strong data-i18n="cat.byo.title">Bring your own blank</strong>
+      <span data-i18n="cat.byo.sub">Got a SKU or tech pack? Send it over — we'll source and quote it.</span>
     `;
     return a;
   }
@@ -2665,8 +2710,9 @@
 
     const typeCounts = {};
     state.products.forEach(p => {
-      if (!p.garment_type) return;
-      typeCounts[p.garment_type] = (typeCounts[p.garment_type] || 0) + 1;
+      const cat = p.category || p.garment_type;
+      if (!cat) return;
+      typeCounts[cat] = (typeCounts[cat] || 0) + 1;
     });
 
     // Sort types by count desc, then alphabetically — most populous shows
@@ -2917,7 +2963,7 @@
     });
 
     // Qualifier toggles — Canadian / Hi-Vis
-    row.appendChild(makeChip('🇨🇦 Canadian-made', state.filters.canadian ? 'active' : 'passive', () => {
+    row.appendChild(makeChip('🇨🇦 Canadian', state.filters.canadian ? 'active' : 'passive', () => {
       state.filters.canadian = !state.filters.canadian; resetAndFetch();
     }));
     row.appendChild(makeChip('Hi-Vis / CSA', state.filters.csa ? 'active' : 'passive', () => {
@@ -3115,6 +3161,19 @@
     // Show the floating cart bar if items were added in a previous tab visit.
     renderCartBar();
     fetchPage();
+    // Deep-link: ?product=<id> opens that product's detail modal directly, so a
+    // click from the Designed-in-Montreal / Canadian collection lands on the
+    // actual product card inside the catalog — not just the filtered list.
+    (function openProductFromUrl() {
+      try {
+        var pid = new URLSearchParams(location.search).get('product');
+        if (!pid) return;
+        fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' + encodeURIComponent(pid) + '&qty=' + state.qty + '&limit=1')
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) { var p = d && d.products && d.products[0]; if (p) openProductDetail(p); })
+          .catch(function () {});
+      } catch (e) {}
+    })();
   });
   </script>
 

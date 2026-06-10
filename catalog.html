@@ -285,7 +285,15 @@
     body.sp-detail-modal-open,
     body:has(.detail-modal.open){padding-bottom:0 !important}
     /* ---- In-modal product customizer (print method + placements + uploads) ---- */
-    .dmcz{margin:22px 0;border-top:1px solid #eee;padding-top:20px}
+    .dmcz{margin:20px 0 4px}
+    .dmcz__toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #1a1a1a;background:#fff;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:.92rem;font-weight:700;color:#1a1a1a;cursor:pointer;transition:background .15s}
+    .dmcz__toggle:hover{background:#f4f2eb}
+    .dmcz__toggle-label{display:flex;align-items:center;gap:9px}
+    .dmcz__toggle-ic{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+    .dmcz__chev{transition:transform .3s ease;color:#999;font-size:.9rem}
+    .dmcz__toggle[aria-expanded="true"] .dmcz__chev{transform:rotate(180deg)}
+    .dmcz__panel{max-height:0;opacity:0;overflow:hidden;transition:max-height .4s ease,opacity .3s ease}
+    .dmcz__panel.open{max-height:2400px;opacity:1;margin-top:6px}
     .dmcz__heading{font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;font-weight:600}
     .dmcz__sub{font-size:.72rem;color:#888;letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin:18px 0 8px}
     .dmcz__methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -664,6 +672,25 @@
             <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;margin-top:4px"></div>
           </div>
         </div>
+
+        <!-- In-modal product customizer: print method + placements + per-placement
+             artwork upload + live all-in price. Sits directly under the product
+             summary (above specs + the full colour grid) so it isn't buried. -->
+        <div class="dmcz" id="dmczCustomizer">
+          <button type="button" class="dmcz__toggle" id="dmczToggle" aria-expanded="false" aria-controls="dmczPanel">
+            <span class="dmcz__toggle-label"><span class="dmcz__toggle-ic" aria-hidden="true">✎</span><span data-i18n="cat.detail.customizecta">Customize this product</span></span>
+            <span class="dmcz__chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="dmcz__panel" id="dmczPanel">
+            <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Print method</div>
+            <div class="dmcz__methods" id="dmczMethods"></div>
+            <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Where to print</div>
+            <div class="dmcz__groups" id="dmczPlacements"></div>
+            <div class="dmcz__sub" data-i18n="cat.detail.artwork">Your artwork</div>
+            <div class="dmcz__uploads" id="dmczUploads"></div>
+          </div>
+        </div>
+
         <!-- Tech specs — parsed from the S&S product description. -->
         <div id="detailModalSpecsWrap" style="margin-bottom:22px;display:none">
           <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600" data-i18n="cat.detail.specs">Tech specs</div>
@@ -672,18 +699,6 @@
         </div>
         <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span data-i18n="cat.detail.allcolors">All colors</span> (<span id="detailModalCount">0</span>)</div>
         <div class="detail-modal__swatches" id="detailModalSwatches"></div>
-
-        <!-- In-modal product customizer: print method + placements + per-placement
-             artwork upload + live all-in price. Populated by renderDmczCustomizer(). -->
-        <div class="dmcz" id="dmczCustomizer">
-          <div class="dmcz__heading" data-i18n="cat.detail.customize">Customize</div>
-          <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Print method</div>
-          <div class="dmcz__methods" id="dmczMethods"></div>
-          <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Where to print</div>
-          <div class="dmcz__groups" id="dmczPlacements"></div>
-          <div class="dmcz__sub" data-i18n="cat.detail.artwork">Your artwork</div>
-          <div class="dmcz__uploads" id="dmczUploads"></div>
-        </div>
       </div>
       <div class="detail-modal__foot">
         <div class="detail-modal__qty">
@@ -1139,6 +1154,20 @@
     renderDmczPlacements();
     renderDmczUploads();
     refreshDmczPrice();
+    // Collapse the customizer by default; the "Customize this product" button
+    // slides it open. onclick is reassigned each open (idempotent), so it
+    // never double-binds.
+    var tog = document.getElementById('dmczToggle');
+    var panel = document.getElementById('dmczPanel');
+    if (panel) panel.classList.remove('open');
+    if (tog) {
+      tog.setAttribute('aria-expanded', 'false');
+      tog.onclick = function () {
+        var open = panel.classList.toggle('open');
+        tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) { try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }
+      };
+    }
   }
 
   // Render the three method cards.
