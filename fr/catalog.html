@@ -1226,6 +1226,29 @@
     // Select-all on focus so a tap-then-type replaces "1" cleanly.
     if (qtyInp) qtyInp.addEventListener('focus', (e) => e.target.select());
 
+    // Mobile: the on-screen keyboard covers the footer (qty input sits at the
+    // bottom of the modal). While the qty field is focused, lift the modal
+    // inner above the keyboard using the visualViewport API so the customer
+    // can see what they're typing. Resets on blur.
+    if (qtyInp && window.visualViewport) {
+      const vv = window.visualViewport;
+      const innerEl = () => document.querySelector('.detail-modal__inner');
+      let qtyFocused = false;
+      const liftForKeyboard = () => {
+        const el = innerEl(); if (!el) return;
+        if (qtyFocused) {
+          const overlap = Math.max(0, window.innerHeight - (vv.offsetTop + vv.height));
+          el.style.transform = overlap > 4 ? `translateY(-${overlap}px)` : '';
+        } else {
+          el.style.transform = '';
+        }
+      };
+      vv.addEventListener('resize', liftForKeyboard);
+      vv.addEventListener('scroll', liftForKeyboard);
+      qtyInp.addEventListener('focus', () => { qtyFocused = true; setTimeout(liftForKeyboard, 150); });
+      qtyInp.addEventListener('blur',  () => { qtyFocused = false; const el = innerEl(); if (el) el.style.transform = ''; });
+    }
+
     // Specs "Show more / Show fewer" toggle
     const specsToggle = document.getElementById('detailModalSpecsToggle');
     if (specsToggle) specsToggle.addEventListener('click', () => {
