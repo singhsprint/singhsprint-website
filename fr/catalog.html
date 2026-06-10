@@ -218,7 +218,7 @@
     .detail-modal__thumb img{width:100%;height:100%;object-fit:cover;background:#f4f2eb}
     .detail-modal__thumb--label{font-size:.62rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;align-self:flex-end;padding:6px 8px}
     /* Lightbox */
-    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:1500;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:2147483646;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
     .img-lightbox.open{display:flex}
     .img-lightbox__img{max-width:min(1200px,96vw);max-height:92vh;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.5);background:#1a1a1a}
     .img-lightbox__close{position:absolute;top:18px;right:22px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(8px)}
@@ -256,9 +256,12 @@
     .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
     @media (max-width:640px){
       .detail-modal{padding:0}
-      .detail-modal__inner{max-height:100vh;border-radius:0}
+      .detail-modal__inner{max-height:100vh;max-height:100dvh;border-radius:0}
       .detail-modal__hero{grid-template-columns:1fr}
       .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+      .detail-modal__foot{flex-direction:column;align-items:stretch;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+      .detail-modal__foot .detail-modal__qty{justify-content:space-between}
+      #detailModalAddBtn{width:100%;box-sizing:border-box;text-align:center}
     }
     /* When the product detail modal is open, the sitewide "Get a Quote"
        sticky bar (#sp-sticky-cta) covers the modal's qty stepper + Add

@@ -256,9 +256,18 @@
     .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
     @media (max-width:640px){
       .detail-modal{padding:0}
-      .detail-modal__inner{max-height:100vh;border-radius:0}
+      /* 100dvh = the VISIBLE viewport (excludes the iOS browser toolbar).
+         Plain 100vh ran the modal — and its footer Add button — off the
+         bottom of the screen behind Safari's chrome. */
+      .detail-modal__inner{max-height:100vh;max-height:100dvh;border-radius:0}
       .detail-modal__hero{grid-template-columns:1fr}
       .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+      /* Stack the footer so the Add-to-quote button is full-width and
+         always visible (it was wrapping below the qty row and off-screen).
+         Pad for the home indicator. */
+      .detail-modal__foot{flex-direction:column;align-items:stretch;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+      .detail-modal__foot .detail-modal__qty{justify-content:space-between}
+      #detailModalAddBtn{width:100%;box-sizing:border-box;text-align:center}
     }
     /* When the product detail modal is open, the sitewide "Get a Quote"
        sticky bar (#sp-sticky-cta) covers the modal's qty stepper + Add
