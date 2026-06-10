@@ -843,6 +843,7 @@ var SP_LANG = (function() {
     'cat.filter.apply': { en: 'Apply', fr: 'Appliquer' },
     'cat.detail.customize': { en: 'Customize', fr: 'Personnaliser' },
     'cat.detail.customizecta': { en: 'Customize this product', fr: 'Personnaliser ce produit' },
+    'cat.detail.mockupcta': { en: 'Customize & preview on the garment', fr: 'Personnaliser et prévisualiser sur le vêtement' },
     'cat.detail.printmethod': { en: 'Print method', fr: 'Méthode d\'impression' },
     'cat.detail.whereprint': { en: 'Where to print', fr: 'Emplacements' },
     'cat.detail.artwork': { en: 'Your artwork', fr: 'Votre visuel' },

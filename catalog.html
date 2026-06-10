@@ -313,6 +313,8 @@
     .dmcz__chip-name{font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.15}
     .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
     .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
+    .dmcz__mockup-btn{width:100%;margin-top:12px;background:#1a1a1a;color:#e8ff3c;border:none;border-radius:50px;padding:12px 18px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+    .dmcz__mockup-btn:hover{opacity:.9}
     .dmcz__upload{border:1.5px dashed #d8d5cb;border-radius:12px;padding:12px 14px;background:#fafaf7}
     .dmcz__upload-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
     .dmcz__upload-title{font-size:.78rem;font-weight:700;color:#1a1a1a}
@@ -688,6 +690,7 @@
             <div class="dmcz__groups" id="dmczPlacements"></div>
             <div class="dmcz__sub" data-i18n="cat.detail.artwork">Your artwork</div>
             <div class="dmcz__uploads" id="dmczUploads"></div>
+            <button type="button" id="dmczMockupBtn" class="dmcz__mockup-btn"><span data-i18n="cat.detail.mockupcta">Customize &amp; preview on the garment</span></button>
           </div>
         </div>
 
@@ -750,6 +753,7 @@
   <div id="footer-placeholder"></div>
 
   <script src="components.js" defer></script>
+  <script src="/mockup-customizer.js"></script>
   <script>
   // =========================================================================
   // Catalog state
@@ -1327,12 +1331,45 @@
           setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);
           return;
         }
-        _dmczState.uploads[pid] = { path: d.path, signed_url: d.signed_url || '', filename: file.name };
+        _dmczState.uploads[pid] = { path: d.path, signed_url: d.signed_url || '', filename: file.name, file: file };
         renderDmczUploads();
       })
       .catch(function(){
         setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);
       });
+  }
+
+  // Launch the shared mockup composer (mockup-customizer.js) for the
+  // currently-selected product + colour. No-op gracefully if the module is
+  // missing or nothing has been uploaded yet.
+  function dmczLaunchMockup() {
+    if (!window.SPMockup || !_detailProduct) {
+      try { alert('Pick a placement and upload artwork first.'); } catch (e) {}
+      return;
+    }
+    var color = (_detailProduct.colors || [])[_detailColorIdx] || {};
+    var placements = (_dmczState.placements || []).slice();
+    if (!placements.length) {
+      try { alert('Pick a placement and upload artwork first.'); } catch (e) {}
+      return;
+    }
+    window.SPMockup.open({
+      colorId: color.color_id,
+      garment: { front: color.mockup_front_url, back: color.mockup_back_url, side: color.mockup_side_url },
+      placements: placements,
+      fileFor: function(p){ var u = _dmczState.uploads[p]; return (u && u.file instanceof File) ? u.file : null; },
+      initial: { boxes: _dmczState.design_boxes || null, removeBg: !!_dmczState.design_remove_bg },
+      sessionId: (function(){ try { return localStorage.getItem('singhsCartId_v1'); } catch(e){ return null; } })(),
+      placementPresets: DMCZ_placementPresets,
+      onDone: function(res){
+        _dmczState.mockups = res.mockups || [];
+        _dmczState.design_boxes = res.boxes || null;
+        _dmczState.design_remove_bg = !!res.removeBg;
+        if (res.design){ /* update primary design + the matching placement_designs entries are already set from upload */ }
+        var b = document.getElementById('dmczMockupBtn');
+        if (b){ var n = (res.mockups || []).length; b.textContent = n ? ('✓ Mockup ready · edit') : 'Customize & preview on the garment'; }
+      }
+    });
   }
 
   // Live all-in price for the current method/placements/qty. Guarded
@@ -1784,6 +1821,9 @@
     });
 
     // Add → cart, using the modal's own qty (not the page slider).
+    const mockupBtn = document.getElementById('dmczMockupBtn');
+    if (mockupBtn) mockupBtn.addEventListener('click', dmczLaunchMockup);
+
     const addBtn = document.getElementById('detailModalAddBtn');
     if (addBtn) addBtn.addEventListener('click', () => {
       const p = _detailProduct; if (!p) return;
@@ -1829,6 +1869,9 @@
         design_path:       design_path,
         design_url:        design_url,
         placement_designs: placement_designs,
+        mockups:           (st.mockups || []),
+        design_boxes:      st.design_boxes || null,
+        design_remove_bg:  !!st.design_remove_bg,
       });
       closeProductDetail();
       showCartToast({ brand: p.brand, style_number: p.style_number });
@@ -1870,6 +1913,9 @@
       design_path:       payload.design_path || undefined,
       design_url:        payload.design_url || undefined,
       placement_designs: payload.placement_designs || undefined,
+      mockups:           payload.mockups || undefined,
+      design_boxes:      payload.design_boxes || undefined,
+      design_remove_bg:  payload.design_remove_bg || undefined,
     });
     // Funnel analytics — the strongest signal of intent on this page.
     if (window.spTrack) window.spTrack('catalog_add_to_quote', {
