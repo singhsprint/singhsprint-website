@@ -278,6 +278,42 @@
     body:has(.detail-modal.open) .sp-sticky-cta{display:none !important}
     body.sp-detail-modal-open,
     body:has(.detail-modal.open){padding-bottom:0 !important}
+    /* ---- In-modal product customizer (print method + placements + uploads) ---- */
+    .dmcz{margin:22px 0;border-top:1px solid #eee;padding-top:20px}
+    .dmcz__heading{font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+    .dmcz__sub{font-size:.72rem;color:#888;letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin:18px 0 8px}
+    .dmcz__methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .dmcz__method{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:10px 12px;border:1.5px solid #e0ddd2;border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;transition:border-color .12s,background .12s}
+    .dmcz__method:hover{border-color:#bbb}
+    .dmcz__method[aria-pressed="true"]{border-color:#1a1a1a;background:#f4f2eb}
+    .dmcz__method-name{font-size:.85rem;font-weight:700;color:#1a1a1a;line-height:1.15}
+    .dmcz__method-desc{font-size:.66rem;color:#888;line-height:1.2}
+    .dmcz__groups{display:flex;flex-direction:column;gap:14px}
+    .dmcz__group-label{font-size:.7rem;font-weight:700;color:#1a1a1a;letter-spacing:.03em;margin-bottom:6px}
+    .dmcz__chips{display:flex;flex-wrap:wrap;gap:7px}
+    .dmcz__chip{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 11px;border:1.5px solid #e0ddd2;border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;transition:border-color .12s,background .12s}
+    .dmcz__chip:hover{border-color:#bbb}
+    .dmcz__chip[aria-pressed="true"]{border-color:#1a1a1a;background:#1a1a1a}
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-name{color:#fff}
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-desc{color:#cfcfcf}
+    .dmcz__chip-name{font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.15}
+    .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
+    .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
+    .dmcz__upload{border:1.5px dashed #d8d5cb;border-radius:12px;padding:12px 14px;background:#fafaf7}
+    .dmcz__upload-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .dmcz__upload-title{font-size:.78rem;font-weight:700;color:#1a1a1a}
+    .dmcz__upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .dmcz__upload-btn{display:inline-block;font-size:.76rem;font-weight:600;color:#1a1a1a;background:#e8ff3c;border:none;border-radius:50px;padding:7px 14px;cursor:pointer;font-family:inherit}
+    .dmcz__upload-btn:hover{filter:brightness(.96)}
+    .dmcz__upload input[type=file]{display:none}
+    .dmcz__file{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:#1a1a1a;background:#fff;border:1.5px solid #e0ddd2;border-radius:8px;padding:5px 9px;max-width:100%}
+    .dmcz__file-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dmcz__file-remove{background:none;border:none;color:#a00;cursor:pointer;font-size:.9rem;line-height:1;padding:0 2px;font-family:inherit}
+    .dmcz__upload-status{font-size:.7rem;color:#888}
+    .dmcz__upload-status--err{color:#a00}
+    @media (max-width:640px){
+      .dmcz__methods{grid-template-columns:1fr}
+    }
   </style>
   <link rel="canonical" href="https://www.singhsprint.com/fr/catalog">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/catalog">
@@ -624,6 +660,18 @@
         </div>
         <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
         <div class="detail-modal__swatches" id="detailModalSwatches"></div>
+
+        <!-- In-modal product customizer: print method + placements + per-placement
+             artwork upload + live all-in price. Populated by renderDmczCustomizer(). -->
+        <div class="dmcz" id="dmczCustomizer">
+          <div class="dmcz__heading" data-i18n="cat.detail.customize">Personnaliser</div>
+          <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Méthode d'impression</div>
+          <div class="dmcz__methods" id="dmczMethods"></div>
+          <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Où imprimer</div>
+          <div class="dmcz__groups" id="dmczPlacements"></div>
+          <div class="dmcz__sub" data-i18n="cat.detail.artwork">Votre visuel</div>
+          <div class="dmcz__uploads" id="dmczUploads"></div>
+        </div>
       </div>
       <div class="detail-modal__foot">
         <div class="detail-modal__qty">
@@ -885,6 +933,420 @@
     const lis = tmp.querySelectorAll('li');
     return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
   }
+  // =====================================================================
+  // IN-MODAL PRODUCT CUSTOMIZER
+  // ---------------------------------------------------------------------
+  // Lets the customer pick a print method, choose placements, upload
+  // artwork per placement and see a live all-in price BEFORE adding to
+  // the quote. Lookup tables (DMCZ_*) are copied verbatim from quote.html
+  // (placementPresets / PLACEMENT_GROUPS_BY_GARMENT + helpers) so the cart
+  // item shape matches exactly what /quote and the CRM expect.
+  // =====================================================================
+  var DMCZ_placementPresets = {
+    'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest',        desc: '~3-4" — logo / pocket', sil:'shirt-front', rect:{x:11,y:14,w:6, h:5}  },
+    'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest',      desc: '~7" mid-chest',         sil:'shirt-front', rect:{x:14,y:17,w:14,h:10} },
+    'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',        desc: '~11" chest panel',      sil:'shirt-front', rect:{x:11,y:14,w:20,h:18} },
+    'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~14" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
+    'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back',          desc: 'Under collar, ~5"',     sil:'shirt-back',  rect:{x:15,y:10,w:12,h:5}  },
+    'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back',       desc: '~12" upper back',       sil:'shirt-back',  rect:{x:11,y:15,w:20,h:16} },
+    'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~14" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
+    'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
+    'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
+    'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood',              desc: 'On the hood itself',    sil:'hoodie',      rect:{x:17,y:1, w:8, h:4}  },
+    'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Cap Front',        desc: 'Front panel, ~3"',     sil:'cap', rect:{x:16,y:18,w:10,h:7} },
+    'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Left Side Panel',  desc: 'Side hit, ~2"',        sil:'cap', rect:{x:6, y:22,w:6, h:5} },
+    'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Right Side Panel', desc: 'Side hit, ~2"',        sil:'cap', rect:{x:30,y:22,w:6, h:5} },
+    'cap-back':        { loc: 'back',  size: 'small',       cx: 0.50, cy: 0.45, label: 'Back Panel',       desc: 'Behind closure',       sil:'cap', rect:{x:18,y:25,w:6, h:4} },
+    'cap-brim':        { loc: 'front', size: 'small',       cx: 0.50, cy: 0.85, label: 'Brim',             desc: 'Underside / top edge', sil:'cap', rect:{x:16,y:29,w:10,h:3} },
+    'bag-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Front of Bag',  desc: 'Main panel print',     sil:'bag', rect:{x:13,y:22,w:16,h:14} },
+    'bag-back':        { loc: 'back',  size: 'medium',      cx: 0.50, cy: 0.45, label: 'Back of Bag',   desc: 'Reverse panel',        sil:'bag', rect:{x:13,y:22,w:16,h:14} },
+    'bag-pocket':      { loc: 'front', size: 'small',       cx: 0.50, cy: 0.65, label: 'Front Pocket',  desc: 'Small logo, ~3"',      sil:'bag', rect:{x:17,y:35,w:8, h:6}  },
+    'leg-left-hip':    { loc: 'front', size: 'small',       cx: 0.35, cy: 0.20, label: 'Left Hip',      desc: 'Small logo at hip',    sil:'pants', rect:{x:13,y:9, w:6, h:4} },
+    'leg-right-hip':   { loc: 'front', size: 'small',       cx: 0.65, cy: 0.20, label: 'Right Hip',     desc: 'Small logo at hip',    sil:'pants', rect:{x:23,y:9, w:6, h:4} },
+    'leg-back-pocket': { loc: 'back',  size: 'small',       cx: 0.40, cy: 0.30, label: 'Back Pocket',   desc: 'Back-pocket logo',     sil:'pants', rect:{x:14,y:14,w:6, h:4} },
+    'leg-side':        { loc: 'front', size: 'medium',      cx: 0.35, cy: 0.55, label: 'Leg Side',      desc: 'Vertical stripe',      sil:'pants', rect:{x:13,y:18,w:5, h:18} },
+    'apron-chest':     { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.20, label: 'Chest',         desc: 'Upper bib area',       sil:'apron', rect:{x:14,y:12,w:14,h:8}  },
+    'apron-pocket':    { loc: 'front', size: 'small',       cx: 0.50, cy: 0.55, label: 'Pocket',        desc: 'On the front pocket',  sil:'apron', rect:{x:16,y:28,w:10,h:6}  },
+    'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',    desc: 'Large front panel',    sil:'apron', rect:{x:12,y:16,w:18,h:22} }
+  };
+
+  var DMCZ_PLACEMENT_GROUPS_BY_GARMENT = {
+    tshirt: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    longsleeve: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    polo: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    performance_shirt: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    workshirt: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    hivis: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest'] },
+      { label: 'Back',    ids: ['back-across', 'back-full'] }
+    ],
+    hoodie: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Hood',    ids: ['hood'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    crewneck: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    sweater: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    cardigan: [
+      { label: 'Front',   ids: ['left-chest'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    pullover_jacket: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    softshell: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    chore_coat: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    vest: [
+      { label: 'Front', ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',  ids: ['back-top', 'back-across', 'back-full'] }
+    ],
+    coverall: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+      { label: 'Leg',     ids: ['leg-left-hip', 'leg-right-hip'] }
+    ],
+    hat: [
+      { label: 'Cap', ids: ['cap-front', 'cap-left-side', 'cap-right-side', 'cap-back', 'cap-brim'] }
+    ],
+    tote: [
+      { label: 'Bag', ids: ['bag-front', 'bag-back', 'bag-pocket'] }
+    ],
+    joggers: [
+      { label: 'Front', ids: ['leg-left-hip', 'leg-right-hip'] },
+      { label: 'Back',  ids: ['leg-back-pocket'] },
+      { label: 'Side',  ids: ['leg-side'] }
+    ],
+    shorts: [
+      { label: 'Front', ids: ['leg-left-hip', 'leg-right-hip'] },
+      { label: 'Back',  ids: ['leg-back-pocket'] }
+    ],
+    scrub_pants: [
+      { label: 'Front', ids: ['leg-left-hip'] }
+    ],
+    chef_coat: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
+      { label: 'Back',    ids: ['back-top', 'back-across'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    scrub_top: [
+      { label: 'Front', ids: ['left-chest', 'center-chest'] },
+      { label: 'Back',  ids: ['back-across'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    lab_coat: [
+      { label: 'Front',   ids: ['left-chest', 'center-chest'] },
+      { label: 'Back',    ids: ['back-top', 'back-across'] },
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+    ],
+    apron: [
+      { label: 'Apron', ids: ['apron-chest', 'apron-full', 'apron-pocket'] }
+    ]
+  };
+
+  function dmczPlacementGroupsFor(garmentType) {
+    return DMCZ_PLACEMENT_GROUPS_BY_GARMENT[garmentType] || DMCZ_PLACEMENT_GROUPS_BY_GARMENT.tshirt;
+  }
+  function dmczDefaultPlacementFor(garmentType) {
+    var groups = dmczPlacementGroupsFor(garmentType);
+    if (groups && groups.length && groups[0].ids && groups[0].ids.length) {
+      return groups[0].ids[0];
+    }
+    return 'center-chest';
+  }
+
+  // Placements we hide/disallow when Embroidery is the chosen method —
+  // these are too large for an embroidery hoop.
+  var EMB_DISALLOWED = { 'oversized':1, 'back-full':1 };
+
+  // Three customer-facing methods. Map onto the pricing API's
+  // decoration_method: Embroidery → 'embroidery', everything else → 'dtf'.
+  var DMCZ_METHODS = [
+    { id: 'DTG',         name: 'DTG',         desc: 'Soft full-color print',  method: 'dtf' },
+    { id: 'DTF',         name: 'DTF',         desc: 'Durable transfer print', method: 'dtf' },
+    { id: 'Embroidery',  name: 'Embroidery',  desc: 'Stitched, premium',      method: 'embroidery' }
+  ];
+  function dmczMethodApi(id) {
+    var m = DMCZ_METHODS.filter(function(x){ return x.id === id; })[0];
+    return (m && m.method) || 'dtf';
+  }
+
+  // Live customizer state — reset every time the modal opens.
+  var _dmczState = { method: 'DTF', placements: [], uploads: {}, priceSeq: 0 };
+
+  // Initialize the customizer for the product the modal just opened on.
+  function initDmczCustomizer(p) {
+    var gt = (p && p.garment_type) || 'tshirt';
+    _dmczState = {
+      method: 'DTF',
+      placements: [dmczDefaultPlacementFor(gt)],
+      uploads: {},          // { placementId: { path, signed_url, filename } }
+      priceSeq: 0
+    };
+    renderDmczMethods();
+    renderDmczPlacements();
+    renderDmczUploads();
+    refreshDmczPrice();
+  }
+
+  // Render the three method cards.
+  function renderDmczMethods() {
+    var host = document.getElementById('dmczMethods');
+    if (!host) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    host.innerHTML = DMCZ_METHODS.map(function(m){
+      var on = (_dmczState.method === m.id);
+      var name = t('cat.detail.method.' + m.id.toLowerCase()) || m.name;
+      var desc = t('cat.detail.methoddesc.' + m.id.toLowerCase()) || m.desc;
+      return '<button type="button" class="dmcz__method" data-method="' + m.id + '" aria-pressed="' + on + '">' +
+             '<span class="dmcz__method-name">' + name + '</span>' +
+             '<span class="dmcz__method-desc">' + desc + '</span>' +
+             '</button>';
+    }).join('');
+    host.querySelectorAll('.dmcz__method').forEach(function(btn){
+      btn.addEventListener('click', function(){ dmczSelectMethod(btn.getAttribute('data-method')); });
+    });
+  }
+
+  function dmczSelectMethod(id) {
+    _dmczState.method = id;
+    // Embroidery: drop disallowed placements from the current selection.
+    if (id === 'Embroidery') {
+      _dmczState.placements = _dmczState.placements.filter(function(pid){ return !EMB_DISALLOWED[pid]; });
+      Object.keys(_dmczState.uploads).forEach(function(pid){
+        if (EMB_DISALLOWED[pid]) delete _dmczState.uploads[pid];
+      });
+      if (_dmczState.placements.length === 0) {
+        var gt = (_detailProduct && _detailProduct.garment_type) || 'tshirt';
+        var def = dmczDefaultPlacementFor(gt);
+        if (!EMB_DISALLOWED[def]) _dmczState.placements = [def];
+      }
+    }
+    renderDmczMethods();
+    renderDmczPlacements();
+    renderDmczUploads();
+    refreshDmczPrice();
+  }
+
+  // Render the placement groups for the current garment, with disallowed
+  // (embroidery) presets hidden when Embroidery is selected.
+  function renderDmczPlacements() {
+    var host = document.getElementById('dmczPlacements');
+    if (!host) return;
+    var gt = (_detailProduct && _detailProduct.garment_type) || 'tshirt';
+    var emb = (_dmczState.method === 'Embroidery');
+    var groups = dmczPlacementGroupsFor(gt);
+    var html = groups.map(function(g){
+      var ids = g.ids.filter(function(pid){ return !(emb && EMB_DISALLOWED[pid]); });
+      if (!ids.length) return '';
+      var chips = ids.map(function(pid){
+        var pre = DMCZ_placementPresets[pid] || { label: pid, desc: '' };
+        var on = _dmczState.placements.indexOf(pid) >= 0;
+        return '<button type="button" class="dmcz__chip" data-pid="' + pid + '" aria-pressed="' + on + '">' +
+               '<span class="dmcz__chip-name">' + pre.label + '</span>' +
+               '<span class="dmcz__chip-desc">' + (pre.desc || '') + '</span>' +
+               '</button>';
+      }).join('');
+      return '<div class="dmcz__group"><div class="dmcz__group-label">' + g.label + '</div>' +
+             '<div class="dmcz__chips">' + chips + '</div></div>';
+    }).join('');
+    host.innerHTML = html;
+    host.querySelectorAll('.dmcz__chip').forEach(function(btn){
+      btn.addEventListener('click', function(){ dmczTogglePlacement(btn.getAttribute('data-pid')); });
+    });
+  }
+
+  // One preset per location: selecting a preset replaces any other selected
+  // preset that shares the same .loc. Re-selecting the active one removes it.
+  function dmczTogglePlacement(pid) {
+    var pre = DMCZ_placementPresets[pid];
+    if (!pre) return;
+    var idx = _dmczState.placements.indexOf(pid);
+    if (idx >= 0) {
+      _dmczState.placements.splice(idx, 1);
+      delete _dmczState.uploads[pid];
+    } else {
+      // Drop any existing preset in the same location.
+      _dmczState.placements = _dmczState.placements.filter(function(other){
+        var op = DMCZ_placementPresets[other];
+        if (op && op.loc === pre.loc) { delete _dmczState.uploads[other]; return false; }
+        return true;
+      });
+      _dmczState.placements.push(pid);
+    }
+    renderDmczPlacements();
+    renderDmczUploads();
+    refreshDmczPrice();
+  }
+
+  // One upload zone per selected placement. Upload happens immediately on
+  // file pick; the stored result feeds the cart item later.
+  function renderDmczUploads() {
+    var host = document.getElementById('dmczUploads');
+    if (!host) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    if (!_dmczState.placements.length) {
+      host.innerHTML = '<div class="dmcz__upload-status">' +
+        (t('cat.detail.noplacement') || 'Pick a placement above to add artwork.') + '</div>';
+      return;
+    }
+    host.innerHTML = _dmczState.placements.map(function(pid){
+      var pre = DMCZ_placementPresets[pid] || { label: pid };
+      var up = _dmczState.uploads[pid];
+      var inner;
+      if (up && up.filename) {
+        inner = '<span class="dmcz__file"><span class="dmcz__file-name">' + up.filename + '</span>' +
+                '<button type="button" class="dmcz__file-remove" data-remove="' + pid + '" aria-label="Remove">✕</button></span>';
+      } else {
+        inner = '<label class="dmcz__upload-btn">' +
+                (t('cat.detail.uploadbtn') || 'Upload artwork') +
+                '<input type="file" accept="image/*,application/pdf,.ai,.eps,.svg" data-upload="' + pid + '"></label>' +
+                '<span class="dmcz__upload-status" data-status="' + pid + '"></span>';
+      }
+      return '<div class="dmcz__upload" data-zone="' + pid + '">' +
+             '<div class="dmcz__upload-head"><span class="dmcz__upload-title">' + pre.label + '</span></div>' +
+             '<div class="dmcz__upload-row">' + inner + '</div></div>';
+    }).join('');
+    host.querySelectorAll('input[data-upload]').forEach(function(inp){
+      inp.addEventListener('change', function(){ dmczHandleUpload(inp.getAttribute('data-upload'), inp); });
+    });
+    host.querySelectorAll('[data-remove]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        delete _dmczState.uploads[btn.getAttribute('data-remove')];
+        renderDmczUploads();
+      });
+    });
+  }
+
+  // Upload one file to the CRM inbound endpoint. 15MB cap; friendly error
+  // on failure but never blocks the customer from continuing.
+  function dmczHandleUpload(pid, inp) {
+    var file = inp && inp.files && inp.files[0];
+    if (!file) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var statusEl = document.querySelector('[data-status="' + pid + '"]');
+    var setStatus = function(msg, isErr) {
+      if (!statusEl) return;
+      statusEl.textContent = msg;
+      statusEl.className = 'dmcz__upload-status' + (isErr ? ' dmcz__upload-status--err' : '');
+    };
+    if (file.size > 15 * 1024 * 1024) {
+      setStatus(t('cat.detail.toolarge') || 'File too large (max 15MB).', true);
+      inp.value = '';
+      return;
+    }
+    setStatus(t('cat.detail.uploading') || 'Uploading…', false);
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('kind', 'design');
+    fetch('https://singhsprint-crm.vercel.app/api/inbound/upload', { method: 'POST', body: fd })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d || !d.path) {
+          setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);
+          return;
+        }
+        _dmczState.uploads[pid] = { path: d.path, signed_url: d.signed_url || '', filename: file.name };
+        renderDmczUploads();
+      })
+      .catch(function(){
+        setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);
+      });
+  }
+
+  // Live all-in price for the current method/placements/qty. Guarded
+  // against races (only the latest request applies, and only if the modal
+  // is still on the same product).
+  function refreshDmczPrice() {
+    var p = _detailProduct;
+    if (!p) return;
+    var priceEl = document.getElementById('detailModalPrice');
+    if (!priceEl) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var qtyInput = document.getElementById('detailModalQtyInput');
+    var qty = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || (state && state.qty) || 25);
+    var placements = _dmczState.placements.slice();
+    var sides = placements.length || 1;
+    var method = dmczMethodApi(_dmczState.method);
+    var embPlac = (method === 'embroidery') ? placements.join(',') : '';
+    var seq = ++_dmczState.priceSeq;
+    var pidForGuard = p.product_id;
+
+    var fallback = function() {
+      priceEl.innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
+        ? (t('cat.card.from') || 'From') + ' <strong>$' + p.price_from.toFixed(2) + '</strong> ' + (t('cat.card.perunit') || '/unit')
+        : '<strong>' + (t('cat.card.quote-on-request') || 'Quote on request') + '</strong>';
+    };
+
+    var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
+              encodeURIComponent(p.product_id) +
+              '&qty=' + encodeURIComponent(qty) +
+              '&sides=' + encodeURIComponent(sides) +
+              '&decoration_method=' + encodeURIComponent(method) +
+              '&embroidery_placements=' + encodeURIComponent(embPlac);
+
+    fetch(url, { cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        // Race / product-switch guard.
+        if (seq !== _dmczState.priceSeq) return;
+        if (!_detailProduct || _detailProduct.product_id !== pidForGuard) return;
+        var unit = d && typeof d.unit_price === 'number' ? d.unit_price : null;
+        if (unit === null || isNaN(unit)) { fallback(); return; }
+        var sideWord = sides === 1
+          ? (t('cat.card.oneside') || '1-side print')
+          : sides + (t('cat.detail.sideprint') || '-side print');
+        priceEl.innerHTML = (t('cat.card.from') || 'From') + ' <strong>$' + unit.toFixed(2) + '</strong> ' +
+          (t('cat.card.perunit') || '/unit') +
+          ' · <span style="color:#888;font-weight:500">' + sideWord + '</span>';
+      })
+      .catch(function(){
+        if (seq !== _dmczState.priceSeq) return;
+        if (!_detailProduct || _detailProduct.product_id !== pidForGuard) return;
+        fallback();
+      });
+  }
+
   function openProductDetail(p, initialColorIdx) {
     _detailProduct = p;
     _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
@@ -949,6 +1411,10 @@
     // color array + back/side mockups.
     renderDetailModalSwatches();
     paintDetailHero();
+    // Boot the in-modal customizer: method=DTF, default placement, no
+    // uploads, then render the method picker + placements + upload zones
+    // and fetch the live all-in price.
+    initDmczCustomizer(p);
     document.getElementById('detailOverlay').classList.add('open');
     document.getElementById('detailModal').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -1214,13 +1680,25 @@
     if (qtyMinus) qtyMinus.addEventListener('click', () => {
       qtyInp.value = Math.max(1, (parseInt(qtyInp.value, 10) || 1) - 1);
       syncDetailAddBtn();
+      if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
     });
     if (qtyPlus) qtyPlus.addEventListener('click', () => {
       qtyInp.value = Math.min(10000, (parseInt(qtyInp.value, 10) || 0) + 1);
       syncDetailAddBtn();
+      if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
     });
     // While typing: don't clamp. Just update the label.
     if (qtyInp) qtyInp.addEventListener('input', syncDetailAddBtn);
+    // Debounced live-price refresh as the customer types a new qty.
+    if (qtyInp) {
+      let _dmczQtyTimer = null;
+      qtyInp.addEventListener('input', () => {
+        clearTimeout(_dmczQtyTimer);
+        _dmczQtyTimer = setTimeout(() => {
+          if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
+        }, 350);
+      });
+    }
     // On blur / leave: NOW clamp.
     if (qtyInp) qtyInp.addEventListener('blur',  clampDetailQty);
     // Select-all on focus so a tap-then-type replaces "1" cleanly.
@@ -1270,6 +1748,30 @@
       const p = _detailProduct; if (!p) return;
       const c = (p.colors || [])[_detailColorIdx] || {};
       const n = Math.max(1, parseInt(qtyInp.value, 10) || 1);
+
+      // Pull the customizer state. Default placement + DTF still apply
+      // even if the customer skipped customizing entirely.
+      const st = (typeof _dmczState === 'object' && _dmczState) ? _dmczState : { method: 'DTF', placements: [], uploads: {} };
+      let placements = (st.placements || []).slice();
+      if (!placements.length) {
+        placements = [dmczDefaultPlacementFor(p.garment_type || 'tshirt')];
+      }
+      const decoration_type = dmczMethodApi(st.method || 'DTF');   // 'dtf' | 'embroidery'
+      const uploads = st.uploads || {};
+      // Per-placement upload map for ALL uploaded artwork.
+      const placement_designs = {};
+      Object.keys(uploads).forEach(function(pid){
+        const u = uploads[pid];
+        if (u && u.path) placement_designs[pid] = { path: u.path, signed_url: u.signed_url || '', filename: u.filename || '' };
+      });
+      // Primary artwork = first selected placement that actually has an
+      // upload (for back-compat with /quote + the CRM).
+      let design_path = null, design_url = null;
+      for (let i = 0; i < placements.length; i++) {
+        const u = uploads[placements[i]];
+        if (u && u.path) { design_path = u.path; design_url = u.signed_url || null; break; }
+      }
+
       addToCart(p.product_id, {
         color_id:     c.color_id || null,
         color_name:   (c.color_name || ''),
@@ -1279,6 +1781,13 @@
         garment_type: p.garment_type || null,
         hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
         qty:          n,
+        // ---- Decoration carried up-front from the modal ----
+        placements:        placements,
+        sides:             placements.length,
+        decoration_type:   decoration_type,
+        design_path:       design_path,
+        design_url:        design_url,
+        placement_designs: placement_designs,
       });
       closeProductDetail();
       showCartToast({ brand: p.brand, style_number: p.style_number });
@@ -1294,6 +1803,12 @@
   // slider. Called from each card's "+ Add" button.
   function addToCart(productId, payload) {
     var qty = Math.max(1, parseInt(payload.qty, 10) || state.qty || 50);
+    // Decoration carried up-front from the detail modal (when present).
+    // Whole-card "+ Add" clicks omit these → fall back to a bare item
+    // (default placement, dtf, no uploads) so /quote stays editable.
+    var placements = Array.isArray(payload.placements) && payload.placements.length
+      ? payload.placements.slice() : null;
+    var sides = placements ? placements.length : (payload.sides || 1);
     SinghsCart.add({
       product_id:   productId,
       color_id:     payload.color_id || null,
@@ -1306,7 +1821,14 @@
       // Modal can override the page-slider qty per-item; fall back to the
       // catalog slider value (state.qty) for whole-card clicks.
       qty:          qty,
-      sides:        1,
+      sides:        sides,
+      // Up-front decoration (read by /quote + the CRM). All optional —
+      // omitted on bare whole-card adds.
+      placements:        placements || undefined,
+      decoration_type:   payload.decoration_type || undefined,
+      design_path:       payload.design_path || undefined,
+      design_url:        payload.design_url || undefined,
+      placement_designs: payload.placement_designs || undefined,
     });
     // Funnel analytics — the strongest signal of intent on this page.
     if (window.spTrack) window.spTrack('catalog_add_to_quote', {
