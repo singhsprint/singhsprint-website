@@ -194,9 +194,9 @@
     .filter-overlay.open{opacity:1;pointer-events:auto}
 
     /* Product detail modal — "View details" on each card opens this */
-    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2147483646}
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2147483644}
     .detail-overlay.open{opacity:1;pointer-events:auto}
-    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:2147483647;pointer-events:none}
+    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:2147483645;pointer-events:none}
     .detail-modal.open{pointer-events:auto}
     .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
     .detail-modal.open .detail-modal__inner{transform:scale(1);opacity:1}
@@ -218,7 +218,7 @@
     .detail-modal__thumb img{width:100%;height:100%;object-fit:cover;background:#f4f2eb}
     .detail-modal__thumb--label{font-size:.62rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;align-self:flex-end;padding:6px 8px}
     /* Lightbox */
-    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:1500;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:2147483646;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
     .img-lightbox.open{display:flex}
     .img-lightbox__img{max-width:min(1200px,96vw);max-height:92vh;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.5);background:#1a1a1a}
     .img-lightbox__close{position:absolute;top:18px;right:22px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(8px)}
@@ -902,7 +902,7 @@
     // paint, then a second paintDetailHero() once the fat payload lands.
     if (p && p.product_id) {
       fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
-            encodeURIComponent(p.product_id) + '&limit=1', { cache: 'force-cache' })
+            encodeURIComponent(p.product_id) + '&limit=1', { cache: 'no-store' })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) {
           var full = (d && d.products && d.products[0]) || null;
@@ -1643,7 +1643,7 @@
       var AGGREGATE_RATING = {
         '@type': 'AggregateRating',
         'ratingValue': '5.0',
-        'reviewCount': '21',
+        'reviewCount': '23',
         'bestRating':  '5',
         'worstRating': '1'
       };
