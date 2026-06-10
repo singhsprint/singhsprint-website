@@ -426,12 +426,32 @@ function loadNav() {
         { en: 'Schools & sports',        fr: 'Écoles & équipes sportives', href: BASE + '/industries/schools-sports-teams' }
       ]
     },
+    // Services — Priority-1 SEO money pages. Each is a dedicated local
+    // landing page targeting one high-intent service keyword cluster
+    // (custom t-shirts / hoodies / embroidery / DTF / DTG / screen print /
+    // hats / bulk). Parent links to the t-shirts page; subs deep-link each.
+    {
+      en: 'Services', fr: 'Services', i18n: 'nav.services',
+      href: BASE + '/custom-t-shirts-montreal',
+      subs: [
+        { en: 'Custom T-Shirts',  fr: 'T-shirts personnalisés',    href: BASE + '/custom-t-shirts-montreal' },
+        { en: 'Custom Hoodies',   fr: 'Hoodies personnalisés',     href: BASE + '/custom-hoodies-montreal' },
+        { en: 'Embroidery',       fr: 'Broderie',                  href: BASE + '/embroidery-montreal' },
+        { en: 'DTF Printing',     fr: 'Impression DTF',            href: BASE + '/dtf-printing-montreal' },
+        { en: 'DTG Printing',     fr: 'Impression DTG',            href: BASE + '/dtg-printing-montreal' },
+        { en: 'Screen Printing',  fr: 'Sérigraphie',               href: BASE + '/screen-printing-montreal' },
+        { en: 'Hats & Caps',      fr: 'Chapeaux et casquettes',    href: BASE + '/custom-hats-caps-montreal' },
+        { en: 'Bulk Apparel',     fr: 'Vêtements en gros',         href: BASE + '/bulk-apparel-printing-montreal' }
+      ]
+    },
     // 2026-05-25 — Drops added to the editorial rail so customers
     // who landed for B2B quoting discover the DTC drops line. Placed
     // second in the rail (right after For Businesses) for prominence
     // — Drops is a new revenue channel and deserves the eyeball-
     // grabbing position, not buried after the niche programs.
     { en: 'Drops',     fr: 'Drops',     i18n: 'nav.drops',     href: BASE + '/shop' },
+    // SEO guides hub — grows weekly via the scheduled "draft a guide" task.
+    { en: 'Guides',    fr: 'Guides',    i18n: 'nav.guides',    href: BASE + '/guides/' },
     { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' },
     { en: 'Portfolio', fr: 'Portfolio', i18n: 'nav.portfolio', href: BASE + '/portfolio' },
     { en: 'Inkwear',   fr: 'Inkwear',   i18n: 'nav.inkwear',   href: BASE + '/inkwear' },
@@ -956,7 +976,7 @@ function loadSchema() {
         "aggregateRating": {
           "@type": "AggregateRating",
           "ratingValue": "5.0",
-          "reviewCount": "27",
+          "reviewCount": "23",
           "bestRating": "5"
         },
         "areaServed": [
@@ -1672,8 +1692,8 @@ function loadProductModal() {
 }
 
 // =========================================================================
-// loadLiveReviews — patches every visible "5.0★ (27 reviews)" / "5.0/5 (21
-// reviews)" / "(21 reviews)" / "(21 avis)" instance on the page using the
+// loadLiveReviews — patches every visible "5.0/5 (23 reviews)" / "(23 reviews)"
+// / "(23 avis)" instance on the page using the
 // live numbers from /api/google-reviews. Build-time script (scripts/sync-
 // google-reviews.mjs) handles the same job for SEO + initial render; this
 // runtime patcher is the safety net for visitors hitting a stale deploy.
@@ -1708,12 +1728,12 @@ function loadLiveReviews() {
     // intact and only touches the literal strings.
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
     var patterns = [
-      [/\b5\.0★ \(\d+ reviews\)/g,    ratingStr + '★ (' + countStr + ' reviews)'],
-      [/\b5\.0\/5 \(\d+ reviews\)/g,  ratingStr + '/5 (' + countStr + ' reviews)'],
-      [/\b5\.0\/5 \(\d+ avis\)/g,     ratingStr + '/5 (' + countStr + ' avis)'],
-      [/\b\(21 reviews\)/g,           '(' + countStr + ' reviews)'],
-      [/\b\(21 Reviews\)/g,           '(' + countStr + ' Reviews)'],
-      [/\b\(21 avis\)/g,              '(' + countStr + ' avis)'],
+      [/\b\d(?:\.\d)?★ \(\d+ reviews\)/g,   ratingStr + '★ (' + countStr + ' reviews)'],
+      [/\b\d(?:\.\d)?\/5 \(\d+ reviews\)/g, ratingStr + '/5 (' + countStr + ' reviews)'],
+      [/\b\d(?:\.\d)?\/5 \(\d+ avis\)/g,    ratingStr + '/5 (' + countStr + ' avis)'],
+      [/\(\d+ reviews\)/g,                  '(' + countStr + ' reviews)'],
+      [/\(\d+ Reviews\)/g,                  '(' + countStr + ' Reviews)'],
+      [/\(\d+ avis\)/g,                     '(' + countStr + ' avis)'],
     ];
     var node;
     while ((node = walker.nextNode())) {
