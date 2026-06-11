@@ -428,7 +428,8 @@
       priceSeq: 0,
       boxes: {},            // { placementId: { x, y, w } } — % of the preview stage
       removeBg: false,      // knock out white backgrounds in the live preview
-      activePreview: null   // placement the inline canvas is showing/editing
+      activePreview: null,  // placement the inline canvas is showing/editing
+      garmentView: 'front'  // which blank-garment photo to show (front/back/side)
     };
     // The customizer is always expanded now (no accordion) — just render the
     // method picker, placements, uploads, and the live preview.
@@ -711,6 +712,9 @@
     // placement's side (and let the customer drag/scale it). When nothing's
     // uploaded yet, show the bare garment front with a caption prompting an
     // upload — no separate "hint-only" empty state.
+    // Available blank-garment photos for this colour (front / back / side).
+    var views = _galleryViewsForColor(color, _detailProduct && _detailProduct.hero_image_url);
+
     var active, garment, up, box, artImg;
     if (hasArt) {
       // Keep activePreview pointing at a placement that still has art.
@@ -733,11 +737,25 @@
         'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' + blend +
         'filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">';
     } else {
-      // Bare garment, default to the front view (first selected placement, or
-      // the garment's default placement).
-      var defPid = (_dmczState.placements && _dmczState.placements[0]) || null;
-      garment = imgUrl(dmczGarmentSideUrl(defPid, color));
+      // Bare garment — show whichever view the customer picked (front by
+      // default), so they can browse front/back/side before customizing.
+      if (!views.some(function(v){ return v.key === _dmczState.garmentView; })) {
+        _dmczState.garmentView = (views[0] && views[0].key) || 'front';
+      }
+      var curView = views.filter(function(v){ return v.key === _dmczState.garmentView; })[0] || views[0];
+      garment = curView ? curView.url : imgUrl(dmczGarmentSideUrl(null, color));
       artImg = '';
+    }
+
+    // Front/back/side thumbnail switcher — only in the blank state (when art is
+    // present the placement tabs already drive which side shows).
+    var viewStrip = '';
+    if (!hasArt && views.length > 1) {
+      viewStrip = '<div class="dmcz__views">' + views.map(function(v){
+        return '<button type="button" class="dmcz__view" data-view="' + esc(v.key) + '" aria-pressed="' + (v.key === _dmczState.garmentView) + '" title="' + esc(v.label) + '">' +
+          '<img src="' + esc(v.url) + '" alt="' + esc(v.label) + '" loading="lazy" decoding="async">' +
+        '</button>';
+      }).join('') + '</div>';
     }
 
     // Tabs (only when 2+ placements have art).
@@ -768,12 +786,23 @@
       '</div>' : '';
 
     host.innerHTML = tabs +
-      '<div class="dmcz__stage dmcz__stage--loading" id="dmczStage">' +
+      '<div class="dmcz__stage dmcz__stage--loading' + (hasArt ? '' : ' dmcz__stage--zoom') + '" id="dmczStage">' +
         '<img class="dmcz__stage-garment" src="' + esc(garment) + '" alt="" loading="eager" decoding="async" onload="this.parentNode.classList.remove(\'dmcz__stage--loading\')">' +
         artImg +
       '</div>' +
+      viewStrip +
       caption +
       controls;
+
+    // Blank state: clicking the garment opens it full-size in the lightbox,
+    // and the thumbnail strip swaps which view (front/back/side) is shown.
+    if (!hasArt) {
+      var gimg = host.querySelector('.dmcz__stage-garment');
+      if (gimg) gimg.addEventListener('click', function(){ openImgLightbox(gimg.getAttribute('src')); });
+      host.querySelectorAll('[data-view]').forEach(function(b){
+        b.addEventListener('click', function(){ _dmczState.garmentView = b.getAttribute('data-view'); renderDmczPreview(); });
+      });
+    }
 
     // Tab switching.
     host.querySelectorAll('[data-prevtab]').forEach(function(b){
