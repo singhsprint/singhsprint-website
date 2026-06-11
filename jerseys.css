@@ -1,0 +1,121 @@
+/* Extracted from jerseys.html (was the main inline <style> block). Shared by the
+   EN page and its /fr/ mirror so the browser caches it once. */
+:root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+
+    /* Hero */
+    .jh-hero{max-width:1100px;margin:0 auto;padding:54px 24px 26px}
+    .jh-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.5rem;font-weight:700;line-height:1.08;margin-bottom:12px;max-width:780px}
+    .jh-hero p{color:var(--muted);font-size:1.05rem;max-width:640px}
+    .jh-hero .jh-cta{display:inline-flex;align-items:center;gap:8px;margin-top:20px;background:var(--ink);color:#fff;padding:13px 24px;border-radius:14px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:transform .15s}
+    .jh-hero .jh-cta:hover{transform:translateY(-1px)}
+
+    /* Sport picker */
+    .jh-sports{max-width:1100px;margin:0 auto;padding:8px 24px 4px;display:flex;gap:10px;flex-wrap:wrap}
+    .jh-sport{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:50px;border:1.5px solid var(--line);background:#fff;color:var(--ink);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .15s}
+    .jh-sport:hover{border-color:var(--ink)}
+    .jh-sport.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .jh-sport svg{width:18px;height:18px}
+
+    /* Result meta */
+    .jh-bar{max-width:1100px;margin:18px auto 8px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .jh-meta{font-size:.85rem;color:var(--muted)}
+    .jh-meta strong{color:var(--ink)}
+    .jh-sort{display:inline-flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+    .jh-sort select{font-family:inherit;font-size:.85rem;padding:7px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);cursor:pointer}
+    .jh-sort select:focus{outline:none;border-color:var(--ink)}
+
+    /* Grid */
+    .jh-grid{max-width:1100px;margin:0 auto;padding:8px 24px 64px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+    .jh-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s}
+    .jh-card:hover{box-shadow:0 12px 28px rgba(0,0,0,.08);transform:translateY(-2px)}
+    .jh-card .photo{aspect-ratio:1/1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+    .jh-card .photo img{width:100%;height:100%;object-fit:contain}
+    .jh-card .body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+    .jh-card .brand-row{font-size:.7rem;letter-spacing:.04em;color:var(--soft);font-weight:600}
+    .jh-card .name{font-size:.92rem;font-weight:600;line-height:1.3;min-height:2.4em}
+    .jh-card .sporttags{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 4px}
+    .jh-card .sporttag{font-size:.66rem;font-weight:600;color:var(--muted);background:#f2f0ea;border-radius:50px;padding:2px 9px;text-transform:capitalize}
+    .jh-card .price{font-size:.82rem;color:var(--muted);margin-top:auto;padding-top:6px}
+    .jh-card .price strong{color:var(--ink)}
+    .jh-card .jh-add{margin-top:10px;width:100%;background:var(--ink);color:#fff;border:none;border-radius:11px;padding:11px;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit;transition:background .15s}
+    .jh-card .jh-add:hover{background:#333}
+
+    .jh-empty,.jh-loading{max-width:1100px;margin:0 auto;padding:40px 24px;color:var(--muted);font-size:.95rem}
+
+    /* ===== Customizer modal ===== */
+    .cz-overlay{position:fixed;inset:0;background:rgba(20,18,14,.5);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+    .cz-overlay.open{display:flex}
+    .cz{background:var(--bg);border-radius:20px;max-width:1040px;width:100%;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden}
+    .cz-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line);background:#fff}
+    .cz-head h2{font-family:'Playfair Display',Georgia,serif;font-size:1.3rem}
+    .cz-head .cz-close{background:none;border:none;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--muted)}
+    .cz-body{display:grid;grid-template-columns:340px 1fr;gap:0}
+    .cz-preview{background:#13110d;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:0}
+    .cz-preview .cz-prev-label{color:#cfc9bb;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;align-self:flex-start}
+    .cz-svgwrap{width:100%;max-width:280px}
+    .cz-prevhint{color:#9b958a;font-size:.72rem;text-align:center;line-height:1.5}
+    .cz-form{padding:22px 24px;display:flex;flex-direction:column;gap:18px;max-height:78vh;overflow-y:auto}
+    .cz-prodline{display:flex;gap:12px;align-items:center}
+    .cz-prodline img{width:54px;height:54px;border-radius:10px;object-fit:cover;background:#f2f0ea}
+    .cz-prodline .pn{font-weight:600;font-size:.92rem}
+    .cz-prodline .pb{font-size:.72rem;color:var(--soft);font-weight:600;letter-spacing:.03em}
+    .cz-field label{display:block;font-size:.78rem;font-weight:600;margin-bottom:7px;color:var(--ink)}
+    .cz-swatches{display:flex;gap:8px;flex-wrap:wrap}
+    .cz-swatch{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;transition:transform .12s}
+    .cz-swatch:hover{transform:scale(1.08)}
+    .cz-swatch.sel{box-shadow:0 0 0 2px var(--ink)}
+    .cz-chips{display:flex;gap:8px;flex-wrap:wrap}
+    .cz-chip{padding:8px 14px;border-radius:50px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .12s}
+    .cz-chip:hover{border-color:var(--ink)}
+    .cz-chip.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .cz-fontchip{padding:7px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:1rem;transition:all .12s}
+    .cz-fontchip.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+    /* Roster table */
+    .cz-roster{width:100%;border-collapse:collapse;font-size:.86rem}
+    .cz-roster th{text-align:left;font-size:.72rem;color:var(--soft);font-weight:600;padding:0 8px 6px}
+    .cz-roster td{padding:3px 6px 3px 0}
+    .cz-roster input{width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff}
+    .cz-roster input:focus{outline:none;border-color:var(--ink)}
+    .cz-roster .col-no input{text-align:center}
+    .cz-roster .rmrow{background:none;border:none;color:var(--soft);cursor:pointer;font-size:1.1rem;line-height:1;padding:4px}
+    .cz-roster .rmrow:hover{color:#c0392b}
+    .cz-toggle{display:flex;align-items:center;gap:9px;font-size:.86rem;color:var(--ink);cursor:pointer;padding:6px 0}
+    .cz-toggle input{width:18px;height:18px;accent-color:var(--ink);cursor:pointer;flex-shrink:0}
+    .cz-rowbtns{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .cz-linkbtn{background:none;border:none;color:var(--ink);font-weight:600;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:6px 0}
+    .cz-foot{border-top:1px solid var(--line);background:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .cz-foot .cz-summary{font-size:.85rem;color:var(--muted)}
+    .cz-foot .cz-summary strong{color:var(--ink)}
+    .cz-addbtn{background:var(--ink);color:#fff;border:none;border-radius:13px;padding:13px 26px;font-weight:600;font-size:.92rem;cursor:pointer;font-family:inherit;transition:transform .15s}
+    .cz-addbtn:hover{transform:translateY(-1px)}
+    .cz-addbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .cz-note{font-size:.72rem;color:var(--soft);line-height:1.5}
+    .cz-paste-ta{width:100%;min-height:120px;padding:11px;border:1.5px solid var(--line);border-radius:11px;font-family:inherit;font-size:.85rem;resize:vertical}
+    /* Success toast */
+    .cz-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(160%);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:.9rem;z-index:1200;opacity:0;visibility:hidden;pointer-events:none;transition:transform .25s,opacity .25s,visibility .25s;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);max-width:360px;width:calc(100% - 32px);box-sizing:border-box}
+    .cz-toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;pointer-events:auto}
+    .cz-toast a{color:var(--hi);font-weight:700;text-decoration:underline;white-space:nowrap}
+
+    @media (max-width:760px){
+      .jh-hero h1{font-size:1.9rem}
+      /* Full-screen modal on phones: single column (preview on top, form
+         below), no inner scroll trap — the overlay itself scrolls. */
+      .cz-overlay{padding:0;align-items:stretch}
+      .cz{border-radius:0;max-width:100%;min-height:100%}
+      .cz-body{grid-template-columns:1fr}
+      .cz-preview{position:static;padding:16px 16px 8px}
+      .cz-svgwrap{max-width:230px}
+      .cz-form{max-height:none;overflow:visible;padding:16px;gap:16px}
+      .cz-head{padding:14px 16px}
+      .cz-foot{padding:12px 16px}
+      .cz-foot .cz-addbtn{padding:13px 18px}
+      /* Bigger touch targets for the draggable logo + roster inputs. */
+      .cz-roster input,.cz-roster select{font-size:16px}
+      /* Lift the "added to quote" toast above the floating Text us button so
+         they never overlap. */
+      .cz-toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+    }

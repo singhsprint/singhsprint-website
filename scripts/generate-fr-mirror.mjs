@@ -232,7 +232,10 @@ function rewriteUrls(html, relPath) {
   // Rewrite same-origin links so nav inside /fr/ stays inside /fr/.
   // Matches href="/<path>" and href="<path>.html" (no scheme, no leading /fr/).
   // Skips: external links, anchors, mailto/tel, asset paths (images, scripts, css).
-  const SKIP = /^(https?:|mailto:|tel:|#|\/api|\/images|\/downloads|\/components\.js|\/lang\.js|\/ai-translate\.js|\/favicon|\/robots|\/sitemap)/i;
+  // The extension test keeps shared static assets (page CSS/JS like
+  // /quote.css, /catalog.js) pointing at the root copy — there is no /fr/
+  // duplicate of those, the whole point is one cached copy for both languages.
+  const SKIP = /^(https?:|mailto:|tel:|#|\/api|\/images|\/downloads|\/components\.js|\/lang\.js|\/ai-translate\.js|\/favicon|\/robots|\/sitemap)|\.(css|js|mjs|png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf|pdf|xml|txt|zip)(\?|$)/i;
   html = html.replace(/\bhref="([^"#]+)"/g, (match, href) => {
     if (SKIP.test(href)) return match;
     // Internal pages — rewrite to /fr/...

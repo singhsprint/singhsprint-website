@@ -1,0 +1,797 @@
+/* Extracted from quote.html (was the main inline <style> block). Shared by the
+   EN page and its /fr/ mirror so the browser caches it once. */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#f8f7f4;line-height:1.6;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+    button{cursor:pointer;border:none;background:none;font-family:inherit}
+    h1,h2,h3{font-family:'Playfair Display',serif;font-weight:800;line-height:1.2}
+
+    .promo-bar{background:#e8ff3c;text-align:center;padding:10px 24px;font-weight:600;font-size:.9rem}
+    .promo-bar a{text-decoration:underline;font-weight:700}
+    .navbar{position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);z-index:1000;border-bottom:1px solid rgba(0,0,0,.06);padding:0 24px}
+    .navbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px}
+    .nav-links{display:flex;align-items:center;gap:32px}
+    .nav-links a{font-size:.95rem;font-weight:500;color:#555;transition:color .2s}
+    .nav-links a:hover{color:#1a1a1a}
+    .nav-cta{display:flex;align-items:center;gap:16px}
+    .nav-phone{font-weight:600;font-size:.95rem}
+
+    .page-header{padding:60px 24px 32px;text-align:center}
+    .page-header h1{font-size:clamp(2rem,4vw,3rem);margin-bottom:12px}
+    .page-header p{font-size:1.1rem;color:#666;max-width:560px;margin:0 auto}
+
+    /* Layout */
+    .customizer-layout{display:grid;grid-template-columns:1fr 400px;gap:32px;max-width:1200px;margin:0 auto 80px;padding:0 24px;align-items:start}
+
+    /* Form Card */
+    .form-card{background:#fff;border-radius:20px;padding:40px;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+    .form-card h2{font-size:1.4rem;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+    .step-desc{color:#888;font-size:.92rem;margin-bottom:28px}
+
+    /* Numbered step chips next to each section H2 — mirrors the
+       RFP form treatment so the user sees "1 / 2 / 3" reinforcement
+       right where their eyes are reading. The pill nav at the top
+       does this too, but the chip in the H2 anchors the user in
+       the current step without needing to glance back up.
+       CSS attr() can only read from the same element, so we set
+       the number on each parent via three specific rules. */
+    .form-section[data-step] > h2::before{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:30px;height:30px;border-radius:50%;
+      background:#1a1a1a;color:#e8ff3c;
+      font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;
+      flex-shrink:0;line-height:1;
+    }
+    .form-section[data-step="1"] > h2::before{content:"1"}
+    .form-section[data-step="2"] > h2::before{content:"2"}
+    .form-section[data-step="3"] > h2::before{content:"3"}
+
+    /* Steps bar */
+    .steps-bar{display:flex;gap:4px;margin-bottom:32px}
+    .step-pill{flex:1;height:4px;border-radius:2px;background:#e8e8e8;transition:background .3s}
+    .step-pill.active{background:#1a1a1a}
+    .step-pill.done{background:#e8ff3c}
+
+    .form-section{display:none}
+    .form-section.active{display:block}
+
+    /* Product grid */
+    .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+    .product-option{border:2px solid #eee;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+    .product-option:hover{border-color:#ccc}
+    .product-option.selected{border-color:#1a1a1a;background:#fafafa}
+    .product-option .icon{display:block;margin-bottom:6px;height:48px}
+    .product-option .icon svg{width:48px;height:48px}
+    .product-option .name{font-weight:600;font-size:.9rem;display:block}
+    .product-option .from{font-size:.75rem;color:#999;margin-top:2px;display:block}
+    .product-option .check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:none;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+    .product-option.selected .check{display:flex}
+
+    /* Catalog-pick card — shown when the user arrives from /catalog.html with
+       a specific product + color in the URL. Replaces the generic product grid. */
+    .catalog-pick{display:flex;align-items:center;gap:14px;background:#fafaf6;border:1.5px solid #1a1a1a;border-radius:14px;padding:14px;margin-bottom:18px;position:relative}
+    .catalog-pick__img{flex-shrink:0;width:88px;height:88px;border-radius:10px;overflow:hidden;background:#fff;border:1px solid #e8e6df}
+    .catalog-pick__img img{width:100%;height:100%;object-fit:cover}
+    .catalog-pick__body{flex:1;min-width:0}
+    .catalog-pick__brand{font-size:.7rem;font-weight:700;letter-spacing:.06em;color:#888;text-transform:uppercase}
+    .catalog-pick__name{font-size:1rem;font-weight:600;color:#1a1a1a;line-height:1.25;margin-top:2px}
+    .catalog-pick__meta{font-size:.78rem;color:#666;margin-top:3px}
+    .catalog-pick__price{font-size:.85rem;color:#1a1a1a;margin-top:6px}
+    .catalog-pick__price strong{font-weight:700}
+    .catalog-pick__change{font-size:.78rem;font-weight:600;color:#1a1a1a;border-bottom:1.5px solid #1a1a1a;padding-bottom:1px;flex-shrink:0;align-self:flex-start;margin-top:4px}
+    .catalog-pick__change:hover{color:#555;border-color:#555}
+
+    /* Service selector */
+    .service-row{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+    .svc-btn{flex:1;min-width:120px;border:2px solid #eee;border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .2s}
+    .svc-btn:hover{border-color:#ccc}
+    .svc-btn.selected{border-color:#1a1a1a;background:#fafafa}
+    .svc-btn strong{display:block;font-size:.9rem}
+    .svc-btn span{font-size:.78rem;color:#888}
+
+    /* Color picker */
+    .color-section{margin-bottom:24px}
+    .color-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
+    .color-grid{display:flex;gap:8px;flex-wrap:wrap}
+    .color-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;position:relative}
+    .color-swatch.light{border:3px solid #ddd}
+    .color-swatch:hover{transform:scale(1.15)}
+    .color-swatch.selected{border-color:#1a1a1a;transform:scale(1.15)}
+    .color-swatch.oos{opacity:.45;cursor:not-allowed}
+    .color-swatch.oos::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:50%}
+    .color-swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.5)}
+    .color-swatch[data-color="#FFFFFF"].selected::after{color:#1a1a1a;text-shadow:none}
+    .color-name{font-size:.8rem;color:#999;margin-top:6px}
+
+    /* Consolidated print-method picker — each card is both the descriptor AND the selector */
+    .method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+    .method-card{position:relative;border:2px solid #eee;border-radius:14px;padding:14px 16px;background:#fff;cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;gap:6px}
+    .method-card:hover{border-color:#bbb;transform:translateY(-1px)}
+    .method-card.selected{border-color:#1a1a1a;background:#fafafa;box-shadow:0 0 0 1.5px #1a1a1a inset}
+    .method-card.selected::after{content:'✓';position:absolute;top:10px;right:12px;width:20px;height:20px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700}
+    .method-card strong{font-size:.95rem;font-weight:700;color:#1a1a1a}
+    .method-card .m-desc{font-size:.78rem;color:#666;line-height:1.45}
+    .method-card .m-best{font-size:.7rem;color:#999;font-weight:500;margin-top:auto}
+    .method-card-help{background:#fafafa;border-style:dashed;grid-column:1/-1}
+    @media(max-width:768px){.method-grid{grid-template-columns:1fr}}
+
+    /* Price section */
+    .price-section{border-top:1px solid #f0f0f0;padding-top:12px;margin-top:12px}
+    .price-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .price-toggle{display:flex;gap:4px}
+    .price-tab{padding:6px 12px;border-radius:50px;font-size:.78rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s}
+    .price-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+    .price-breakdown{display:grid;gap:6px}
+    .price-row{display:flex;justify-content:space-between;font-size:.85rem}
+    .price-row span:first-child{color:#888}
+    .price-row span:last-child{font-weight:600}
+    .price-highlight{background:#e8ff3c;border-radius:8px;padding:8px 10px;margin-top:8px}
+    .price-total{display:flex;justify-content:space-between;font-size:.95rem;font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid #e8e8e8}
+    .discount-badge{display:inline-block;background:#1a1a1a;color:#e8ff3c;padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;margin-left:4px}
+    .price-note{font-size:.75rem;color:#aaa;margin-top:6px}
+    .price-b2b-note{font-size:.75rem;color:#aaa;margin-top:4px}
+
+    /* Payment section in mockup */
+    .mockup-payment{padding:12px 20px;border-top:1px solid #f0f0f0;background:#f8f7f4}
+    .pay-button{width:100%;padding:12px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;margin-bottom:8px}
+    .pay-button:hover{background:#333}
+    .pay-button:disabled{background:#ddd;cursor:not-allowed}
+    .pay-message{font-size:.75rem;color:#aaa;text-align:center;line-height:1.4}
+
+    /* Print locations — checkbox grid in form */
+    .placement-section{margin-bottom:24px}
+    .placement-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:10px;color:#555}
+    .loc-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+
+    /* Placement preset cards — preset-driven alternative to the drag-on-canvas UX */
+    .placement-group{margin-bottom:18px}
+    .placement-group-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px}
+    .placement-preset-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    @media (min-width:600px){.placement-preset-grid{grid-template-columns:repeat(4,1fr)}}
+    .preset-card{position:relative;border:1.5px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;transition:all .15s;background:#fff;user-select:none}
+    /* Embroidery-only constraints. Engine can't physically hoop an
+       oversized chest panel or a full-back panel — sewing machine bed
+       is ~12"; anything larger needs DTF or screen. Hide those presets
+       when the customer has selected Embroidery so they can't pick a
+       combo we can't deliver. The chest presets pick up a "(5×5″ hoop)"
+       size hint, Full Front picks up "(larger panel)" so it's clear
+       what each option actually produces. */
+    body.is-embroidery [data-preset="oversized"],
+    body.is-embroidery [data-preset="back-full"]{display:none !important}
+    .preset-emb-hint{display:none;font-size:.66rem;font-weight:600;color:#7a5b15;background:#fff8e8;border:1px solid #f0e3b8;border-radius:50px;padding:1px 7px;margin-top:4px;letter-spacing:.02em}
+    body.is-embroidery .preset-emb-hint{display:inline-block}
+    .preset-card:hover{border-color:#1a1a1a;transform:translateY(-1px)}
+    .preset-card.selected{border-color:#1a1a1a;background:#fafafa;box-shadow:0 0 0 1.5px #1a1a1a inset}
+    .preset-card .preset-shirt{width:42px;height:50px;margin:0 auto 6px;display:block}
+    .preset-card .preset-label{display:block;font-size:.82rem;font-weight:700;color:#1a1a1a;text-align:center;line-height:1.2}
+    .preset-card .preset-desc{display:block;font-size:.7rem;color:#888;text-align:center;margin-top:2px;line-height:1.2}
+    .preset-card .preset-check{position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:none;align-items:center;justify-content:center;font-size:.6rem;font-weight:700}
+    .preset-card.selected .preset-check{display:flex}
+    .loc-check{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;cursor:pointer;transition:all .15s;user-select:none}
+    .loc-check:hover{border-color:#ccc;background:#fafafa}
+    .loc-check.checked{border-color:#1a1a1a;background:#f8f8f6}
+    .loc-check input[type="checkbox"]{display:none}
+    .loc-check .check-box{width:20px;height:20px;border-radius:6px;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .loc-check.checked .check-box{background:#1a1a1a;border-color:#1a1a1a}
+    .loc-check .check-box svg{width:12px;height:12px;opacity:0;transition:opacity .15s}
+    .loc-check.checked .check-box svg{opacity:1}
+    .loc-check .loc-label{font-size:.85rem;font-weight:600;color:#555}
+    .loc-check.checked .loc-label{color:#1a1a1a}
+    .placement-count-badge{display:inline-block;background:#e8ff3c;color:#1a1a1a;padding:2px 10px;border-radius:50px;font-size:.72rem;font-weight:700;margin-left:6px;vertical-align:middle}
+    .placement-summary{font-size:.82rem;color:#888;margin-top:4px}
+
+    /* Inline upload zone that lives with the placement presets so customers
+       choose their spot and drop their artwork without leaving the section. */
+    .placement-upload{margin-top:0;display:flex;align-items:center;gap:14px;padding:12px 14px;border:1.5px dashed #d0d0d0;border-radius:12px;background:#fafafa;cursor:pointer;transition:all .15s ease}
+    .placement-upload:hover{border-color:#1a1a1a;background:#f5f5f1}
+    .placement-upload.has-file{border-style:solid;border-color:#1a1a1a;background:#f8f8f4}
+    .placement-upload__icon{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+    .placement-upload__copy{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+    .placement-upload__copy strong{font-size:.9rem;color:#1a1a1a}
+    .placement-upload__copy span{font-size:.76rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .placement-upload__remove{background:transparent;border:none;color:#aaa;cursor:pointer;font-size:.8rem;padding:4px 8px;border-radius:6px}
+    .placement-upload__remove:hover{color:#a01a1a;background:#fef0f0}
+    .placement-upload-list{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+    .placement-upload-list:empty{display:none}
+    .placement-upload-list__hint{font-size:.8rem;color:#888;padding:8px 14px;background:#fafafa;border-radius:10px;border:1px dashed #ddd;text-align:center}
+
+    /* ===== Per-cart-item placement chip picker =====
+       Each cart row gets its own placement assignment so a multi-item
+       order (e.g. "10 hoodies with logo on back, 5 hats with logo on
+       front") doesn't ambiguously share the global placement list.
+       The widget is a compact chip strip + an inline picker that
+       expands below the row when the customer taps "Edit placements".
+    */
+    .ci-placements{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;width:100%}
+    .ci-placements__label{font-size:.7rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+    .ci-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:50px;background:#1a1a1a;color:#e8ff3c;font-size:.74rem;font-weight:600;line-height:1.2}
+    .ci-chip__remove{background:transparent;border:none;color:#e8ff3c;cursor:pointer;font-size:.86rem;padding:0;line-height:1;opacity:.7}
+    .ci-chip__remove:hover{opacity:1}
+    .ci-chip--add{background:#fff;color:#1a1a1a;border:1.5px dashed #d0cdc0;cursor:pointer;font-family:inherit;padding:5px 12px;transition:all .12s}
+    .ci-chip--add:hover{border-color:#1a1a1a;background:#fafaf6}
+    /* 2026-05-24 — Per-placement surcharge badge on selected chips +
+       on picker options. The "+$3" reads as additive on top of the
+       base unit price so the customer understands picking Full Front
+       costs more than Left Chest. Picker-side uses amber-yellow on
+       the white chip; selected-chip side stays yellow-on-dark so it
+       coexists with the chip's existing yellow text. */
+    .ci-chip__surcharge{font-weight:700;font-size:.7rem;color:#e8ff3c;background:rgba(232,255,60,.18);padding:1px 6px;border-radius:50px;line-height:1}
+    .ci-picker__surcharge{font-weight:600;color:#a16207;font-size:.7rem;margin-left:2px}
+    .ci-picker__opt.is-selected .ci-picker__surcharge{color:#e8ff3c}
+    .ci-picker{display:none;flex-basis:100%;margin-top:10px;padding:14px;border:1.5px solid #e8e6df;border-radius:12px;background:#fafaf6}
+    .ci-picker.open{display:block}
+    .ci-picker__group{margin-bottom:12px}
+    .ci-picker__group:last-child{margin-bottom:0}
+    .ci-picker__group-label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:6px}
+    .ci-picker__opts{display:flex;flex-wrap:wrap;gap:6px}
+    .ci-picker__opt{padding:7px 12px;border-radius:8px;background:#fff;border:1.5px solid #e8e6df;font-size:.78rem;cursor:pointer;font-family:inherit;color:#1a1a1a;transition:all .12s}
+    .ci-picker__opt:hover{border-color:#1a1a1a}
+    .ci-picker__opt.is-selected{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
+    .ci-picker__close{font-size:.74rem;color:#888;background:transparent;border:none;font-family:inherit;cursor:pointer;margin-top:6px;text-decoration:underline}
+
+    /* Per-item upload list — one zone per selected placement, inside
+       each cart row instead of the global placementUploadList. */
+    .ci-uploads{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:10px}
+    .ci-uploads:empty{display:none}
+    .ci-upload{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1.5px dashed #d0cdc0;border-radius:10px;background:#fff;cursor:pointer;font-size:.78rem}
+    .ci-upload:hover{border-color:#1a1a1a;background:#fafaf6}
+    .ci-upload.has-file{border-style:solid;border-color:#1a1a1a;background:#fafaf6}
+    .ci-upload__icon{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+    .ci-upload__copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+    .ci-upload__copy strong{font-size:.8rem;color:#1a1a1a;font-weight:600}
+    .ci-upload__copy span{font-size:.7rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ci-upload__remove{background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.72rem;padding:4px 6px}
+
+    /* Per-cart-item shared section label — small uppercase header used
+       above the method picker and sizes grid inside each cart row. */
+    .ci-section-label{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888}
+
+    /* Promoted "Add another item from catalog" CTA (2026-05-24).
+       Visible at any viewport width — full-width filled button so the
+       multi-method/multi-item flow is discoverable. Used to be a tiny
+       ghost-pill that phones consistently buried; now sits prominent
+       between the cart list and the next form section. */
+    .cart-add-more{margin:14px 0 22px}
+    .cart-add-more__btn{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      width:100%;padding:14px 18px;
+      background:#fafaf6;border:2px dashed #b9b3a3;border-radius:14px;
+      color:#1a1a1a;font-weight:700;font-size:.95rem;text-decoration:none;
+      transition:all .15s ease;min-height:56px;font-family:inherit;
+    }
+    .cart-add-more__btn:hover{background:#fff;border-color:#1a1a1a;border-style:solid;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+    .cart-add-more__btn:active{transform:translateY(0)}
+    .cart-add-more__icon{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:28px;height:28px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;
+      font-size:1.1rem;font-weight:700;line-height:1;
+    }
+    .cart-add-more__label{flex:0 1 auto}
+    .cart-add-more__hint{
+      margin:8px 0 0;text-align:center;font-size:.74rem;color:#888;line-height:1.5;
+    }
+    @media (max-width:600px){
+      .cart-add-more__btn{padding:16px;font-size:1rem}
+      .cart-add-more__hint{font-size:.72rem;padding:0 8px}
+    }
+
+    /* Per-item Print Method picker (2026-05-24). Compact 4-chip selector
+       inside each cart row. Active chip = filled dark with yellow accent
+       text, matching the homepage slider chip language. */
+    .ci-method{margin-top:10px;width:100%}
+    .ci-method__head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+    .ci-method-hint{font-size:.7rem;color:#a16207}
+    .ci-method__chips{display:flex;gap:6px;flex-wrap:wrap}
+    .ci-method-chip{padding:8px 14px;border:1.5px solid #e8e6df;border-radius:50px;background:#fff;font-size:.78rem;font-weight:600;color:#555;cursor:pointer;transition:all .15s;font-family:inherit;min-height:36px}
+    .ci-method-chip:hover{border-color:#bbb;color:#1a1a1a}
+    .ci-method-chip.is-active{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a}
+    /* Embroidery-only garments (caps/hats) render a single locked chip.
+       Disabled state signals "this is the only choice" rather than
+       "broken" — keep the dark+yellow active styling but lose the
+       hover cursor + suppress hover color shift. */
+    .ci-method-chip[disabled]{cursor:default}
+    .ci-method-chip[disabled]:hover{border-color:#1a1a1a;color:#e8ff3c}
+
+    /* 2026-05-24 — Qty input flash. Added by onCartItemSizeChange when
+       the sizes total auto-updates the line's qty. Yellow ring pulse
+       draws the customer's eye so the auto-sync isn't a silent jump.
+       The animation runs once, then a 1.5s setTimeout removes the
+       class so a subsequent size edit can trigger a fresh pulse. */
+    @keyframes cartQtyFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(232,255,60,0); border-color:#e8e6df; transform: scale(1); }
+      15%  { box-shadow: 0 0 0 6px rgba(232,255,60,.55); border-color:#1a1a1a; transform: scale(1.04); }
+      55%  { box-shadow: 0 0 0 4px rgba(232,255,60,.30); border-color:#1a1a1a; transform: scale(1); }
+      100% { box-shadow: 0 0 0 0 rgba(232,255,60,0); border-color:#e8e6df; transform: scale(1); }
+    }
+    .cart-qty-flash {
+      animation: cartQtyFlash 1.4s ease-out 1;
+      background:#fffce0 !important;
+    }
+
+    /* Per-item Sizes grid (2026-05-24). 7-cell row for XS-3XL; custom
+       sizes overflow to a separate chip row below; +add custom is a
+       <details> disclosure so the section stays compact for typical
+       orders. */
+    .ci-sizes{margin-top:10px;width:100%}
+    .ci-sizes__head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .ci-sizes__total{font-size:.78rem;color:#666;font-variant-numeric:tabular-nums}
+    .ci-sizes__total strong{color:#1a1a1a;font-weight:700}
+    .ci-sizes__total--mismatch strong{color:#a16207}
+    .ci-sizes__match{margin-left:8px;background:transparent;border:none;color:#a16207;text-decoration:underline;font-size:.72rem;cursor:pointer;font-weight:600;padding:0}
+    .ci-sizes__grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+    .ci-sizes__cell{display:flex;flex-direction:column;gap:2px}
+    .ci-sizes__lbl{font-size:.66rem;font-weight:700;color:#999;text-align:center;letter-spacing:.04em}
+    .ci-sizes__cell input{width:100%;padding:8px 4px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;font-weight:600;text-align:center;font-family:inherit;background:#fff;min-height:40px;font-variant-numeric:tabular-nums}
+    .ci-sizes__cell input:focus{outline:none;border-color:#1a1a1a}
+    .ci-sizes__custom-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .ci-sizes__custom-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fafaf6;border:1px solid #e8e6df;border-radius:50px;font-size:.72rem;font-weight:600;color:#1a1a1a;font-variant-numeric:tabular-nums}
+    .ci-sizes__custom-chip button{background:transparent;border:none;color:#888;cursor:pointer;padding:0;font-size:1rem;line-height:1}
+    .ci-sizes__more{margin-top:8px}
+    .ci-sizes__more summary{cursor:pointer;list-style:none;font-size:.7rem;color:#666;padding:4px 0;font-weight:600}
+    .ci-sizes__more summary::-webkit-details-marker{display:none}
+    .ci-sizes__more summary:hover{color:#1a1a1a}
+    .ci-sizes__custom-form{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+    .ci-sizes__custom-form input[type=text]{flex:0 0 80px;padding:6px 8px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;text-transform:uppercase;font-family:inherit}
+    .ci-sizes__custom-form input[type=number]{flex:0 0 70px;padding:6px 8px;border:1.5px solid #e8e6df;border-radius:8px;font-size:16px;font-family:inherit;font-variant-numeric:tabular-nums}
+    .ci-sizes__custom-form button{padding:6px 14px;border:none;background:#1a1a1a;color:#fff;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px}
+    @media (max-width:600px){
+      /* Below 600px the 7-cell size grid gets too tight; collapse to
+         4 columns. Custom-size chips wrap naturally. */
+      .ci-sizes__grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    }
+
+    /* Location bar under mockup — multi-select toggle */
+    .location-bar{display:flex;gap:4px;padding:10px 12px;border-top:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;justify-content:center}
+    .loc-btn{padding:7px 14px;border-radius:50px;font-size:.72rem;font-weight:600;border:1.5px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .loc-btn:hover{border-color:#ccc;color:#555}
+    .loc-btn.selected{background:#e8e8e8;color:#1a1a1a;border-color:#ccc}
+    .loc-btn.viewing{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+    /* Size breakdown */
+    .size-section{margin-bottom:24px}
+    .size-section > label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}
+    .size-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:8px}
+    /* Cart-row swatches: 12 visible collapsed, "Show all" reveals the rest. */
+    .ci-swatches{padding-top:6px}
+    .ci-swatches--collapsed > button.ci-swatch:nth-of-type(n+13){display:none}
+    .ci-swatch{position:relative;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;will-change:transform}
+    .ci-swatch:hover{transform:scale(1.5);z-index:5;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+    /* Animated tooltip showing the color name above the swatch on hover. */
+    .ci-swatch::after{
+      content:attr(data-name);position:absolute;bottom:calc(100% + 10px);left:50%;
+      transform:translateX(-50%) translateY(6px) scale(.9);
+      background:#1a1a1a;color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.01em;
+      padding:5px 9px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;
+      transition:opacity .18s ease-out,transform .18s cubic-bezier(.34,1.56,.64,1);
+      box-shadow:0 4px 14px rgba(0,0,0,.2);font-family:inherit
+    }
+    .ci-swatch::before{
+      content:"";position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);
+      border:5px solid transparent;border-top-color:#1a1a1a;opacity:0;pointer-events:none;transition:opacity .18s
+    }
+    .ci-swatch:hover::after{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+    .ci-swatch:hover::before{opacity:1}
+    .ci-swatch-toggle{font-size:.74rem;color:#1a1a1a;background:#f4f2eb;border:1px solid #d8d5cb;border-radius:999px;padding:3px 10px;cursor:pointer;font-weight:600;line-height:1;letter-spacing:.01em;font-family:inherit;white-space:nowrap;transition:background .15s,transform .15s}
+    .ci-swatch-toggle:hover{background:#e8e6df;transform:translateY(-1px)}
+    .size-item{text-align:center}
+    .size-item label{display:block;font-size:.78rem;font-weight:600;color:#777;margin-bottom:4px}
+    .size-item input{width:100%;padding:10px 4px;border:1.5px solid #e0e0e0;border-radius:10px;text-align:center;font-size:.95rem;font-family:inherit}
+    .size-item input:focus{outline:none;border-color:#1a1a1a}
+    .size-total{margin-top:8px;font-size:.85rem;color:#666;font-weight:600}
+
+    /* Form fields */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px;color:#555}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:13px 14px;border:1.5px solid #e0e0e0;border-radius:12px;font-size:.95rem;font-family:inherit;transition:border-color .2s;background:#fff}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#1a1a1a}
+    .form-group textarea{resize:vertical;min-height:90px}
+    .form-group .hint{font-size:.78rem;color:#aaa;margin-top:3px}
+
+    /* File upload */
+    .file-upload{border:2px dashed #ddd;border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+    .file-upload:hover{border-color:#aaa;background:#fafafa}
+    .file-upload .up-icon{font-size:1.8rem;margin-bottom:6px}
+    .file-upload p{font-size:.92rem;color:#666}
+    .file-upload span{font-size:.78rem;color:#aaa}
+    .file-upload input[type="file"]{display:none}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.95rem;font-weight:600;transition:all .25s;cursor:pointer;border:none}
+    .btn-primary{background:#1a1a1a;color:#fff}
+    .btn-primary:hover{background:#333;transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .btn-accent{background:#e8ff3c;color:#1a1a1a}
+    .btn-accent:hover{background:#ddf535;transform:translateY(-2px)}
+    .btn-outline{border:2px solid #ddd;color:#666;background:transparent;padding:12px 24px}
+    .btn-outline:hover{border-color:#1a1a1a;color:#1a1a1a}
+    .form-buttons{display:flex;justify-content:space-between;margin-top:28px}
+
+    /* Success */
+    .form-success{text-align:center;padding:40px 0;display:none}
+    .form-success .success-icon{font-size:3.5rem;margin-bottom:14px}
+    .form-success h2{margin-bottom:10px}
+    .form-success p{color:#666;font-size:1rem;max-width:400px;margin:0 auto}
+
+    /* ========== MOCKUP PREVIEW ========== */
+    .mockup-panel{position:sticky;top:100px}
+    .mockup-card{background:#fff;border:1px solid #e8e8e8;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.02)}
+    .mockup-header{padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;background:#fafafa}
+    .mockup-header h3{font-size:.85rem;font-family:'Inter',sans-serif;font-weight:700;color:#555;letter-spacing:.02em}
+    .mockup-view-toggle{display:flex;gap:0;background:#ececec;border-radius:8px;padding:2px}
+    .view-btn{padding:6px 16px;border-radius:6px;font-size:.76rem;font-weight:600;border:none;background:transparent;color:#888;cursor:pointer;transition:all .15s}
+    .view-btn.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    .view-btn:hover:not(.active){color:#555}
+
+    .mockup-footer{padding:14px 18px;border-top:1px solid #f0f0f0;text-align:center}
+    .mockup-footer p{font-size:.75rem;color:#bbb;line-height:1.4}
+    .mockup-summary{padding:14px 18px;border-top:1px solid #f0f0f0}
+    .summary-row{display:flex;justify-content:space-between;font-size:.82rem;padding:4px 0}
+    .summary-row span:first-child{color:#999}
+    .summary-row span:last-child{font-weight:600;color:#1a1a1a}
+
+    /* Reassurance card replaces the broken live preview. Brand-locked:
+       cream background, Playfair headline, yellow primary accent, Inter body. */
+    .mockup-reassure{background:#fff;border:1px solid #e8e8e8;border-radius:16px;padding:28px 26px;box-shadow:0 2px 14px rgba(0,0,0,.05),0 0 0 1px rgba(0,0,0,.02);position:relative;overflow:hidden}
+    .mockup-reassure::before{content:"";position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:#e8ff3c;opacity:.25;filter:blur(8px)}
+    .mockup-reassure__tag{display:inline-block;background:#1a1a1a;color:#e8ff3c;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:50px;margin-bottom:18px;position:relative;z-index:1}
+    .mockup-reassure__icon{width:54px;height:54px;border-radius:14px;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;margin-bottom:18px;position:relative;z-index:1}
+    .mockup-reassure__title{font-family:'Playfair Display',Georgia,serif;font-size:1.4rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:10px;position:relative;z-index:1}
+    .mockup-reassure__copy{font-size:.88rem;line-height:1.55;color:#555;margin-bottom:20px;position:relative;z-index:1}
+    .mockup-reassure__steps{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+    .mockup-reassure__steps li{display:flex;align-items:center;gap:12px;font-size:.88rem;color:#1a1a1a;font-weight:500}
+    .mockup-reassure__steps .step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#f5f5f0;border:1.5px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#1a1a1a}
+    .mockup-reassure__foot{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#888;padding-top:16px;border-top:1px solid #f0f0f0;position:relative;z-index:1}
+    .mockup-reassure__foot .foot-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);animation:reassurePulse 2s ease-in-out infinite}
+    @keyframes reassurePulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+    /* Sidebar extras */
+    .sidebar-card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:20px;margin-top:12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+    .sidebar-card h4{font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;margin-bottom:8px}
+    .sidebar-card p{font-size:.82rem;color:#777;line-height:1.5}
+    .sidebar-card .info-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+    .sidebar-card .info-row:last-child{margin-bottom:0}
+    .sidebar-card .info-icon{font-size:1rem;flex-shrink:0;margin-top:2px}
+
+    @media(max-width:900px){
+      .customizer-layout{grid-template-columns:1fr}
+      /* On tablet the mockup-panel still surfaces above (to keep
+         live-price visible on Step 1). On phones below the sub-rule
+         (≤480px) flips it the other way so the form leads. */
+      .mockup-panel{position:static;order:-1}
+      .canvas-wrapper{aspect-ratio:1}
+    }
+    @media(max-width:768px){
+      .product-grid{grid-template-columns:repeat(2,1fr)}
+      .service-row{flex-direction:column}
+      .canvas-toolbar{flex-wrap:wrap;padding:8px 10px;gap:4px}
+      .toolbar-sep{display:none}
+      .size-selector{margin-left:0;width:100%;justify-content:center;padding-top:4px;border-top:1px solid #f0f0f0;margin-top:4px}
+      .size-grid{grid-template-columns:repeat(4,1fr)}
+      .form-row{grid-template-columns:1fr}
+      .form-card{padding:24px 18px}
+      .nav-links{display:none}
+      .nav-cta .btn{display:none}
+      .mobile-toggle{display:flex}
+      .nav-links.active{display:flex;flex-direction:column;position:absolute;top:72px;left:0;right:0;background:#fff;padding:24px;border-bottom:1px solid #eee;gap:16px;z-index:100}
+    }
+    @media(max-width:480px){
+      .product-grid{grid-template-columns:1fr 1fr}
+      .size-grid{grid-template-columns:repeat(4,1fr)}
+      .toolbar-btn{padding:6px 8px;font-size:.72rem}
+      .loc-tab{font-size:.7rem;padding:10px 4px}
+      .loc-check-grid{grid-template-columns:1fr 1fr}
+      .form-card{padding:18px 14px;border-radius:14px}
+      .cart-item{flex-direction:column;align-items:stretch !important;gap:10px !important;padding:14px 12px !important}
+      .cart-item > div[style*="display:flex;align-items:flex-end"]{justify-content:flex-start}
+      h1{font-size:clamp(1.6rem,5vw,2.4rem) !important}
+      h2{font-size:clamp(1.2rem,4vw,1.6rem) !important}
+      /* Mobile feedback was "overwhelming". Step headers smaller, lower
+         density between rows. The 3-step progress strip + form card
+         account for most of the visual noise; both shrink here. */
+      .quote-hero{padding-top:18px !important;padding-bottom:6px !important}
+      .quote-hero h1{margin-bottom:6px !important}
+      .quote-hero .sub{font-size:.88rem !important;line-height:1.5}
+      /* Tier-pricing table inside cart rows — phones need tighter cells +
+         a smaller font, plus a hard overflow-x:auto wrapper so it scrolls
+         INSIDE its column instead of forcing the cart-item flex parent to
+         grow past the viewport. Without this the page itself overflows
+         and the sticky #livePriceStrip gets pushed off the bottom edge. */
+      .ci-livematrix{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .ci-livematrix > details > div{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+      .ci-livematrix table{font-size:.68rem !important}
+      .ci-livematrix table th,
+      .ci-livematrix table td{padding:5px 6px !important}
+      /* Belt-and-braces — never let the page itself scroll horizontally
+         on phones. If something inside overflows, it gets clipped at the
+         body edge rather than pushing the layout sideways. */
+      html,body{overflow-x:hidden;max-width:100vw}
+      .step-pills{gap:6px !important;margin-bottom:14px !important}
+      .step-pill{font-size:.7rem !important;padding:6px 10px !important;flex:1 1 0;min-width:0;text-align:center}
+      .step-pill__num{display:none}
+      .form-section{padding-top:8px}
+      .form-group{margin-bottom:14px !important}
+      .form-group label{font-size:.82rem !important;margin-bottom:6px !important}
+      .placement-section,.color-section,.service-row,.size-section{margin-bottom:14px !important}
+      .step-buttons{padding-top:14px !important;margin-top:14px !important}
+      .placement-preset-grid{gap:6px !important}
+      /* PHONES: form leads, marketing follows.
+         - Restore natural source order (order:0) so the form renders
+           first, mockup-panel after.
+         - Hide the marketing reassurance + legacy mockup card —
+           customers came here to GET A QUOTE, not read about how good
+           we are at making mockups. They'll see that value in the
+           confirmation email.
+         - Live-price strip stays accessible via the sticky-bottom rule
+           in components.js (position:fixed at the bottom of the
+           viewport). So the only "thing" in mockup-panel that
+           survives on mobile is the floating price bar. */
+      /* Mobile: kill the entire right rail. The shipping estimator gets
+         moved into the form flow via JS (see #shippingEstimateCard
+         relocation block at the bottom of the page script). Everything
+         else in the sidebar is marketing — irrelevant when the user is
+         heads-down filling out the form. Hiding the panel reclaims the
+         large empty block of vertical space below "Next". */
+      /* OLD rule was `.mockup-panel{display:none !important}` which also
+         killed the sticky live-price strip + shipping estimator inside it.
+         display:contents on the parent makes the panel disappear layout-
+         wise but lets its children still render, so:
+           • #livePriceStrip can pick up the sticky-bottom rule from
+             components.js (position:fixed bottom:0)
+           • #shippingEstimateCard can be relocated by JS into Step 3
+           • Everything else inside the panel (marketing reassurance,
+             mockup card, etc.) gets explicitly hidden so we don't
+             leak marketing copy into the form flow. */
+      .mockup-panel{display:contents !important}
+      .mockup-panel > :not(#livePriceStrip):not(#shippingEstimateCard):not(#spInlinePreview){
+        display:none !important;
+      }
+
+      /* Shipping estimator, INLINE inside Step 3 (moved there via JS). It
+         visually flows with the form fields — no card border, no float,
+         no shadow. Just looks like the next question in the sequence. */
+      #shippingEstimateCard{
+        display:block !important;
+        background:transparent !important;
+        border:none !important;
+        border-radius:0 !important;
+        padding:0 !important;
+        margin:0 0 18px !important;
+        box-shadow:none !important;
+        width:100% !important;
+        max-width:100% !important;
+        box-sizing:border-box !important;
+        overflow:hidden !important;
+      }
+      #shippingEstimateCard,
+      #shippingEstimateCard *{box-sizing:border-box}
+      #shippingEstimateCard h4{font-size:.78rem !important;font-weight:600 !important;color:#1a1a1a !important;margin:0 0 8px !important;text-transform:none !important;letter-spacing:0 !important}
+      /* Postal-code row — three children (CA/US select + postal input +
+         Estimate button) can blow past the viewport on narrow phones
+         because the button's text is nowrap. Wrap to a second line if
+         needed and let the button span full-width on rewrap so nothing
+         clips off-screen. */
+      #shippingEstimateCard #fulfillDeliveryBody > div:first-of-type{
+        flex-wrap:wrap !important;
+      }
+      #shippingEstimateCard #shipCountry{flex:0 0 auto;min-width:60px}
+      #shippingEstimateCard #shipPostal{flex:1 1 140px;min-width:0}
+      #shippingEstimateCard #shipEstimateBtn{flex:0 0 auto}
+      @media(max-width:380px){
+        #shippingEstimateCard #shipEstimateBtn{flex:1 1 100%}
+      }
+      /* Auto-hide when no delivery preference picked, or when "Local
+         pickup" is selected — body JS toggles a class. */
+      #shippingEstimateCard.is-hidden-mobile{display:none !important}
+      /* Hero gap fix — was rendering ~300px tall on phones */
+      .quote-hero{padding:14px 0 6px !important}
+      .quote-hero h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
+      .quote-hero .sub{font-size:.86rem !important;line-height:1.5;margin-bottom:0 !important}
+
+      /* ===== Empty-state catalog CTA — compact phone layout =====
+         The card defaults to flex-row + a 350-char body paragraph,
+         which wraps to ~485px tall on phones — dwarfing the rest
+         of Step 1. On mobile we:
+           1. Stack the card vertically (column)
+           2. Hide the long descriptor paragraph (the headline already
+              says what the card is)
+           3. Shrink padding + emoji circle
+           4. Make the "Browse catalog →" button full-width
+         The page also renders a legacy 9-tile product grid below,
+         which on phones reads as a competing primary CTA. We hide
+         that grid entirely on mobile when the empty-state is showing
+         and surface a small "or pick a generic type" disclosure
+         instead — kept available via an inline link for the small
+         fraction who can't find their blank in the catalog. */
+      #catalogPickEmpty{
+        flex-direction:column !important;
+        text-align:center !important;
+        gap:10px !important;
+        padding:18px 16px !important;
+        margin-bottom:14px !important;
+      }
+      #catalogPickEmpty > div:first-child{
+        width:44px !important;height:44px !important;font-size:1.1rem !important;
+      }
+      #catalogPickEmpty > div:nth-child(2) > span{
+        display:none !important; /* hide the verbose descriptor on mobile */
+      }
+      #catalogPickEmpty > div:nth-child(2) > strong{
+        font-size:1rem !important;line-height:1.3 !important;
+      }
+      #catalogPickEmpty > a{
+        width:100% !important;
+        text-align:center !important;
+        padding:13px 18px !important;
+        font-size:.92rem !important;
+      }
+      /* Legacy 9-tile grid: collapse to a one-line disclosure on mobile
+         when the empty-state card is visible. Customers who really
+         want to skip the catalog can still tap the type tiles via
+         the expand toggle. */
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup{
+        margin-top:4px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup > label,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup > label{
+        font-size:.74rem !important;color:#999 !important;font-weight:600 !important;
+        text-transform:uppercase !important;letter-spacing:.05em !important;
+        margin-bottom:8px !important;
+      }
+      /* Tighter product-grid tiles so 9 of them don't dominate the
+         viewport — keep the option visible but visually de-emphasised. */
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-grid,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-grid{
+        gap:6px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option{
+        padding:10px 6px !important;border-width:1px !important;border-radius:10px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .icon,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .icon{
+        height:34px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .icon svg,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .icon svg{
+        width:30px !important;height:30px !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .name,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .name{
+        font-size:.78rem !important;
+      }
+      #catalogPickEmpty[style*="display:flex"] ~ #legacyProductGroup .product-option .from,
+      #catalogPickEmpty[style*="display: flex"] ~ #legacyProductGroup .product-option .from{
+        font-size:.68rem !important;
+      }
+    }
+    @media(max-width:360px){
+      .placement-preset-grid{grid-template-columns:1fr}
+      .size-grid{grid-template-columns:repeat(3,1fr)}
+    }
+
+    /* ───── Mobile polish pass — 2026-05-24 ─────────────────────────────
+       Targeted improvements for phones based on real-device testing.
+       Everything here is additive over the existing breakpoints above,
+       and uses !important sparingly (only where the cascade fights us). */
+    @media(max-width:600px){
+      /* 1. iOS-zoom defeat — Safari zooms in on any input whose
+         computed font-size is < 16px when the user taps to focus.
+         That zoom never zooms back out cleanly and is the single
+         worst mobile UX bug. Force 16px on every text/number/email/
+         tel input + textarea + select inside the form sections. */
+      .form-section input[type="text"],
+      .form-section input[type="email"],
+      .form-section input[type="tel"],
+      .form-section input[type="number"],
+      .form-section input[type="date"],
+      .form-section input[type="url"],
+      .form-section textarea,
+      .form-section select{
+        font-size:16px !important;
+      }
+
+      /* 2. Larger touch targets on placement preset cards. 44×44 is
+         Apple's HIG minimum; current cards trended ~38px tall on
+         narrow phones. Bump padding so even big-thumb taps land. */
+      .preset-card{
+        min-height:96px;
+        padding:14px 10px !important;
+      }
+      .preset-card .preset-label{font-size:.86rem !important}
+
+      /* 3. Loc-tab (view switcher above mockup) — wider tap area on
+         phones, was 11px×8px which made adjacent tabs error-prone. */
+      .loc-tab{
+        padding:14px 8px !important;
+        font-size:.78rem !important;
+        min-height:44px;
+      }
+
+      /* 4. Bottom safe-area + keyboard-aware padding on the live-price
+         strip. The strip uses position:fixed bottom:0 on phones (set in
+         components.js); we add safe-area-inset-bottom so it clears the
+         home indicator, AND we leave the body with bottom padding equal
+         to the strip's height so the form's last fields aren't covered. */
+      #livePriceStrip{
+        padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px) !important;
+      }
+      body{
+        padding-bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important;
+      }
+
+      /* 5. The per-placement upload card — 12px×14px padding gave a
+         ~52px tap target including content, fine, but the explicit
+         file-input <label> wraps a hidden input that some Android
+         browsers only fire `change` on if the label has enough area
+         around the visible click region. Lock to ≥56px tall. */
+      .placement-upload{min-height:56px}
+
+      /* 6. Hero CTA + nav buttons — bump every primary action to a
+         comfortable 48px min-height. Tap-target lint passes. */
+      .btn-primary, .btn--primary, .step-buttons .btn{
+        min-height:48px;
+      }
+
+      /* 7. Loc-check chip (the multi-select checkbox for placements
+         inside the cart-item editor) was 12×14px padding which felt
+         cramped two-up; widen now that the grid is single-col on the
+         tightest breakpoints. */
+      .loc-check{padding:14px 14px !important;min-height:48px}
+      .loc-check .loc-label{font-size:.92rem !important}
+    }
+
+    /* Visual-viewport-aware behavior — when the on-screen keyboard
+       slides up, modern browsers expose the squeezed viewport via
+       window.visualViewport. We set a CSS custom property from JS
+       (see body script) so the sticky price strip can offset itself
+       above the keyboard instead of being covered by it. */
+    @supports (height: 100dvh) {
+      #livePriceStrip{
+        bottom: var(--sp-keyboard-offset, 0px) !important;
+        transition: bottom .15s ease;
+      }
+    }
+
+    /* ========== CANVAS EDITOR ========== */
+    .canvas-wrapper{position:relative;overflow:hidden;background:linear-gradient(145deg,#f2f1ee 0%,#e9e8e4 100%);aspect-ratio:5/6}
+    .canvas-wrapper .garment-display{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
+    .canvas-wrapper .garment-display svg{width:72%;max-height:88%;transition:all .3s}
+    .canvas-wrapper .garment-display img{width:100%;height:100%;object-fit:cover;object-position:center;transition:opacity .25s ease}
+    /* Colour overlay for the future photo-based mode — multiply blend tints
+       the white product photo. Hidden while we run on SVG placeholders. */
+    .garment-tint{position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:multiply;transition:background-color .2s ease}
+    .canvas-wrapper .canvas-container{position:absolute!important;inset:0;z-index:2}
+    #fabricCanvas{width:100%!important;height:100%!important;display:block;cursor:default}
+
+    /* Editor controls container */
+    .editor-controls{background:#fff;border-top:1px solid #eee}
+
+    /* Location bar — view-switching tabs (only shows selected locations) */
+    .location-bar{display:flex;gap:0;padding:0;background:#f5f5f5;border-bottom:1px solid #eee}
+    .loc-tab{flex:1;padding:11px 8px;font-size:.76rem;font-weight:600;border:none;border-right:1px solid #eee;background:transparent;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap;text-align:center;letter-spacing:.02em;display:none}
+    .loc-tab:last-child{border-right:none}
+    .loc-tab.visible{display:block}
+    .loc-tab:hover{color:#555;background:#efefef}
+    .loc-tab.active{color:#fff;background:#1a1a1a}
+    .location-bar-empty{padding:10px;text-align:center;font-size:.75rem;color:#bbb;background:#f5f5f5;border-bottom:1px solid #eee}
+
+    /* Toolbar — clean icon-text groups */
+    .canvas-toolbar{display:flex;align-items:center;padding:10px 14px;gap:6px;border-bottom:1px solid #f0f0f0}
+    .toolbar-group{display:flex;align-items:center;gap:4px}
+    .toolbar-sep{width:1px;height:22px;background:#e8e8e8;margin:0 6px}
+    .toolbar-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:none;background:#f5f5f5;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s;color:#555}
+    .toolbar-btn:hover{background:#eaeaea;color:#1a1a1a}
+    .toolbar-btn.active{background:#1a1a1a;color:#fff}
+    .toolbar-btn svg{width:14px;height:14px;flex-shrink:0}
+    .toolbar-btn--danger{color:#c44}
+    .toolbar-btn--danger:hover{background:#fef0f0;color:#a33}
+
+    /* Size selector — pill group */
+    .size-selector{display:flex;align-items:center;gap:4px;margin-left:auto}
+    .size-selector .size-label{font-size:.68rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-right:2px}
+    .print-area-btn{padding:5px 10px;border-radius:6px;border:1.5px solid transparent;background:#f5f5f5;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;color:#999;min-width:28px;text-align:center}
+    .print-area-btn:hover{background:#eaeaea;color:#555}
+    .print-area-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}

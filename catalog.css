@@ -1,0 +1,349 @@
+/* Extracted from catalog.html (was the main inline <style> block). Shared by the
+   EN page and its /fr/ mirror so the browser caches it once. */
+:root { --bg:#f8f7f4; --ink:#1a1a1a; --line:#e8e6df; --muted:#666; --soft:#888; --hi:#e8ff3c; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+
+    /* Hero */
+    .cat-hero{max-width:1200px;margin:0 auto;padding:48px 24px 28px}
+    .cat-hero h1{font-family:'Playfair Display',Georgia,serif;font-size:2.4rem;font-weight:700;line-height:1.1;margin-bottom:8px}
+    .cat-hero p{color:var(--muted);font-size:1rem;max-width:600px}
+    .cat-hero .meta{display:flex;align-items:center;gap:14px;margin-top:14px;font-size:.82rem;color:var(--soft)}
+    .cat-hero .meta strong{color:var(--ink);font-weight:600}
+
+    /* Search + filter row */
+    .cat-toolbar{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:10px;margin-bottom:16px}
+    .cat-search{flex:1;position:relative}
+    .cat-search input{width:100%;padding:14px 14px 14px 44px;border:1.5px solid var(--line);border-radius:14px;font-size:.95rem;font-family:inherit;background:#fff;transition:border-color .15s}
+    .cat-search input:focus{outline:none;border-color:var(--ink)}
+    .cat-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--soft)}
+    .cat-filter-btn{padding:14px 22px;background:var(--ink);color:#fff;border:none;border-radius:14px;font-size:.92rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .15s}
+    .cat-filter-btn:hover{transform:translateY(-1px)}
+    .cat-filter-btn .pill{background:var(--hi);color:var(--ink);padding:2px 7px;border-radius:50px;font-size:.72rem;font-weight:700}
+
+    /* Chip row */
+    .cat-chips{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;min-height:32px}
+    /* Chip strip below the search bar — refined: fixed order, no "+" prefix
+       on passive chips, active chip transforms in place rather than jumping
+       to the front of the row. */
+    .chip{font-size:.82rem;font-weight:500;padding:7px 14px;border-radius:50px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid transparent;line-height:1;font-family:inherit}
+    .chip.passive{background:transparent;border-color:var(--line);color:var(--muted)}
+    .chip.passive:hover{border-color:var(--ink);color:var(--ink);background:#fafaf7}
+    .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+    .chip.active:hover{background:#333}
+    .chip.active::after{content:'×';font-size:1rem;margin-left:1px;opacity:.8;line-height:1}
+    .chip.clear{background:transparent;border:none;color:var(--muted);font-size:.78rem;text-decoration:underline;padding:7px 4px;font-weight:500}
+    .chip.clear:hover{color:var(--ink)}
+
+    /* Result count + sort */
+    .cat-meta-row{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:.85rem;color:var(--muted)}
+    .cat-meta-row strong{color:var(--ink);font-weight:600}
+    .cat-sort{cursor:pointer;display:flex;align-items:center;gap:4px}
+    .cat-sort strong{font-weight:600}
+
+    /* Grid */
+    .cat-grid{max-width:1200px;margin:0 auto 64px;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    @media (max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:540px){.cat-grid{grid-template-columns:1fr;gap:14px;padding:0 16px}}
+    @media (max-width:540px){
+      .cat-hero{padding:28px 16px 16px}
+      .cat-hero h1{font-size:clamp(1.5rem,6vw,2rem)}
+      .cat-hero p{font-size:.88rem;line-height:1.5}
+      .cat-hero .meta{flex-wrap:wrap;gap:6px 10px;font-size:.74rem}
+      .cat-toolbar{flex-direction:column;gap:8px;padding:0 16px}
+      .cat-filter-btn{width:100%;justify-content:center;padding:12px 18px}
+      .cat-search input{padding:12px 14px 12px 42px;font-size:16px}
+      .cat-chips{padding:0 16px;gap:6px;margin-bottom:10px}
+      .chip{font-size:.76rem;padding:5px 10px}
+      /* Compact cards on phones — less whitespace, more shelf */
+      .card{border-radius:12px}
+      .card .photo{aspect-ratio:1}
+      .card .body{padding:10px 12px}
+      .card .name{font-size:.92rem;line-height:1.2;margin-bottom:4px}
+      .card .brand-row{font-size:.68rem;margin-bottom:2px}
+      .card .price{font-size:.82rem;margin-bottom:6px}
+      .card .swatches{gap:3px;max-height:44px}
+      .card .swatch{width:14px;height:14px;border-width:1px}
+      .card .card-cta{padding:7px 10px;margin-top:6px}
+      .card .card-cta__main{font-size:.78rem}
+      .card .card-cta__sub{font-size:.62rem}
+    }
+    @media (max-width:380px){
+      .filter-panel{width:100%}
+    }
+
+    .card{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column}
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:#d0cdc0}
+    .card.selected{border-color:var(--ink);border-width:2px}
+    .card .badge{position:absolute;top:10px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:50px;letter-spacing:.06em;z-index:2;text-transform:uppercase}
+    .card .badge--bestseller{background:var(--hi);color:var(--ink);right:10px}
+    .card .badge--canadian{background:#fff;color:var(--ink);border:1px solid var(--line);right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--csa{background:#1a1a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--oos{background:#a01a1a;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card .badge--low{background:#b8780f;color:#fff;right:10px;text-transform:none;letter-spacing:0}
+    .card.card--oos{opacity:.55}
+    .card.card--oos .photo img{filter:grayscale(.7)}
+    .swatch.swatch--oos{opacity:.3;position:relative}
+    .swatch.swatch--oos::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - 1px),rgba(120,30,30,.7) 50%,transparent calc(50% + 1px));border-radius:inherit}
+    .card .badge--selected{background:var(--ink);color:var(--hi);left:10px}
+    /* White bg matches the suppliers' white product-photo backgrounds so
+       the contained image blends into the card with no visible frame. */
+    .card .photo{aspect-ratio:1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+    .card .photo img{width:100%;height:100%;object-fit:contain;padding:4%;transition:opacity .25s ease}
+    /* Skeleton cards — shown immediately on first paint so the page
+       doesn't look frozen during the 1.4s initial catalog fetch. */
+    .skel{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .skel__photo{aspect-ratio:1;background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite}
+    .skel__body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .skel__line{height:10px;border-radius:6px;background:linear-gradient(90deg,#f0eee5 0%,#fafaf7 50%,#f0eee5 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite}
+    .skel__line--short{width:42%}
+    .skel__line--medium{width:78%}
+    .skel__line--swatches{height:18px;border-radius:50px}
+    @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    /* Card render-fade: cards added by the lazy renderer pop in smoothly. */
+    .card{opacity:1;transition:opacity .22s ease}
+    .card--booting{opacity:0}
+    .cat-grid--booting{opacity:.96}
+    .card .body{padding:12px 14px}
+    .card .brand-row{font-size:.7rem;color:var(--soft);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+    .card .name{font-size:.95rem;font-weight:600;line-height:1.25;margin:3px 0 8px}
+    /* overflow:visible so the selected-state ring (box-shadow + scale) on
+       a swatch isn't clipped at the top of the row. max-height clamped to
+       fit roughly 2 rows of 16px swatches plus the selected ring breathing
+       room. The "+N" overflow indicator stays inline at row end. */
+    .card .swatches{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px;max-height:56px;overflow:visible}
+    .card .swatches .more{font-size:.7rem;color:var(--soft);padding:0 4px;align-self:center;white-space:nowrap}
+    .card .swatch{width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;cursor:pointer;transition:transform .12s,box-shadow .12s;padding:0;background-clip:padding-box;outline:none}
+    .card .swatch:hover{transform:scale(1.2)}
+    .card .swatch.is-light{border-color:#ddd}
+    .card .swatch.swatch--selected{box-shadow:0 0 0 2px var(--ink);transform:scale(1.15);position:relative}
+    .card .swatch.swatch--selected::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid #fff;pointer-events:none}
+    .card.card--clickable{cursor:pointer}
+    /* Two-line CTA: bold action on top, qty + hint below. Replaced
+       "+ Add to quote · 200" which read as a counter or price; this
+       version makes it unambiguous what 200 means and that it's editable. */
+    .card .card-cta{margin-top:8px;padding:9px 12px;background:var(--ink);color:#fff;border-radius:10px;text-align:center;letter-spacing:.02em;opacity:0;transition:opacity .15s,transform .15s;transform:translateY(2px);display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.15}
+    .card .card-cta__main{font-size:.82rem;font-weight:700;color:var(--hi);letter-spacing:.02em}
+    .card .card-cta__sub{font-size:.66rem;font-weight:500;color:#bbb;letter-spacing:.04em}
+    .card .card-cta__qty{font-weight:600;color:#fff}
+    .card.card--clickable:hover .card-cta,.card.card--clickable:focus-visible .card-cta{opacity:1;transform:translateY(0)}
+    .card.card--just-added{animation:cardPulse .8s ease-out}
+    @keyframes cardPulse{
+      0%{box-shadow:0 0 0 0 rgba(232,255,60,.7)}
+      60%{box-shadow:0 0 0 12px rgba(232,255,60,0)}
+      100%{box-shadow:0 0 0 0 rgba(232,255,60,0)}
+    }
+    @media (hover:none){
+      /* Always show the CTA on touch devices */
+      .card .card-cta{opacity:1;transform:translateY(0)}
+    }
+    .card .more{font-size:.72rem;color:var(--soft);font-weight:600;margin-left:2px}
+    .card .price{font-size:.82rem;color:var(--muted)}
+    .card .price strong{color:var(--ink);font-weight:600}
+    .card .price-meta{color:var(--soft);font-weight:500;white-space:nowrap}
+
+    /* BYO card */
+    .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
+    .card-byo .add{width:38px;height:38px;border-radius:50%;background:#f0eee5;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+    .card-byo strong{font-size:.95rem}
+    .card-byo span{font-size:.78rem;color:var(--muted);line-height:1.4}
+
+    /* Loading / empty */
+    .cat-loading{max-width:1200px;margin:0 auto;padding:20px 24px;text-align:center;color:var(--soft);font-size:.85rem}
+    .cat-empty{max-width:1200px;margin:0 auto;padding:60px 24px;text-align:center;color:var(--muted)}
+    .cat-empty h3{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:6px;color:var(--ink)}
+
+    /* Filter slide-over */
+    /* z-index 2000 puts the filter panel above the sticky navbar
+       (z:1000) and above the catalog cart bar (z:60). Otherwise the
+       nav covers "Refine results" and the X-close on mobile. */
+    .filter-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;box-shadow:-8px 0 24px rgba(0,0,0,.08);transform:translateX(100%);transition:transform .25s ease;z-index:2147483000;display:flex;flex-direction:column}
+    .filter-panel.open{transform:translateX(0)}
+    .filter-panel header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .filter-panel header h3{font-family:'Playfair Display',serif;font-size:1.2rem}
+    .filter-panel header button{border:none;background:transparent;font-size:1.2rem;cursor:pointer;color:var(--muted)}
+    .filter-panel .scroll{flex:1;overflow-y:auto;padding:18px 22px}
+    .filter-panel footer{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px}
+    .filter-panel footer button{flex:1;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.9rem;font-family:inherit;border:none}
+    .filter-panel footer .clear{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+    .filter-panel footer .apply{background:var(--ink);color:#fff}
+    .filter-group{margin-bottom:22px}
+    .filter-group h4{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);margin-bottom:10px}
+    .filter-group label{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:.9rem;cursor:pointer}
+    .filter-group label input{width:16px;height:16px;accent-color:var(--ink)}
+    .filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2147482999}
+    .filter-overlay.open{opacity:1;pointer-events:auto}
+
+    /* Product detail modal — "View details" on each card opens this */
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:2147483644}
+    .detail-overlay.open{opacity:1;pointer-events:auto}
+    .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:2147483645;pointer-events:none}
+    .detail-modal.open{pointer-events:auto}
+    .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:880px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+    .detail-modal.open .detail-modal__inner{transform:scale(1);opacity:1}
+    .detail-modal__head{padding:18px 22px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    /* Two-column customizer body: live preview (left) + scrollable controls
+       (right). Mirrors the jersey builder's .cz-body layout but in the
+       catalog's clean light look (white preview panel, neutral borders). */
+    .detail-modal__body{flex:1;overflow-y:auto;padding:22px;display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+    /* Left column — single always-on live preview. Clean white panel. */
+    .detail-modal__preview-col{position:sticky;top:0;display:flex;flex-direction:column;gap:10px}
+    .detail-modal__preview-col .dmcz__preview{margin:0}
+    .detail-modal__preview-col .dmcz__stage{max-width:100%;max-height:300px}
+    .detail-modal__preview-col .dmcz__controls{max-width:100%;margin:0}
+    .detail-modal__preview-cap{font-size:.72rem;color:#888;text-align:center;line-height:1.4}
+    /* Right column — controls, scrollable. */
+    .detail-modal__controls-col{min-width:0;display:flex;flex-direction:column}
+    /* Gallery — main image + thumbnail strip */
+    .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
+    .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
+    .detail-modal__main img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;padding:4%;background:#fff;transition:transform .25s ease}
+    .detail-modal__main:hover img{transform:scale(1.03)}
+    .detail-modal__zoom-hint{position:absolute;right:10px;bottom:10px;width:28px;height:28px;border-radius:50%;background:rgba(26,26,26,.78);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;pointer-events:none;backdrop-filter:blur(4px);opacity:0;transition:opacity .15s}
+    .detail-modal__main:hover .detail-modal__zoom-hint{opacity:1}
+    .detail-modal__thumbs{display:flex;gap:6px;flex-wrap:wrap}
+    .detail-modal__thumb{flex:0 0 56px;width:56px;height:56px;padding:0;border:1.5px solid #e8e6df;border-radius:8px;background:#fff;cursor:pointer;overflow:hidden;line-height:0;transition:border-color .12s,transform .12s}
+    .detail-modal__thumb:hover{border-color:#bbb;transform:translateY(-1px)}
+    .detail-modal__thumb.is-active{border-color:#1a1a1a;border-width:2px}
+    .detail-modal__thumb img{width:100%;height:100%;object-fit:cover;background:#f4f2eb}
+    .detail-modal__thumb--label{font-size:.62rem;font-weight:600;color:#888;letter-spacing:.04em;text-transform:uppercase;align-self:flex-end;padding:6px 8px}
+    /* Lightbox */
+    .img-lightbox{display:none;position:fixed;inset:0;background:rgba(10,10,10,.92);z-index:2147483646;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+    .img-lightbox.open{display:flex}
+    .img-lightbox__img{max-width:min(1200px,96vw);max-height:92vh;border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.5);background:#1a1a1a}
+    .img-lightbox__close{position:absolute;top:18px;right:22px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(8px)}
+    .img-lightbox__close:hover{background:rgba(255,255,255,.22)}
+    @media (max-width:640px){
+      .detail-modal__thumb{flex:0 0 48px;width:48px;height:48px}
+      .img-lightbox{padding:12px}
+      .img-lightbox__close{top:12px;right:12px}
+    }
+    .detail-modal__swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;max-height:188px;overflow-y:auto;margin-bottom:20px;padding-right:4px}
+    .detail-modal__swatch{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:8px 6px;border-radius:10px;transition:background .12s;border:1.5px solid transparent;background:transparent;font-family:inherit}
+    .detail-modal__swatch:hover{background:#f4f2eb}
+    .detail-modal__swatch[aria-selected="true"]{background:#f4f2eb;border-color:#1a1a1a}
+    .detail-modal__swatch--oos{opacity:.45}
+    .detail-modal__swatch-dot{width:38px;height:38px;border-radius:50%;border:1.5px solid #ddd}
+    .detail-modal__swatch-name{font-size:.7rem;color:#1a1a1a;text-align:center;line-height:1.2;word-break:break-word}
+    .detail-modal__close{background:transparent;border:none;font-size:1.3rem;cursor:pointer;color:#888;padding:4px 8px;line-height:1}
+    .detail-modal__close:hover{color:#1a1a1a}
+    .detail-modal__foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
+    .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
+    .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
+    /* Paragraph fallback — when the supplier ships a single text blob
+       instead of bullet-structured specs, hide the round bullet dot
+       and let it read as prose. */
+    .detail-modal__specs li[data-flat="1"]::before{display:none}
+    .detail-modal__qty{display:inline-flex;align-items:center;gap:8px}
+    .detail-modal__qty-btn{width:30px;height:30px;border:1.5px solid #d8d5cb;background:#fff;border-radius:8px;font-size:1.1rem;font-weight:600;cursor:pointer;color:#1a1a1a;line-height:1;transition:background .12s,border-color .12s;font-family:inherit;padding:0}
+    .detail-modal__qty-btn:hover{background:#f4f2eb;border-color:#1a1a1a}
+    .detail-modal__qty-btn:active{transform:scale(.96)}
+    .detail-modal__qty-input{width:64px;height:30px;text-align:center;border:1.5px solid #d8d5cb;border-radius:8px;font-size:.92rem;font-weight:600;font-family:inherit;background:#fff;color:#1a1a1a;padding:0 4px;-moz-appearance:textfield}
+    .detail-modal__qty-input::-webkit-outer-spin-button,.detail-modal__qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .detail-modal__qty-input:focus{outline:none;border-color:#1a1a1a}
+    .card-details-link{display:inline-block;font-size:.74rem;color:#666;text-decoration:underline;text-decoration-color:#ccc;text-underline-offset:2px;background:none;border:none;padding:2px 0;cursor:pointer;font-family:inherit;margin-top:4px}
+    .card-details-link:hover{color:#1a1a1a;text-decoration-color:#1a1a1a}
+    @media (max-width:640px){
+      .detail-modal{padding:0}
+      /* 100dvh = the VISIBLE viewport (excludes the iOS browser toolbar).
+         Plain 100vh ran the modal — and its footer Add button — off the
+         bottom of the screen behind Safari's chrome. */
+      .detail-modal__inner{max-height:100vh;max-height:100dvh;border-radius:0}
+      .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+      /* Stack the footer so the Add-to-quote button is full-width and
+         always visible (it was wrapping below the qty row and off-screen).
+         Pad for the home indicator. */
+      .detail-modal__foot{flex-direction:column;align-items:stretch;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+      .detail-modal__foot .detail-modal__qty{justify-content:center;gap:14px}
+      #detailModalAddBtn{width:100%;box-sizing:border-box;text-align:center}
+    }
+    /* When the product detail modal is open, the sitewide "Get a Quote"
+       sticky bar (#sp-sticky-cta) covers the modal's qty stepper + Add
+       button. The modal already has its own primary action, so hide
+       the sitewide bar while the modal is open. The body class is the
+       deterministic hook (set in showProductDetail/closeProductDetail);
+       the :has() selectors are belt-and-suspenders for browsers where
+       JS races. */
+    body.sp-detail-modal-open #sp-sticky-cta,
+    body.sp-detail-modal-open .sticky-cta,
+    body.sp-detail-modal-open .sp-sticky-cta,
+    body:has(.detail-modal.open) #sp-sticky-cta,
+    body:has(.detail-modal.open) .sticky-cta,
+    body:has(.detail-modal.open) .sp-sticky-cta{display:none !important}
+    body.sp-detail-modal-open,
+    body:has(.detail-modal.open){padding-bottom:0 !important}
+    /* ---- In-modal product customizer (print method + placements + uploads) ---- */
+    .dmcz{margin:20px 0 4px}
+    .dmcz__toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #1a1a1a;background:#fff;border-radius:12px;padding:13px 16px;font-family:inherit;font-size:.92rem;font-weight:700;color:#1a1a1a;cursor:pointer;transition:background .15s}
+    .dmcz__toggle:hover{background:#f4f2eb}
+    .dmcz__toggle-label{display:flex;align-items:center;gap:9px}
+    .dmcz__toggle-ic{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0}
+    .dmcz__chev{transition:transform .3s ease;color:#999;font-size:.9rem}
+    .dmcz__toggle[aria-expanded="true"] .dmcz__chev{transform:rotate(180deg)}
+    .dmcz__panel{max-height:0;opacity:0;overflow:hidden;transition:max-height .4s ease,opacity .3s ease}
+    .dmcz__panel.open{max-height:2400px;opacity:1;margin-top:6px}
+    .dmcz__heading{font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+    .dmcz__sub{font-size:.72rem;color:#888;letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin:18px 0 8px}
+    .dmcz__methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .dmcz__method{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:10px 12px;border:1.5px solid #e0ddd2;border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;transition:border-color .12s,background .12s}
+    .dmcz__method:hover{border-color:#bbb}
+    .dmcz__method[aria-pressed="true"]{border-color:#1a1a1a;background:#f4f2eb}
+    .dmcz__method-name{font-size:.85rem;font-weight:700;color:#1a1a1a;line-height:1.15}
+    .dmcz__method-desc{font-size:.66rem;color:#888;line-height:1.2}
+    .dmcz__groups{display:flex;flex-direction:column;gap:14px}
+    .dmcz__group-label{font-size:.7rem;font-weight:700;color:#1a1a1a;letter-spacing:.03em;margin-bottom:6px}
+    .dmcz__chips{display:flex;flex-wrap:wrap;gap:7px}
+    .dmcz__chip{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 11px;border:1.5px solid #e0ddd2;border-radius:10px;background:#fff;cursor:pointer;font-family:inherit;transition:border-color .12s,background .12s}
+    .dmcz__chip:hover{border-color:#bbb}
+    .dmcz__chip[aria-pressed="true"]{border-color:#1a1a1a;background:#1a1a1a}
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-name{color:#fff}
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-desc{color:#cfcfcf}
+    .dmcz__chip-name{font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.15}
+    .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
+    .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
+    .dmcz__preview{margin:16px 0 4px}
+    .dmcz__preview-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+    .dmcz__preview-tab{padding:5px 11px;border:1.5px solid #e0ddd2;border-radius:50px;background:#fff;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:600;color:#1a1a1a;transition:border-color .12s,background .12s}
+    .dmcz__preview-tab[aria-pressed="true"]{border-color:#1a1a1a;background:#1a1a1a;color:#e8ff3c}
+    .dmcz__stage{position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:1/1;max-height:260px;background:#fff;border:1.5px solid #e0ddd2;border-radius:12px;overflow:hidden;touch-action:none}
+    .dmcz__stage-garment{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+    .dmcz__stage--loading{background:linear-gradient(110deg,#f4f2eb 30%,#ece9df 50%,#f4f2eb 70%);background-size:200% 100%;animation:dmczShimmer 1.15s linear infinite}
+    @keyframes dmczShimmer{to{background-position:-200% 0}}
+    .dmcz__controls{display:flex;flex-direction:column;gap:9px;max-width:300px;margin:11px auto 0}
+    .dmcz__size-row{display:flex;align-items:center;gap:10px;font-size:.72rem;color:#888}
+    .dmcz__size-row input[type=range]{flex:1}
+    .dmcz__rmbg{display:flex;align-items:center;gap:7px;font-size:.72rem;color:#1a1a1a;cursor:pointer}
+    .dmcz__preview-hint{font-size:.72rem;color:#888;text-align:center;padding:14px 8px}
+    .dmcz__upload{border:1.5px dashed #d8d5cb;border-radius:12px;padding:12px 14px;background:#fafaf7}
+    .dmcz__upload-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .dmcz__upload-title{font-size:.78rem;font-weight:700;color:#1a1a1a}
+    .dmcz__upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .dmcz__upload-btn{display:inline-block;font-size:.76rem;font-weight:600;color:#1a1a1a;background:#e8ff3c;border:none;border-radius:50px;padding:7px 14px;cursor:pointer;font-family:inherit}
+    .dmcz__upload-btn:hover{filter:brightness(.96)}
+    .dmcz__upload input[type=file]{display:none}
+    /* Yellow "Customize this product" reveal button + collapsible body. */
+    .dmcz-customize-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:13px 20px;margin:6px 0 4px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:filter .15s ease,box-shadow .15s ease}
+    .dmcz-customize-btn:hover{filter:brightness(.96)}
+    .dmcz-customize-btn__chev{font-size:.8rem;transition:transform .3s ease}
+    .dmcz-customize-btn[aria-expanded="true"] .dmcz-customize-btn__chev{transform:rotate(180deg)}
+    .dmcz-collapse{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .35s ease,opacity .3s ease,margin-top .35s ease;margin-top:0}
+    .dmcz-collapse__inner{min-height:0;overflow:hidden}
+    .dmcz-collapse.open{grid-template-rows:1fr;opacity:1;margin-top:18px}
+    .dmcz__file{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:#1a1a1a;background:#fff;border:1.5px solid #e0ddd2;border-radius:8px;padding:5px 9px;max-width:100%}
+    .dmcz__file-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dmcz__file-remove{background:none;border:none;color:#a00;cursor:pointer;font-size:.9rem;line-height:1;padding:0 2px;font-family:inherit}
+    .dmcz__upload-status{font-size:.7rem;color:#888}
+    .dmcz__upload-status--err{color:#a00}
+    @media (max-width:640px){
+      .dmcz__methods{grid-template-columns:1fr}
+    }
+    /* Stack the two-column body under ~760px: live preview on top, controls
+       below. Mirrors the jersey builder's single-column collapse. */
+    @media (max-width:760px){
+      .detail-modal__body{grid-template-columns:1fr;gap:18px}
+      .detail-modal__preview-col{position:static}
+      .detail-modal__preview-col .dmcz__stage{max-width:300px;margin:0 auto}
+      .detail-modal__preview-col .dmcz__controls{max-width:300px;margin:0 auto}
+    }
