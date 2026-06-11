@@ -1993,29 +1993,91 @@
         if (u && u.path) { design_path = u.path; design_url = u.signed_url || null; break; }
       }
 
-      addToCart(p.product_id, {
-        color_id:     c.color_id || null,
-        color_name:   (c.color_name || ''),
-        brand:        p.brand || '',
-        style_number: p.style_number || '',
-        name:         p.name || '',
-        garment_type: p.garment_type || null,
-        hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
-        qty:          n,
-        // ---- Decoration carried up-front from the modal ----
-        placements:        placements,
-        sides:             placements.length,
-        decoration_type:   decoration_type,
-        design_path:       design_path,
-        design_url:        design_url,
-        placement_designs: placement_designs,
-        // Inline live-preview output: per-placement box {x,y,w} (% of stage)
-        // and the white-knockout flag the customer set on the canvas.
-        design_boxes:      st.boxes || null,
-        design_remove_bg:  !!st.removeBg,
+      // ---- Bake photoreal mockups for every placement that has art ----------
+      // The inline canvas stores boxes as 0–100 CENTER coords; /api/shop/compose
+      // wants 0–1 TOP-LEFT. Convert per the formula below, clamped to [0,1].
+      const SHOP_COMPOSE_API = 'https://singhsprint-crm.vercel.app/api/shop/compose';
+      const color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+      function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+      function dmczBoxToCompose(b) {
+        return {
+          x: clamp01((b.x - b.w / 2) / 100),
+          y: clamp01((b.y - b.w / 2) / 100),
+          w: clamp01(b.w / 100)
+        };
+      }
+      const composeJobs = [];
+      (st.placements || []).forEach(function(pid) {
+        const up = uploads[pid];
+        if (!up || !up.path) return;
+        const b = (st.boxes && st.boxes[pid]) || { x: 50, y: 40, w: 26 };
+        const composeBox = dmczBoxToCompose(b);
+        const job = fetch(SHOP_COMPOSE_API, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            color_id:    color.color_id,
+            placement:   pid,
+            design_path: up.path,
+            design_url:  up.signed_url || null,
+            box:         composeBox,
+            remove_bg:   !!st.removeBg,
+            session_id:  (localStorage.getItem('singhsCartId_v1') || null)
+          })
+        }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+          .then(function(res) {
+            if (!res.ok || !res.j) return null;
+            var url = res.j.mockup_url || res.j.url;
+            return url ? { placement: pid, url: url } : null;
+          })
+          .catch(function() { return null; });  // never block the add on a compose failure
+        composeJobs.push(job);
       });
-      closeProductDetail();
-      showCartToast({ brand: p.brand, style_number: p.style_number });
+
+      // Disable the Add button + show a "Generating mockup…" state while baking.
+      const _tAdd = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      const _origAddHTML = addBtn.innerHTML;
+      const _generatingTxt = _tAdd('cat.detail.adding') || 'Generating mockup…';
+      if (composeJobs.length) {
+        addBtn.disabled = true;
+        addBtn.style.opacity = '0.7';
+        addBtn.style.cursor = 'wait';
+        addBtn.textContent = _generatingTxt;
+      }
+
+      Promise.all(composeJobs).then(function(results) {
+        const mockups = results.filter(Boolean);
+        if (composeJobs.length) {
+          addBtn.disabled = false;
+          addBtn.style.opacity = '';
+          addBtn.style.cursor = '';
+          addBtn.innerHTML = _origAddHTML;
+        }
+        addToCart(p.product_id, {
+          color_id:     c.color_id || null,
+          color_name:   (c.color_name || ''),
+          brand:        p.brand || '',
+          style_number: p.style_number || '',
+          name:         p.name || '',
+          garment_type: p.garment_type || null,
+          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
+          qty:          n,
+          // ---- Decoration carried up-front from the modal ----
+          placements:        placements,
+          sides:             placements.length,
+          decoration_type:   decoration_type,
+          design_path:       design_path,
+          design_url:        design_url,
+          placement_designs: placement_designs,
+          // Inline live-preview output: per-placement box {x,y,w} (% of stage)
+          // and the white-knockout flag the customer set on the canvas.
+          design_boxes:      st.boxes || null,
+          design_remove_bg:  !!st.removeBg,
+          // Photoreal mockups baked above (empty when no art was uploaded).
+          mockups:           mockups.length ? mockups : undefined,
+        });
+        closeProductDetail();
+        showCartToast({ brand: p.brand, style_number: p.style_number });
+      });
     });
     document.addEventListener('keydown', (ev) => {
       if (ev.key === 'Escape' && document.getElementById('detailModal').classList.contains('open')) {
@@ -2056,6 +2118,7 @@
       placement_designs: payload.placement_designs || undefined,
       design_boxes:      payload.design_boxes || undefined,
       design_remove_bg:  payload.design_remove_bg || undefined,
+      mockups:           payload.mockups || undefined,
     });
     // Funnel analytics — the strongest signal of intent on this page.
     if (window.spTrack) window.spTrack('catalog_add_to_quote', {

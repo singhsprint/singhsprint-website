@@ -4642,6 +4642,19 @@
     // Which garment side a placement renders on — mirrors viewFor() server-side.
     function spSideFor(p) { p = (p || '').toLowerCase(); if (/back/.test(p)) return 'back'; if (/sleeve/.test(p)) return 'side'; return 'front'; }
 
+    // Cart item arrived with baked mockups (e.g. customized in the catalog
+    // modal)? Drives the green "mockup ready" thumbnail + button at render time.
+    function spCartHasMockup(it) { return !!(it && Array.isArray(it.mockups) && it.mockups.length); }
+    // Prefer the front-side mockup as the row thumbnail; fall back to first
+    // baked mockup, then the bare hero render.
+    function spCartThumbSrc(it) {
+      if (spCartHasMockup(it)) {
+        var front = it.mockups.filter(function(m){ return spSideFor(m.placement) === 'front'; })[0] || it.mockups[0];
+        if (front && front.url) return front.url;
+      }
+      return it.hero_url || '';
+    }
+
     // Seed a sensible default {x,y,w} from the placement preset's centre + size.
     function spDefaultBox(presetId) {
       // Sleeve placements preview on the standard tee render — seed the box
@@ -6251,7 +6264,7 @@
           // overflow-x:auto container to see the embroidery columns.
           '<div class="cart-item" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap;max-width:100%;box-sizing:border-box;overflow:hidden">' +
           '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#f0eee5">' +
-          '    <img id="ci-img-' + idx + '" src="' + imgUrl(it.hero_url || '') + '" alt="" style="width:100%;height:100%;object-fit:cover"/>' +
+          '    <img id="ci-img-' + idx + '" src="' + imgUrl(spCartThumbSrc(it)) + '" alt="" style="width:100%;height:100%;' + (spCartHasMockup(it) ? 'object-fit:contain;background:#fff' : 'object-fit:cover') + '"/>' +
           '  </div>' +
           '  <div style="flex:1;min-width:200px">' +
           '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">' + (it.brand||'') + ' · ' + (it.style_number||'') + '</div>' +
@@ -6266,7 +6279,7 @@
           '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblQty +
           '      <input type="number" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
           '    </label>' +
-          '    <button type="button" id="spCartCzBtn-' + idx + '" onclick="spLaunchCartCustomizer(' + idx + ')" style="' + (Array.isArray(it.mockups) && it.mockups.length ? 'background:#143a14;color:#9dff9d;' : 'background:#1a1a1a;color:#e8ff3c;') + 'border:none;cursor:pointer;font-size:.78rem;font-weight:700;padding:7px 12px;border-radius:50px">' + (Array.isArray(it.mockups) && it.mockups.length ? '✓ Mockup ready' : 'Customize') + '</button>' +
+          '    <button type="button" id="spCartCzBtn-' + idx + '" onclick="spLaunchCartCustomizer(' + idx + ')" style="' + (spCartHasMockup(it) ? 'background:#143a14;color:#9dff9d;' : 'background:#1a1a1a;color:#e8ff3c;') + 'border:none;cursor:pointer;font-size:.78rem;font-weight:700;padding:7px 12px;border-radius:50px">' + (spCartHasMockup(it) ? '✓ Mockup ready · edit' : 'Customize') + '</button>' +
           '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
           '  </div>' +
           placementsHtml +
