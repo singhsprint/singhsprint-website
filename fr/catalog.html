@@ -1748,6 +1748,7 @@
         host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
         s.setAttribute('aria-selected', 'true');
         paintDetailHero();
+        if (typeof renderDmczPreview === 'function') renderDmczPreview();
       });
     });
   }

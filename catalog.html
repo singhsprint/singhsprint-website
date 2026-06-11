@@ -1754,6 +1754,9 @@
         host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
         s.setAttribute('aria-selected', 'true');
         paintDetailHero();
+        // Refresh the in-modal customizer preview so the garment switches to
+        // the newly-picked colour too (it reads the live _detailColorIdx).
+        if (typeof renderDmczPreview === 'function') renderDmczPreview();
       });
     });
   }
