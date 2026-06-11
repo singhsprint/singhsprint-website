@@ -1391,7 +1391,13 @@
     var loc = pre.loc || 'front';
     var front = color.mockup_front_url || (_detailProduct && _detailProduct.hero_image_url);
     if (loc === 'back') return color.mockup_back_url || front;
-    if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') return color.mockup_side_url || front;
+    if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') {
+      // Prefer a real side photo if the color has one; otherwise fall back to
+      // our neutral sleeve placeholder (matching the quote composer), not the
+      // front garment — a logo on the chest reads wrong for a sleeve hit.
+      if (color.mockup_side_url) return color.mockup_side_url;
+      return (loc === 'right-sleeve') ? '/images/sleeve-right.png?v=2' : '/images/sleeve-left.png?v=2';
+    }
     return front;  // front, hood, cap, bag, apron, leg → front view
   }
 
