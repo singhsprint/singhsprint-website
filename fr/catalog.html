@@ -341,6 +341,14 @@
     .dmcz__upload-btn{display:inline-block;font-size:.76rem;font-weight:600;color:#1a1a1a;background:#e8ff3c;border:none;border-radius:50px;padding:7px 14px;cursor:pointer;font-family:inherit}
     .dmcz__upload-btn:hover{filter:brightness(.96)}
     .dmcz__upload input[type=file]{display:none}
+    /* Yellow "Customize this product" reveal button + collapsible body. */
+    .dmcz-customize-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:13px 20px;margin:6px 0 4px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:filter .15s ease,box-shadow .15s ease}
+    .dmcz-customize-btn:hover{filter:brightness(.96)}
+    .dmcz-customize-btn__chev{font-size:.8rem;transition:transform .3s ease}
+    .dmcz-customize-btn[aria-expanded="true"] .dmcz-customize-btn__chev{transform:rotate(180deg)}
+    .dmcz-collapse{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .35s ease,opacity .3s ease,margin-top .35s ease;margin-top:0}
+    .dmcz-collapse__inner{min-height:0;overflow:hidden}
+    .dmcz-collapse.open{grid-template-rows:1fr;opacity:1;margin-top:18px}
     .dmcz__file{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:#1a1a1a;background:#fff;border:1.5px solid #e0ddd2;border-radius:8px;padding:5px 9px;max-width:100%}
     .dmcz__file-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .dmcz__file-remove{background:none;border:none;color:#a00;cursor:pointer;font-size:.9rem;line-height:1;padding:0 2px;font-family:inherit}
@@ -702,12 +710,23 @@
           <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
           <div class="detail-modal__swatches" id="detailModalSwatches"></div>
 
-          <div class="dmcz__sub"  data-i18n="cat.detail.printmethod">Méthode d'impression</div>
-          <div class="dmcz__methods" id="dmczMethods"></div>
-          <div class="dmcz__sub"  data-i18n="cat.detail.whereprint">Emplacements</div>
-          <div class="dmcz__groups" id="dmczPlacements"></div>
-          <div class="dmcz__sub"  data-i18n="cat.detail.artwork">Votre visuel</div>
-          <div class="dmcz__uploads" id="dmczUploads"></div>
+          <!-- Simple view by default: a yellow "Customize" button reveals the
+               full customizer (method / placements / artwork) with animation. -->
+          <button type="button" id="dmczCustomizeToggle" class="dmcz-customize-btn" aria-expanded="false" aria-controls="dmczCustomizeBody" onclick="dmczToggleCustomize()">
+            <span class="dmcz-customize-btn__label" data-i18n="cat.detail.customizecta">Personnaliser ce produit</span>
+            <span class="dmcz-customize-btn__chev" aria-hidden="true">▾</span>
+          </button>
+
+          <div id="dmczCustomizeBody" class="dmcz-collapse">
+            <div class="dmcz-collapse__inner">
+              <div class="dmcz__sub"  data-i18n="cat.detail.printmethod">Méthode d'impression</div>
+              <div class="dmcz__methods" id="dmczMethods"></div>
+              <div class="dmcz__sub"  data-i18n="cat.detail.whereprint">Emplacements</div>
+              <div class="dmcz__groups" id="dmczPlacements"></div>
+              <div class="dmcz__sub"  data-i18n="cat.detail.artwork">Votre visuel</div>
+              <div class="dmcz__uploads" id="dmczUploads"></div>
+            </div>
+          </div>
 
           <!-- Tech specs — parsed from the S&S product description. Moved to
                the bottom of the controls column; still its collapsible self. -->
@@ -1162,6 +1181,23 @@
   var _dmczState = { method: 'DTF', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
 
   // Initialize the customizer for the product the modal just opened on.
+  // Reveal/hide the full customizer behind the yellow button.
+  function dmczToggleCustomize() {
+    var body = document.getElementById('dmczCustomizeBody');
+    var btn = document.getElementById('dmczCustomizeToggle');
+    if (!body || !btn) return;
+    var open = body.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) setTimeout(function(){ try { body.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {} }, 120);
+  }
+
+  function dmczResetCustomizeToggle() {
+    var body = document.getElementById('dmczCustomizeBody');
+    var btn = document.getElementById('dmczCustomizeToggle');
+    if (body) body.classList.remove('open');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
   function initDmczCustomizer(p) {
     var gt = (p && p.garment_type) || 'tshirt';
     _dmczState = {
@@ -1180,6 +1216,7 @@
     renderDmczUploads();
     renderDmczPreview();
     refreshDmczPrice();
+    dmczResetCustomizeToggle();   // every product opens in the simple state
   }
 
   // Render the three method cards.
