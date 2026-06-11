@@ -85,6 +85,12 @@ var SP_LANG = (function() {
 
     // ===== INDEX / HOME =====
     'home.badge': { en: 'Open 7 days | West Island, Montreal', fr: 'Ouvert 7 jours | Ouest-de-l\'Île, Montréal' },
+    'home.hero.h1': {
+      en: 'Custom T-Shirt &amp; Hoodie<br>Printing + Embroidery<br>in <span class="accent">Montreal</span>',
+      fr: 'Impression de t-shirts<br>et hoodies + broderie<br>à <span class="accent">Montréal</span>'
+    },
+    // Legacy hero keys — superseded by home.hero.h1 (2026-06-11), kept for
+    // any cached pages still referencing them.
     'home.hero.h1a': { en: "West Island's", fr: "L'Ouest-de-l'Île," },
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
