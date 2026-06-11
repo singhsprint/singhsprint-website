@@ -362,14 +362,9 @@
           <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
           <div class="detail-modal__swatches" id="detailModalSwatches"></div>
 
-          <!-- Simple view by default: a yellow "Customize" button reveals the
-               full customizer (method / placements / artwork) with animation.
-               Picking a color + Add to quote works without ever opening it. -->
-          <button type="button" id="dmczCustomizeToggle" class="dmcz-customize-btn" aria-expanded="false" aria-controls="dmczCustomizeBody" onclick="dmczToggleCustomize()">
-            <span class="dmcz-customize-btn__label"  data-i18n="cat.detail.customizecta">Personnaliser ce produit</span>
-            <span class="dmcz-customize-btn__chev" aria-hidden="true">▾</span>
-          </button>
-
+          <!-- Simple view by default: the yellow "Customize" button lives in the
+               footer next to Add to quote; clicking it reveals this body with
+               animation. Picking a color + Add to quote works without opening it. -->
           <div id="dmczCustomizeBody" class="dmcz-collapse">
             <div class="dmcz-collapse__inner">
               <div class="dmcz__sub"  data-i18n="cat.detail.printmethod">Méthode d'impression</div>
@@ -397,7 +392,13 @@
           <input type="number" inputmode="numeric" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
           <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
         </div>
-        <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span  data-i18n="cat.card.add-to-quote">+ Ajouter à la soumission</span> · <span id="detailModalAddQty">25</span></button>
+        <div class="detail-modal__actions">
+          <button type="button" id="dmczCustomizeToggle" class="dmcz-customize-btn" aria-expanded="false" aria-controls="dmczCustomizeBody" onclick="dmczToggleCustomize()">
+            <span class="dmcz-customize-btn__label"  data-i18n="cat.detail.customizecta">Personnaliser ce produit</span>
+            <span class="dmcz-customize-btn__chev" aria-hidden="true">▾</span>
+          </button>
+          <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span  data-i18n="cat.card.add-to-quote">+ Ajouter à la soumission</span> · <span id="detailModalAddQty">25</span></button>
+        </div>
       </div>
     </div>
   </div>

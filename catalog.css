@@ -229,6 +229,9 @@
     .detail-modal__close{background:transparent;border:none;font-size:1.3rem;cursor:pointer;color:#888;padding:4px 8px;line-height:1}
     .detail-modal__close:hover{color:#1a1a1a}
     .detail-modal__foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    /* Right-side action group: yellow Customize button sits next to the black
+       Add-to-quote button. */
+    .detail-modal__actions{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
     .detail-modal__specs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:6px}
     .detail-modal__specs li{font-size:.82rem;color:#444;line-height:1.45;padding-left:18px;position:relative}
     .detail-modal__specs li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;background:#1a1a1a;border-radius:50%}
@@ -257,6 +260,9 @@
          Pad for the home indicator. */
       .detail-modal__foot{flex-direction:column;align-items:stretch;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
       .detail-modal__foot .detail-modal__qty{justify-content:center;gap:14px}
+      /* Stack the two action buttons full-width on phones. */
+      .detail-modal__actions{width:100%;flex-direction:column;gap:10px}
+      .detail-modal__actions>button{width:100%;box-sizing:border-box;text-align:center;justify-content:center}
       #detailModalAddBtn{width:100%;box-sizing:border-box;text-align:center}
     }
     /* When the product detail modal is open, the sitewide "Get a Quote"
@@ -324,7 +330,7 @@
     .dmcz__upload-btn:hover{filter:brightness(.96)}
     .dmcz__upload input[type=file]{display:none}
     /* Yellow "Customize this product" reveal button + collapsible body. */
-    .dmcz-customize-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:13px 20px;margin:6px 0 4px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:filter .15s ease,box-shadow .15s ease}
+    .dmcz-customize-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#e8ff3c;color:#1a1a1a;border:none;border-radius:50px;padding:11px 20px;font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:filter .15s ease,box-shadow .15s ease}
     .dmcz-customize-btn:hover{filter:brightness(.96)}
     .dmcz-customize-btn__chev{font-size:.8rem;transition:transform .3s ease}
     .dmcz-customize-btn[aria-expanded="true"] .dmcz-customize-btn__chev{transform:rotate(180deg)}
