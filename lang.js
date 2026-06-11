@@ -845,6 +845,7 @@ var SP_LANG = (function() {
     'cat.detail.customizecta': { en: 'Customize this product', fr: 'Personnaliser ce produit' },
     'cat.detail.mockupcta': { en: 'Customize & preview on the garment', fr: 'Personnaliser et prévisualiser sur le vêtement' },
     'cat.detail.uploadtopreview': { en: 'Upload artwork to preview it on the garment.', fr: 'Téléversez un visuel pour le voir sur le vêtement.' },
+    'cat.detail.uploadtosee': { en: 'Upload artwork to see it here', fr: 'Téléversez un visuel pour le voir ici' },
     'cat.detail.designsize': { en: 'Size', fr: 'Taille' },
     'cat.detail.removebg': { en: 'Remove white background', fr: 'Retirer le fond blanc' },
     'cat.detail.printmethod': { en: 'Print method', fr: 'Méthode d\'impression' },

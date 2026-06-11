@@ -198,12 +198,21 @@
     .detail-overlay.open{opacity:1;pointer-events:auto}
     .detail-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:2147483645;pointer-events:none}
     .detail-modal.open{pointer-events:auto}
-    .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+    .detail-modal__inner{background:#fff;border-radius:18px;width:100%;max-width:880px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.96);opacity:0;transition:transform .2s,opacity .2s;box-shadow:0 24px 80px rgba(0,0,0,.25)}
     .detail-modal.open .detail-modal__inner{transform:scale(1);opacity:1}
     .detail-modal__head{padding:18px 22px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .detail-modal__body{flex:1;overflow-y:auto;padding:22px}
-    .detail-modal__hero{display:grid;grid-template-columns:240px 1fr;gap:22px;margin-bottom:22px}
-    .detail-modal__hero img{width:100%;border-radius:12px;background:#fff;aspect-ratio:1/1;object-fit:contain;padding:4%}
+    /* Two-column customizer body: live preview (left) + scrollable controls
+       (right). Mirrors the jersey builder's .cz-body layout but in the
+       catalog's clean light look (white preview panel, neutral borders). */
+    .detail-modal__body{flex:1;overflow-y:auto;padding:22px;display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+    /* Left column — single always-on live preview. Clean white panel. */
+    .detail-modal__preview-col{position:sticky;top:0;display:flex;flex-direction:column;gap:10px}
+    .detail-modal__preview-col .dmcz__preview{margin:0}
+    .detail-modal__preview-col .dmcz__stage{max-width:100%;max-height:300px}
+    .detail-modal__preview-col .dmcz__controls{max-width:100%;margin:0}
+    .detail-modal__preview-cap{font-size:.72rem;color:#888;text-align:center;line-height:1.4}
+    /* Right column — controls, scrollable. */
+    .detail-modal__controls-col{min-width:0;display:flex;flex-direction:column}
     /* Gallery — main image + thumbnail strip */
     .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
     .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
@@ -260,7 +269,6 @@
          Plain 100vh ran the modal — and its footer Add button — off the
          bottom of the screen behind Safari's chrome. */
       .detail-modal__inner{max-height:100vh;max-height:100dvh;border-radius:0}
-      .detail-modal__hero{grid-template-columns:1fr}
       .detail-modal__swatches{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
       /* Stack the footer so the Add-to-quote button is full-width and
          always visible (it was wrapping below the qty row and off-screen).
@@ -339,7 +347,15 @@
     @media (max-width:640px){
       .dmcz__methods{grid-template-columns:1fr}
     }
-  </style>
+    /* Stack the two-column body under ~760px: live preview on top, controls
+       below. Mirrors the jersey builder's single-column collapse. */
+    @media (max-width:760px){
+      .detail-modal__body{grid-template-columns:1fr;gap:18px}
+      .detail-modal__preview-col{position:static}
+      .detail-modal__preview-col .dmcz__stage{max-width:300px;margin:0 auto}
+      .detail-modal__preview-col .dmcz__controls{max-width:300px;margin:0 auto}
+    }
+</style>
   <link rel="canonical" href="https://www.singhsprint.com/catalog">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/catalog">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/catalog">
@@ -664,56 +680,40 @@
         <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Close">✕</button>
       </div>
       <div class="detail-modal__body">
-        <div class="detail-modal__hero">
-          <!-- Gallery — main image + thumbnail strip. The thumbs are
-               populated per-color in paintDetailHero() based on which
-               mockup_*_url fields S&S returned for that color. The main
-               image is clickable to open the lightbox. -->
-          <div class="detail-modal__gallery">
-            <button type="button" class="detail-modal__main" id="detailModalMainBtn" aria-label="View larger image">
-              <img id="detailModalImg" src="" alt="" />
-              <span class="detail-modal__zoom-hint" aria-hidden="true">⤢</span>
-            </button>
-            <div class="detail-modal__thumbs" id="detailModalThumbs"></div>
-          </div>
-          <div>
-            <div id="detailModalPrice" style="font-size:1.1rem;font-weight:600;margin-bottom:8px"></div>
-            <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5"></div>
-            <div id="detailModalSelectedColor" style="font-size:.82rem;color:#1a1a1a;margin-top:12px;font-weight:600"></div>
-            <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;margin-top:4px"></div>
-          </div>
+        <!-- LEFT — single always-on live preview. The customizer's inline
+             stage (garment photo + draggable artwork overlay) IS the one
+             garment view; no separate hero gallery. -->
+        <div class="detail-modal__preview-col">
+          <div class="dmcz__preview" id="dmczPreviewWrap"></div>
+          <div id="detailModalSelectedColor" style="font-size:.82rem;color:#1a1a1a;font-weight:600;text-align:center"></div>
+          <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;text-align:center"></div>
         </div>
 
-        <!-- In-modal product customizer: print method + placements + per-placement
-             artwork upload + live all-in price. Sits directly under the product
-             summary (above specs + the full colour grid) so it isn't buried. -->
-        <div class="dmcz" id="dmczCustomizer">
-          <button type="button" class="dmcz__toggle" id="dmczToggle" aria-expanded="false" aria-controls="dmczPanel">
-            <span class="dmcz__toggle-label"><span class="dmcz__toggle-ic" aria-hidden="true">✎</span><span data-i18n="cat.detail.customizecta">Customize this product</span></span>
-            <span class="dmcz__chev" aria-hidden="true">▾</span>
-          </button>
-          <div class="dmcz__panel" id="dmczPanel">
-            <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Print method</div>
-            <div class="dmcz__methods" id="dmczMethods"></div>
-            <!-- Inline live preview canvas — the customer drags their uploaded
-                 artwork onto the garment photo and scales it with the slider,
-                 mirroring the jersey builder's #czStage pattern. -->
-            <div class="dmcz__preview" id="dmczPreviewWrap"></div>
-            <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Where to print</div>
-            <div class="dmcz__groups" id="dmczPlacements"></div>
-            <div class="dmcz__sub" data-i18n="cat.detail.artwork">Your artwork</div>
-            <div class="dmcz__uploads" id="dmczUploads"></div>
+        <!-- RIGHT — controls, always expanded + scrollable. Price + meta,
+             color swatches, then the customizer (method / placements /
+             uploads), with tech specs at the bottom. -->
+        <div class="detail-modal__controls-col" id="dmczCustomizer">
+          <div id="detailModalPrice" style="font-size:1.1rem;font-weight:600;margin-bottom:8px"></div>
+          <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5;margin-bottom:16px"></div>
+
+          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span data-i18n="cat.detail.allcolors">All colors</span> (<span id="detailModalCount">0</span>)</div>
+          <div class="detail-modal__swatches" id="detailModalSwatches"></div>
+
+          <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Print method</div>
+          <div class="dmcz__methods" id="dmczMethods"></div>
+          <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Where to print</div>
+          <div class="dmcz__groups" id="dmczPlacements"></div>
+          <div class="dmcz__sub" data-i18n="cat.detail.artwork">Your artwork</div>
+          <div class="dmcz__uploads" id="dmczUploads"></div>
+
+          <!-- Tech specs — parsed from the S&S product description. Moved to
+               the bottom of the controls column; still its collapsible self. -->
+          <div id="detailModalSpecsWrap" style="margin-top:22px;display:none">
+            <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600" data-i18n="cat.detail.specs">Tech specs</div>
+            <ul id="detailModalSpecs" class="detail-modal__specs"></ul>
+            <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
           </div>
         </div>
-
-        <!-- Tech specs — parsed from the S&S product description. -->
-        <div id="detailModalSpecsWrap" style="margin-bottom:22px;display:none">
-          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600" data-i18n="cat.detail.specs">Tech specs</div>
-          <ul id="detailModalSpecs" class="detail-modal__specs"></ul>
-          <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
-        </div>
-        <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span data-i18n="cat.detail.allcolors">All colors</span> (<span id="detailModalCount">0</span>)</div>
-        <div class="detail-modal__swatches" id="detailModalSwatches"></div>
       </div>
       <div class="detail-modal__foot">
         <div class="detail-modal__qty">
@@ -1170,25 +1170,13 @@
       removeBg: false,      // knock out white backgrounds in the live preview
       activePreview: null   // placement the inline canvas is showing/editing
     };
+    // The customizer is always expanded now (no accordion) — just render the
+    // method picker, placements, uploads, and the live preview.
     renderDmczMethods();
     renderDmczPlacements();
     renderDmczUploads();
     renderDmczPreview();
     refreshDmczPrice();
-    // Collapse the customizer by default; the "Customize this product" button
-    // slides it open. onclick is reassigned each open (idempotent), so it
-    // never double-binds.
-    var tog = document.getElementById('dmczToggle');
-    var panel = document.getElementById('dmczPanel');
-    if (panel) panel.classList.remove('open');
-    if (tog) {
-      tog.setAttribute('aria-expanded', 'false');
-      tog.onclick = function () {
-        var open = panel.classList.toggle('open');
-        tog.setAttribute('aria-expanded', open ? 'true' : 'false');
-        if (open) { try { panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }
-      };
-    }
   }
 
   // Render the three method cards.
@@ -1433,28 +1421,41 @@
     if (!host) return;
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     var withArt = dmczPlacementsWithArt();
-    // Nothing uploaded yet → small hint, no stage.
-    if (!withArt.length) {
-      host.innerHTML = '<div class="dmcz__preview-hint">' +
-        (t('cat.detail.uploadtopreview') || 'Upload artwork to preview it on the garment.') + '</div>';
-      return;
-    }
-    // Keep activePreview pointing at a placement that still has art.
-    if (withArt.indexOf(_dmczState.activePreview) < 0) _dmczState.activePreview = withArt[0];
-    var active = _dmczState.activePreview;
+    var hasArt = withArt.length > 0;
     var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
-    var garment = imgUrl(dmczGarmentSideUrl(active, color));
-    var up = _dmczState.uploads[active] || {};
-    if (!_dmczState.boxes[active]) {
-      var pr = DMCZ_placementPresets[active] || {};
-      _dmczState.boxes[active] = {
-        x: Math.round((typeof pr.cx === 'number' ? pr.cx : 0.5) * 100),
-        y: Math.round((typeof pr.cy === 'number' ? pr.cy : 0.4) * 100),
-        w: 26
-      };
+
+    // Always render the garment. When art exists, show it on the active
+    // placement's side (and let the customer drag/scale it). When nothing's
+    // uploaded yet, show the bare garment front with a caption prompting an
+    // upload — no separate "hint-only" empty state.
+    var active, garment, up, box, artImg;
+    if (hasArt) {
+      // Keep activePreview pointing at a placement that still has art.
+      if (withArt.indexOf(_dmczState.activePreview) < 0) _dmczState.activePreview = withArt[0];
+      active = _dmczState.activePreview;
+      garment = imgUrl(dmczGarmentSideUrl(active, color));
+      up = _dmczState.uploads[active] || {};
+      if (!_dmczState.boxes[active]) {
+        var pr = DMCZ_placementPresets[active] || {};
+        _dmczState.boxes[active] = {
+          x: Math.round((typeof pr.cx === 'number' ? pr.cx : 0.5) * 100),
+          y: Math.round((typeof pr.cy === 'number' ? pr.cy : 0.4) * 100),
+          w: 26
+        };
+      }
+      box = _dmczState.boxes[active];
+      var blend = _dmczState.removeBg ? 'mix-blend-mode:multiply;' : '';
+      artImg = '<img id="dmczArt" src="' + esc(up.signed_url || '') + '" alt="" draggable="false" ' +
+        'style="position:absolute;top:' + box.y + '%;left:' + box.x + '%;width:' + box.w + '%;' +
+        'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' + blend +
+        'filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">';
+    } else {
+      // Bare garment, default to the front view (first selected placement, or
+      // the garment's default placement).
+      var defPid = (_dmczState.placements && _dmczState.placements[0]) || null;
+      garment = imgUrl(dmczGarmentSideUrl(defPid, color));
+      artImg = '';
     }
-    var box = _dmczState.boxes[active];
-    var blend = _dmczState.removeBg ? 'mix-blend-mode:multiply;' : '';
 
     // Tabs (only when 2+ placements have art).
     var tabs = '';
@@ -1465,16 +1466,13 @@
       }).join('') + '</div>';
     }
 
-    var artImg = '<img id="dmczArt" src="' + esc(up.signed_url || '') + '" alt="" draggable="false" ' +
-      'style="position:absolute;top:' + box.y + '%;left:' + box.x + '%;width:' + box.w + '%;' +
-      'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' + blend +
-      'filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">';
+    // Caption shown only when there's no artwork yet.
+    var caption = hasArt ? '' :
+      '<div class="detail-modal__preview-cap">' +
+      (t('cat.detail.uploadtosee') || 'Upload artwork to see it here') + '</div>';
 
-    host.innerHTML = tabs +
-      '<div class="dmcz__stage" id="dmczStage">' +
-        '<img class="dmcz__stage-garment" src="' + esc(garment) + '" alt="" loading="lazy" decoding="async">' +
-        artImg +
-      '</div>' +
+    // Size slider + remove-bg toggle only apply when artwork is present.
+    var controls = hasArt ?
       '<div class="dmcz__controls">' +
         '<div class="dmcz__size-row">' +
           '<span data-i18n="cat.detail.designsize">' + (t('cat.detail.designsize') || 'Size') + '</span>' +
@@ -1484,28 +1482,38 @@
           '<input type="checkbox" id="dmczRemoveBg"' + (_dmczState.removeBg ? ' checked' : '') + '> ' +
           '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Remove white background') + '</span>' +
         '</label>' +
-      '</div>';
+      '</div>' : '';
+
+    host.innerHTML = tabs +
+      '<div class="dmcz__stage" id="dmczStage">' +
+        '<img class="dmcz__stage-garment" src="' + esc(garment) + '" alt="" loading="lazy" decoding="async">' +
+        artImg +
+      '</div>' +
+      caption +
+      controls;
 
     // Tab switching.
     host.querySelectorAll('[data-prevtab]').forEach(function(b){
       b.addEventListener('click', function(){ _dmczState.activePreview = b.getAttribute('data-prevtab'); renderDmczPreview(); });
     });
-    // Size slider: live-resize the artwork without a full re-render.
-    var size = document.getElementById('dmczSize');
-    if (size) size.addEventListener('input', function(){
-      box.w = parseInt(this.value, 10) || 26;
-      var a = document.getElementById('dmczArt');
-      if (a) a.style.width = box.w + '%';
-    });
-    // Remove-bg toggle: re-apply the blend mode live.
-    var rb = document.getElementById('dmczRemoveBg');
-    if (rb) rb.addEventListener('change', function(){
-      _dmczState.removeBg = this.checked;
-      var a = document.getElementById('dmczArt');
-      if (a) a.style.mixBlendMode = this.checked ? 'multiply' : '';
-    });
-    // Drag the artwork around the garment.
-    dmczMakeDragEl(box);
+    if (hasArt) {
+      // Size slider: live-resize the artwork without a full re-render.
+      var size = document.getElementById('dmczSize');
+      if (size) size.addEventListener('input', function(){
+        box.w = parseInt(this.value, 10) || 26;
+        var a = document.getElementById('dmczArt');
+        if (a) a.style.width = box.w + '%';
+      });
+      // Remove-bg toggle: re-apply the blend mode live.
+      var rb = document.getElementById('dmczRemoveBg');
+      if (rb) rb.addEventListener('change', function(){
+        _dmczState.removeBg = this.checked;
+        var a = document.getElementById('dmczArt');
+        if (a) a.style.mixBlendMode = this.checked ? 'multiply' : '';
+      });
+      // Drag the artwork around the garment.
+      dmczMakeDragEl(box);
+    }
   }
 
   // Live all-in price for the current method/placements/qty. Guarded
@@ -1591,6 +1599,9 @@
           paintDetailHero();
           if (typeof renderDetailModalSwatches === 'function') renderDetailModalSwatches();
           if (typeof renderDetailModalSpecs    === 'function') renderDetailModalSpecs();
+          // The live preview is the garment view now — refresh it so it picks
+          // up the fuller mockup set (back/side URLs) from the fat payload.
+          if (typeof renderDmczPreview === 'function') renderDmczPreview();
         })
         .catch(function(){ /* keep the slim view */ });
     }
