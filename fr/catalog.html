@@ -313,8 +313,17 @@
     .dmcz__chip-name{font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.15}
     .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
     .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
-    .dmcz__mockup-btn{width:100%;margin-top:12px;background:#1a1a1a;color:#e8ff3c;border:none;border-radius:50px;padding:12px 18px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s}
-    .dmcz__mockup-btn:hover{opacity:.9}
+    .dmcz__preview{margin:16px 0 4px}
+    .dmcz__preview-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+    .dmcz__preview-tab{padding:5px 11px;border:1.5px solid #e0ddd2;border-radius:50px;background:#fff;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:600;color:#1a1a1a;transition:border-color .12s,background .12s}
+    .dmcz__preview-tab[aria-pressed="true"]{border-color:#1a1a1a;background:#1a1a1a;color:#e8ff3c}
+    .dmcz__stage{position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:1/1;max-height:260px;background:#fff;border:1.5px solid #e0ddd2;border-radius:12px;overflow:hidden;touch-action:none}
+    .dmcz__stage-garment{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+    .dmcz__controls{display:flex;flex-direction:column;gap:9px;max-width:300px;margin:11px auto 0}
+    .dmcz__size-row{display:flex;align-items:center;gap:10px;font-size:.72rem;color:#888}
+    .dmcz__size-row input[type=range]{flex:1}
+    .dmcz__rmbg{display:flex;align-items:center;gap:7px;font-size:.72rem;color:#1a1a1a;cursor:pointer}
+    .dmcz__preview-hint{font-size:.72rem;color:#888;text-align:center;padding:14px 8px}
     .dmcz__upload{border:1.5px dashed #d8d5cb;border-radius:12px;padding:12px 14px;background:#fafaf7}
     .dmcz__upload-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
     .dmcz__upload-title{font-size:.78rem;font-weight:700;color:#1a1a1a}
@@ -679,11 +688,14 @@
           <div class="dmcz__panel" id="dmczPanel">
             <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Méthode d'impression</div>
             <div class="dmcz__methods" id="dmczMethods"></div>
+            <!-- Inline live preview canvas — the customer drags their uploaded
+                 artwork onto the garment photo and scales it with the slider,
+                 mirroring the jersey builder's #czStage pattern. -->
+            <div class="dmcz__preview" id="dmczPreviewWrap"></div>
             <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Emplacements</div>
             <div class="dmcz__groups" id="dmczPlacements"></div>
             <div class="dmcz__sub" data-i18n="cat.detail.artwork">Votre visuel</div>
             <div class="dmcz__uploads" id="dmczUploads"></div>
-            <button type="button" id="dmczMockupBtn" class="dmcz__mockup-btn"><span data-i18n="cat.detail.mockupcta">Personnaliser et prévisualiser sur le vêtement</span></button>
           </div>
         </div>
 
@@ -747,7 +759,6 @@
   <div id="footer-placeholder"></div>
 
   <script src="components.js" defer></script>
-  <script src="/mockup-customizer.js"></script>
   <script>
   // =========================================================================
   // Catalog state
@@ -1137,7 +1148,9 @@
   }
 
   // Live customizer state — reset every time the modal opens.
-  var _dmczState = { method: 'DTF', placements: [], uploads: {}, priceSeq: 0 };
+  // boxes: { placementId:{x,y,w} } (% of stage), removeBg: white-knockout blend,
+  // activePreview: which placement the inline canvas is currently showing.
+  var _dmczState = { method: 'DTF', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
 
   // Initialize the customizer for the product the modal just opened on.
   function initDmczCustomizer(p) {
@@ -1146,11 +1159,15 @@
       method: 'DTF',
       placements: [dmczDefaultPlacementFor(gt)],
       uploads: {},          // { placementId: { path, signed_url, filename } }
-      priceSeq: 0
+      priceSeq: 0,
+      boxes: {},            // { placementId: { x, y, w } } — % of the preview stage
+      removeBg: false,      // knock out white backgrounds in the live preview
+      activePreview: null   // placement the inline canvas is showing/editing
     };
     renderDmczMethods();
     renderDmczPlacements();
     renderDmczUploads();
+    renderDmczPreview();
     refreshDmczPrice();
     // Collapse the customizer by default; the "Customize this product" button
     // slides it open. onclick is reassigned each open (idempotent), so it
@@ -1244,17 +1261,25 @@
     if (idx >= 0) {
       _dmczState.placements.splice(idx, 1);
       delete _dmczState.uploads[pid];
+      delete _dmczState.boxes[pid];
+      if (_dmczState.activePreview === pid) _dmczState.activePreview = null;
     } else {
       // Drop any existing preset in the same location.
       _dmczState.placements = _dmczState.placements.filter(function(other){
         var op = DMCZ_placementPresets[other];
-        if (op && op.loc === pre.loc) { delete _dmczState.uploads[other]; return false; }
+        if (op && op.loc === pre.loc) {
+          delete _dmczState.uploads[other];
+          delete _dmczState.boxes[other];
+          if (_dmczState.activePreview === other) _dmczState.activePreview = null;
+          return false;
+        }
         return true;
       });
       _dmczState.placements.push(pid);
     }
     renderDmczPlacements();
     renderDmczUploads();
+    renderDmczPreview();
     refreshDmczPrice();
   }
 
@@ -1291,8 +1316,12 @@
     });
     host.querySelectorAll('[data-remove]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        delete _dmczState.uploads[btn.getAttribute('data-remove')];
+        var rid = btn.getAttribute('data-remove');
+        delete _dmczState.uploads[rid];
+        delete _dmczState.boxes[rid];
+        if (_dmczState.activePreview === rid) _dmczState.activePreview = null;
         renderDmczUploads();
+        renderDmczPreview();
       });
     });
   }
@@ -1326,44 +1355,151 @@
           return;
         }
         _dmczState.uploads[pid] = { path: d.path, signed_url: d.signed_url || '', filename: file.name, file: file };
+        // Seed a starting box for this placement from its preset (cx/cy → %),
+        // make it the active preview, and paint it onto the garment live.
+        if (!_dmczState.boxes[pid]) {
+          var pr = DMCZ_placementPresets[pid] || {};
+          _dmczState.boxes[pid] = {
+            x: Math.round((typeof pr.cx === 'number' ? pr.cx : 0.5) * 100),
+            y: Math.round((typeof pr.cy === 'number' ? pr.cy : 0.4) * 100),
+            w: 26
+          };
+        }
+        _dmczState.activePreview = pid;
         renderDmczUploads();
+        renderDmczPreview();
       })
       .catch(function(){
         setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);
       });
   }
 
-  // Launch the shared mockup composer (mockup-customizer.js) for the
-  // currently-selected product + colour. No-op gracefully if the module is
-  // missing or nothing has been uploaded yet.
-  function dmczLaunchMockup() {
-    if (!window.SPMockup || !_detailProduct) {
-      try { alert('Pick a placement and upload artwork first.'); } catch (e) {}
-      return;
-    }
-    var color = (_detailProduct.colors || [])[_detailColorIdx] || {};
-    var placements = (_dmczState.placements || []).slice();
-    if (!placements.length) {
-      try { alert('Pick a placement and upload artwork first.'); } catch (e) {}
-      return;
-    }
-    window.SPMockup.open({
-      colorId: color.color_id,
-      garment: { front: color.mockup_front_url, back: color.mockup_back_url, side: color.mockup_side_url },
-      placements: placements,
-      fileFor: function(p){ var u = _dmczState.uploads[p]; return (u && u.file instanceof File) ? u.file : null; },
-      initial: { boxes: _dmczState.design_boxes || null, removeBg: !!_dmczState.design_remove_bg },
-      sessionId: (function(){ try { return localStorage.getItem('singhsCartId_v1'); } catch(e){ return null; } })(),
-      placementPresets: DMCZ_placementPresets,
-      onDone: function(res){
-        _dmczState.mockups = res.mockups || [];
-        _dmczState.design_boxes = res.boxes || null;
-        _dmczState.design_remove_bg = !!res.removeBg;
-        if (res.design){ /* update primary design + the matching placement_designs entries are already set from upload */ }
-        var b = document.getElementById('dmczMockupBtn');
-        if (b){ var n = (res.mockups || []).length; b.textContent = n ? ('✓ Mockup ready · edit') : 'Customize & preview on the garment'; }
-      }
+  // ---- Inline live preview canvas (replaces the popup mockup composer) ----
+  // The customer drags their uploaded artwork onto the garment photo and
+  // scales it with a slider, exactly like the jersey builder's #czStage. The
+  // box {x,y,w} (% of the stage) is stored per placement in _dmczState.boxes
+  // and threaded onto the cart item as design_boxes.
+
+  // Which placement ids currently have uploaded artwork (drives tabs + stage).
+  function dmczPlacementsWithArt() {
+    return (_dmczState.placements || []).filter(function(pid){
+      var u = _dmczState.uploads[pid];
+      return u && u.signed_url;
     });
+  }
+
+  // Pick the garment photo for a placement's side. front-ish presets → front
+  // image, back → back image, sleeve/side → side image; fall back front → hero.
+  function dmczGarmentSideUrl(pid, color) {
+    var pre = DMCZ_placementPresets[pid] || {};
+    var loc = pre.loc || 'front';
+    var front = color.mockup_front_url || (_detailProduct && _detailProduct.hero_image_url);
+    if (loc === 'back') return color.mockup_back_url || front;
+    if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') return color.mockup_side_url || front;
+    return front;  // front, hood, cap, bag, apron, leg → front view
+  }
+
+  // Make the #dmczArt overlay draggable around #dmczStage; mutates the active
+  // box's x/y (% of stage), clamped 4–96%. Mirrors jerseys' makeDragEl.
+  function dmczMakeDragEl(box) {
+    var stage = document.getElementById('dmczStage');
+    var el = document.getElementById('dmczArt');
+    if (!stage || !el || !box) return;
+    var dragging = false;
+    el.addEventListener('pointerdown', function(e){ dragging = true; try { el.setPointerCapture(e.pointerId); } catch(_){} e.preventDefault(); e.stopPropagation(); });
+    el.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      var r = stage.getBoundingClientRect();
+      box.x = Math.max(4, Math.min(96, ((e.clientX - r.left) / r.width) * 100));
+      box.y = Math.max(4, Math.min(96, ((e.clientY - r.top) / r.height) * 100));
+      el.style.left = box.x + '%'; el.style.top = box.y + '%';
+    });
+    var end = function(e){ dragging = false; try { el.releasePointerCapture(e.pointerId); } catch(_){} };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+
+  // Build the inline stage: garment photo + draggable artwork overlay, with
+  // per-placement tabs when more than one placement has art, plus a size
+  // slider and a "remove white background" toggle below.
+  function renderDmczPreview() {
+    var host = document.getElementById('dmczPreviewWrap');
+    if (!host) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var withArt = dmczPlacementsWithArt();
+    // Nothing uploaded yet → small hint, no stage.
+    if (!withArt.length) {
+      host.innerHTML = '<div class="dmcz__preview-hint">' +
+        (t('cat.detail.uploadtopreview') || 'Téléversez un visuel pour le prévisualiser sur le vêtement.') + '</div>';
+      return;
+    }
+    // Keep activePreview pointing at a placement that still has art.
+    if (withArt.indexOf(_dmczState.activePreview) < 0) _dmczState.activePreview = withArt[0];
+    var active = _dmczState.activePreview;
+    var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+    var garment = imgUrl(dmczGarmentSideUrl(active, color));
+    var up = _dmczState.uploads[active] || {};
+    if (!_dmczState.boxes[active]) {
+      var pr = DMCZ_placementPresets[active] || {};
+      _dmczState.boxes[active] = {
+        x: Math.round((typeof pr.cx === 'number' ? pr.cx : 0.5) * 100),
+        y: Math.round((typeof pr.cy === 'number' ? pr.cy : 0.4) * 100),
+        w: 26
+      };
+    }
+    var box = _dmczState.boxes[active];
+    var blend = _dmczState.removeBg ? 'mix-blend-mode:multiply;' : '';
+
+    // Tabs (only when 2+ placements have art).
+    var tabs = '';
+    if (withArt.length > 1) {
+      tabs = '<div class="dmcz__preview-tabs">' + withArt.map(function(pid){
+        var pre = DMCZ_placementPresets[pid] || { label: pid };
+        return '<button type="button" class="dmcz__preview-tab" data-prevtab="' + esc(pid) + '" aria-pressed="' + (pid === active) + '">' + esc(pre.label) + '</button>';
+      }).join('') + '</div>';
+    }
+
+    var artImg = '<img id="dmczArt" src="' + esc(up.signed_url || '') + '" alt="" draggable="false" ' +
+      'style="position:absolute;top:' + box.y + '%;left:' + box.x + '%;width:' + box.w + '%;' +
+      'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' + blend +
+      'filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">';
+
+    host.innerHTML = tabs +
+      '<div class="dmcz__stage" id="dmczStage">' +
+        '<img class="dmcz__stage-garment" src="' + esc(garment) + '" alt="" loading="lazy" decoding="async">' +
+        artImg +
+      '</div>' +
+      '<div class="dmcz__controls">' +
+        '<div class="dmcz__size-row">' +
+          '<span data-i18n="cat.detail.designsize">' + (t('cat.detail.designsize') || 'Taille') + '</span>' +
+          '<input type="range" id="dmczSize" min="10" max="80" step="1" value="' + Math.round(box.w) + '">' +
+        '</div>' +
+        '<label class="dmcz__rmbg">' +
+          '<input type="checkbox" id="dmczRemoveBg"' + (_dmczState.removeBg ? ' checked' : '') + '> ' +
+          '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Retirer le fond blanc') + '</span>' +
+        '</label>' +
+      '</div>';
+
+    // Tab switching.
+    host.querySelectorAll('[data-prevtab]').forEach(function(b){
+      b.addEventListener('click', function(){ _dmczState.activePreview = b.getAttribute('data-prevtab'); renderDmczPreview(); });
+    });
+    // Size slider: live-resize the artwork without a full re-render.
+    var size = document.getElementById('dmczSize');
+    if (size) size.addEventListener('input', function(){
+      box.w = parseInt(this.value, 10) || 26;
+      var a = document.getElementById('dmczArt');
+      if (a) a.style.width = box.w + '%';
+    });
+    // Remove-bg toggle: re-apply the blend mode live.
+    var rb = document.getElementById('dmczRemoveBg');
+    if (rb) rb.addEventListener('change', function(){
+      _dmczState.removeBg = this.checked;
+      var a = document.getElementById('dmczArt');
+      if (a) a.style.mixBlendMode = this.checked ? 'multiply' : '';
+    });
+    // Drag the artwork around the garment.
+    dmczMakeDragEl(box);
   }
 
   // Live all-in price for the current method/placements/qty. Guarded
@@ -1815,9 +1951,6 @@
     });
 
     // Add → cart, using the modal's own qty (not the page slider).
-    const mockupBtn = document.getElementById('dmczMockupBtn');
-    if (mockupBtn) mockupBtn.addEventListener('click', dmczLaunchMockup);
-
     const addBtn = document.getElementById('detailModalAddBtn');
     if (addBtn) addBtn.addEventListener('click', () => {
       const p = _detailProduct; if (!p) return;
@@ -1863,9 +1996,10 @@
         design_path:       design_path,
         design_url:        design_url,
         placement_designs: placement_designs,
-        mockups:           (st.mockups || []),
-        design_boxes:      st.design_boxes || null,
-        design_remove_bg:  !!st.design_remove_bg,
+        // Inline live-preview output: per-placement box {x,y,w} (% of stage)
+        // and the white-knockout flag the customer set on the canvas.
+        design_boxes:      st.boxes || null,
+        design_remove_bg:  !!st.removeBg,
       });
       closeProductDetail();
       showCartToast({ brand: p.brand, style_number: p.style_number });
@@ -1907,7 +2041,6 @@
       design_path:       payload.design_path || undefined,
       design_url:        payload.design_url || undefined,
       placement_designs: payload.placement_designs || undefined,
-      mockups:           payload.mockups || undefined,
       design_boxes:      payload.design_boxes || undefined,
       design_remove_bg:  payload.design_remove_bg || undefined,
     });
