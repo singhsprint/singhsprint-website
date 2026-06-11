@@ -846,6 +846,8 @@ var SP_LANG = (function() {
     'cat.filter.done': { en: 'Done', fr: 'Terminé' },
     'cat.detail.customize': { en: 'Customize', fr: 'Personnaliser' },
     'cat.detail.customizecta': { en: 'Customize this product', fr: 'Personnaliser ce produit' },
+    'cat.detail.customizehdr': { en: 'Customization', fr: 'Personnalisation' },
+    'cat.detail.customizehint': { en: 'Add your logo or text', fr: 'Ajoutez votre logo ou texte' },
     'cat.detail.mockupcta': { en: 'Customize & preview on the garment', fr: 'Personnaliser et prévisualiser sur le vêtement' },
     'cat.detail.uploadtopreview': { en: 'Upload artwork to preview it on the garment.', fr: 'Téléversez un visuel pour le voir sur le vêtement.' },
     'cat.detail.uploadtosee': { en: 'Upload artwork to see it here', fr: 'Téléversez un visuel pour le voir ici' },

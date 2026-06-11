@@ -362,9 +362,14 @@
           <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
           <div class="detail-modal__swatches" id="detailModalSwatches"></div>
 
-          <!-- Simple view by default: the yellow "Customize" button lives in the
-               footer next to Add to quote; clicking it reveals this body with
-               animation. Picking a color + Add to quote works without opening it. -->
+          <!-- Customization bar — sits between the colors and tech specs. The
+               customizer drawer (method / placements / artwork) animates out of
+               this bar when the yellow footer button (or the bar) is clicked. -->
+          <div id="dmczCustomizeBar" class="dmcz-bar" role="button" tabindex="0" aria-expanded="false" aria-controls="dmczCustomizeBody" onclick="dmczToggleCustomize()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dmczToggleCustomize();}">
+            <span class="dmcz-bar__label"><span class="dmcz-bar__dot" aria-hidden="true"></span><span data-i18n="cat.detail.customizehdr">Personnalisation</span></span>
+            <span class="dmcz-bar__hint" data-i18n="cat.detail.customizehint">Ajoutez votre logo ou texte</span>
+            <span class="dmcz-bar__chev" aria-hidden="true">▾</span>
+          </div>
           <div id="dmczCustomizeBody" class="dmcz-collapse">
             <div class="dmcz-collapse__inner">
               <div class="dmcz__sub"  data-i18n="cat.detail.printmethod">Méthode d'impression</div>

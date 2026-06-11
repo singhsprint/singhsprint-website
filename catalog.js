@@ -399,10 +399,13 @@
   function dmczToggleCustomize() {
     var body = document.getElementById('dmczCustomizeBody');
     var btn = document.getElementById('dmczCustomizeToggle');
-    if (!body || !btn) return;
+    var bar = document.getElementById('dmczCustomizeBar');
+    if (!body) return;
     var open = body.classList.toggle('open');
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (open) setTimeout(function(){ try { body.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {} }, 120);
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (bar) { bar.classList.toggle('open', open); bar.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+    // Scroll the bar (the drawer's origin) into view so the reveal is visible.
+    if (open) setTimeout(function(){ try { (bar || body).scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {} }, 120);
   }
 
   // Collapse the customizer back to the simple state (called when a product
@@ -410,8 +413,10 @@
   function dmczResetCustomizeToggle() {
     var body = document.getElementById('dmczCustomizeBody');
     var btn = document.getElementById('dmczCustomizeToggle');
+    var bar = document.getElementById('dmczCustomizeBar');
     if (body) body.classList.remove('open');
     if (btn) btn.setAttribute('aria-expanded', 'false');
+    if (bar) { bar.classList.remove('open'); bar.setAttribute('aria-expanded', 'false'); }
   }
 
   function initDmczCustomizer(p) {
