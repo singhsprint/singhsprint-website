@@ -2068,9 +2068,17 @@
           design_path:       design_path,
           design_url:        design_url,
           placement_designs: placement_designs,
-          // Inline live-preview output: per-placement box {x,y,w} (% of stage)
-          // and the white-knockout flag the customer set on the canvas.
-          design_boxes:      st.boxes || null,
+          // Inline live-preview output: per-placement box stored in the
+          // editor's 0–1 TOP-LEFT format (converted from the canvas's 0–100
+          // CENTER coords), matching what /quote's customizer expects.
+          design_boxes:      (function(){
+            if (!st.boxes) return null;
+            var out = {};
+            Object.keys(st.boxes).forEach(function(pid){
+              if (st.boxes[pid]) out[pid] = dmczBoxToCompose(st.boxes[pid]);
+            });
+            return out;
+          })(),
           design_remove_bg:  !!st.removeBg,
           // Photoreal mockups baked above (empty when no art was uploaded).
           mockups:           mockups.length ? mockups : undefined,

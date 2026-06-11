@@ -4725,15 +4725,24 @@
       // the back tab.
       var firstFile = null;
       var fileByP = {};
+      // Already-uploaded art (server path/signed_url, no File in memory) per
+      // placement — e.g. an item customized in the catalog modal that's now
+      // being re-edited. Lets the editor preview + re-compose without a File.
+      var existByP = {};
+      var anyArt = false;
       placements.forEach(function(p) {
         var f = opts.fileFor ? opts.fileFor(p) : null;
         if (f instanceof File) { fileByP[p] = f; if (!firstFile) firstFile = f; }
+        var ex = opts.existingDesignFor ? opts.existingDesignFor(p) : null;
+        if (ex && (ex.path || ex.signed_url)) existByP[p] = ex;
+        if (fileByP[p] || existByP[p]) anyArt = true;
       });
-      if (!firstFile) {
+      if (!anyArt) {
         alert('Ajoutez d’abord votre image (le champ de téléversement), puis touchez « Personnaliser et prévisualiser ».');
         return;
       }
-      function hasArt(p) { return fileByP[p] instanceof File; }
+      // A placement has art if it has an in-memory File OR a persisted design.
+      function hasArt(p) { return (fileByP[p] instanceof File) || !!existByP[p]; }
 
       var boxes = {};
       placements.forEach(function(p) {
@@ -4744,9 +4753,13 @@
       var objURLs = {};
       function artURL(p) {
         var f = fileByP[p];
-        if (!f) return '';
-        if (!objURLs[f.name + f.size]) objURLs[f.name + f.size] = URL.createObjectURL(f);
-        return objURLs[f.name + f.size];
+        if (f) {
+          if (!objURLs[f.name + f.size]) objURLs[f.name + f.size] = URL.createObjectURL(f);
+          return objURLs[f.name + f.size];
+        }
+        // No File — preview the already-uploaded art via its signed URL.
+        if (existByP[p] && existByP[p].signed_url) return existByP[p].signed_url;
+        return '';
       }
       function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
@@ -4892,22 +4905,39 @@
       overlay.querySelector('.sp-cz-x').onclick = close;
       overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
 
+      // Resolve the server path/url for a placement: upload its File if there
+      // is one, else use the already-uploaded (persisted) design as-is.
+      function designForPlacement(p) {
+        if (fileByP[p] instanceof File) return spUploadDesignOnce(fileByP[p]);
+        if (existByP[p]) return Promise.resolve({ path: existByP[p].path || null, signed_url: existByP[p].signed_url || null });
+        return Promise.resolve(null);
+      }
+      // The primary design returned to onDone — the first placement's File
+      // upload when present, else its persisted design (no re-upload needed).
+      function primaryDesign() {
+        if (firstFile) return spUploadDesignOnce(firstFile);
+        var p0 = placements.filter(hasArt)[0];
+        return p0 ? designForPlacement(p0) : Promise.resolve(null);
+      }
+
       // Bake every placement that has art, via /api/shop/compose.
       function bakeAll() {
         if (!opts.colorId) { alert('Choisissez d’abord une couleur de vêtement.'); return Promise.resolve([]); }
         setBusy(true, 'Création de votre maquette…');
         var design = null;
         var results = [];
-        // Upload art once, then compose each placement sequentially (gentle on
-        // the rate-limited endpoint).
-        return spUploadDesignOnce(firstFile).then(function(info) {
+        // Resolve the primary design once, then compose each placement
+        // sequentially (gentle on the rate-limited endpoint). Each placement
+        // re-composes from the art it actually has — an uploaded File or the
+        // already-uploaded persisted design — so editing never needs a re-upload.
+        return primaryDesign().then(function(info) {
           design = info;
           if (!info || (!info.path && !info.signed_url)) throw new Error('échec du téléversement de l’image');
           var chain = Promise.resolve();
           placements.forEach(function(p) {
-            if (!hasArt(p)) return; // skip placements with no uploaded art
+            if (!hasArt(p)) return; // skip placements with no art
             chain = chain.then(function() {
-              return spUploadDesignOnce(fileByP[p]).then(function(di) {
+              return designForPlacement(p).then(function(di) {
                 var b = boxes[p];
                 return fetch(SHOP_COMPOSE_API, {
                   method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -4949,7 +4979,7 @@
         setBusy(true, 'Enregistrement…');
         go.then(function(out) {
           var mocks = out.mockups || bakedMockups;
-          spUploadDesignOnce(firstFile).then(function(design) {
+          primaryDesign().then(function(design) {
             if (typeof opts.onDone === 'function') {
               opts.onDone({ mockups: mocks, boxes: boxes, removeBg: removeBg, design: design });
             }
@@ -5073,6 +5103,20 @@
               // placement's file, so one design never bleeds onto the others.
               var k = idx + '_' + p;
               return (cartItemFiles[k] instanceof File) ? cartItemFiles[k] : null;
+            },
+            // Art already uploaded in the catalog modal (or a prior edit) lives
+            // on the cart item as a server path/signed_url — no File in memory.
+            // Hand it back so the editor can preview + re-compose without forcing
+            // a re-upload. Per-placement first, then the primary as a fallback
+            // for the first placement only.
+            existingDesignFor: function(p) {
+              if (it.placement_designs && it.placement_designs[p] && it.placement_designs[p].path) {
+                return { path: it.placement_designs[p].path, signed_url: it.placement_designs[p].signed_url || null };
+              }
+              if (p === placements[0] && it.design_path) {
+                return { path: it.design_path, signed_url: it.design_url || null };
+              }
+              return null;
             },
             initial: { boxes: it.design_boxes || null, removeBg: !!it.design_remove_bg },
             sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
@@ -6416,7 +6460,79 @@
           if (img && her) img.src = imgUrl(her);
           host.querySelectorAll('button.ci-swatch').forEach(function(b){ b.style.boxShadow = ''; });
           btn.style.boxShadow = '0 0 0 2px #1a1a1a';
+          // Re-compose the mockup(s) for the NEW colour so the customer's
+          // design doesn't appear to vanish (the old-colour mockup would no
+          // longer match the garment). Resilient: on any failure we keep the
+          // design attached and never clear placement_designs/design_path.
+          spRecolorMockups(idx, cid);
         });
+      });
+    }
+
+    // Re-bake the cart item's mockup(s) for a newly-picked colour. The art was
+    // already uploaded (catalog modal or a prior edit), so we re-compose from
+    // the persisted design path/url + the stored 0–1 box — no re-upload. On ANY
+    // failure we leave the design data intact so the artwork never disappears;
+    // we just keep the old thumbnail (or the new bare garment) until next edit.
+    function spRecolorMockups(idx, newColorId) {
+      var it = (SinghsCart.read().items || [])[idx];
+      if (!it || !newColorId) return;
+      var hasArt = (it.placement_designs && Object.keys(it.placement_designs).length) || it.design_path;
+      if (!hasArt || !it.design_boxes) return;
+      var placements = (Array.isArray(it.placements) && it.placements.length) ? it.placements : ['center-chest'];
+      var sessionId = (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : (localStorage.getItem('singhsCartId_v1') || null);
+
+      // Resolve the persisted design for a placement: per-placement design first,
+      // then the primary design_path for the FIRST placement only.
+      function designFor(p) {
+        if (it.placement_designs && it.placement_designs[p] && it.placement_designs[p].path) {
+          return { path: it.placement_designs[p].path, signed_url: it.placement_designs[p].signed_url || null };
+        }
+        if (p === placements[0] && it.design_path) {
+          return { path: it.design_path, signed_url: it.design_url || null };
+        }
+        return null;
+      }
+
+      // Brief "updating…" hint on the row thumbnail (non-blocking).
+      var thumb = document.getElementById('ci-img-' + idx);
+      if (thumb) thumb.style.opacity = '0.6';
+
+      var jobs = [];
+      placements.forEach(function(p) {
+        var dsn = designFor(p);
+        var box = it.design_boxes && it.design_boxes[p];
+        if (!dsn || !box) return;
+        var job = fetch(SHOP_COMPOSE_API, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            color_id: newColorId, placement: p,
+            design_path: dsn.path, design_url: dsn.signed_url || null,
+            box: box, remove_bg: !!it.design_remove_bg, session_id: sessionId
+          })
+        }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
+          .then(function(res) {
+            var url = res.ok && res.j ? (res.j.mockup_url || res.j.url) : null;
+            return url ? { placement: p, url: url } : null;
+          })
+          .catch(function() { return null; });
+        jobs.push(job);
+      });
+
+      if (!jobs.length) { if (thumb) thumb.style.opacity = ''; return; }
+
+      Promise.all(jobs).then(function(results) {
+        if (thumb) thumb.style.opacity = '';
+        var newMockups = results.filter(Boolean);
+        // Only overwrite mockups when at least one placement re-composed
+        // successfully — otherwise keep the design + old thumbnail intact.
+        if (newMockups.length) {
+          SinghsCart.updateSilent(idx, { mockups: newMockups });
+          if (typeof renderCartList === 'function') renderCartList();
+        }
+      }).catch(function() {
+        if (thumb) thumb.style.opacity = '';
+        // Never clear the design on failure — leave everything attached.
       });
     }
 
