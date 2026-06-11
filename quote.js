@@ -2743,6 +2743,16 @@
           if (window.spTrack) {
             try { window.spTrack('shop_checkout_start', { total: res.body.total, kind: res.body.kind, currency: 'CAD' }); } catch (e) {}
           }
+          // GA4-standard begin_checkout so the default ecommerce funnel
+          // report picks it up (in addition to the custom event above).
+          try {
+            if (window.SP_GTAG && typeof window.SP_GTAG.event === 'function') {
+              window.SP_GTAG.event('begin_checkout', {
+                value: (typeof res.body.total === 'number') ? res.body.total : undefined,
+                currency: 'CAD'
+              });
+            }
+          } catch (e) { /* tracking must never block the redirect */ }
           // Meta Pixel InitiateCheckout — fires once the Stripe session is
           // confirmed created and we're about to redirect to secure payment.
           // Mirrors the drops page (api/shop/page.js) so both checkout funnels

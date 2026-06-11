@@ -661,7 +661,7 @@ var SP_LANG = (function() {
 
     // Payment section
     'quote.payment.button': { en: 'Pay & Order Now', fr: 'Payer et commander' },
-    'quote.payment.note': { en: 'Payment processing coming soon \u2014 we\'ll send you an invoice by email.', fr: 'Paiement en ligne bientôt disponible \u2014 nous vous enverrons une facture par courriel.' },
+    'quote.payment.note': { en: 'Pay securely by card or Affirm \u2014 taxes and shipping shown at checkout.', fr: 'Paiement sécurisé par carte ou Affirm \u2014 taxes et livraison affichées au paiement.' },
 
     // Mockup download
     'quote.mockup.download': { en: '\ud83d\udcf7 Download Mockup', fr: '\ud83d\udcf7 Télécharger la maquette' },
@@ -991,6 +991,12 @@ var SP_LANG = (function() {
     'quote.contact.delivery.opt1': { en: 'Local pickup (West Island)', fr: 'Ramassage local (Ouest-de-l\'Île)' },
     'quote.contact.delivery.opt2': { en: 'Montreal delivery', fr: 'Livraison à Montréal' },
     'quote.contact.delivery.opt3': { en: 'Shipping (Canada-wide)', fr: 'Expédition (partout au Canada)' },
+    'quote.contact.needby': { en: 'When do you need these by? <span style="color:#888;font-weight:400">(optional)</span>', fr: 'Pour quand en avez-vous besoin ? <span style="color:#888;font-weight:400">(facultatif)</span>' },
+    'quote.contact.needby.hint': { en: 'Standard turnaround is 3–5 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.', fr: 'Le délai standard est de 3 à 5 jours ouvrables après l\'approbation. Une date plus rapprochée peut entraîner des frais d\'urgence, précisés dans notre réponse.' },
+    'quote.contact.rushlabel': { en: 'Rush?', fr: 'Urgent ?' },
+    'quote.contact.rush': { en: 'This is a rush order — please prioritize', fr: 'Commande urgente — veuillez prioriser' },
+    'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG, DTF, embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG, DTF et broderie librement.' },
+    'quote.promoApplied.body': { en: 'Applied to this quote. Visible on your final price after we confirm specs — no code needed.', fr: 'Appliqué à cette soumission. Visible sur votre prix final après confirmation des détails — aucun code requis.' },
     'quote.contact.hear': { en: 'How did you hear about us?', fr: 'Comment avez-vous entendu parler de nous ?' },
     'quote.contact.hear.opt1': { en: 'Google search', fr: 'Recherche Google' },
     'quote.contact.hear.opt2': { en: 'Instagram', fr: 'Instagram' },

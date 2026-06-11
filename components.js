@@ -1440,6 +1440,12 @@ function loadAnalytics() {
       if (window.dataLayer && typeof window.dataLayer.push === 'function') {
         window.dataLayer.push(Object.assign({ event: event }, props));
       }
+      // GA4 direct (gtag.js) — without GTM, dataLayer pushes alone never
+      // reach GA4, so forward through SP_GTAG.event(). page_view is skipped
+      // because the gtag config already auto-sends it (send_page_view:true).
+      if (event !== 'page_view' && window.SP_GTAG && typeof window.SP_GTAG.event === 'function') {
+        window.SP_GTAG.event(event, props);
+      }
       // Plausible custom event
       if (typeof window.plausible === 'function') {
         window.plausible(event, { props: props });
@@ -1731,6 +1737,7 @@ function loadLiveReviews() {
       [/\b\d(?:\.\d)?★ \(\d+ reviews\)/g,   ratingStr + '★ (' + countStr + ' reviews)'],
       [/\b\d(?:\.\d)?\/5 \(\d+ reviews\)/g, ratingStr + '/5 (' + countStr + ' reviews)'],
       [/\b\d(?:\.\d)?\/5 \(\d+ avis\)/g,    ratingStr + '/5 (' + countStr + ' avis)'],
+      [/\b\d,\d\/5 \(\d+ avis\)/g,          ratingStr.replace('.', ',') + '/5 (' + countStr + ' avis)'],
       [/\(\d+ reviews\)/g,                  '(' + countStr + ' reviews)'],
       [/\(\d+ Reviews\)/g,                  '(' + countStr + ' Reviews)'],
       [/\(\d+ avis\)/g,                     '(' + countStr + ' avis)'],

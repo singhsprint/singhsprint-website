@@ -111,7 +111,10 @@
         'Converted to order': 'Convertie en commande', 'Closed': 'Fermée',
         'Quote builder': 'Soumission', 'Bring-your-own': 'Apportez le vôtre',
         'RFP': 'Appel d\'offres', 'Pricing PDF': 'PDF de prix',
-        'Inkwear partnership': 'Partenariat Inkwear'
+        'Inkwear partnership': 'Partenariat Inkwear',
+        'Want this again?': 'Vous en voulez d\'autres ?',
+        'Your artwork stays on file — reorder this in one click from your account. Reorders take about 5 business days.': 'Votre visuel reste en dossier — recommandez en un clic depuis votre compte. Les réimpressions prennent environ 5 jours ouvrables.',
+        'Reorder this →': 'Recommander →'
       };
       return dict[en] || en;
     }
@@ -248,6 +251,18 @@
       html += '<div class="row"><span class="key">' + esc(tFR('Deadline')) + '</span><span class="val">' + esc(fmtDate(data.deadline)) + '</span></div>';
     }
     html += '</div>';
+
+    // Reorder CTA — shipped/completed orders only. One-click reorder lives
+    // in the account area (account/orders.html → /api/account/reorder);
+    // this card routes repeat customers there instead of burying reorders
+    // in "reply to the receipt email".
+    if (data.status === 'shipped' || data.status === 'completed') {
+      html += '<div class="card" style="background:#0f3a25;border-color:#1b6a44;color:#d4f5e3">';
+      html +=   '<div class="label" style="color:#9fd9bb">' + esc(tFR('Want this again?')) + '</div>';
+      html +=   '<p style="margin:6px 0 12px;font-size:.9rem;line-height:1.5">' + esc(tFR('Your artwork stays on file — reorder this in one click from your account. Reorders take about 5 business days.')) + '</p>';
+      html +=   '<a href="/fr/account/orders" data-sp-track="reorder_cta_tracker" style="display:inline-block;background:#e8ff3c;color:#0f3a25;font-weight:700;padding:10px 18px;border-radius:9px;text-decoration:none;font-size:.9rem">' + esc(tFR('Reorder this →')) + '</a>';
+      html += '</div>';
+    }
 
     root.innerHTML = html;
   }

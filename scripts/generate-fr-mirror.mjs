@@ -169,6 +169,34 @@ const META_DESC_FR = {
   'order.html': 'Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.'
 };
 
+// Pre-translated OG/Twitter titles + descriptions for the highest-traffic
+// pages so shared FR links preview in French. Falls back to EN elsewhere.
+const META_OG_FR = {
+  'index.html': {
+    title: 'Singhs Print — Impression de vêtements personnalisés à Montréal',
+    desc:  'DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l\'Ouest-de-l\'Île. Petits minimums, délai de 3 à 5 jours avec options urgentes. 20 $ de rabais sur votre première commande de 100 $+.'
+  },
+  'quote.html': {
+    title: 'Soumission gratuite — Singhs Print',
+    desc:  'Créez votre soumission en quelques minutes. Choisissez un vêtement, la quantité, la méthode et téléversez votre design — réponse humaine en moins d\'une heure pendant les heures d\'ouverture.'
+  },
+  'catalog.html': {
+    title: 'Catalogue — Singhs Print',
+    desc:  'Parcourez 1 100+ vêtements vierges chez S&S Activewear, SanMar et Rue Saint-Patrick. Prix unitaire en direct selon la quantité.'
+  }
+};
+
+function patchOgMeta(html, relPath) {
+  const fr = META_OG_FR[relPath.replace(/\\/g, '/')];
+  if (!fr) return html;
+  const esc = s => s.replace(/"/g, '&quot;');
+  return html
+    .replace(/(<meta\s+property="og:title"\s+content=)"[^"]*"/i,        `$1"${esc(fr.title)}"`)
+    .replace(/(<meta\s+name="twitter:title"\s+content=)"[^"]*"/i,       `$1"${esc(fr.title)}"`)
+    .replace(/(<meta\s+property="og:description"\s+content=)"[^"]*"/i,  `$1"${esc(fr.desc)}"`)
+    .replace(/(<meta\s+name="twitter:description"\s+content=)"[^"]*"/i, `$1"${esc(fr.desc)}"`);
+}
+
 function patchMetaDescription(html, relPath) {
   const fr = META_DESC_FR[relPath.replace(/\\/g, '/')];
   if (!fr) return html;
@@ -282,6 +310,7 @@ async function main() {
     const frUrl = SITE + '/fr' + (cleanRel === '/' ? '/' : cleanRel);
     html = rewriteUrls(html, rel);
     html = patchMetaDescription(html, rel);
+    html = patchOgMeta(html, rel);
     html = patchOgUrl(html, frUrl);
     await fs.writeFile(outPath, html, 'utf8');
     console.log(`  /fr/${rel}`);

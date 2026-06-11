@@ -13,12 +13,12 @@
  *   node scripts/sync-google-reviews.mjs --dry-run
  *
  * Targets the recurring patterns we know about:
- *   "(21 reviews)"                          → "(N reviews)"
- *   "5.0★ (27 reviews)"                     → "X.X★ (N reviews)"
- *   "5.0/5 (27 reviews)"                    → "X.X/5 (N reviews)"
+ *   "(23 reviews)"                          → "(N reviews)"
+ *   "5.0★ (23 reviews)"                     → "X.X★ (N reviews)"
+ *   "5.0/5 (23 reviews)"                    → "X.X/5 (N reviews)"
  *   '"ratingValue": "5.0"'                   → '"ratingValue":"X.X"'
- *   '"reviewCount": "27"'                    → '"reviewCount":"N"'
- *   ratingValue: '5.0', reviewCount: '27'   → ratingValue: 'X.X', reviewCount: 'N'
+ *   '"reviewCount": "23"'                    → '"reviewCount":"N"'
+ *   ratingValue: '5.0', reviewCount: '23'   → ratingValue: 'X.X', reviewCount: 'N'
  *
  * Everything else (real customer review bodies, the "5 stars" in star
  * glyphs, etc.) stays untouched.
@@ -37,7 +37,24 @@ const DRY        = process.argv.includes('--dry-run')
 const ENDPOINT = process.env.REVIEWS_ENDPOINT ||
   'https://singhsprint-crm.vercel.app/api/google-reviews'
 
+// Manual override for when the endpoint is unreachable (CI, offline):
+//   node scripts/sync-google-reviews.mjs --rating=5.0 --count=27
+function cliOverride() {
+  const arg = (name) => {
+    const hit = process.argv.find(a => a.startsWith(`--${name}=`))
+    return hit ? hit.split('=')[1] : null
+  }
+  const rating = parseFloat(arg('rating'))
+  const count  = parseInt(arg('count'), 10)
+  if (Number.isFinite(rating) && Number.isFinite(count)) {
+    return { rating, count, source: 'cli-override' }
+  }
+  return null
+}
+
 async function fetchLive() {
+  const manual = cliOverride()
+  if (manual) return manual
   const res = await fetch(ENDPOINT, { cache: 'no-store' })
   if (!res.ok) throw new Error(`reviews endpoint ${res.status}`)
   const data = await res.json()
@@ -86,6 +103,8 @@ async function run() {
     [/\b\d(?:\.\d)?★ \(\d+ reviews\)/g,              `${ratingStr}★ (${countStr} reviews)`],
     [/\b\d(?:\.\d)?\/5 \(\d+ reviews\)/g,            `${ratingStr}/5 (${countStr} reviews)`],
     [/\b\d(?:\.\d)?\/5 \(\d+ avis\)/g,               `${ratingStr}/5 (${countStr} avis)`],
+    // FR comma-decimal form: "5,5.0/5 (23 avis)"
+    [/\b\d,\d\/5 \(\d+ avis\)/g,                     `${ratingStr.replace('.', ',')}/5 (${countStr} avis)`],
 
     // JSON-LD schema strings (in any quote style)
     [/"ratingValue":\s*"\d(?:\.\d)?"/g,              `"ratingValue": "${ratingStr}"`],
