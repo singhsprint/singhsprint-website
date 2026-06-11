@@ -842,7 +842,14 @@
     var placements = _dmczState.placements.slice();
     var sides = placements.length || 1;
     var method = dmczMethodApi(_dmczState.method);
-    var embPlac = (method === 'embroidery') ? placements.join(',') : '';
+    // Send placements for EVERY method, not just embroidery (2026-06-11).
+    // Despite its name, embroidery_placements is /api/pricing's generic
+    // placements channel: for dtf/dtg it drives the per-placement matrix
+    // surcharge (Center Chest +$1, Full Front +$3, Oversized +$4, …).
+    // Only sending it for embroidery meant switching placements in the
+    // catalog modal never changed the estimate — while the quote page
+    // (which always sends it) repriced correctly.
+    var embPlac = placements.join(',');
     var seq = ++_dmczState.priceSeq;
     var pidForGuard = p.product_id;
 
