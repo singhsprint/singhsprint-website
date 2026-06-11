@@ -2536,7 +2536,16 @@
       var pending = [];
       try {
         if (typeof placementFiles === 'object' && placementFiles) {
+          // Only CURRENTLY-SELECTED placements. placementFiles deliberately
+          // survives re-renders so switching placements doesn't drop an
+          // attached file — but that means deselected placements leave
+          // stale entries behind (e.g. upload under the default Center
+          // Chest, then switch to Oversized → both would submit, and the
+          // CRM would spawn a mockup row per placement). Filter to the
+          // live selection. (2026-06-11)
+          var activeP = (typeof presetByLocation === 'object' && presetByLocation) ? Object.values(presetByLocation) : [];
           Object.keys(placementFiles).forEach(function(presetId) {
+            if (activeP.length && activeP.indexOf(presetId) === -1) return;
             var f = placementFiles[presetId];
             if (f instanceof File) pending.push({ placement: presetId, cart_item_index: null, file: f });
           });
@@ -5426,7 +5435,11 @@
         var pendingFiles = [];   // [{ placement, cart_item_index, file }]
         try {
           if (typeof placementFiles === 'object' && placementFiles) {
+            // Same stale-entry filter as spCollectPendingFiles: only submit
+            // files for placements that are still selected. (2026-06-11)
+            var activePresetsNow = (typeof presetByLocation === 'object' && presetByLocation) ? Object.values(presetByLocation) : [];
             Object.keys(placementFiles).forEach(function(presetId){
+              if (activePresetsNow.length && activePresetsNow.indexOf(presetId) === -1) return;
               var f = placementFiles[presetId];
               if (f instanceof File) pendingFiles.push({
                 placement: presetId,
