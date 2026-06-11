@@ -517,7 +517,7 @@
       </div>
     </div>
     <label class="qty-bar__custom">
-      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 
@@ -721,7 +721,7 @@
         <div class="detail-modal__qty">
           <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700" data-i18n="cat.detail.qty">Qty</span>
           <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
-          <input type="number" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
+          <input type="number" inputmode="numeric" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
           <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
         </div>
         <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span data-i18n="cat.card.add-to-quote">+ Add to quote</span> · <span id="detailModalAddQty">25</span></button>
@@ -1351,6 +1351,22 @@
           return;
         }
         _dmczState.uploads[pid] = { path: d.path, signed_url: d.signed_url || '', filename: file.name, file: file };
+        // Capture the artwork's aspect ratio (h/w). The canvas box only stores
+        // a width; the center→top-left conversion needs the true half-HEIGHT,
+        // which is (w * ar) / 2 — assuming square art shifts non-square logos
+        // vertically in the baked mockup.
+        (function(u){
+          try {
+            var probe = new Image();
+            var ourl = URL.createObjectURL(file);
+            probe.onload = function(){
+              if (probe.naturalWidth > 0) u.ar = probe.naturalHeight / probe.naturalWidth;
+              URL.revokeObjectURL(ourl);
+            };
+            probe.onerror = function(){ URL.revokeObjectURL(ourl); };
+            probe.src = ourl;
+          } catch(_) {}
+        })(_dmczState.uploads[pid]);
         // Seed a starting box for this placement from its preset (cx/cy → %),
         // make it the active preview, and paint it onto the garment live.
         if (!_dmczState.boxes[pid]) {
@@ -1756,7 +1772,7 @@
       // last resort. Route via imgUrl() so S&S URLs go through proxy.
       const hex     = c.hex_code;
       const swatch  = c.swatch_image_url || c.mockup_front_url;
-      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
+      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch, 64)}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');
       const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
@@ -2014,10 +2030,15 @@
       const SHOP_COMPOSE_API = 'https://singhsprint-crm.vercel.app/api/shop/compose';
       const color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
       function clamp01(v) { return Math.max(0, Math.min(1, v)); }
-      function dmczBoxToCompose(b) {
+      // ar = artwork aspect ratio (naturalHeight / naturalWidth), captured at
+      // upload time. The box height on the canvas is w * ar (the art img only
+      // sets width), so the top edge is center.y minus HALF that — not w/2,
+      // which is only correct for square art.
+      function dmczBoxToCompose(b, ar) {
+        var halfH = (b.w / 100) * (ar || 1) / 2;
         return {
           x: clamp01((b.x - b.w / 2) / 100),
-          y: clamp01((b.y - b.w / 2) / 100),
+          y: clamp01(b.y / 100 - halfH),
           w: clamp01(b.w / 100)
         };
       }
@@ -2026,7 +2047,7 @@
         const up = uploads[pid];
         if (!up || !up.path) return;
         const b = (st.boxes && st.boxes[pid]) || { x: 50, y: 40, w: 26 };
-        const composeBox = dmczBoxToCompose(b);
+        const composeBox = dmczBoxToCompose(b, up.ar);
         const job = fetch(SHOP_COMPOSE_API, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2074,7 +2095,7 @@
           style_number: p.style_number || '',
           name:         p.name || '',
           garment_type: p.garment_type || null,
-          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
+          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url, 480),
           qty:          n,
           // ---- Decoration carried up-front from the modal ----
           placements:        placements,
@@ -2090,7 +2111,7 @@
             if (!st.boxes) return null;
             var out = {};
             Object.keys(st.boxes).forEach(function(pid){
-              if (st.boxes[pid]) out[pid] = dmczBoxToCompose(st.boxes[pid]);
+              if (st.boxes[pid]) out[pid] = dmczBoxToCompose(st.boxes[pid], (uploads[pid] || {}).ar);
             });
             return out;
           })(),
@@ -2293,11 +2314,15 @@
   // Local /images/* paths and anything already on singhsprint.com get
   // passed through untouched.
   const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
-  function imgUrl(raw) {
+  // Optional `w` asks the proxy to downscale + re-encode to WebP (clamped
+  // 32–2000 server-side, 30-day edge cache per width). Thumbnails/swatches
+  // pass a width so the grid stops pulling full-res 200–300KB supplier
+  // photos; omit `w` where full resolution matters.
+  function imgUrl(raw, w) {
     if (!raw) return '/images/product-tshirt-white.jpg';
     if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
     if (PROXIED_HOSTS.some(h => raw.indexOf(h) >= 0)) {
-      return IMAGE_PROXY + '?url=' + encodeURIComponent(raw);
+      return IMAGE_PROXY + '?url=' + encodeURIComponent(raw) + (w ? '&w=' + w : '');
     }
     return raw;
   }
@@ -2736,7 +2761,7 @@
         const swatch  = c.swatch_image_url || c.mockup_front_url;
         const useImg  = !hex && swatch;
         const light   = hex ? isLight(hex) : false;
-        const bg      = useImg ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
+        const bg      = useImg ? `url(${imgUrl(swatch, 64)}) center/cover #f3f1ea` : (hex || '#ccc');
         const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
         const oosCls = hasStock ? '' : 'swatch--oos';
         const selected = i === card._selectedColorIdx ? 'swatch--selected' : '';
@@ -2748,7 +2773,7 @@
 
     const repaintCard = () => {
       const c = (p.colors || [])[card._selectedColorIdx] || {};
-      const photoUrl = imgUrl(c.mockup_front_url || p.hero_image_url);
+      const photoUrl = imgUrl(c.mockup_front_url || p.hero_image_url, 480);
       const img = card.querySelector('.photo img');
       if (img) img.src = photoUrl;
       const colorLabel = card.querySelector('.selected-color-name');
@@ -2760,7 +2785,7 @@
     };
 
     const heroColor = (p.colors || [])[card._selectedColorIdx] || {};
-    const photoUrl = imgUrl(heroColor.mockup_front_url || p.hero_image_url);
+    const photoUrl = imgUrl(heroColor.mockup_front_url || p.hero_image_url, 480);
 
     card.innerHTML = `
       ${badge}

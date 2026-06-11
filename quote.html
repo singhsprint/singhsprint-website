@@ -847,8 +847,11 @@
 
   <div id="nav-placeholder"></div>
   <script src="components.js" defer></script>
-  <script src="lang.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <script src="lang.js" defer></script>
+  <!-- fabric.js (~300KB) is injected lazily from the window-load handler
+       instead of render-blocking here; initFabricCanvas() self-polls until
+       `fabric` arrives, so late loading is safe. -->
+
 
   <div class="page-header">
     <h1 data-i18n="quote.h1">Design &amp; get a free quote</h1>
@@ -6321,7 +6324,7 @@
           '  </div>' +
           '  <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">' +
           '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblQty +
-          '      <input type="number" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
+          '      <input type="number" inputmode="numeric" min="1" max="10000" value="' + (it.qty||50) + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
           '    </label>' +
           '    <button type="button" id="spCartCzBtn-' + idx + '" onclick="spLaunchCartCustomizer(' + idx + ')" style="' + (spCartHasMockup(it) ? 'background:#143a14;color:#9dff9d;' : 'background:#1a1a1a;color:#e8ff3c;') + 'border:none;cursor:pointer;font-size:.78rem;font-weight:700;padding:7px 12px;border-radius:50px">' + (spCartHasMockup(it) ? '✓ Mockup ready · edit' : 'Customize') + '</button>' +
           '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
@@ -7056,6 +7059,17 @@
 
     // Init
     window.addEventListener('load', function() {
+      // Lazy-load fabric.js now that the page has painted — it was previously
+      // a render-blocking <head> script (~300KB). initFabricCanvas() below
+      // polls every 200ms until `fabric` is defined, and addDesignToCanvas()
+      // polls for `canvas`, so the late arrival is transparent to all flows.
+      (function loadFabric(){
+        if (window.fabric) return;
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js';
+        s.async = true;
+        document.head.appendChild(s);
+      })();
       updateGarmentShape();           // show the right SVG silhouette + colour it
       updatePlacementRestrictions();
       updatePricingTabs();

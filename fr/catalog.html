@@ -425,6 +425,13 @@
   <section class="cat-hero">
     <h1  data-i18n="cat.hero.h1">Notre catalogue de vêtements</h1>
     <p  data-i18n="cat.hero.p">Parcourez <strong id="catCount">4 500+</strong> vêtements de S&amp;S Activewear, SanMar Canada et Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d'une minute.</p>
+    <!-- Rue Saint-Patrick collection banner — shown only when the Canadian-made
+         filter is active (?canadian=1), so /catalog?canadian=1 reads as the
+         RSP collection rather than a generic filtered list. Toggled in fetchPage(). -->
+    <div id="rspBanner" style="display:none;margin-top:18px;padding:18px 20px;background:#13110d;color:#fff;border-radius:16px;max-width:920px">
+      <div style="font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;font-weight:700;margin-bottom:6px">Singhs Print × Rue Saint-Patrick · Montreal-designed</div>
+      <div style="font-size:1.04rem;line-height:1.5">You're viewing our <strong>Rue Saint-Patrick</strong> collection — a Montreal menswear label, decorated in-house: tees, henleys, polos, hoodies, fleece &amp; caps. <a href="/fr/designed-in-montreal" style="color:#e8ff3c;font-weight:600;text-decoration:underline">Read the story →</a></div>
+    </div>
     <!-- Auto-translation badge — only visible when FR is active. The
          supplier feeds (S&S Activewear) only provide English copy, so we
          machine-translate product/color/spec text on the fly. -->
@@ -436,7 +443,7 @@
       <span>·</span>
       <span  data-i18n="cat.hero.meta2">Délai habituel de <strong>3 à 5 jours</strong></span>
       <span>·</span>
-      <span  data-i18n="cat.hero.meta3">Intégration fournisseur canadien bientôt disponible</span>
+      <span  data-i18n="cat.hero.meta3">Vêtements conçus à Montréal disponibles</span>
     </div>
   </section>
 
@@ -494,9 +501,9 @@
   </style>
   <div id="qtyPricingBar" class="qty-bar">
     <div class="qty-bar__label">
-      <span class="qty-bar__badge">💰 Prix en gros</span>
+      <span class="qty-bar__badge">💰 Bulk pricing</span>
       <span  data-i18n="cat.qty.label">Prix pour</span> <strong><span id="qtyReadout">200</span> <span  data-i18n="cat.qty.units">unités</span></strong>
-      <span style="font-size:.72rem;color:var(--soft);font-weight:500"  data-i18n="cat.qty.oneside">· 1 côté imprimé · glissez pour comparer</span>
+      <span style="font-size:.72rem;color:var(--soft);font-weight:500"  data-i18n="cat.qty.oneside">· 1 côté imprimé</span>
     </div>
     <div class="qty-bar__slider-wrap">
       <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
@@ -511,7 +518,7 @@
       </div>
     </div>
     <label class="qty-bar__custom">
-      <span  data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span  data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 
@@ -652,11 +659,11 @@
     <span class="cart-bar__label">
       <strong id="cartUnits">0</strong>
       <span class="cart-bar__label-suffix"  data-i18n="cat.cart.units">unités dans votre soumission</span>
-      <span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">in cart</span>
+      <span class="cart-bar__label-suffix-short"  data-i18n="cat.cart.units.short">au panier</span>
     </span>
     <span id="cartBarCta" class="cart-bar__cta" aria-hidden="true">
       <span class="cta-long"  data-i18n="cat.cart.cta">Continuer vers la soumission →</span>
-      <span class="cta-short" data-i18n="cat.cart.cta.short">Quote →</span>
+      <span class="cta-short"  data-i18n="cat.cart.cta.short">Soumission →</span>
     </span>
   </a>
   <div id="cartToast" class="cart-toast" aria-live="polite"></div>
@@ -692,14 +699,14 @@
           <div id="detailModalPrice" style="font-size:1.1rem;font-weight:600;margin-bottom:8px"></div>
           <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5;margin-bottom:16px"></div>
 
-          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
+          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
           <div class="detail-modal__swatches" id="detailModalSwatches"></div>
 
-          <div class="dmcz__sub" data-i18n="cat.detail.printmethod">Méthode d'impression</div>
+          <div class="dmcz__sub"  data-i18n="cat.detail.printmethod">Méthode d'impression</div>
           <div class="dmcz__methods" id="dmczMethods"></div>
-          <div class="dmcz__sub" data-i18n="cat.detail.whereprint">Emplacements</div>
+          <div class="dmcz__sub"  data-i18n="cat.detail.whereprint">Emplacements</div>
           <div class="dmcz__groups" id="dmczPlacements"></div>
-          <div class="dmcz__sub" data-i18n="cat.detail.artwork">Votre visuel</div>
+          <div class="dmcz__sub"  data-i18n="cat.detail.artwork">Votre visuel</div>
           <div class="dmcz__uploads" id="dmczUploads"></div>
 
           <!-- Tech specs — parsed from the S&S product description. Moved to
@@ -710,13 +717,12 @@
             <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
           </div>
         </div>
-
       </div>
       <div class="detail-modal__foot">
         <div class="detail-modal__qty">
           <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700"  data-i18n="cat.detail.qty">Qté</span>
           <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
-          <input type="number" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
+          <input type="number" inputmode="numeric" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
           <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
         </div>
         <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span  data-i18n="cat.card.add-to-quote">+ Ajouter à la soumission</span> · <span id="detailModalAddQty">25</span></button>
@@ -910,7 +916,7 @@
 
   // 2026-05-24 — Cart-bar touch fallback + tap-feedback animation.
   //
-  // Touch fallback: the entire pill (`#cartBar`) is an <a href="/quote">,
+  // Touch fallback: the entire pill (`#cartBar`) is an <a href="/fr/quote">,
   // but iOS Safari can still drop the native click when the anchor sits
   // inside a position:fixed container that just transitioned
   // (display:none → display:flex via the `.open` class). The touchend
@@ -1346,6 +1352,22 @@
           return;
         }
         _dmczState.uploads[pid] = { path: d.path, signed_url: d.signed_url || '', filename: file.name, file: file };
+        // Capture the artwork's aspect ratio (h/w). The canvas box only stores
+        // a width; the center→top-left conversion needs the true half-HEIGHT,
+        // which is (w * ar) / 2 — assuming square art shifts non-square logos
+        // vertically in the baked mockup.
+        (function(u){
+          try {
+            var probe = new Image();
+            var ourl = URL.createObjectURL(file);
+            probe.onload = function(){
+              if (probe.naturalWidth > 0) u.ar = probe.naturalHeight / probe.naturalWidth;
+              URL.revokeObjectURL(ourl);
+            };
+            probe.onerror = function(){ URL.revokeObjectURL(ourl); };
+            probe.src = ourl;
+          } catch(_) {}
+        })(_dmczState.uploads[pid]);
         // Seed a starting box for this placement from its preset (cx/cy → %),
         // make it the active preview, and paint it onto the garment live.
         if (!_dmczState.boxes[pid]) {
@@ -1472,18 +1494,18 @@
     // Caption shown only when there's no artwork yet.
     var caption = hasArt ? '' :
       '<div class="detail-modal__preview-cap">' +
-      (t('cat.detail.uploadtosee') || 'Téléversez un visuel pour le voir ici') + '</div>';
+      (t('cat.detail.uploadtosee') || 'Upload artwork to see it here') + '</div>';
 
     // Size slider + remove-bg toggle only apply when artwork is present.
     var controls = hasArt ?
       '<div class="dmcz__controls">' +
         '<div class="dmcz__size-row">' +
-          '<span data-i18n="cat.detail.designsize">' + (t('cat.detail.designsize') || 'Taille') + '</span>' +
+          '<span  data-i18n="cat.detail.designsize">Taille</span>' +
           '<input type="range" id="dmczSize" min="10" max="80" step="1" value="' + Math.round(box.w) + '">' +
         '</div>' +
         '<label class="dmcz__rmbg">' +
           '<input type="checkbox" id="dmczRemoveBg"' + (_dmczState.removeBg ? ' checked' : '') + '> ' +
-          '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Retirer le fond blanc') + '</span>' +
+          '<span  data-i18n="cat.detail.removebg">Retirer le fond blanc</span>' +
         '</label>' +
       '</div>' : '';
 
@@ -1751,7 +1773,7 @@
       // last resort. Route via imgUrl() so S&S URLs go through proxy.
       const hex     = c.hex_code;
       const swatch  = c.swatch_image_url || c.mockup_front_url;
-      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
+      const bg      = (!hex && swatch) ? `url(${imgUrl(swatch, 64)}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');
       const oosCls = hasStock ? '' : 'detail-modal__swatch--oos';
@@ -1768,6 +1790,8 @@
         host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
         s.setAttribute('aria-selected', 'true');
         paintDetailHero();
+        // Refresh the in-modal customizer preview so the garment switches to
+        // the newly-picked colour too (it reads the live _detailColorIdx).
         if (typeof renderDmczPreview === 'function') renderDmczPreview();
       });
     });
@@ -2007,10 +2031,15 @@
       const SHOP_COMPOSE_API = 'https://singhsprint-crm.vercel.app/api/shop/compose';
       const color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
       function clamp01(v) { return Math.max(0, Math.min(1, v)); }
-      function dmczBoxToCompose(b) {
+      // ar = artwork aspect ratio (naturalHeight / naturalWidth), captured at
+      // upload time. The box height on the canvas is w * ar (the art img only
+      // sets width), so the top edge is center.y minus HALF that — not w/2,
+      // which is only correct for square art.
+      function dmczBoxToCompose(b, ar) {
+        var halfH = (b.w / 100) * (ar || 1) / 2;
         return {
           x: clamp01((b.x - b.w / 2) / 100),
-          y: clamp01((b.y - b.w / 2) / 100),
+          y: clamp01(b.y / 100 - halfH),
           w: clamp01(b.w / 100)
         };
       }
@@ -2019,7 +2048,7 @@
         const up = uploads[pid];
         if (!up || !up.path) return;
         const b = (st.boxes && st.boxes[pid]) || { x: 50, y: 40, w: 26 };
-        const composeBox = dmczBoxToCompose(b);
+        const composeBox = dmczBoxToCompose(b, up.ar);
         const job = fetch(SHOP_COMPOSE_API, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2067,7 +2096,7 @@
           style_number: p.style_number || '',
           name:         p.name || '',
           garment_type: p.garment_type || null,
-          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url),
+          hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url, 480),
           qty:          n,
           // ---- Decoration carried up-front from the modal ----
           placements:        placements,
@@ -2083,7 +2112,7 @@
             if (!st.boxes) return null;
             var out = {};
             Object.keys(st.boxes).forEach(function(pid){
-              if (st.boxes[pid]) out[pid] = dmczBoxToCompose(st.boxes[pid]);
+              if (st.boxes[pid]) out[pid] = dmczBoxToCompose(st.boxes[pid], (uploads[pid] || {}).ar);
             });
             return out;
           })(),
@@ -2286,11 +2315,15 @@
   // Local /images/* paths and anything already on singhsprint.com get
   // passed through untouched.
   const PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
-  function imgUrl(raw) {
+  // Optional `w` asks the proxy to downscale + re-encode to WebP (clamped
+  // 32–2000 server-side, 30-day edge cache per width). Thumbnails/swatches
+  // pass a width so the grid stops pulling full-res 200–300KB supplier
+  // photos; omit `w` where full resolution matters.
+  function imgUrl(raw, w) {
     if (!raw) return '/images/product-tshirt-white.jpg';
     if (raw.startsWith('/') || raw.indexOf('singhsprint.com') >= 0) return raw;
     if (PROXIED_HOSTS.some(h => raw.indexOf(h) >= 0)) {
-      return IMAGE_PROXY + '?url=' + encodeURIComponent(raw);
+      return IMAGE_PROXY + '?url=' + encodeURIComponent(raw) + (w ? '&w=' + w : '');
     }
     return raw;
   }
@@ -2700,12 +2733,12 @@
       : (firstInStockIdx >= 0 ? firstInStockIdx : 0);
 
     let badge = '';
-    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos" data-i18n="cat.card.oos">Out of stock</div>`;
+    if (p.in_stock === false)                                            badge = `<div class="badge badge--oos"  data-i18n="cat.card.oos">En rupture</div>`;
     else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2)
-                                                                         badge = `<div class="badge badge--low" data-i18n="cat.card.low">Low stock</div>`;
-    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller" data-i18n="cat.card.bestseller">★ Bestseller</div>`;
-    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian" data-i18n="cat.card.canadian">🇨🇦 Canadian</div>`;
-    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa" data-i18n="cat.card.csa">CSA Hi-Vis</div>`;
+                                                                         badge = `<div class="badge badge--low"  data-i18n="cat.card.low">Stock faible</div>`;
+    else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller"  data-i18n="cat.card.bestseller">★ Populaire</div>`;
+    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian"  data-i18n="cat.card.canadian">🍁 Conçu à Montréal</div>`;
+    else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa"  data-i18n="cat.card.csa">CSA hi-vis</div>`;
 
     // Catalog cards display up to 24 swatches in a 2-row wrap (16px × 2 rows
     // fits inside max-height:44px). Anything past 24 surfaces as "+N" so giant
@@ -2729,7 +2762,7 @@
         const swatch  = c.swatch_image_url || c.mockup_front_url;
         const useImg  = !hex && swatch;
         const light   = hex ? isLight(hex) : false;
-        const bg      = useImg ? `url(${imgUrl(swatch)}) center/cover #f3f1ea` : (hex || '#ccc');
+        const bg      = useImg ? `url(${imgUrl(swatch, 64)}) center/cover #f3f1ea` : (hex || '#ccc');
         const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
         const oosCls = hasStock ? '' : 'swatch--oos';
         const selected = i === card._selectedColorIdx ? 'swatch--selected' : '';
@@ -2741,7 +2774,7 @@
 
     const repaintCard = () => {
       const c = (p.colors || [])[card._selectedColorIdx] || {};
-      const photoUrl = imgUrl(c.mockup_front_url || p.hero_image_url);
+      const photoUrl = imgUrl(c.mockup_front_url || p.hero_image_url, 480);
       const img = card.querySelector('.photo img');
       if (img) img.src = photoUrl;
       const colorLabel = card.querySelector('.selected-color-name');
@@ -2753,7 +2786,7 @@
     };
 
     const heroColor = (p.colors || [])[card._selectedColorIdx] || {};
-    const photoUrl = imgUrl(heroColor.mockup_front_url || p.hero_image_url);
+    const photoUrl = imgUrl(heroColor.mockup_front_url || p.hero_image_url, 480);
 
     card.innerHTML = `
       ${badge}
@@ -2763,10 +2796,10 @@
         <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>` : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span  data-i18n="cat.card.from">À partir de</span> <strong>$${p.price_from.toFixed(2)}</strong><span  data-i18n="cat.card.perunit">/unité</span> · <span class="price-meta"  data-i18n="cat.card.oneside">Impression 1 côté</span>` : `<strong  data-i18n="cat.card.quote-on-request">Sur demande</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">
-          <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
-          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span></span>
+          <span class="card-cta__main"  data-i18n="cat.card.view-details-cta">Voir les détails et ajouter</span>
+          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span  data-i18n="cat.card.units-at-tier">unités · qté ajustable ensuite</span></span>
         </div>
       </div>
     `;
@@ -2826,8 +2859,8 @@
     a.href = '/quote.html?source=byo';
     a.innerHTML = `
       <div class="add">+</div>
-      <strong data-i18n="cat.byo.title">Bring your own blank</strong>
-      <span data-i18n="cat.byo.sub">Got a SKU or tech pack? Send it over — we'll source and quote it.</span>
+      <strong  data-i18n="cat.byo.title">Apportez votre propre vêtement</strong>
+      <span  data-i18n="cat.byo.sub">Vous avez un SKU ou un dossier technique ? Envoyez-le-nous — on le source et on vous fait une soumission.</span>
     `;
     return a;
   }

@@ -5,8 +5,8 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maillots d'équipe personnalisés | Singhs Print — Vêtements personnalisés Montréal</title>
-  <meta name="description" content="Créez des maillots d'équipe personnalisés pour le hockey, le soccer, le basketball, le baseball, le football et le volleyball. Choisissez un maillot, ajoutez le nom, le numéro et une police pour chaque joueur, et obtenez une seule soumission pour toute l'équipe.">
+  <title>Singhs Print · Impression de vêtements personnalisés · FR</title>
+  <meta name="description" content="Build custom team jerseys for hockey, soccer, basketball, baseball, football and volleyball. Pick a jersey blank, add every player's name, number and a team font, and get one quote for the whole roster.">
   <link rel="canonical" href="https://www.singhsprint.com/fr/jerseys">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/jerseys">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/jerseys">
@@ -152,9 +152,9 @@
   <div id="nav-placeholder"></div>
 
   <section class="jh-hero">
-    <h1 data-i18n="jersey.hero.h1">Maillots d'équipe, personnalisés joueur par joueur</h1>
-    <p data-i18n="jersey.hero.p">Choisissez un maillot pour votre sport, puis montez votre alignement — chaque joueur obtient son <strong>nom, son numéro et une police d'équipe</strong>. On imprime ou brode toute l'équipe et on envoie une seule soumission.</p>
-    <button class="jh-cta" id="heroCta" data-i18n="jersey.hero.cta">Choisissez votre sport</button>
+    <h1  data-i18n="jersey.hero.h1">Maillots d'équipe, personnalisés joueur par joueur</h1>
+    <p  data-i18n="jersey.hero.p">Choisissez un maillot pour votre sport, puis montez votre alignement — chaque joueur obtient son <strong>nom, son numéro et une police d'équipe</strong>. On imprime ou brode toute l'équipe et on envoie une seule soumission.</p>
+    <button class="jh-cta" id="heroCta"  data-i18n="jersey.hero.cta">Choisissez votre sport</button>
   </section>
 
   <div class="jh-sports" id="sportPicker"></div>
@@ -162,12 +162,12 @@
   <div class="jh-bar">
     <div class="jh-meta" id="jhMeta"></div>
     <label class="jh-sort" id="jhSortWrap" style="display:none">
-      <span data-i18n="jersey.sort.label">Sort</span>
+      <span  data-i18n="jersey.sort.label">Trier</span>
       <select id="jhSort">
-        <option value="featured" data-i18n="jersey.sort.featured">Featured</option>
-        <option value="price_asc" data-i18n="jersey.sort.priceasc">Price: Low to High</option>
-        <option value="price_desc" data-i18n="jersey.sort.pricedesc">Price: High to Low</option>
-        <option value="name" data-i18n="jersey.sort.name">Name: A–Z</option>
+        <option value="featured"  data-i18n="jersey.sort.featured">En vedette</option>
+        <option value="price_asc"  data-i18n="jersey.sort.priceasc">Prix : croissant</option>
+        <option value="price_desc"  data-i18n="jersey.sort.pricedesc">Prix : décroissant</option>
+        <option value="name"  data-i18n="jersey.sort.name">Nom : A-Z</option>
       </select>
     </label>
   </div>
@@ -177,34 +177,34 @@
   <div class="cz-overlay" id="czOverlay" role="dialog" aria-modal="true" aria-labelledby="czTitle">
     <div class="cz">
       <div class="cz-head">
-        <h2 id="czTitle" data-i18n="jersey.cz.title">Montez votre équipe</h2>
-        <button class="cz-close" id="czClose" aria-label="Fermer">&times;</button>
+        <h2 id="czTitle"  data-i18n="jersey.cz.title">Montez votre équipe</h2>
+        <button class="cz-close" id="czClose" aria-label="Close">&times;</button>
       </div>
       <div class="cz-body">
         <div class="cz-preview">
-          <span class="cz-prev-label" data-i18n="jersey.cz.preview">Live preview</span>
+          <span class="cz-prev-label"  data-i18n="jersey.cz.preview">Aperçu en direct</span>
           <div class="cz-svgwrap" id="czSvg"></div>
           <div id="czLogoTools" style="display:none;width:100%;max-width:280px;margin-top:2px">
             <div style="display:flex;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
-              <span data-i18n="jersey.cz.logosize">Logo size</span>
+              <span  data-i18n="jersey.cz.logosize">Taille du logo</span>
               <input type="range" id="czLogoSize" min="8" max="70" value="24" step="1" style="flex:1">
             </div>
             <label style="display:flex;align-items:center;gap:6px;color:#cfc9bb;font-size:.72rem;margin-top:7px;cursor:pointer">
-              <input type="checkbox" id="czLogoRemoveBg"> <span data-i18n="jersey.cz.removebg">Remove white background</span>
+              <input type="checkbox" id="czLogoRemoveBg"> <span  data-i18n="jersey.cz.removebg">Retirer le fond blanc</span>
             </label>
-            <div style="color:#9b958a;font-size:.66rem;margin-top:6px" data-i18n="jersey.cz.draghint">Drag the logo on the jersey to position it.</div>
+            <div style="color:#9b958a;font-size:.66rem;margin-top:6px"  data-i18n="jersey.cz.draghint">Glissez le logo sur le maillot pour le positionner.</div>
           </div>
           <div id="czFrontTools" style="display:none;width:100%;max-width:280px;margin-top:8px">
             <div id="czFrontNumSizeRow" style="display:none;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
-              <span data-i18n="jersey.cz.frontnumsize">Front number size</span>
+              <span  data-i18n="jersey.cz.frontnumsize">Taille du numero avant</span>
               <input type="range" id="czFrontNumSize" min="14" max="64" value="34" step="1" style="flex:1">
             </div>
             <div id="czFrontNameSizeRow" style="display:none;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem;margin-top:7px">
-              <span data-i18n="jersey.cz.frontnamesize">Team name size</span>
+              <span  data-i18n="jersey.cz.frontnamesize">Taille du nom</span>
               <input type="range" id="czFrontNameSize" min="10" max="40" value="18" step="1" style="flex:1">
             </div>
-            <button type="button" id="czFrontSave" style="margin-top:9px;background:var(--hi,#e8ff3c);color:#1a1a1a;border:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit" data-i18n="jersey.cz.savelayout">Save layout</button>
-            <span id="czFrontSaved" style="display:none;color:#8fe39a;font-size:.72rem;margin-left:8px" data-i18n="jersey.cz.layoutsaved">Layout saved</span>
+            <button type="button" id="czFrontSave" style="margin-top:9px;background:var(--hi,#e8ff3c);color:#1a1a1a;border:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit"  data-i18n="jersey.cz.savelayout">Enregistrer la disposition</button>
+            <span id="czFrontSaved" style="display:none;color:#8fe39a;font-size:.72rem;margin-left:8px"  data-i18n="jersey.cz.layoutsaved">Disposition enregistree</span>
           </div>
           <div class="cz-prevhint" id="czPrevHint"></div>
         </div>
@@ -213,29 +213,35 @@
           <div id="czSpecs" style="font-size:.72rem;color:var(--soft);line-height:1.5;margin-top:-8px"></div>
 
           <div class="cz-field" id="czColorField">
-            <label data-i18n="jersey.cz.color">Jersey color</label>
+            <label  data-i18n="jersey.cz.color">Couleur du maillot</label>
             <div class="cz-swatches" id="czSwatches"></div>
           </div>
 
+          <div class="cz-field" id="czKeeperField" style="display:none">
+            <label id="czKeeperLabel"  data-i18n="jersey.cz.goaliecolor">Couleur du gardien</label>
+            <div class="cz-swatches" id="czKeeperSwatches"></div>
+            <div style="font-size:.72rem;color:var(--soft);margin-top:4px"  data-i18n="jersey.cz.goaliehint">Cochez la case à côté d'un joueur pour lui donner cette couleur.</div>
+          </div>
+
           <div class="cz-field">
-            <label data-i18n="jersey.cz.font">Team font</label>
+            <label  data-i18n="jersey.cz.font">Police d'équipe</label>
             <div class="cz-chips" id="czFonts"></div>
           </div>
 
           <div class="cz-field">
-            <label data-i18n="jersey.cz.namesnumbers">Names &amp; numbers</label>
-            <div class="cz-chips"><span class="cz-chip sel" style="cursor:default"><span data-i18n="jersey.cz.dtfstd">DTF print</span></span></div>
+            <label  data-i18n="jersey.cz.namesnumbers">Noms et numéros</label>
+            <div class="cz-chips"><span class="cz-chip sel" style="cursor:default"><span  data-i18n="jersey.cz.dtfstd">Impression DTF</span></span></div>
           </div>
 
           <div class="cz-field">
-            <label data-i18n="jersey.cz.frontlogo">Front logo (optional)</label>
+            <label  data-i18n="jersey.cz.frontlogo">Logo avant (optionnel)</label>
             <div class="cz-chips" id="czLogoMethod"></div>
             <div id="czLogoOpts" style="display:none;margin-top:10px">
-              <div style="font-size:.72rem;color:var(--soft);margin-bottom:6px" data-i18n="jersey.cz.logoplace">Logo placement</div>
+              <div style="font-size:.72rem;color:var(--soft);margin-bottom:6px"  data-i18n="jersey.cz.logoplace">Emplacement du logo</div>
               <div class="cz-chips" id="czLogoPlace"></div>
               <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                 <label class="cz-linkbtn" style="border:1.5px solid var(--line);border-radius:9px;padding:8px 12px;text-decoration:none;cursor:pointer">
-                  <span data-i18n="jersey.cz.uploadlogo">Upload logo</span>
+                  <span  data-i18n="jersey.cz.uploadlogo">Téléverser le logo</span>
                   <input type="file" id="czLogoFile" accept="image/*,.pdf,.ai,.eps,.svg" style="display:none">
                 </label>
                 <span id="czLogoFileName" style="font-size:.78rem;color:var(--muted)"></span>
@@ -244,33 +250,33 @@
           </div>
 
           <div class="cz-field">
-            <label data-i18n="jersey.cz.frontextra">Front of jersey (optional)</label>
-            <label class="cz-toggle"><input type="checkbox" id="czFrontNumber"><span data-i18n="jersey.cz.frontnum">Player number on front</span></label>
-            <label class="cz-toggle"><input type="checkbox" id="czFrontName"><span data-i18n="jersey.cz.frontname">Team name on front</span></label>
+            <label  data-i18n="jersey.cz.frontextra">Devant du maillot (optionnel)</label>
+            <label class="cz-toggle"><input type="checkbox" id="czFrontNumber"><span  data-i18n="jersey.cz.frontnum">Numero du joueur au devant</span></label>
+            <label class="cz-toggle"><input type="checkbox" id="czFrontName"><span  data-i18n="jersey.cz.frontname">Nom de l'equipe au devant</span></label>
             <input type="text" id="czTeamName" maxlength="22" placeholder="" style="display:none;width:100%;margin-top:8px;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff">
-            <div id="czFrontHint" style="display:none;font-size:.72rem;color:var(--soft);margin-top:7px" data-i18n="jersey.cz.fronthint">Drag the number and name on the front preview to place them, then Save layout.</div>
+            <div id="czFrontHint" style="display:none;font-size:.72rem;color:var(--soft);margin-top:7px"  data-i18n="jersey.cz.fronthint">Glissez le numero et le nom sur l'apercu avant pour les placer, puis Enregistrer la disposition.</div>
           </div>
 
           <div class="cz-field">
-            <label><span data-i18n="jersey.cz.roster">Roster</span></label>
+            <label><span  data-i18n="jersey.cz.roster">Alignement</span></label>
             <table class="cz-roster">
               <thead>
                 <tr id="czRosterHeadRow">
-                  <th style="width:48%" data-i18n="jersey.cz.name">Player name</th>
-                  <th style="width:16%" data-i18n="jersey.cz.number">No.</th>
-                  <th style="width:26%" data-i18n="jersey.cz.size">Size</th>
+                  <th style="width:48%"  data-i18n="jersey.cz.name">Nom du joueur</th>
+                  <th style="width:16%"  data-i18n="jersey.cz.number">N°</th>
+                  <th style="width:26%"  data-i18n="jersey.cz.size">Taille</th>
                   <th style="width:10%"></th>
                 </tr>
               </thead>
               <tbody id="czRoster"></tbody>
             </table>
             <div class="cz-rowbtns">
-              <button class="cz-linkbtn" id="czAddRow" data-i18n="jersey.cz.addrow">+ Add player</button>
-              <button class="cz-linkbtn" id="czPasteToggle" data-i18n="jersey.cz.paste">Paste a list</button>
+              <button class="cz-linkbtn" id="czAddRow"  data-i18n="jersey.cz.addrow">+ Ajouter un joueur</button>
+              <button class="cz-linkbtn" id="czPasteToggle"  data-i18n="jersey.cz.paste">Coller une liste</button>
             </div>
             <div id="czPasteWrap" style="display:none;margin-top:10px">
               <textarea class="cz-paste-ta" id="czPasteTa" placeholder="Sidney Crosby, 87, L&#10;Connor McDavid, 97, M"></textarea>
-              <div class="cz-note" data-i18n="jersey.cz.paste.hint">One player per line: Name, Number, Size</div>
+              <div class="cz-note"  data-i18n="jersey.cz.paste.hint">Un joueur par ligne : Nom, Numéro, Taille</div>
             </div>
           </div>
 
@@ -278,7 +284,7 @@
       </div>
       <div class="cz-foot">
         <div class="cz-summary" id="czSummary"></div>
-        <button class="cz-addbtn" id="czAdd" data-i18n="jersey.cz.add">Add team to quote</button>
+        <button class="cz-addbtn" id="czAdd"  data-i18n="jersey.cz.add">Ajouter l'équipe à la soumission</button>
       </div>
     </div>
   </div>
@@ -315,10 +321,42 @@
     }
 
     // ---- Shared cart (same sessionStorage module as catalog.html / quote.html)
+    // Abandonment recovery: same stable cart_id + debounced /api/carts/upsert
+    // sync as catalog.html, so jersey-only carts are visible to the daily
+    // recovery sweeper too (previously this page never synced).
+    function getCartId(){
+      var k = 'singhsCartId_v1';
+      var existing = null;
+      try { existing = localStorage.getItem(k); } catch(e){}
+      if (existing && /^[a-zA-Z0-9_-]{8,64}$/.test(existing)) return existing;
+      var id = '';
+      try {
+        if (window.crypto && crypto.randomUUID) id = crypto.randomUUID().replace(/-/g, '');
+      } catch(e){}
+      if (!id) id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      try { localStorage.setItem(k, id); } catch(e){}
+      return id;
+    }
+    var SINGHS_CART_ID = getCartId();
+    var _cartSyncTimer = null;
+    function queueCartSync(){
+      if (_cartSyncTimer) clearTimeout(_cartSyncTimer);
+      _cartSyncTimer = setTimeout(function(){
+        try {
+          var c = JSON.parse(sessionStorage.getItem('singhsCart_v1') || '{"items":[]}');
+          fetch('https://singhsprint-crm.vercel.app/api/carts/upsert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_id: SINGHS_CART_ID, items: c.items || [], source_url: location.href }),
+            keepalive: true
+          }).catch(function(){});
+        } catch(e){}
+      }, 800);
+    }
     var SinghsCart = {
       key: 'singhsCart_v1',
       read: function(){ try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
-      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} try { window.dispatchEvent(new Event('singhsCartChange')); } catch(e){} },
+      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} queueCartSync(); try { window.dispatchEvent(new Event('singhsCartChange')); } catch(e){} },
       add: function(item){ var c=this.read(); c.items.push(item); this.write(c); },
       count: function(){ return this.read().items.length; }
     };
@@ -418,7 +456,7 @@
     function renderSportPicker(){
       var host = document.getElementById('sportPicker');
       var html = '<button class="jh-sport' + (!state.sport?' active':'') + '" data-sport="">'
-               + '<span data-i18n="jersey.all">' + t('jersey.all','All jerseys') + '</span></button>';
+               + '<span  data-i18n="jersey.all">Tous les maillots</span></button>';
       SPORTS.forEach(function(s){
         html += '<button class="jh-sport' + (state.sport===s?' active':'') + '" data-sport="'+s+'">'
               + (SICON[s]||'') + '<span data-i18n="nav.jerseys.'+s+'">' + t('nav.jerseys.'+s, cap(s)) + '</span></button>';
@@ -482,7 +520,7 @@
         var photo = imgUrl(c0.mockup_front_url || prod.hero_image_url);
         var tags = (prod.sports||[]).slice(0,3).map(function(s){ return '<span class="sporttag">'+esc(s)+'</span>'; }).join('');
         var price = (typeof prod.price_from==='number' && prod.price_from>0)
-          ? ('<span data-i18n="jersey.from">'+t('jersey.from','From')+'</span> <strong>$'+teamPrice(prod.price_from).toFixed(2)+'</strong><span data-i18n="jersey.perunit">'+t('jersey.perunit','/unit')+'</span>')
+          ? ('<span  data-i18n="jersey.from">À partir de</span> <strong>$'+teamPrice(prod.price_from).toFixed(2)+'</strong><span  data-i18n="jersey.perunit">/unité</span>')
           : '<strong>Quote on request</strong>';
         var card = document.createElement('div');
         card.className = 'jh-card';
@@ -1088,7 +1126,7 @@
     function showToast(n){
       var el = document.getElementById('czToast');
       el.innerHTML = '<span>' + t('jersey.cz.added','Team added to your quote') + ' · <strong>'+n+'</strong> '+t('jersey.cz.players','players')+'</span>'
-        + '<a href="/quote#cart" data-i18n="jersey.cz.viewquote">' + t('jersey.cz.viewquote','Review quote') + '</a>';
+        + '<a href="/quote#cart"  data-i18n="jersey.cz.viewquote">Voir la soumission</a>';
       el.classList.add('show');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(function(){ el.classList.remove('show'); }, 4200);
