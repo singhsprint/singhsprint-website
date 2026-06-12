@@ -127,7 +127,8 @@ function translateHtml(html, T) {
     'Custom Apparel for Businesses': 'Vêtements personnalisés pour entreprises',
     'Inkwear':                      'Inkwear',
     'Portfolio':                    'Portfolio',
-    'Track your order':             'Suivez votre commande'
+    'Track your order':             'Suivez votre commande',
+    'Why Singhs Print':             'Pourquoi Singhs Print'
   };
   for (const [needle, replacement] of Object.entries(PAGE_TITLE_MAP)) {
     html = html.replace(
@@ -166,7 +167,8 @@ const META_DESC_FR = {
   'businesses/rfp.html': 'Formulaire d\'appel d\'offres pour Imprimerie Singhs Print. Soumission détaillée, échéancier d\'échantillon et paperasse Net-30 en moins d\'un jour ouvrable.',
   'inkwear.html': 'Programme partenaire Inkwear · vêtements co-brandés pour les créateurs et les marques de mode établies au Québec.',
   'portfolio.html': 'Découvrez les commandes récentes décorées par Imprimerie Singhs Print pour des clubs McGill, des entreprises de l\'Ouest-de-l\'Île et des comptes corporatifs.',
-  'order.html': 'Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.'
+  'order.html': 'Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.',
+  'why-us.html': 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes. Prix en direct, aucun minimum, un vrai échantillon avant la production et une garantie de réimpression — voici la différence Singhs Print.'
 };
 
 // Pre-translated OG/Twitter titles + descriptions for the highest-traffic

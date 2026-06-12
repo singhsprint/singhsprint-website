@@ -289,6 +289,16 @@
     /* ===== WHY US ===== */
     .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
     .why-card{padding:28px;border-radius:16px;border:1px solid #eee;background:#fff;display:flex;gap:16px}
+    /* Differentiator comparison (#why-switch) */
+    .diff-grid{max-width:880px;margin:0 auto}
+    .diff-row{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;margin-bottom:10px}
+    .diff-them,.diff-us{border-radius:12px;padding:14px 18px;font-size:.93rem;line-height:1.45;display:flex;gap:10px;align-items:flex-start}
+    .diff-them{background:#262626;color:#999}
+    .diff-them>span:first-child{color:#b3543f;font-weight:800}
+    .diff-us{background:#f6f4ec;color:#1a1a1a;font-weight:500}
+    .diff-us>span:first-child{color:#7a8c00;font-weight:800}
+    .diff-kicker{max-width:680px;margin:30px auto 0;text-align:center;color:#ddd;font-size:.98rem;border-top:1px dashed #3a3a3a;padding-top:24px}
+    @media(max-width:720px){.diff-row{grid-template-columns:1fr;gap:6px;margin-bottom:16px}}
     .why-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.06)}
     .why-icon{flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#f8f7f4;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
     .why-card h3{font-size:1rem;margin-bottom:4px}
@@ -1237,6 +1247,32 @@
         <div class="why-card fade-up"><div class="why-icon">&#127912;</div><div><h3  data-i18n="home.why.design.h">Aide au design gratuite</h3><p  data-i18n="home.why.design.p">Retouches, maquettes et designs complets sans frais supplémentaires.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#128176;</div><div><h3  data-i18n="home.why.bulk.h">Prix de volume et récurrents</h3><p  data-i18n="home.why.bulk.p">Rabais sur volume + forfaits entreprises pour commandes récurrentes.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#127968;</div><div><h3  data-i18n="home.why.inhouse.h">100% sur place</h3><p  data-i18n="home.why.inhouse.p">DTG, DTF et broderie sous un même toit. Aucune sous-traitance.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DIFFERENTIATOR — "the print shop problem" comparison.
+       Condensed version of /why-us: name the pains everyone recognizes,
+       answer each one, close with the risk-reversal line. ===== -->
+  <section class="section" id="why-switch" style="background:#1a1a1a;color:#fff">
+    <div class="container">
+      <div class="text-center">
+        <span class="label" style="color:#e8ff3c"  data-i18n="home.diff.label">Le problème des imprimeries</span>
+        <h2 style="color:#fff"  data-i18n="home.diff.h2">La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes.</h2>
+        <p style="color:#aaa;max-width:560px;margin:12px auto 40px"  data-i18n="home.diff.sub">Si vous avez déjà commandé des chandails, vous connaissez le refrain. Voici comment on l'a rendu obsolète.</p>
+      </div>
+      <div class="diff-grid">
+        <div class="diff-row"><div class="diff-them"><span>&#10007;</span> <span  data-i18n="home.diff.r1.them">« Appelez pour les prix »</span></div><div class="diff-us"><span>&#10003;</span> <span  data-i18n="home.diff.r1.us">Prix en direct sur 1 100+ produits — avant même de parler à quelqu'un</span></div></div>
+        <div class="diff-row"><div class="diff-them"><span>&#10007;</span> <span  data-i18n="home.diff.r2.them">Minimums de 24 pièces</span></div><div class="diff-us"><span>&#10003;</span> <span  data-i18n="home.diff.r2.us">Aucun minimum. On en imprime un seul.</span></div></div>
+        <div class="diff-row"><div class="diff-them"><span>&#10007;</span> <span  data-i18n="home.diff.r3.them">Premier aperçu au ramassage — on croise les doigts</span></div><div class="diff-us"><span>&#10003;</span> <span  data-i18n="home.diff.r3.us">Maquette en ~1 heure + un vrai échantillon que vous approuvez avant la production</span></div></div>
+        <div class="diff-row"><div class="diff-them"><span>&#10007;</span> <span  data-i18n="home.diff.r4.them">Frais de montage découverts sur la facture</span></div><div class="diff-us"><span>&#10003;</span> <span  data-i18n="home.diff.r4.us">Le prix de la soumission est le prix que vous payez</span></div></div>
+        <div class="diff-row"><div class="diff-them"><span>&#10007;</span> <span  data-i18n="home.diff.r5.them">Sous-traité on ne sait où</span></div><div class="diff-us"><span>&#10003;</span> <span  data-i18n="home.diff.r5.us">100 % sur place, dans un atelier où vous pouvez entrer</span></div></div>
+        <div class="diff-row"><div class="diff-them"><span>&#10007;</span> <span  data-i18n="home.diff.r6.them">« C'est le fichier qui était comme ça »</span></div><div class="diff-us"><span>&#10003;</span> <span  data-i18n="home.diff.r6.us">Impression ratée ? Réimprimée ou remplacée. Point.</span></div></div>
+      </div>
+      <p class="diff-kicker"  data-i18n="home.diff.kicker">Au pire : vous repartez avec une maquette gratuite et un vrai prix, en sachant exactement combien ça devrait coûter. Le risque est de notre côté de la table — c'est voulu.</p>
+      <div class="text-center" style="margin-top:28px">
+        <a href="/fr/quote" class="btn btn-accent"  data-i18n="home.diff.cta">Soumission gratuite &rarr;</a>
+        <div style="margin-top:14px"><a href="/fr/why-us" style="color:#e8ff3c;font-weight:600;font-size:.92rem;text-decoration:underline;text-underline-offset:3px"  data-i18n="home.diff.more">Voir la comparaison complète &rarr;</a></div>
       </div>
     </div>
   </section>
