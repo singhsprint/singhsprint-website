@@ -118,7 +118,7 @@
       box-shadow:none;
     }
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-    .hero h1{margin-bottom:16px}
+    .hero h1{margin-bottom:16px;font-size:clamp(2.2rem,3.5vw,3.4rem)}
     .hero h1 .accent{color:#555}
     .hero .subhead{margin-bottom:28px}
     .hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
@@ -1230,7 +1230,7 @@
         <div class="process-step fade-up"><div class="step-num">1</div><h3 data-i18n="home.hiw.step1.h">Tell us what you need</h3><p data-i18n="home.hiw.step1.p">Fill out the quote form with your design, product, and quantity.</p></div>
         <div class="process-step fade-up"><div class="step-num">2</div><h3 data-i18n="home.hiw.step2.h">Get your quote</h3><p data-i18n="home.hiw.step2.p">We confirm specs, timeline, and pricing. No surprises, no hidden fees.</p></div>
         <div class="process-step fade-up"><div class="step-num">3</div><h3 data-i18n="home.hiw.step3.h">Approve your sample</h3><p data-i18n="home.hiw.step3.p">We print a real physical sample. You check everything before the full run.</p></div>
-        <div class="process-step fade-up"><div class="step-num">4</div><h3>Pick up or get it shipped</h3><p>Local West Island pickup or Canada-wide shipping. Most orders in 2-4 days.</p></div>
+        <div class="process-step fade-up"><div class="step-num">4</div><h3 data-i18n="home.hiw.step4.h">Pick up or get it shipped</h3><p data-i18n="home.hiw.step4.p">Local West Island pickup or Canada-wide shipping. Most orders in 2-4 days.</p></div>
       </div>
     </div>
   </section>
@@ -1243,12 +1243,10 @@
         <h2 data-i18n="home.why.h2">Built for brands that care about quality</h2>
       </div>
       <div class="why-grid">
-        <div class="why-card fade-up"><div class="why-icon">&#128737;</div><div><h3 data-i18n="home.why.guarantee.h">Satisfaction guarantee</h3><p data-i18n="home.why.guarantee.p">If there's a print issue or defect, we reprint or replace it. Period.</p></div></div>
-        <div class="why-card fade-up"><div class="why-icon">&#128230;</div><div><h3 data-i18n="home.why.sample.h">Sample before production</h3><p data-i18n="home.why.sample.p">Every order gets a physical sample. You never pay for a full run unseen.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#9889;</div><div><h3 data-i18n="home.why.turnaround.h">2-4 day turnaround</h3><p data-i18n="home.why.turnaround.p">Most orders done in days. Rush options with same-day Montreal pickup.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#127912;</div><div><h3 data-i18n="home.why.design.h">Free design help</h3><p data-i18n="home.why.design.p">Cleanups, mockups, and full designs at no extra charge.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#128176;</div><div><h3 data-i18n="home.why.bulk.h">Bulk &amp; recurring pricing</h3><p data-i18n="home.why.bulk.p">Discounts for volume + business packages for ongoing orders.</p></div></div>
-        <div class="why-card fade-up"><div class="why-icon">&#127968;</div><div><h3 data-i18n="home.why.inhouse.h">100% in-house</h3><p data-i18n="home.why.inhouse.p">DTG, DTF, and embroidery under one roof. No outsourcing.</p></div></div>
+        
       </div>
     </div>
   </section>
@@ -1326,9 +1324,8 @@
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
       <h3 data-i18n="home.popup.h3" data-promo="popup-h3">Get $20 off your first order of $100+</h3>
-      <p data-i18n="home.popup.p">Drop your name and email to lock in your $20 off — we'll carry it (and you) straight into the quote builder. No spam, no code, no wait.</p>
+      <p data-i18n="home.popup.p">Drop your email and we carry your $20 off straight into the quote builder. No spam, no code, nothing to retype.</p>
       <form id="popupForm" class="popup-form" onsubmit="submitPopup(event)" novalidate>
-        <input type="text"  name="name"  placeholder="Your name" data-i18n-placeholder="home.popup.name" required maxlength="120" autocomplete="name">
         <input type="email" name="email" placeholder="you@example.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">
         <button type="submit" class="btn btn-accent popup-cta" data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Start my quote &rarr;</button>
       </form>
@@ -1367,11 +1364,21 @@
     // then redirects to /quote with the promo slug attached.
     var SP_PROMO_SLUG    = 'first-order-20-off-100';
     var SP_INBOUND_API   = 'https://singhsprint-crm.vercel.app/api/inbound';
-    var SP_POPUP_DELAY_MS = 8000;
+    var SP_POPUP_DELAY_MS = 15000;
 
     function closePopup(){
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
+      // Remember the dismissal for a week. Re-showing the same popup on
+      // every visit is the fastest way to make the site feel pushy.
+      try { localStorage.setItem('sp_popup_dismissed_at', String(Date.now())); } catch(_) {}
+    }
+    function spPopupDismissed(){
+      try {
+        if (sessionStorage.getItem('popupClosed')) return true;
+        var t = parseInt(localStorage.getItem('sp_popup_dismissed_at') || '0', 10);
+        return !!t && (Date.now() - t) < 7*24*3600*1000;
+      } catch(_) { return false; }
     }
     // "Maybe later" — still attach the promo via sessionStorage so a
     // visitor who eventually clicks the hero CTA still gets the banner.
@@ -1382,17 +1389,14 @@
     function submitPopup(e){
       e.preventDefault();
       var form  = e.target;
-      var name  = (form.querySelector('input[name="name"]') || {}).value || '';
-      var email = (form.querySelector('input[name="email"]') || {}).value || '';
-      name = name.trim(); email = email.trim();
+      var email = ((form.querySelector('input[name="email"]') || {}).value || '').trim();
       // Minimal email shape check — HTML5 type="email" already does most of it.
-      if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
         form.reportValidity && form.reportValidity();
         return;
       }
       // 1) Stash for the quote form to prefill + persist across catalog navigation.
       try {
-        sessionStorage.setItem('sp_lead_name',  name);
         sessionStorage.setItem('sp_lead_email', email);
         sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG);
       } catch(_) {}
@@ -1405,7 +1409,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             kind:         'other',
-            contact_name: name,
             email:        email,
             notes:        'Popup capture — visitor opted into the $20-off offer.',
             cart_items:   [],
@@ -1428,7 +1431,7 @@
       // 4) Hand off to the quote builder.
       window.location.href = '/quote?promo=' + encodeURIComponent(SP_PROMO_SLUG);
     }
-    if(!sessionStorage.getItem('popupClosed')){
+    if(!spPopupDismissed()){
       setTimeout(function(){
         document.getElementById('popup').classList.add('show');
       }, SP_POPUP_DELAY_MS);

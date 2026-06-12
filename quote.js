@@ -1100,10 +1100,13 @@
       try {
         var leadName  = sessionStorage.getItem('sp_lead_name');
         var leadEmail = sessionStorage.getItem('sp_lead_email');
+        var leadPhone = sessionStorage.getItem('sp_lead_phone');
         var nameInp   = document.querySelector('input[name="name"]');
         var emailInp  = document.querySelector('input[name="email"]');
+        var phoneInp  = document.querySelector('input[name="phone"]');
         if (leadName  && nameInp  && !nameInp.value)  nameInp.value  = leadName;
         if (leadEmail && emailInp && !emailInp.value) emailInp.value = leadEmail;
+        if (leadPhone && phoneInp && !phoneInp.value) phoneInp.value = leadPhone;
       } catch (_) {}
     });
     var presetSizeByLocation = { front: 'medium', back: 'large', 'left-sleeve': 'left-chest', 'right-sleeve': 'right-chest' };

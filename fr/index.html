@@ -119,7 +119,7 @@
       box-shadow:none;
     }
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-    .hero h1{margin-bottom:16px}
+    .hero h1{margin-bottom:16px;font-size:clamp(2.2rem,3.5vw,3.4rem)}
     .hero h1 .accent{color:#555}
     .hero .subhead{margin-bottom:28px}
     .hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
@@ -1226,9 +1226,9 @@
       </div>
       <div class="process-grid">
         <div class="process-step fade-up"><div class="step-num">1</div><h3  data-i18n="home.hiw.step1.h">Dites-nous ce qu'il vous faut</h3><p  data-i18n="home.hiw.step1.p">Remplissez un formulaire rapide ou envoyez-nous un message. Incluez votre design, vos préférences et la quantité.</p></div>
-        <div class="process-step fade-up"><div class="step-num">2</div><h3  data-i18n="home.hiw.step2.h">On prépare et échantillonne</h3><p  data-i18n="home.hiw.step2.p">Notre studio prépare votre visuel pour l'impression. Vous approuvez un échantillon physique avant la production.</p></div>
-        <div class="process-step fade-up"><div class="step-num">3</div><h3  data-i18n="home.hiw.step3.h">Ramassage ou livraison</h3><p  data-i18n="home.hiw.step3.p">La plupart des commandes prêtes en 2 à 4 jours ouvrables. Ramassage local dans l'Ouest-de-l'Île ou livraison à Montréal.</p></div>
-        <div class="process-step fade-up"><div class="step-num">4</div><h3>Pick up or get it shipped</h3><p>Local West Island pickup or Canada-wide shipping. Most orders in 2-4 days.</p></div>
+        <div class="process-step fade-up"><div class="step-num">2</div><h3  data-i18n="home.hiw.step2.h">Recevez votre soumission</h3><p  data-i18n="home.hiw.step2.p">On confirme les détails, l'échéancier et le prix. Pas de surprises, pas de frais cachés.</p></div>
+        <div class="process-step fade-up"><div class="step-num">3</div><h3  data-i18n="home.hiw.step3.h">Approuvez votre échantillon</h3><p  data-i18n="home.hiw.step3.p">On imprime un véritable échantillon physique. Vous vérifiez tout avant la production complète.</p></div>
+        <div class="process-step fade-up"><div class="step-num">4</div><h3  data-i18n="home.hiw.step4.h">Ramassage ou expédition</h3><p  data-i18n="home.hiw.step4.p">Ramassage local dans l'Ouest-de-l'Île ou expédition partout au Canada. La plupart des commandes en 2 à 4 jours.</p></div>
       </div>
     </div>
   </section>
@@ -1241,12 +1241,10 @@
         <h2  data-i18n="home.why.h2">Conçu pour les marques qui se soucient de la qualité</h2>
       </div>
       <div class="why-grid">
-        <div class="why-card fade-up"><div class="why-icon">&#128737;</div><div><h3  data-i18n="home.why.guarantee.h">Garantie de satisfaction</h3><p  data-i18n="home.why.guarantee.p">S'il y a un problème d'impression ou un défaut, on réimprime ou on remplace. Point final.</p></div></div>
-        <div class="why-card fade-up"><div class="why-icon">&#128230;</div><div><h3  data-i18n="home.why.sample.h">Échantillon avant production</h3><p  data-i18n="home.why.sample.p">Chaque commande inclut un échantillon physique. Vous ne payez jamais une commande complète sans l'avoir vue.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#9889;</div><div><h3  data-i18n="home.why.turnaround.h">Délai de 2 à 4 jours</h3><p  data-i18n="home.why.turnaround.p">La plupart des commandes en quelques jours. Options urgentes avec ramassage le jour même à Montréal.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#127912;</div><div><h3  data-i18n="home.why.design.h">Aide au design gratuite</h3><p  data-i18n="home.why.design.p">Retouches, maquettes et designs complets sans frais supplémentaires.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon">&#128176;</div><div><h3  data-i18n="home.why.bulk.h">Prix de volume et récurrents</h3><p  data-i18n="home.why.bulk.p">Rabais sur volume + forfaits entreprises pour commandes récurrentes.</p></div></div>
-        <div class="why-card fade-up"><div class="why-icon">&#127968;</div><div><h3  data-i18n="home.why.inhouse.h">100% sur place</h3><p  data-i18n="home.why.inhouse.p">DTG, DTF et broderie sous un même toit. Aucune sous-traitance.</p></div></div>
+        
       </div>
     </div>
   </section>
@@ -1324,9 +1322,8 @@
     <div class="popup">
       <button class="popup-close" onclick="closePopup()">&times;</button>
       <h3  data-i18n="home.popup.h3" data-promo="popup-h3">Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus</h3>
-      <p  data-i18n="home.popup.p">Votre rabais de 20 $ s'applique automatiquement dès que vous démarrez votre soumission. Aucun code, aucune inscription, aucune attente.</p>
+      <p  data-i18n="home.popup.p">Laissez votre courriel et on transfère votre rabais de 20 $ directement dans la soumission. Pas de spam, pas de code, rien à retaper.</p>
       <form id="popupForm" class="popup-form" onsubmit="submitPopup(event)" novalidate>
-        <input type="text"  name="name"  placeholder="Your name" data-i18n-placeholder="home.popup.name" required maxlength="120" autocomplete="name">
         <input type="email" name="email" placeholder="you@example.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">
         <button type="submit" class="btn btn-accent popup-cta"  data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Démarrer ma soumission →</button>
       </form>
@@ -1365,11 +1362,21 @@
     // then redirects to /quote with the promo slug attached.
     var SP_PROMO_SLUG    = 'first-order-20-off-100';
     var SP_INBOUND_API   = 'https://singhsprint-crm.vercel.app/api/inbound';
-    var SP_POPUP_DELAY_MS = 8000;
+    var SP_POPUP_DELAY_MS = 15000;
 
     function closePopup(){
       document.getElementById('popup').classList.remove('show');
       sessionStorage.setItem('popupClosed','1');
+      // Remember the dismissal for a week. Re-showing the same popup on
+      // every visit is the fastest way to make the site feel pushy.
+      try { localStorage.setItem('sp_popup_dismissed_at', String(Date.now())); } catch(_) {}
+    }
+    function spPopupDismissed(){
+      try {
+        if (sessionStorage.getItem('popupClosed')) return true;
+        var t = parseInt(localStorage.getItem('sp_popup_dismissed_at') || '0', 10);
+        return !!t && (Date.now() - t) < 7*24*3600*1000;
+      } catch(_) { return false; }
     }
     // "Maybe later" — still attach the promo via sessionStorage so a
     // visitor who eventually clicks the hero CTA still gets the banner.
@@ -1380,17 +1387,14 @@
     function submitPopup(e){
       e.preventDefault();
       var form  = e.target;
-      var name  = (form.querySelector('input[name="name"]') || {}).value || '';
-      var email = (form.querySelector('input[name="email"]') || {}).value || '';
-      name = name.trim(); email = email.trim();
+      var email = ((form.querySelector('input[name="email"]') || {}).value || '').trim();
       // Minimal email shape check — HTML5 type="email" already does most of it.
-      if(!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
         form.reportValidity && form.reportValidity();
         return;
       }
       // 1) Stash for the quote form to prefill + persist across catalog navigation.
       try {
-        sessionStorage.setItem('sp_lead_name',  name);
         sessionStorage.setItem('sp_lead_email', email);
         sessionStorage.setItem('sp_promo_slug', SP_PROMO_SLUG);
       } catch(_) {}
@@ -1403,7 +1407,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             kind:         'other',
-            contact_name: name,
             email:        email,
             notes:        'Popup capture — visitor opted into the $20-off offer.',
             cart_items:   [],
@@ -1426,7 +1429,7 @@
       // 4) Hand off to the quote builder.
       window.location.href = '/quote?promo=' + encodeURIComponent(SP_PROMO_SLUG);
     }
-    if(!sessionStorage.getItem('popupClosed')){
+    if(!spPopupDismissed()){
       setTimeout(function(){
         document.getElementById('popup').classList.add('show');
       }, SP_POPUP_DELAY_MS);

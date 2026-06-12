@@ -130,15 +130,20 @@ var SP_LANG = (function() {
       en: 'Fill out a quick form or send us a message. Include your design, garment preferences, and quantity.',
       fr: 'Remplissez un formulaire rapide ou envoyez-nous un message. Incluez votre design, vos préférences et la quantité.'
     },
-    'home.hiw.step2.h': { en: 'We prep & sample', fr: 'On prépare et échantillonne' },
+    'home.hiw.step2.h': { en: 'Get your quote', fr: 'Recevez votre soumission' },
     'home.hiw.step2.p': {
-      en: 'Our design studio preps your artwork for print. You approve a physical sample before we produce the full order.',
-      fr: 'Notre studio prépare votre visuel pour l\'impression. Vous approuvez un échantillon physique avant la production.'
+      en: 'We confirm specs, timeline, and pricing. No surprises, no hidden fees.',
+      fr: 'On confirme les détails, l\'échéancier et le prix. Pas de surprises, pas de frais cachés.'
     },
-    'home.hiw.step3.h': { en: 'Pick up or get it delivered', fr: 'Ramassage ou livraison' },
+    'home.hiw.step3.h': { en: 'Approve your sample', fr: 'Approuvez votre échantillon' },
     'home.hiw.step3.p': {
-      en: 'Most orders ready in 2-4 business days. Local pickup in the West Island or delivery across Montreal.',
-      fr: 'La plupart des commandes prêtes en 2 à 4 jours ouvrables. Ramassage local dans l\'Ouest-de-l\'Île ou livraison à Montréal.'
+      en: 'We print a real physical sample. You check everything before the full run.',
+      fr: 'On imprime un véritable échantillon physique. Vous vérifiez tout avant la production complète.'
+    },
+    'home.hiw.step4.h': { en: 'Pick up or get it shipped', fr: 'Ramassage ou expédition' },
+    'home.hiw.step4.p': {
+      en: 'Local West Island pickup or Canada-wide shipping. Most orders in 2-4 days.',
+      fr: 'Ramassage local dans l\'Ouest-de-l\'Île ou expédition partout au Canada. La plupart des commandes en 2 à 4 jours.'
     },
     'home.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'home.cta.p': {
@@ -211,7 +216,7 @@ var SP_LANG = (function() {
     'home.faq.seeall': { en: 'See all questions →', fr: 'Voir toutes les questions →' },
     // Lead capture popup
     'home.popup.h3':     { en: 'Get $20 off your first order of $100+', fr: 'Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus' },
-    'home.popup.p':      { en: 'Your $20 off is applied automatically when you start your quote. No code, no email signup, no waiting.', fr: "Votre rabais de 20 $ s'applique automatiquement dès que vous démarrez votre soumission. Aucun code, aucune inscription, aucune attente." },
+    'home.popup.p':      { en: 'Drop your email and we carry your $20 off straight into the quote builder. No spam, no code, nothing to retype.', fr: "Laissez votre courriel et on transfère votre rabais de 20 $ directement dans la soumission. Pas de spam, pas de code, rien à retaper." },
     'home.popup.cta':    { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
     'home.popup.skip':   { en: 'Maybe later', fr: 'Plus tard' },
     // Unused after slice "popup → quote builder", kept so older cached pages
