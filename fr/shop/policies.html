@@ -36,6 +36,17 @@
     .back{display:inline-block;margin-top:48px;font-size:.95rem;color:#555;border-bottom:1px solid #ccc;padding-bottom:2px}
     .back:hover{color:#1a1a1a;border-color:#1a1a1a}
   </style>
+  <!-- Meta Pixel (Singhs Print) — sitewide base code, consent-gated (added 2026-06-12).
+       This page does not load components.js, so it gets the inline snippet. -->
+  <script>
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  try { fbq('consent', (localStorage.getItem('sp_consent') === 'granted') ? 'grant' : 'revoke'); }
+  catch (e) { fbq('consent', 'revoke'); }
+  fbq('init', '1198620955711122');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1198620955711122&ev=PageView&noscript=1"/></noscript>
+
 </head>
 <body>
   <div class="topbar">

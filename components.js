@@ -75,6 +75,35 @@
   document.head.appendChild(cfg);
 })();
 
+// ---------------------------------------------------------------------
+// Meta Pixel — sitewide bootstrap (added 2026-06-12).
+// Previously the base Pixel was inlined on /quote + a handful of industry
+// and guide pages only, so Meta never saw a PageView on the homepage or
+// the catalog pages (window.fbq was undefined there) — blinding ad
+// delivery to most of the funnel. This boots the standard base code on
+// every page that loads components.js, mirroring the gtag bootstrap
+// above, with the same Quebec Law 25 consent gating as the inline
+// snippets: events are held (revoke) until the visitor accepts via the
+// banner — consent.js then calls fbq('consent','grant').
+// Pages that still inline the snippet in <head> are safe: fbq already
+// exists by the time this runs, so it skips itself — one init and one
+// PageView per page load, never two.
+// ---------------------------------------------------------------------
+(function loadMetaPixel() {
+  if (window.fbq) return; // page already inlined the base snippet — skip
+  var PIXEL_ID = '1198620955711122'; // SP_PIXEL — same ID as the /quote inline snippet
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  var granted = false;
+  try { granted = localStorage.getItem('sp_consent') === 'granted'; } catch (e) {}
+  try { window.fbq('consent', granted ? 'grant' : 'revoke'); } catch (e) {}
+  window.fbq('init', PIXEL_ID);
+  window.fbq('track', 'PageView');
+})();
+
 // Inject /promo.js once per page so [data-promo] elements get the live copy
 // from the CRM (https://singhsprint-crm.vercel.app/api/promo). Putting this
 // here means every page that loads components.js automatically picks up the
