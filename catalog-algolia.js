@@ -53,6 +53,28 @@
     var p = (typeof h.price_from === 'number' && h.price_from > 0) ? h.price_from : null;
     if (qty && h.prices_by_qty) {
       var t = h.prices_by_qty[qty] || h.prices_by_qty[String(qty)];
+      // Custom quantities typed into the "Custom" box (e.g. 3, 37, 73) aren't
+      // one of the precomputed tiers (5/10/25/50/100/200/500), so the exact
+      // lookup misses and the card used to fall back to the default qty-50
+      // price_from — the per-unit price never moved for those quantities.
+      // Resolve to the correct band instead: volume pricing holds until the
+      // next break, so use the largest tier <= qty; for qty below the smallest
+      // tier, use the smallest tier (you can't price below the minimum break).
+      if (!(typeof t === 'number' && t > 0)) {
+        var tiers = Object.keys(h.prices_by_qty)
+          .map(Number)
+          .filter(function (k) { return Number.isFinite(k) && h.prices_by_qty[k] > 0; })
+          .sort(function (a, b) { return a - b; });
+        var chosen = null;
+        for (var ti = 0; ti < tiers.length; ti++) {
+          if (tiers[ti] <= qty) chosen = tiers[ti];
+        }
+        if (chosen == null && tiers.length) chosen = tiers[0];
+        if (chosen != null) {
+          var ct = h.prices_by_qty[chosen];
+          if (typeof ct === 'number' && ct > 0) t = ct;
+        }
+      }
       if (typeof t === 'number' && t > 0) p = t;
     }
     return {
