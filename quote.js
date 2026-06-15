@@ -2302,6 +2302,33 @@
       return 'single';
     }
 
+    // CRM-sourced "starting at" price for the selected garment CATEGORY when
+    // no specific blank has been picked. Calls /api/pricing?category=… which
+    // returns the published base price from pricing_configs — the same number
+    // the catalog's "From $X" floor uses — so the no-blank estimate matches the
+    // CRM instead of the old hardcoded b2bPricing/b2cPricing tables. cb gets the
+    // per-unit number, or null on any failure (callers fall back to the table).
+    var _startingPriceCache = {};
+    function fetchCategoryStartingPrice(cb, qtyOverride) {
+      var garment = state.garment;
+      var qty = qtyOverride || (parseInt(document.getElementById('sizeTotal').textContent, 10) || 0);
+      var sides = parseInt(document.getElementById('printCountInput').value, 10) || 1;
+      var method = (state.service || 'dtf').toLowerCase();
+      if (!garment || qty < 1) { cb(null); return; }
+      var key = garment + '|' + qty + '|' + sides + '|' + method;
+      if (_startingPriceCache[key] != null) { cb(_startingPriceCache[key]); return; }
+      fetch(PRICING_API_FOR_QUOTE +
+        '?category=' + encodeURIComponent(garment) +
+        '&qty=' + qty + '&sides=' + sides +
+        '&decoration_method=' + encodeURIComponent(method)
+      ).then(function (r) { return r.ok ? r.json() : null; })
+       .then(function (d) {
+         var unit = (d && typeof d.unit_price === 'number') ? d.unit_price : null;
+         if (unit != null) _startingPriceCache[key] = unit;
+         cb(unit);
+       }).catch(function () { cb(null); });
+    }
+
     function getPricePerUnit() {
       var product = state.garment;
       var service = state.service;
@@ -2346,9 +2373,9 @@
     // calculatePrice(). The "isLive" badge is added when the number came
     // from the engine (so the customer knows it's a real quote-quality
     // estimate, not a generic placeholder).
-    function renderPriceDisplay(qty, perUnit, isLive) {
+    function renderPriceDisplay(qty, perUnit, isLive, startingAt) {
       // Update the live-price strip that's always visible across steps.
-      updateLivePriceStrip(qty, perUnit, isLive);
+      updateLivePriceStrip(qty, perUnit, isLive, startingAt);
 
       if (!qty || !perUnit) {
         document.getElementById('priceSection').style.display = 'none';
@@ -2363,13 +2390,18 @@
       document.getElementById('paymentSection').style.display = 'block';
       var liveTag = isLive
         ? '<span style="font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:50px;background:#e8ff3c;color:#1a1a1a;margin-left:6px;vertical-align:middle">live</span>'
-        : '';
+        : (startingAt
+          ? '<span style="font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:50px;background:#1a1a1a;color:#e8ff3c;margin-left:6px;vertical-align:middle">starting at</span>'
+          : '');
+      // When showing a category "starting at" price (no blank chosen yet), the
+      // per-unit row reads "Starting at" so the customer knows it's a floor.
+      var unitLabel = startingAt ? 'Starting at' : 'Per unit';
       var surRow = sur.surchargeTotal > 0
         ? '<div class="price-row"><span>2XL+ surcharge (' + sur.count + ' pc × $3):</span><span>$' + sur.surchargeTotal.toFixed(2) + '</span></div>'
         : '';
       var breakdown = document.getElementById('priceBreakdown');
       breakdown.innerHTML =
-        '<div class="price-row"><span>Per unit ' + liveTag + ':</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
+        '<div class="price-row"><span>' + unitLabel + ' ' + liveTag + ':</span><span>$' + perUnit.toFixed(2) + '</span></div>' +
         '<div class="price-row"><span>Quantity:</span><span>' + qty + ' units</span></div>' +
         surRow;
       document.getElementById('priceTotal').textContent = '$' + total.toFixed(2);
@@ -2377,7 +2409,7 @@
 
     // Top-of-form live price strip — visible whenever a catalog product is
     // picked. Updates with sides on Step 1 and qty on Step 2.
-    function updateLivePriceStrip(qty, perUnit, isLive) {
+    function updateLivePriceStrip(qty, perUnit, isLive, startingAt) {
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
       if (!catalogPick) {
@@ -2385,8 +2417,10 @@
         // so don't hide it just because there's no single catalogPick.
         var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
         if (cartHasItems) { updateCartTotal(); return; }
-        strip.style.display = 'none';
-        return;
+        // No blank picked: if we have a category "starting at" price (the
+        // customer chose a garment type), keep the strip visible and fall
+        // through to render it; otherwise hide it as before.
+        if (!(startingAt && perUnit > 0)) { strip.style.display = 'none'; return; }
       }
       strip.style.display = 'block';
       // Make sure the "/unit" suffix is visible — cart mode hides it.
@@ -2396,9 +2430,10 @@
       if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
+      var tail = startingAt ? ' · starting at' : (isLive ? '' : ' · est.');
       var qtyLabel = qty && qty > 0
-        ? (qty + ' units · ' + sides + ' side' + (sides>1?'s':'') + (isLive ? '' : ' · est.'))
-        : ('pick qty in Step 2 · ' + sides + ' side' + (sides>1?'s':''));
+        ? (qty + ' units · ' + sides + ' side' + (sides>1?'s':'') + tail)
+        : ('pick qty in Step 2 · ' + sides + ' side' + (sides>1?'s':'') + (startingAt ? ' · starting at' : ''));
       document.getElementById('livePriceQty').textContent = qtyLabel;
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (qty && perUnit) {
@@ -2413,7 +2448,20 @@
     // When sides change on Step 1 (before any qty is entered), still fetch
     // a live per-unit at the top tier so the strip shows something useful.
     function fetchAndRenderTopTierEstimate() {
-      if (!catalogPick || !catalogPick.product_id) { updateLivePriceStrip(0, 0, false); return; }
+      if (!catalogPick || !catalogPick.product_id) {
+        // No blank picked — if a garment type is chosen, show that category's
+        // CRM "starting at" price in the strip (priced at the bulk tier, like
+        // the catalog's "From $X" floor). Otherwise leave the strip empty.
+        if (state.garment) {
+          fetchCategoryStartingPrice(function (u) {
+            if (typeof u === 'number' && u > 0) updateLivePriceStrip(0, u, false, true);
+            else updateLivePriceStrip(0, 0, false);
+          }, 200);
+        } else {
+          updateLivePriceStrip(0, 0, false);
+        }
+        return;
+      }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       fetch(PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(catalogPick.product_id) +
@@ -2452,6 +2500,20 @@
         });
         return;
       }
+
+      // No catalog blank picked yet. Kick off the CRM "starting at" lookup
+      // (async): the moment it returns it overrides the static-table number
+      // below with the real published base price for this garment category —
+      // and reveals the price section even when the static table had no entry
+      // for this garment. The static path still runs synchronously so the
+      // customer sees a number instantly while the CRM call is in flight.
+      fetchCategoryStartingPrice(function (startUnit) {
+        if (typeof startUnit === 'number' && startUnit > 0) {
+          renderPriceDisplay(qty, startUnit, false, true);
+          var pn = document.getElementById('pricingNote');
+          if (pn) pn.textContent = 'Starting price • pick a blank for an exact quote';
+        }
+      });
 
       var perUnit = getPricePerUnit();
       if (!perUnit) {
