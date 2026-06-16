@@ -868,7 +868,7 @@ var SP_LANG = (function() {
     'jersey.cz.back':         { en: 'Back',             fr: 'Dos' },
     'jersey.cz.sizes':        { en: 'Sizes',            fr: 'Tailles' },
     'jersey.cz.logosize':     { en: 'Logo size',        fr: 'Taille du logo' },
-    'jersey.cz.removebg':     { en: 'Remove white background', fr: 'Retirer le fond blanc' },
+    'jersey.cz.removebg':     { en: 'Remove background', fr: 'Retirer le fond' },
     'jersey.cz.draghint':     { en: 'Drag the logo on the jersey to position it.', fr: 'Glissez le logo sur le maillot pour le positionner.' },
     // Jersey line item on the quote page.
     'quote.cart.jersey.subtotal':     { en: 'subtotal',     fr: 'sous-total' },
@@ -916,7 +916,7 @@ var SP_LANG = (function() {
     'cat.detail.uploadtopreview': { en: 'Upload artwork to preview it on the garment.', fr: 'Téléversez un visuel pour le voir sur le vêtement.' },
     'cat.detail.uploadtosee': { en: 'Upload artwork to see it here', fr: 'Téléversez un visuel pour le voir ici' },
     'cat.detail.designsize': { en: 'Size', fr: 'Taille' },
-    'cat.detail.removebg': { en: 'Remove white background', fr: 'Retirer le fond blanc' },
+    'cat.detail.removebg': { en: 'Remove background', fr: 'Retirer le fond' },
     'cat.detail.printmethod': { en: 'Print method', fr: 'Méthode d\'impression' },
     'cat.detail.whereprint': { en: 'Where to print', fr: 'Emplacements' },
     'cat.detail.artwork': { en: 'Your artwork', fr: 'Votre visuel' },

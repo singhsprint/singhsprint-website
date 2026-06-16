@@ -781,7 +781,7 @@
         '</div>' +
         '<label class="dmcz__rmbg">' +
           '<input type="checkbox" id="dmczRemoveBg"' + (_dmczState.removeBg ? ' checked' : '') + '> ' +
-          '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Remove white background') + '</span>' +
+          '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Remove background') + '</span>' +
         '</label>' +
       '</div>' : '';
 

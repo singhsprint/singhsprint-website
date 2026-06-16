@@ -3027,7 +3027,7 @@
           '<div class="sp-cz-stage"><img class="sp-cz-garment" alt="garment"/><img class="sp-cz-art" alt="your design" draggable="false"/></div>' +
           '<div class="sp-cz-ctl">' +
             '<div class="sp-cz-row"><span>Size</span><input type="range" min="0.08" max="0.9" step="0.01"></div>' +
-            '<label class="sp-cz-row" style="cursor:pointer"><input type="checkbox" class="sp-cz-bg"> Remove white background around my logo</label>' +
+            '<label class="sp-cz-row" style="cursor:pointer"><input type="checkbox" class="sp-cz-bg"> Remove background around my logo</label>' +
           '</div>' +
           '<div class="sp-cz-foot">' +
             '<span class="sp-cz-status">Drag your art, set the size, then preview.</span>' +
