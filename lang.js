@@ -57,8 +57,8 @@ var SP_LANG = (function() {
 
     // ===== FOOTER =====
     'footer.brand': {
-      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open 7 days, 9AM\u20139PM.",
-      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert 7 jours, 9h à 21h."
+      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open Mon–Sat, 9AM\u20136PM.",
+      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert du lundi au samedi, 9h à 18h."
     },
     'footer.pages': { en: 'Pages', fr: 'Pages' },
     'footer.home': { en: 'Home', fr: 'Accueil' },
@@ -84,7 +84,7 @@ var SP_LANG = (function() {
     'footer.cookieprefs': { en: 'Cookie preferences', fr: 'Préférences de témoins' },
 
     // ===== INDEX / HOME =====
-    'home.badge': { en: 'Open 7 days | West Island, Montreal', fr: 'Ouvert 7 jours | Ouest-de-l\'Île, Montréal' },
+    'home.badge': { en: 'Mon–Sat 9–6 | West Island, Montreal', fr: 'Lun–Sam 9h–18h | Ouest-de-l\'Île, Montréal' },
     'home.hero.h1': {
       en: 'Custom T-Shirt &amp; Hoodie<br>Printing + Embroidery<br>in <span class="accent">Montreal</span>',
       fr: 'Impression de t-shirts<br>et hoodies + broderie<br>à <span class="accent">Montréal</span>'
@@ -310,7 +310,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r6.them': { en: "Print came out wrong? &ldquo;That's how the file was.&rdquo;", fr: 'Impression ratée ? « C\'est le fichier qui était comme ça. »' },
     'whyus.cmp.r6.us': { en: '<strong>Print issue or defect? We reprint or replace it. Period.</strong> No form, no fight.', fr: '<strong>Défaut d\'impression ? On réimprime ou on remplace. Point.</strong> Pas de formulaire, pas de chicane.' },
     'whyus.risk.h2': { en: "Here's the worst that can happen.", fr: 'Voici le pire qui puisse arriver.' },
-    'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;9pm, 7 days a week. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 21 h, 7 jours sur 7. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
+    'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;6pm, Monday to Saturday. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 18 h, du lundi au samedi. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
     'whyus.risk.p2': { en: 'If you do order: $20 off your first order of $100+, a printed sample before the full run, and a reprint guarantee after it.', fr: 'Si vous commandez : 20 $ de rabais sur votre première commande de 100 $+, un échantillon imprimé avant la production, et une garantie de réimpression après.' },
     'whyus.risk.kicker': { en: "The risk lives on our side of the table. That's on purpose.", fr: 'Le risque est de notre côté de la table. C\'est voulu.' },
     'whyus.proof.rating': { en: '(23 reviews) on Google', fr: '(23 avis) sur Google' },
@@ -441,8 +441,8 @@ var SP_LANG = (function() {
 
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 9PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
-      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours, de 9h à 21h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
+      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open Mon–Sat, 9AM to 6PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
+      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert du lundi au samedi, de 9h à 18h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
@@ -1069,7 +1069,7 @@ var SP_LANG = (function() {
     'quote.contact.hear.opt5': { en: 'Repeat customer', fr: 'Client habitué' },
     'quote.contact.hear.opt6': { en: 'Other', fr: 'Autre' },
     'quote.success.h2': { en: 'Quote request sent!', fr: 'Demande de soumission envoyée !' },
-    'quote.success.p': { en: 'We\'ll send your quote by email within an hour during business hours (9am-9pm). Check your inbox — and spam, just in case.', fr: 'Nous enverrons votre soumission par courriel en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h). Vérifiez votre boîte de réception — et le pourriel, au cas où.' },
+    'quote.success.p': { en: 'We\'ll send your quote by email within an hour during business hours (9am-6pm). Check your inbox — and spam, just in case.', fr: 'Nous enverrons votre soumission par courriel en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h). Vérifiez votre boîte de réception — et le pourriel, au cas où.' },
     'quote.success.btn': { en: 'Back to Home', fr: 'Retour à l\'accueil' },
     'quote.reassure.tag': { en: 'Included with your quote', fr: 'Inclus avec votre soumission' },
     'quote.reassure.title': { en: 'A photoreal mockup, made for you', fr: 'Une maquette photoréaliste, créée pour vous' },
@@ -1077,7 +1077,7 @@ var SP_LANG = (function() {
     'quote.reassure.step1': { en: 'You submit your design &amp; details', fr: 'Vous soumettez votre design et vos détails' },
     'quote.reassure.step2': { en: 'We render the mockup &amp; price the order', fr: 'On rend la maquette et on fixe le prix' },
     'quote.reassure.step3': { en: 'You approve — we print &amp; ship', fr: 'Vous approuvez — on imprime et expédie' },
-    'quote.reassure.foot': { en: 'Usually back within the hour, 9am–9pm.', fr: 'Habituellement en moins d\'une heure, 9 h à 21 h.' },
+    'quote.reassure.foot': { en: 'Usually back within the hour, 9am–6pm.', fr: 'Habituellement en moins d\'une heure, 9 h à 18 h.' },
     'quote.sidebar.shipping.h':    { en: 'Shipping', fr: 'Expédition' },
     'quote.sidebar.shipping.sub':  { en: 'Enter your postal/zip code for a live shipping quote.', fr: 'Entrez votre code postal pour une estimation en direct.' },
     'quote.sidebar.shipping.btn':  { en: 'Estimate', fr: 'Estimer' },
@@ -1088,10 +1088,10 @@ var SP_LANG = (function() {
     'quote.sidebar.pickup.free': { en: 'FREE \u2014 In-store pickup', fr: 'GRATUIT \u2014 Cueillette en magasin' },
     'quote.sidebar.pickup.note': { en: 'We\u2019ll text or email you when your order is ready for pickup.', fr: 'Nous vous écrirons ou vous appellerons quand votre commande sera prête.' },
     'quote.sidebar.next.h': { en: 'What happens next?', fr: 'Et la suite ?' },
-    'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–9pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h).' },
+    'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–6pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h).' },
     'quote.sidebar.next.p2': { en: 'Once approved, we print a real sample before your full order.', fr: 'Une fois approuvée, on imprime un échantillon physique avant la commande complète.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
-    'quote.sidebar.talk.hours': { en: 'Open 7 days, 9AM – 9PM', fr: 'Ouvert 7 jours, 9 h à 21 h' },
+    'quote.sidebar.talk.hours': { en: 'Open Mon–Sat, 9AM – 6PM', fr: 'Ouvert du lundi au samedi, 9 h à 18 h' },
     'quote.sidebar.promo.h': { en: '$20 off your first order of $100+', fr: '20 $ de rabais sur votre première commande de 100 $ et plus' },
     'quote.sidebar.promo.p': { en: 'Automatically applied to all new customers. No code needed.', fr: 'Appliqué automatiquement à tous les nouveaux clients. Aucun code requis.' },
     'quote.alert.product': { en: 'Please select a product from the catalog.', fr: 'Veuillez sélectionner un produit du catalogue.' },

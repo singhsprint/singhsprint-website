@@ -932,7 +932,7 @@ function loadFooter() {
     + '    <div class="footer-grid" style="grid-template-columns:1.6fr 1fr 1fr 1fr 1fr">'
     + '      <div class="footer-brand">'
     + '        <div class="logo"><span>SINGHS</span><span>PRINT</span></div>'
-    + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open 7 days, 9AM\u20139PM.</p>'
+    + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open Mon\u2013Sat, 9AM\u20136PM.</p>'
     + '      </div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/youth-initiative" data-i18n="footer.youth">Youth Initiative</a><a href="/about" data-i18n="footer.about">About</a><a href="/why-us" data-i18n="footer.whyus">Why us</a></div>'
     + '      <div class="footer-col" data-mobile-hide><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
@@ -993,9 +993,9 @@ function loadSchema() {
         "geo": { "@type": "GeoCoordinates", "latitude": "45.4042", "longitude": "-73.9485" },
         "openingHoursSpecification": [{
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
           "opens": "09:00",
-          "closes": "21:00"
+          "closes": "18:00"
         }],
         "identifier": [
           { "@type": "PropertyValue", "propertyID": "NEQ", "value": "1181573313" },
