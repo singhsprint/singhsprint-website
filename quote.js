@@ -3123,16 +3123,24 @@
         try { artImg.setPointerCapture(e.pointerId); } catch (_) {}
         e.preventDefault();
       });
-      artImg.addEventListener('pointermove', function(e) {
+      // Track moves + release on the WINDOW, not just the captured art image.
+      // On mobile the pointer capture can be lost mid-drag (a system gesture
+      // interrupts the touch), and the pointerup/pointercancel then never reach
+      // artImg — leaving the logo stuck to the finger. Window-level handlers
+      // guarantee the drag both follows and, crucially, always ends. They're
+      // removed in close() so repeated opens don't pile up listeners.
+      function onCzMove(e) {
         if (!grab) return;
         var b = boxes[curP()]; var f = frac(e);
         b.x = clamp(f.px - grab.dx, 0, 1 - b.w);
         b.y = clamp(f.py - grab.dy, 0, 1 - 0.02);
         positionArt();
-      });
+      }
       function endDrag() { grab = null; }
-      artImg.addEventListener('pointerup', endDrag);
-      artImg.addEventListener('pointercancel', endDrag);
+      window.addEventListener('pointermove', onCzMove);
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
+      artImg.addEventListener('lostpointercapture', endDrag);
 
       slider.addEventListener('input', function() {
         var b = boxes[curP()]; var n = Number(slider.value);
@@ -3155,6 +3163,11 @@
         document.body.style.width = _prevBody.width;
         document.body.style.overflow = _prevBody.overflow;
         window.scrollTo(0, _lockY);
+        // Drop the window-level drag listeners added for the customizer so they
+        // don't accumulate across opens or fire after the overlay is gone.
+        window.removeEventListener('pointermove', onCzMove);
+        window.removeEventListener('pointerup', endDrag);
+        window.removeEventListener('pointercancel', endDrag);
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
       }
       overlay.querySelector('.sp-cz-x').onclick = close;

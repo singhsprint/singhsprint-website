@@ -24,6 +24,11 @@
 
     /* Layout */
     .customizer-layout{display:grid;grid-template-columns:1fr 400px;gap:32px;max-width:1200px;margin:0 auto 80px;padding:0 24px;align-items:start}
+    /* Grid items default to min-width:auto, so a long unbreakable filename in
+       the upload card would force the column wider than the screen (horizontal
+       overflow on mobile). min-width:0 lets the column shrink and the filename
+       ellipsis engage. */
+    .customizer-layout > *{min-width:0}
 
     /* Form Card */
     .form-card{background:#fff;border-radius:20px;padding:40px;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,.04)}
