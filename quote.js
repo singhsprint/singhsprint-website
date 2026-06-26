@@ -368,6 +368,22 @@
       // showed $24.95 in this table while the live card showed $34.95).
       if (catalogPick && catalogPick.product_id) {
         if (nameEl) nameEl.textContent = catalogPick.brand + ' ' + catalogPick.style_number;
+        // Fetch REAL per-(colour,size) stock counts for this product. Only S&S
+        // and SanMar return numbers; blanks.ca / Rue Saint-Patrick come back
+        // { trusted:false } so the size grid keeps plain in/out gating. Stored
+        // globally; applySizeStockGating reads it to show "N left" + warn on
+        // over-order for the selected colour.
+        window.__spSizeStock = null;
+        fetch('https://singhsprint-crm.vercel.app/api/catalog/stock?product_id=' + encodeURIComponent(catalogPick.product_id))
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(s){
+            window.__spSizeStock = (s && s.trusted && s.sizes_stock) ? s.sizes_stock : null;
+            var sel = document.querySelector('.color-swatch.selected, .color-option.selected');
+            if (sel && typeof applySizeStockGating === 'function') {
+              applySizeStockGating(sel.getAttribute('data-sizes') || '', sel.getAttribute('data-color-id') || '');
+            }
+          })
+          .catch(function(){ window.__spSizeStock = null; });
         host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Loading tier prices…</p>';
         fetch(PRICING_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(catalogPick.product_id) + '&matrix=1')
           .then(function(r){ return r.ok ? r.json() : null; })
@@ -5117,6 +5133,7 @@
         return '<div class="color-swatch' + selected + oosCls + light +
                '" data-color="' + hex + '" data-color-id="' + c.color_id +
                '" data-color-name="' + escapeAttr(c.color_name) + '"' +
+               ' data-sizes="' + (Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock.join(',') : '') + '"' +
                ' style="background:' + hex + '"' +
                ' onclick="selectProductColor(this)" title="' + escapeAttr(c.color_name) +
                (hasStock ? '' : ' (out of stock)') + '"></div>';
@@ -5143,7 +5160,104 @@
       if (sumCol)  sumCol.textContent = name;
       state.color = hex; state.colorName = name;
       if (typeof updateGarmentShape === 'function') updateGarmentShape();
+      // Gate the per-size order inputs to what's actually in stock for THIS
+      // colour. The catalog knows stock per (colour, size); without this the
+      // size grid let customers order sizes that aren't available.
+      applySizeStockGating(el.getAttribute('data-sizes') || '', el.getAttribute('data-color-id') || '');
     }
+
+    // Disable + zero the size-quantity inputs whose size isn't in stock for
+    // the selected colour, so a customer can't order an unavailable size.
+    // Skips gating when the customer is bringing their own garments (our
+    // stock is irrelevant) or when no stock data is present (don't block on
+    // missing data). Re-enables sizes that are in stock.
+    function applySizeStockGating(sizesCsv, colorId) {
+      var grid = document.querySelector('.size-grid');
+      if (!grid) return;
+      var gsEl = document.querySelector('[name="garment_source"]');
+      var isBYO = gsEl && /byo/i.test(String(gsEl.value || ''));
+      var inStock = String(sizesCsv || '').split(',')
+        .map(function(s){ return s.toUpperCase().trim(); })
+        .filter(Boolean);
+      var gate = !isBYO && inStock.length > 0;
+      // Real per-size quantities for THIS colour — only present for S&S /
+      // SanMar products (window.__spSizeStock is set by the stock fetch).
+      // blanks.ca / Rue Saint-Patrick stay in/out only, so this is null.
+      var stockMap = (!isBYO && window.__spSizeStock && colorId && window.__spSizeStock[colorId])
+        ? window.__spSizeStock[colorId] : null;
+      grid.querySelectorAll('.size-item').forEach(function(item){
+        var labelEl = item.querySelector('label');
+        var input = item.querySelector('input');
+        if (!input || !labelEl) return;
+        var sz = (labelEl.textContent || '').toUpperCase().trim();
+        var oos = gate && inStock.indexOf(sz) === -1;
+        var oosTag = item.querySelector('.oos-tag');
+        var qtyTag = item.querySelector('.stock-left');
+        if (oos) {
+          input.value = '0';
+          input.disabled = true;
+          input.removeAttribute('max');
+          item.style.opacity = '0.4';
+          item.title = sz + ' is out of stock in this colour';
+          delete item.dataset.stockMax;
+          if (qtyTag) qtyTag.remove();
+          if (!oosTag) {
+            oosTag = document.createElement('span');
+            oosTag.className = 'oos-tag';
+            oosTag.textContent = 'out of stock';
+            oosTag.style.cssText = 'display:block;font-size:.58rem;line-height:1.1;color:#c0392b;margin-top:2px';
+            item.appendChild(oosTag);
+          }
+        } else {
+          input.disabled = false;
+          item.style.opacity = '';
+          item.title = '';
+          if (oosTag) oosTag.remove();
+          // Quantity hint (trusted suppliers only).
+          var avail = stockMap ? Number(stockMap[sz]) : NaN;
+          if (isFinite(avail)) {
+            input.setAttribute('max', String(avail));
+            item.dataset.stockMax = String(avail);
+            if (!qtyTag) {
+              qtyTag = document.createElement('span');
+              qtyTag.className = 'stock-left';
+              qtyTag.style.cssText = 'display:block;font-size:.58rem;line-height:1.1;margin-top:2px';
+              item.appendChild(qtyTag);
+            }
+            var over = (Number(input.value) || 0) > avail;
+            qtyTag.textContent = over ? ('only ' + avail + ' in stock') : (avail + ' available');
+            qtyTag.style.color = over ? '#c0392b' : '#9a9a9a';
+          } else {
+            input.removeAttribute('max');
+            delete item.dataset.stockMax;
+            if (qtyTag) qtyTag.remove();
+          }
+        }
+      });
+      if (typeof updateSizeTotal === 'function') updateSizeTotal();
+    }
+    // Live over-order feedback: as the customer types a quantity, recolour the
+    // "N available" hint to red "only N in stock" when they exceed what's on
+    // hand. Soft warning only — we never block the order (daily snapshot can be
+    // stale and we can source more), it just flags it for the rep + customer.
+    (function installStockOverWarn(){
+      if (window.__spStockWarnBound) return;
+      window.__spStockWarnBound = true;
+      // Delegate on document — the .size-grid is rendered dynamically, so we
+      // can't rely on it existing when this runs.
+      document.addEventListener('input', function(e){
+        var input = e.target;
+        if (!input || input.tagName !== 'INPUT') return;
+        var item = input.closest && input.closest('.size-item');
+        if (!item || !item.dataset || !item.dataset.stockMax) return;
+        var max = Number(item.dataset.stockMax);
+        var tag = item.querySelector('.stock-left');
+        if (!isFinite(max) || !tag) return;
+        var over = (Number(input.value) || 0) > max;
+        tag.textContent = over ? ('only ' + max + ' in stock') : (max + ' available');
+        tag.style.color = over ? '#c0392b' : '#9a9a9a';
+      });
+    })();
     function isLightHex(hex) {
       var h = (hex || '').replace('#',''); if (h.length !== 6) return false;
       var r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
