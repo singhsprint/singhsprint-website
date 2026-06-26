@@ -300,7 +300,44 @@ async function handlePost(req, res, supabase, user) {
     return res.status(200).json({ ok: true, message: msg });
   }
 
-  return res.status(400).json({ error: 'unknown action; expected propose-change or send-message' });
+  // -------- approve --------
+  // Customer accepts the quote as it currently stands. We record it by
+  // stamping accepted_revision = the revision they're looking at (no new
+  // status enum / migration needed). Idempotent; owner-scoped via the
+  // loadOwnedOrder call above. The CRM reads accepted_revision already.
+  if (action === 'approve') {
+    const rev = Number(order.revision || 0);
+    if (Number(order.accepted_revision) === rev) {
+      return res.status(200).json({ ok: true, accepted_revision: rev, already: true });
+    }
+    const { data: updated, error } = await supabase
+      .from('orders')
+      .update({ accepted_revision: rev })
+      .eq('id', order.id)
+      .select('id, revision, accepted_revision')
+      .single();
+    if (error) {
+      return res.status(500).json({ error: 'approve failed', details: error.message });
+    }
+
+    try {
+      await supabase.from('quote_audit_log').insert({
+        order_id:    order.id,
+        revision:    rev,
+        actor:       user.email,
+        actor_kind:  'customer',
+        event:       'customer_approved_quote',
+        after_state: { accepted_revision: rev },
+        summary:     'Customer approved quote revision ' + rev,
+      });
+    } catch (e) {
+      console.error('[customer-portal] audit insert failed (non-fatal):', e?.message || e);
+    }
+
+    return res.status(200).json({ ok: true, accepted_revision: updated.accepted_revision });
+  }
+
+  return res.status(400).json({ error: 'unknown action; expected propose-change, send-message or approve' });
 }
 
 // =====================================================================
