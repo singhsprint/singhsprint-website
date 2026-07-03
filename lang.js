@@ -870,6 +870,31 @@ var SP_LANG = (function() {
     'jersey.cz.logosize':     { en: 'Logo size',        fr: 'Taille du logo' },
     'jersey.cz.removebg':     { en: 'Remove background', fr: 'Retirer le fond' },
     'jersey.cz.draghint':     { en: 'Drag the logo on the jersey to position it.', fr: 'Glissez le logo sur le maillot pour le positionner.' },
+    // Own-design mode: skip names/numbers and upload finished artwork —
+    // same design for the whole team, or one per jersey.
+    'jersey.cz.mode':               { en: 'Personalization', fr: 'Personnalisation' },
+    'jersey.cz.mode.names':         { en: 'Names & numbers', fr: 'Noms et numéros' },
+    'jersey.cz.mode.custom':        { en: 'Upload your design', fr: 'Téléversez votre design' },
+    'jersey.cz.design':             { en: 'Your design', fr: 'Votre design' },
+    'jersey.cz.design.place':       { en: 'Where does it go?', fr: 'Où va-t-il?' },
+    'jersey.cz.design.front':       { en: 'Front', fr: 'Avant' },
+    'jersey.cz.design.back':        { en: 'Back', fr: 'Arrière' },
+    'jersey.cz.design.both':        { en: 'Front & back', fr: 'Avant et arrière' },
+    'jersey.cz.design.same':        { en: 'Same design for every jersey', fr: 'Même design pour tous les maillots' },
+    'jersey.cz.design.rowhint':     { en: "Upload each jersey's design in the roster below.", fr: "Téléversez le design de chaque maillot dans l'alignement ci-dessous." },
+    'jersey.cz.design.uploadfront': { en: 'Upload front design', fr: 'Téléverser le design avant' },
+    'jersey.cz.design.uploadback':  { en: 'Upload back design', fr: 'Téléverser le design arrière' },
+    'jersey.cz.design.upload':      { en: 'Upload', fr: 'Téléverser' },
+    'jersey.cz.design.col':         { en: 'Design', fr: 'Design' },
+    'jersey.cz.design.nameph':      { en: 'Player name (optional)', fr: 'Nom du joueur (optionnel)' },
+    'jersey.cz.design.size':        { en: 'Design size', fr: 'Taille du design' },
+    'jersey.cz.design.draghint':    { en: 'Drag the design on the jersey to position it.', fr: 'Glissez le design sur le maillot pour le positionner.' },
+    'jersey.cz.design.frontph':     { en: 'Your front design', fr: 'Votre design avant' },
+    'jersey.cz.design.backph':      { en: 'Your back design', fr: 'Votre design arrière' },
+    'jersey.cz.design.plainback':   { en: 'Plain back', fr: 'Dos uni' },
+    'jersey.cz.design.toobig':      { en: 'Design file is over 15 MB. Please compress it or email sales@singhsprint.com.', fr: 'Le fichier dépasse 15 Mo. Compressez-le ou écrivez à sales@singhsprint.com.' },
+    'jersey.cz.design.missing':     { en: 'Please upload your design first (one file per printed side).', fr: "Veuillez d'abord téléverser votre design (un fichier par côté imprimé)." },
+    'jersey.cz.design.missingrows': { en: 'Some jerseys are missing a design — row(s):', fr: "Des maillots n'ont pas de design — ligne(s) :" },
     // Jersey line item on the quote page.
     'quote.cart.jersey.subtotal':     { en: 'subtotal',     fr: 'sous-total' },
     'quote.cart.jersey.quoted':       { en: 'Priced with your quote', fr: 'Chiffré avec votre soumission' },
@@ -879,6 +904,8 @@ var SP_LANG = (function() {
     'quote.cart.jersey.edit':         { en: 'Edit on jerseys page', fr: 'Modifier sur la page maillots' },
     'quote.cart.jersey.roster':       { en: 'Roster',       fr: 'Alignement' },
     'quote.cart.jersey.customizelogo':{ en: 'Customize logo on garment', fr: 'Positionner le logo sur le vêtement' },
+    'quote.cart.jersey.customdesign': { en: 'Custom design', fr: 'Design personnalisé' },
+    'quote.cart.jersey.perjersey':    { en: 'one design per jersey', fr: 'un design par maillot' },
     'quote.cart.jersey.mockupready':  { en: '✓ Mockup ready · edit', fr: '✓ Maquette prête · modifier' },
     'cat.search.placeholder': { en: 'Search by brand, style number, fabric…', fr: 'Rechercher par marque, numéro de style, tissu…' },
     'cat.btn.filters': { en: 'Filters', fr: 'Filtres' },
@@ -1357,6 +1384,11 @@ var SP_LANG = (function() {
     'account.cta.open':        { en: 'Open →',   fr: 'Ouvrir →' },
     'account.cta.manage':      { en: 'Manage →', fr: 'Gérer →' },
     'account.cta.apply':       { en: 'Apply →',  fr: 'Demander →' },
+
+    // Shared mockups ("My designs")
+    'account.dash.mockups.h2':      { en: 'My designs', fr: 'Mes maquettes' },
+    'account.dash.mockups.sub':     { en: 'Mockups our team has shared with you. Tap to download a full-size preview.', fr: 'Maquettes que notre équipe a partagées avec vous. Touchez pour télécharger un aperçu en taille réelle.' },
+    'account.dash.mockups.loading': { en: 'Loading…', fr: 'Chargement…' },
 
     // Orders
     'account.orders.h1':       { en: 'Quotes &amp; orders', fr: 'Demandes et commandes' },

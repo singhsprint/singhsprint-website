@@ -128,6 +128,8 @@
       // placements that actually exist on this garment (no Sleeves on
       // a hat, no Center Chest on a tote, etc.).
       renderGlobalPlacementGroups(state.garment);
+      // Product picked → reveal the Step-1 size grid.
+      refreshGlobalSizeSection();
     }
 
     // ===== COLOR =====
@@ -1728,20 +1730,33 @@
       if (typeof spRecalcShippingIfStale === 'function') spRecalcShippingIfStale();
     }
 
+    // 2026-07-03 — the size grid lives on Step 1 now (the old Step 2 is
+    // gone). Show it once the customer has a product on the line —
+    // legacy grid pick (state.product) or single catalog pick
+    // (catalogPick) — and hide it in cart mode, where every cart row
+    // renders its own per-item size grid instead.
+    function refreshGlobalSizeSection() {
+      var el = document.getElementById('globalSizeSection');
+      if (!el) return;
+      var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
+      var hasProduct = !!state.product ||
+        !!(typeof catalogPick !== 'undefined' && catalogPick && catalogPick.product_id);
+      el.style.display = (!cartHasItems && hasProduct) ? '' : 'none';
+    }
+
     // ===== STEP NAVIGATION =====
     function goToStep(step) {
       var current = document.querySelector('.form-section.active');
       var currentNum = parseInt(current.dataset.step);
       var cartHasItems = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0);
 
-      // 2026-05-24 — Cart mode collapses to 2 visible steps: Step 1
-      // (Product & Design) and Step 3 (Your Details). Step 2's global
-      // sizes + method question is redundant once each cart row carries
-      // its own per-item sizes + method. Auto-route around Step 2:
-      //   • Continue from Step 1 (which targets step 2) → skip to step 3
-      //   • Back from Step 3 (which targets step 2)     → skip to step 1
-      // Legacy single-product flow keeps all 3 steps.
-      if (cartHasItems && step === 2) {
+      // 2026-07-03 — the flow is now 2 visible steps for EVERY path
+      // (cart, single catalog pick, legacy grid). The old Step 2 form-
+      // section was removed from the HTML: sizes moved onto Step 1 and
+      // notes/purpose moved onto the details step. Re-route any stale
+      // goToStep(2) caller around the gap:
+      //   • from Step 1 → Step 3   • from Step 3 → Step 1
+      if (step === 2) {
         step = (currentNum === 1) ? 3 : 1;
       }
 
@@ -4444,13 +4459,28 @@
           + '<td style="padding:2px 0">'+jEsc(p.size||'—')+'</td></tr>';
       }).join('');
       var logo = it.jersey_front_logo;
+      // Own-design jerseys (jersey_design_mode 'custom') skip fonts/names/
+      // numbers entirely — the customer uploaded finished artwork, either
+      // team-wide or one design per jersey.
+      var isCustomDesign = it.jersey_design_mode === 'custom';
+      var cd = it.jersey_custom_design || null;
       var chip = function(txt){ return '<span style="display:inline-block;background:#f0eee5;border-radius:50px;padding:3px 10px;font-size:.72rem;color:#444;margin:2px 6px 2px 0">'+txt+'</span>'; };
-      var deco = chip((_t('quote.cart.jersey.namesnumbers')||'Names & numbers')+' — DTF');
-      if (logo) deco += chip((_t('quote.cart.jersey.logo')||'Front logo')+' — '+(logo.method==='embroidery'?(_t('jersey.cz.logo.emb')||'Embroidery'):(_t('jersey.cz.logo.dtf')||'DTF'))+' · '+jEsc(logo.placement_label||logo.placement||'')+(logo.url?' ✓':''));
+      var deco;
+      if (isCustomDesign){
+        var placeTxt = { front:(_t('jersey.cz.design.front')||'Front'), back:(_t('jersey.cz.design.back')||'Back'), both:(_t('jersey.cz.design.both')||'Front & back') }[(cd && cd.placement)||'back'];
+        var hasFiles = !!(cd && ((cd.front && (cd.front.url||cd.front.path)) || (cd.back && (cd.back.url||cd.back.path)) || cd.same_for_all === false));
+        deco = chip((_t('quote.cart.jersey.customdesign')||'Custom design')+' — DTF · '+jEsc(placeTxt)+(hasFiles?' ✓':''));
+        if (cd && cd.same_for_all === false) deco += chip(_t('quote.cart.jersey.perjersey')||'one design per jersey');
+      } else {
+        deco = chip((_t('quote.cart.jersey.namesnumbers')||'Names & numbers')+' — DTF');
+        if (logo) deco += chip((_t('quote.cart.jersey.logo')||'Front logo')+' — '+(logo.method==='embroidery'?(_t('jersey.cz.logo.emb')||'Embroidery'):(_t('jersey.cz.logo.dtf')||'DTF'))+' · '+jEsc(logo.placement_label||logo.placement||'')+(logo.url?' ✓':''));
+      }
       var font = it.jersey_font_label || it.jersey_font || '';
-      // Thumbnail composites the logo onto the jersey at the position the
-      // customer set on the /jerseys page (box = % of the front image).
+      // Thumbnail composites the logo — or the team-wide front design — onto
+      // the jersey at the position the customer set on the /jerseys page
+      // (box = % of the front image).
       var lbox = (logo && logo.url && logo.box) ? logo.box : null;
+      if (!lbox && isCustomDesign && cd && cd.front && cd.front.url && cd.box){ lbox = cd.box; logo = { url: cd.front.url, remove_bg: false }; }
       var thumbHtml = lbox
         ? ('<div style="position:relative;width:72px;flex-shrink:0;border-radius:10px;overflow:hidden;background:#fff">' +
            '<img src="'+imgUrl(it.hero_url||'')+'" alt="" style="width:100%;display:block"/>' +
@@ -4463,7 +4493,7 @@
         '  <div style="flex:1;min-width:220px">' +
         '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">'+(it.brand||'')+' · '+(it.style_number||'')+(it.sport?(' · '+jEsc(it.sport)):'')+'</div>' +
         '    <div style="font-size:.95rem;font-weight:600;line-height:1.3">'+jEsc(it.name||'')+'</div>' +
-        '    <div style="font-size:.78rem;color:#666;margin-top:4px">'+(_t('quote.cart.item.color')||'Color:')+' <strong style="color:#1a1a1a">'+(jEsc(label)||'—')+'</strong> · '+(_t('quote.cart.jersey.font')||'Font')+': <strong style="color:#1a1a1a">'+jEsc(font)+'</strong></div>' +
+        '    <div style="font-size:.78rem;color:#666;margin-top:4px">'+(_t('quote.cart.item.color')||'Color:')+' <strong style="color:#1a1a1a">'+(jEsc(label)||'—')+'</strong>'+(isCustomDesign?'':(' · '+(_t('quote.cart.jersey.font')||'Font')+': <strong style="color:#1a1a1a">'+jEsc(font)+'</strong>'))+'</div>' +
         '    <div style="margin-top:6px">'+deco+'</div>' +
         '    <div class="cart-item-price" id="ci-price-'+idx+'" style="font-size:.82rem;color:#666;margin-top:6px">'+priceHtml+'</div>' +
         '  </div>' +
@@ -4510,16 +4540,14 @@
           // Re-show the GLOBAL placement section for the legacy single-
           // product flow (we hide it in cart mode below).
           document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = ''; });
-          // 2026-05-24 — restore the 3-step pill bar + Step 2 form-section
-          // for the legacy single-product flow when the cart is empty.
-          var pillStep2 = document.querySelector('.step-pill[data-step="2"]');
-          if (pillStep2) pillStep2.style.display = '';
-          var formStep2 = document.querySelector('.form-section[data-step="2"]');
-          if (formStep2) formStep2.style.display = '';
+          // (2026-07-03 — the old pill-2 / Step-2 restore is gone: the
+          // flow is 2 steps for every path now. The global size grid on
+          // Step 1 is handled by refreshGlobalSizeSection below.)
         }
         // Clear the right-panel cart total too
         var strip = document.getElementById('livePriceStrip');
         if (strip) strip.style.display = 'none';
+        refreshGlobalSizeSection();
         return;
       }
       // Cart is active — hide single-product UI + empty CTA.
@@ -4543,20 +4571,9 @@
       // single-product (non-cart) path; we re-show it in the cart-empty
       // branch above.
       document.querySelectorAll('.placement-section').forEach(function(el){ el.style.display = 'none'; });
-      // 2026-05-24 — collapse the step-pill bar from 3 to 2 in cart mode.
-      // Step 2 ("Your design & sizes") was a global question for the
-      // legacy single-product path; cart rows already capture both
-      // pieces (per-placement uploads + per-item sizes), so the step is
-      // redundant. goToStep() also auto-routes around it (1 → 3 forward,
-      // 3 → 1 back) so Continue / Back behave naturally with the pill
-      // hidden.
-      var pillStep2 = document.querySelector('.step-pill[data-step="2"]');
-      if (pillStep2) pillStep2.style.display = 'none';
-      // Also remove Step 2's form-section from layout so any stale "Next"
-      // button still on Step 1 won't briefly flash a blank Step 2 view if
-      // the customer hits it before goToStep's redirect kicks in.
-      var formStep2 = document.querySelector('.form-section[data-step="2"]');
-      if (formStep2) formStep2.style.display = 'none';
+      // 2026-07-03 — cart rows carry their own per-item size grids, so
+      // the global Step-1 size section is redundant noise in cart mode.
+      refreshGlobalSizeSection();
 
       var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       var lblColor  = _t('quote.cart.item.color')  || 'Color:';
@@ -5419,6 +5436,8 @@
           // placement upload at the top covers it (was duplicated).
           var dz = document.getElementById('dropZoneWrapper');
           if (dz) dz.style.display = 'none';
+          // Catalog product locked in → reveal the Step-1 size grid.
+          refreshGlobalSizeSection();
           return true;
         })
         .catch(function() { return false; });

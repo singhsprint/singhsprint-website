@@ -270,6 +270,15 @@
         teamName: '',
         frontNumBox: null,             // { x, y, size }
         frontNameBox: null,            // { x, y, size }
+        // Personalization mode. 'names' = the classic name/number builder.
+        // 'custom' = the customer skips names/numbers entirely and uploads
+        // their own finished artwork (same for the whole team, or one design
+        // per jersey — designSame toggles between the two).
+        designMode: 'names',
+        designSame: true,
+        designPlacement: 'back',       // front | back | both (applies to all)
+        design: { front: null, back: null },  // shared uploads: { url, path, name, previewUrl }
+        designBox: null,               // { x, y, w } % of the front image — drag/size
         roster: [ blankRow(), blankRow() ],
         previewRow: 0
       };
@@ -296,8 +305,10 @@
       document.getElementById('czSpecs').innerHTML = specHtml;
       renderSwatches();
       renderKeeperSwatches();
+      renderMode();
       renderFonts();
       renderLogo();
+      renderDesign();
       resetFrontControls();
       renderRoster();
       renderPreview();
@@ -326,7 +337,17 @@
       unlockScroll();
       cz = null;
     }
-    function blankRow(){ return { name:'', number:'', size:'L', keeper:false }; }
+    // `touched` marks rows the customer actually edited (any field) — in
+    // own-design mode rows often have no name/number, so it's how a
+    // sizes-only row still counts as a jersey. designFront/designBack hold
+    // per-row uploads when "same design for every jersey" is off.
+    function blankRow(){ return { name:'', number:'', size:'L', keeper:false, touched:false, designFront:null, designBack:null }; }
+    function isCustom(){ return !!(cz && cz.designMode === 'custom'); }
+    // Which sides carry the customer's design in custom mode.
+    function designSides(){
+      var p = (cz && cz.designPlacement) || 'back';
+      return { front: p === 'front' || p === 'both', back: p === 'back' || p === 'both' };
+    }
     // Sports where one player wears a contrasting-color jersey. Only hockey and
     // soccer have a goalie; the picker also needs 2+ colorways to make sense.
     function czRole(){
@@ -482,19 +503,152 @@
         if (fn) fn.textContent = (cz.logoUrl || cz.logoPath) ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
       }).catch(function(){ if (fn) fn.textContent = file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'); });
     }
+
+    // ---- Own-design mode (bypasses the name/number customizer) ------------
+    var DESIGN_PLACEMENTS = [
+      { id:'front', label:'jersey.cz.design.front', fallback:'Front' },
+      { id:'back',  label:'jersey.cz.design.back',  fallback:'Back' },
+      { id:'both',  label:'jersey.cz.design.both',  fallback:'Front & back' }
+    ];
+    function renderMode(){
+      var host = document.getElementById('czMode');
+      if (!host) return;
+      var modes = [
+        { id:'names',  label:t('jersey.cz.mode.names','Names & numbers') },
+        { id:'custom', label:t('jersey.cz.mode.custom','Upload your design') }
+      ];
+      host.innerHTML = modes.map(function(m){
+        return '<span class="cz-chip'+(m.id===cz.designMode?' sel':'')+'" data-id="'+m.id+'">'+esc(m.label)+'</span>';
+      }).join('');
+      host.querySelectorAll('.cz-chip').forEach(function(c){
+        c.addEventListener('click', function(){
+          if (!cz || cz.designMode === c.getAttribute('data-id')) return;
+          cz.designMode = c.getAttribute('data-id');
+          renderMode(); applyModeVisibility(); renderDesign(); renderRoster(); renderPreview(); renderSummary();
+        });
+      });
+      applyModeVisibility();
+    }
+    // Show/hide the two personalization paths: .cz-namesonly fields (font,
+    // names+numbers, front logo, front extras) vs the own-design field.
+    function applyModeVisibility(){
+      var custom = isCustom();
+      document.querySelectorAll('.cz-namesonly').forEach(function(el){ el.style.display = custom ? 'none' : ''; });
+      var cf = document.getElementById('czCustomField');
+      if (cf) cf.style.display = custom ? '' : 'none';
+    }
+    // Upload any design file to the CRM inbox bucket. cb({url,path}) fires on
+    // success; on failure we still keep the local preview and note that the
+    // file will be collected with the quote (same tolerance as the logo flow).
+    function uploadDesignFile(file, statusEl, cb){
+      if (statusEl) statusEl.textContent = t('jersey.cz.uploading','Uploading…');
+      var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
+      fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+        var url = (j && (j.signed_url || j.url)) || null, path = (j && j.path) || null;
+        if (statusEl) statusEl.textContent = (url || path) ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
+        cb(url, path);
+      }).catch(function(){
+        if (statusEl) statusEl.textContent = file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote');
+        cb(null, null);
+      });
+    }
+    function makeDesignEntry(file){
+      var prev = null;
+      try { prev = URL.createObjectURL(file); } catch(e){}
+      return { url:null, path:null, name:file.name, previewUrl:prev };
+    }
+    function handleSharedDesignFile(side, file){
+      if (!file || !cz) return;
+      if (file.size && file.size > 15*1024*1024){ alert(t('jersey.cz.design.toobig','Design file is over 15 MB. Please compress it or email sales@singhsprint.com.')); return; }
+      var entry = makeDesignEntry(file);
+      if (cz.design[side] && cz.design[side].previewUrl){ try { URL.revokeObjectURL(cz.design[side].previewUrl); } catch(e){} }
+      cz.design[side] = entry;
+      if (side === 'front' && !cz.designBox) cz.designBox = { x:50, y:42, w:58 };
+      renderPreview();
+      var st = document.getElementById('czDesignName_' + side);
+      uploadDesignFile(file, st, function(url, path){ entry.url = url; entry.path = path; });
+    }
+    function handleRowDesignFile(i, side, file){
+      if (!file || !cz || !cz.roster[i]) return;
+      if (file.size && file.size > 15*1024*1024){ alert(t('jersey.cz.design.toobig','Design file is over 15 MB. Please compress it or email sales@singhsprint.com.')); return; }
+      var row = cz.roster[i];
+      var key = side === 'front' ? 'designFront' : 'designBack';
+      if (row[key] && row[key].previewUrl){ try { URL.revokeObjectURL(row[key].previewUrl); } catch(e){} }
+      var entry = makeDesignEntry(file);
+      row[key] = entry; row.touched = true;
+      if (side === 'front' && !cz.designBox) cz.designBox = { x:50, y:42, w:58 };
+      cz.previewRow = i;
+      renderRoster(); renderPreview(); renderSummary();
+      uploadDesignFile(file, null, function(url, path){ entry.url = url; entry.path = path; renderRoster(); });
+    }
+    // The own-design section: placement chips, same-for-all toggle, and (in
+    // same-for-all mode) one upload slot per printed side.
+    function renderDesign(){
+      var ph = document.getElementById('czDesignPlace');
+      if (!ph) return;
+      ph.innerHTML = DESIGN_PLACEMENTS.map(function(d){
+        return '<span class="cz-chip'+(d.id===cz.designPlacement?' sel':'')+'" data-id="'+d.id+'">'+t(d.label,d.fallback)+'</span>';
+      }).join('');
+      ph.querySelectorAll('.cz-chip').forEach(function(c){
+        c.addEventListener('click', function(){
+          if (!cz) return;
+          cz.designPlacement = c.getAttribute('data-id');
+          renderDesign(); renderRoster(); renderPreview(); renderSummary();
+        });
+      });
+      var sameEl = document.getElementById('czDesignSame');
+      if (sameEl) sameEl.checked = !!cz.designSame;
+      var hint = document.getElementById('czDesignRowHint');
+      if (hint) hint.style.display = cz.designSame ? 'none' : 'block';
+      var slots = document.getElementById('czDesignSlots');
+      if (!slots) return;
+      if (!cz.designSame){ slots.innerHTML = ''; return; }
+      var sides = designSides(), html = '';
+      [['front', t('jersey.cz.design.uploadfront','Upload front design')], ['back', t('jersey.cz.design.uploadback','Upload back design')]].forEach(function(s){
+        if (!sides[s[0]]) return;
+        var d = cz.design[s[0]];
+        html += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px">'
+          + '<label class="cz-linkbtn" style="border:1.5px solid var(--line);border-radius:9px;padding:8px 12px;text-decoration:none;cursor:pointer">'
+          + '<span>'+esc(s[1])+'</span>'
+          + '<input type="file" data-dside="'+s[0]+'" accept="image/*,.pdf,.ai,.eps,.svg" style="display:none">'
+          + '</label>'
+          + '<span id="czDesignName_'+s[0]+'" style="font-size:.78rem;color:var(--muted)">'+(d ? esc(((d.url||d.path)?'✓ ':'')+d.name) : t('jersey.cz.nologo','No file chosen yet'))+'</span>'
+          + '</div>';
+      });
+      slots.innerHTML = html;
+      slots.querySelectorAll('input[type=file][data-dside]').forEach(function(inp){
+        inp.addEventListener('change', function(){ handleSharedDesignFile(inp.getAttribute('data-dside'), inp.files && inp.files[0]); });
+      });
+    }
+
     function renderRoster(){
       var host = document.getElementById('czRoster');
       host.innerHTML = '';
       var role = czRole();
-      // Rebuild the header so the goalie ("G") column only appears for keeper sports.
+      var custom = isCustom();
+      var perRowDesign = custom && !cz.designSame;
+      var sides = designSides();
+      // Rebuild the header: the goalie ("G") column only appears for keeper
+      // sports; own-design mode drops the number column (numbers live in the
+      // customer's artwork) and adds a design column when each jersey has its
+      // own upload.
       var headRow = document.getElementById('czRosterHeadRow');
       if (headRow){
-        headRow.innerHTML =
-          '<th style="width:'+(role?'42%':'48%')+'">'+t('jersey.cz.name','Player name')+'</th>'
-          + '<th style="width:14%">'+t('jersey.cz.number','No.')+'</th>'
-          + '<th style="width:'+(role?'22%':'26%')+'">'+t('jersey.cz.size','Size')+'</th>'
-          + (role ? ('<th style="width:12%;text-align:center" title="'+esc(role)+'">'+esc(role.charAt(0).toUpperCase())+'</th>') : '')
-          + '<th style="width:10%"></th>';
+        if (custom){
+          headRow.innerHTML =
+            '<th style="width:'+(perRowDesign?(role?'34%':'38%'):(role?'52%':'62%'))+'">'+t('jersey.cz.name','Player name')+'</th>'
+            + '<th style="width:'+(role?'22%':'26%')+'">'+t('jersey.cz.size','Size')+'</th>'
+            + (perRowDesign ? ('<th style="width:22%">'+t('jersey.cz.design.col','Design')+'</th>') : '')
+            + (role ? ('<th style="width:12%;text-align:center" title="'+esc(role)+'">'+esc(role.charAt(0).toUpperCase())+'</th>') : '')
+            + '<th style="width:10%"></th>';
+        } else {
+          headRow.innerHTML =
+            '<th style="width:'+(role?'42%':'48%')+'">'+t('jersey.cz.name','Player name')+'</th>'
+            + '<th style="width:14%">'+t('jersey.cz.number','No.')+'</th>'
+            + '<th style="width:'+(role?'22%':'26%')+'">'+t('jersey.cz.size','Size')+'</th>'
+            + (role ? ('<th style="width:12%;text-align:center" title="'+esc(role)+'">'+esc(role.charAt(0).toUpperCase())+'</th>') : '')
+            + '<th style="width:10%"></th>';
+        }
       }
       var sizeList = (cz.sizes && cz.sizes.length) ? cz.sizes : SIZES;
       var defSize = (sizeList.indexOf('L') >= 0) ? 'L' : (sizeList[Math.floor(sizeList.length/2)] || sizeList[0]);
@@ -502,13 +656,36 @@
         if (sizeList.indexOf(row.size) < 0) row.size = defSize;   // coerce to a stocked size
         var tr = document.createElement('tr');
         var sizeOpts = sizeList.map(function(s){ return '<option'+(s===row.size?' selected':'')+'>'+s+'</option>'; }).join('');
+        // Per-row design upload cell: one tiny button per printed side, with a
+        // ✓ once a file is picked (uploads happen in the background).
+        var designCell = '';
+        if (perRowDesign){
+          designCell = '<td style="white-space:nowrap">';
+          [['front','F','designFront'],['back','B','designBack']].forEach(function(s){
+            if (!sides[s[0]]) return;
+            var d = row[s[2]];
+            var both = sides.front && sides.back;
+            var lbl = both ? s[1] : t('jersey.cz.design.upload','Upload');
+            designCell += '<label class="cz-linkbtn" title="'+esc(d ? d.name : '')+'" style="border:1.5px solid var(--line);border-radius:8px;padding:6px 9px;cursor:pointer;font-size:.74rem;margin-right:5px;display:inline-block">'
+              + esc(lbl) + (d ? ' ✓' : '')
+              + '<input type="file" data-drow="'+i+'" data-dside="'+s[0]+'" accept="image/*,.pdf,.ai,.eps,.svg" style="display:none">'
+              + '</label>';
+          });
+          designCell += '</td>';
+        }
         tr.innerHTML =
-          '<td><input data-f="name" data-i="'+i+'" value="'+esc(row.name)+'" placeholder="'+t('jersey.cz.name','Player name')+'"></td>'
-          + '<td class="col-no"><input data-f="number" data-i="'+i+'" value="'+esc(row.number)+'" maxlength="3" inputmode="numeric" placeholder="00"></td>'
+          '<td><input data-f="name" data-i="'+i+'" value="'+esc(row.name)+'" placeholder="'+(custom ? t('jersey.cz.design.nameph','Player name (optional)') : t('jersey.cz.name','Player name'))+'"></td>'
+          + (custom ? '' : ('<td class="col-no"><input data-f="number" data-i="'+i+'" value="'+esc(row.number)+'" maxlength="3" inputmode="numeric" placeholder="00"></td>'))
           + '<td><select data-f="size" data-i="'+i+'" style="width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff">'+sizeOpts+'</select></td>'
+          + designCell
           + (role ? ('<td style="text-align:center"><input type="checkbox" data-f="keeper" data-i="'+i+'"'+(row.keeper?' checked':'')+' aria-label="'+esc(role)+'" title="'+esc(role)+'" style="width:18px;height:18px;accent-color:var(--ink);cursor:pointer"></td>') : '')
           + '<td><button class="rmrow" data-rm="'+i+'" aria-label="'+t('jersey.cz.remove','Remove')+'">&times;</button></td>';
         host.appendChild(tr);
+      });
+      host.querySelectorAll('input[type=file][data-drow]').forEach(function(inp){
+        inp.addEventListener('change', function(){
+          handleRowDesignFile(parseInt(inp.getAttribute('data-drow'),10), inp.getAttribute('data-dside'), inp.files && inp.files[0]);
+        });
       });
       host.querySelectorAll('input[type=checkbox][data-f="keeper"]').forEach(function(cb){
         cb.addEventListener('change', function(){
@@ -520,10 +697,18 @@
         var ev = el.tagName==='SELECT' ? 'change' : 'input';
         el.addEventListener(ev, function(){
           var i = parseInt(el.getAttribute('data-i'),10); var f = el.getAttribute('data-f');
-          if (cz.roster[i]){ cz.roster[i][f] = el.value; if (i===cz.previewRow && (f==='name'||f==='number')) updateLettering(); renderSummary(); }
+          if (cz.roster[i]){ cz.roster[i][f] = el.value; cz.roster[i].touched = true; if (i===cz.previewRow && (f==='name'||f==='number')) updateLettering(); renderSummary(); }
         });
         if (el.tagName!=='SELECT'){
-          el.addEventListener('focus', function(){ var i=parseInt(el.getAttribute('data-i'),10); cz.previewRow=i; updateLettering(); });
+          el.addEventListener('focus', function(){
+            var i=parseInt(el.getAttribute('data-i'),10);
+            var changed = cz.previewRow !== i;
+            cz.previewRow=i;
+            // Own-design mode: switching rows can switch the previewed
+            // artwork (per-jersey designs), so re-render the whole preview.
+            if (isCustom()){ if (changed && !cz.designSame) renderPreview(); }
+            else updateLettering();
+          });
         }
       });
       host.querySelectorAll('.rmrow').forEach(function(b){
@@ -553,6 +738,7 @@
     }
 
     function renderPreview(){
+      if (isCustom()) return renderCustomPreview();
       var row = cz.roster[cz.previewRow] || cz.roster[0] || blankRow();
       var name = (row.name||'').toUpperCase() || 'NAME';
       var num  = row.number || '00';
@@ -625,11 +811,57 @@
       var extras = (hasFrontName ? ' · front name' : '') + (hasFrontNum ? ' · front #' : '') + (hasLogo ? ' · + logo' : '');
       document.getElementById('czPrevHint').textContent = (cn ? (cn + ' · ') : '') + name + ' ' + num + extras;
     }
+    // Own-design mode preview: the customer's artwork on the front photo
+    // (draggable + size slider, same interaction as the logo) and/or on the
+    // back color chip. No lettering — their design IS the print.
+    function renderCustomPreview(){
+      var row = cz.roster[cz.previewRow] || cz.roster[0] || blankRow();
+      var colors = cz.prod.colors||[];
+      var useKeeper = czRole() && row && row.keeper;
+      var col = (useKeeper ? colors[cz.keeperColorIdx] : colors[cz.colorIdx]) || colors[cz.colorIdx] || {};
+      var hex = primaryHex(col);
+      var img = imgUrl(col.mockup_front_url || cz.prod.hero_image_url);
+      var sides = designSides();
+      var dFront = sides.front ? (cz.designSame ? cz.design.front : row.designFront) : null;
+      var dBack  = sides.back  ? (cz.designSame ? cz.design.back  : row.designBack)  : null;
+      if (dFront && !cz.designBox) cz.designBox = { x:50, y:42, w:58 };
+      var box = cz.designBox || { x:50, y:42, w:58 };
+      var frontOverlay = (dFront && dFront.previewUrl)
+        ? '<img id="czDesignArt" src="'+esc(dFront.previewUrl)+'" alt="" draggable="false" style="position:absolute;top:'+box.y+'%;left:'+box.x+'%;width:'+box.w+'%;transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))">'
+        : (sides.front ? '<div style="position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);border:1.5px dashed rgba(0,0,0,.25);border-radius:10px;padding:14px 18px;font-size:.72rem;color:#9b958a;pointer-events:none;white-space:nowrap">'+t('jersey.cz.design.frontph','Your front design')+'</div>' : '');
+      var html = '';
+      if (img) html += '<div id="czStage" style="position:relative;width:100%;min-height:200px;background:#fff;border-radius:10px;overflow:hidden;touch-action:none">'
+        + '<img src="'+esc(img)+'" alt="" style="width:100%;max-height:230px;object-fit:contain;display:block;pointer-events:none" loading="lazy" decoding="async">'
+        + frontOverlay
+        + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#9b958a;pointer-events:none">'+t('jersey.cz.front','Front')+'</span></div>';
+      var backInner = (dBack && dBack.previewUrl)
+        ? '<img src="'+esc(dBack.previewUrl)+'" alt="" style="max-width:72%;max-height:130px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">'
+        : (sides.back ? '<div style="display:inline-block;border:1.5px dashed '+contrastInk(hex)+'55;border-radius:10px;padding:16px 18px;font-size:.72rem;color:'+contrastInk(hex)+';opacity:.7">'+t('jersey.cz.design.backph','Your back design')+'</div>' : '<div style="font-size:.72rem;color:'+contrastInk(hex)+';opacity:.45">'+t('jersey.cz.design.plainback','Plain back')+'</div>');
+      html += '<div style="margin-top:12px;width:100%;background:'+esc(hex)+';border-radius:12px;padding:20px 12px;text-align:center;position:relative;min-height:60px">'
+        + '<span style="position:absolute;top:6px;left:8px;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:'+contrastInk(hex)+';opacity:.5">'+t('jersey.cz.back','Back')+'</span>'
+        + backInner + '</div>';
+      document.getElementById('czSvg').innerHTML = html;
+      // Tool panels: only the design size/drag tools apply in this mode.
+      var lt = document.getElementById('czLogoTools');  if (lt) lt.style.display = 'none';
+      var ft = document.getElementById('czFrontTools'); if (ft) ft.style.display = 'none';
+      var dt = document.getElementById('czDesignTools');
+      var hasFrontArt = !!(dFront && dFront.previewUrl);
+      if (dt) dt.style.display = hasFrontArt ? 'block' : 'none';
+      if (hasFrontArt){
+        var sz = document.getElementById('czDesignSize'); if (sz) sz.value = Math.round(box.w);
+        makeDragEl('czDesignArt', cz.designBox || (cz.designBox = box));
+      }
+      var cn = prettyColor(col.color_name);
+      var bits = [];
+      if (dFront) bits.push(t('jersey.cz.front','Front')+': '+dFront.name);
+      if (dBack)  bits.push(t('jersey.cz.back','Back')+': '+dBack.name);
+      document.getElementById('czPrevHint').textContent = (cn ? cn + ' · ' : '') + (bits.length ? bits.join(' · ') : t('jersey.cz.mode.custom','Upload your design'));
+    }
     // Lightweight update for the BACK name/number as the customer types — only
     // touches text, never rebuilds the image. This avoids the reflow/scroll
     // jump a full renderPreview() caused on every keystroke (mobile bug).
     function updateLettering(){
-      if (!cz) return;
+      if (!cz || isCustom()) return;
       var row = cz.roster[cz.previewRow] || cz.roster[0] || blankRow();
       var name = (row.name||'').toUpperCase() || 'NAME';
       var num  = row.number || '00';
@@ -670,7 +902,13 @@
       } catch(e){ return '#ffffff'; }
     }
 
-    function filledRows(){ return cz.roster.filter(function(r){ return (r.name||'').trim() || (r.number||'').trim(); }); }
+    // Which roster rows count as jerseys. Names mode: a name or number typed.
+    // Own-design mode: names are optional, so any row the customer touched
+    // (edited a field or attached a design) counts.
+    function filledRows(){
+      if (isCustom()) return cz.roster.filter(function(r){ return (r.name||'').trim() || r.touched || r.designFront || r.designBack; });
+      return cz.roster.filter(function(r){ return (r.name||'').trim() || (r.number||'').trim(); });
+    }
     function renderSummary(){
       var fr = filledRows();
       var n = fr.length;
@@ -722,14 +960,19 @@
     //   front = a single decoration-only add at the effective placement
     //           (center-chest for text, the logo's spot for a logo alone, or
     //           oversized when a logo is combined with front text).
-    function computeJerseyUnitPrice(prod, qty, frontDeco, cb){
+    // opts (optional) overrides the decoration model for OWN-DESIGN jerseys:
+    // { sides: 1|2, placements: ['full-front','full-back'] }. Default is the
+    // names-mode model (1 side, full-back name/number).
+    function computeJerseyUnitPrice(prod, qty, frontDeco, cb, opts){
       function decoOnly(method, placement){
         return fetch(DECO_API + '?qty=' + qty + '&method=' + method + '&placements=' + encodeURIComponent(placement))
           .then(function(r){ return r.ok?r.json():null; }).then(function(j){ return (j && typeof j.unit_price==='number') ? j.unit_price : 0; }).catch(function(){ return 0; });
       }
       var frontP = frontDeco ? decoOnly(frontDeco.method, frontDeco.placement) : Promise.resolve(0);
+      var engSides = (opts && opts.sides) || 1;
+      var engPlacements = (opts && opts.placements && opts.placements.length) ? opts.placements : ['full-back'];
       var engineUrl = PRICING_API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty
-                    + '&sides=1&decoration_method=dtf&embroidery_placements=' + encodeURIComponent('full-back');
+                    + '&sides=' + engSides + '&decoration_method=dtf&embroidery_placements=' + encodeURIComponent(engPlacements.join(','));
       fetch(engineUrl).then(function(r){ return r.ok?r.json():null; })
         .then(function(j){ return (j && typeof j.unit_price==='number') ? { price: j.unit_price, full: true } : null; })
         .catch(function(){ return null; })
@@ -748,7 +991,94 @@
         });
     }
 
+    // Own-design jerseys: no fonts/names/numbers — the customer's uploaded
+    // artwork is the whole decoration. Priced via the same engine, with the
+    // side count driven by the chosen placement (front / back / both).
+    function addCustomToQuote(){
+      var rows = filledRows();
+      if (!rows.length) return;
+      var prod = cz.prod;
+      var color = (prod.colors||[])[cz.colorIdx] || {};
+      var role = czRole();
+      var anyKeeper = !!role && rows.some(function(r){ return r.keeper; });
+      var kColor = (role ? ((prod.colors||[])[cz.keeperColorIdx] || null) : null);
+      var sizes = {};
+      rows.forEach(function(r){ sizes[r.size] = (sizes[r.size]||0) + 1; });
+      var qty = rows.length;
+      var sd = designSides();
+      var sideCount = (sd.front?1:0) + (sd.back?1:0);
+      // Every printed side needs a file before the team can be added.
+      if (cz.designSame){
+        if ((sd.front && !cz.design.front) || (sd.back && !cz.design.back)){
+          alert(t('jersey.cz.design.missing','Please upload your design first (one file per printed side).'));
+          return;
+        }
+      } else {
+        var bad = [];
+        rows.forEach(function(r){
+          if ((sd.front && !r.designFront) || (sd.back && !r.designBack)) bad.push(cz.roster.indexOf(r) + 1);
+        });
+        if (bad.length){
+          alert(t('jersey.cz.design.missingrows','Some jerseys are missing a design — row(s):') + ' ' + bad.join(', '));
+          return;
+        }
+      }
+      var engPlacements = [];
+      if (sd.front) engPlacements.push('full-front');
+      if (sd.back)  engPlacements.push('full-back');
+      var btn = document.getElementById('czAdd'), prevTxt = btn.textContent;
+      btn.disabled = true; btn.textContent = t('jersey.cz.adding','Pricing…');
+      function dref(d){ return d ? { url: d.url || null, path: d.path || null, filename: d.name || null } : null; }
+      computeJerseyUnitPrice(prod, qty, null, function(price){
+        var item = {
+          product_id:   prod.product_id,
+          color_id:     color.color_id || null,
+          color_name:   (color.color_name||'').replace(/_\d+$/,''),
+          brand:        prod.brand || '',
+          style_number: prod.style_number || '',
+          name:         prod.name || '',
+          garment_type: prod.garment_type || 'jersey',
+          hero_url:     imgUrl(color.mockup_front_url || prod.hero_image_url),
+          qty:          qty,
+          sides:        sideCount,
+          placements:   [],                 // jersey is priced via jersey_unit_price, not the sides model
+          decoration_type: 'dtf',
+          sizes:        sizes,
+          is_jersey:    true,
+          sport:        state.sport || (prod.sports && prod.sports[0]) || null,
+          // ----- own-design payload (rides in cart_items JSONB) -----
+          jersey_design_mode: 'custom',
+          jersey_custom_design: {
+            same_for_all: !!cz.designSame,
+            placement:    cz.designPlacement,           // front | back | both
+            box:          cz.designBox ? { x:cz.designBox.x, y:cz.designBox.y, w:cz.designBox.w } : null,
+            front:        cz.designSame ? dref(cz.design.front) : null,
+            back:         cz.designSame ? dref(cz.design.back)  : null
+          },
+          jersey_names_numbers: null,       // bypassed — no lettering on this team
+          jersey_front_logo: null,
+          jersey_unit_price: price.unit,
+          jersey_price_breakdown: { allin_blank_plus_decoration: price.allin, front_addon: 0, logo_addon: 0 },
+          jersey_keeper: anyKeeper ? { role: role, color_id: (kColor && kColor.color_id) || null, color_name: kColor ? (kColor.color_name||'').replace(/_\d+$/,'') : null } : null,
+          roster: rows.map(function(r){
+            return {
+              name: r.name||'', number:'', size: r.size||'L', keeper: !!r.keeper,
+              color_name: (r.keeper && kColor) ? (kColor.color_name||'').replace(/_\d+$/,'') : ((color.color_name||'').replace(/_\d+$/,'')),
+              design_front: cz.designSame ? null : dref(r.designFront),
+              design_back:  cz.designSame ? null : dref(r.designBack)
+            };
+          })
+        };
+        SinghsCart.add(item);
+        try { if (window.spTrack) window.spTrack('jersey_add_to_quote', { product_id:prod.product_id, sport:item.sport, players:qty, design_mode:'custom', placement:cz.designPlacement, same_for_all:!!cz.designSame, unit:price.unit }); } catch(e){}
+        btn.disabled = false; btn.textContent = prevTxt;
+        closeCustomizer();
+        showToast(qty);
+      }, { sides: sideCount, placements: engPlacements });
+    }
+
     function addToQuote(){
+      if (isCustom()) return addCustomToQuote();
       var rows = filledRows();
       if (!rows.length) return;
       var prod = cz.prod;
@@ -794,6 +1124,7 @@
           // ----- jersey-specific structured data (rides in cart_items JSONB) -----
           is_jersey:    true,
           sport:        state.sport || (prod.sports && prod.sports[0]) || null,
+          jersey_design_mode: 'names',
           jersey_font:  fontId,
           jersey_font_label: (function(){ for(var i=0;i<FONTS.length;i++){ if(FONTS[i].id===fontId) return FONTS[i].label; } return fontId; })(),
           // Exact Google Font so the shop downloads the real face for print.
@@ -858,6 +1189,12 @@
       if (ls) ls.addEventListener('input', function(){ if(!cz) return; cz.logoBox = cz.logoBox || defaultLogoBox(cz.logoPlacement); cz.logoBox.w = parseInt(this.value,10)||24; var a=document.getElementById('czLogoArt'); if(a) a.style.width = cz.logoBox.w + '%'; });
       var lb = document.getElementById('czLogoRemoveBg');
       if (lb) lb.addEventListener('change', function(){ if(!cz) return; cz.logoRemoveBg = this.checked; renderPreview(); });
+
+      // Own-design mode: same-for-all toggle + design size slider.
+      var dSame = document.getElementById('czDesignSame');
+      if (dSame) dSame.addEventListener('change', function(){ if(!cz) return; cz.designSame = this.checked; renderDesign(); renderRoster(); renderPreview(); renderSummary(); });
+      var dSize = document.getElementById('czDesignSize');
+      if (dSize) dSize.addEventListener('input', function(){ if(!cz) return; cz.designBox = cz.designBox || { x:50, y:42, w:58 }; cz.designBox.w = parseInt(this.value,10)||58; var a=document.getElementById('czDesignArt'); if(a) a.style.width = cz.designBox.w + '%'; });
 
       // Front-of-jersey extras: toggles, team-name input, size sliders, Save.
       var fNum = document.getElementById('czFrontNumber');

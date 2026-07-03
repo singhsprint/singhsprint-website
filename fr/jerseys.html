@@ -86,6 +86,13 @@
             <button type="button" id="czFrontSave" style="margin-top:9px;background:var(--hi,#e8ff3c);color:#1a1a1a;border:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit"  data-i18n="jersey.cz.savelayout">Enregistrer la disposition</button>
             <span id="czFrontSaved" style="display:none;color:#8fe39a;font-size:.72rem;margin-left:8px"  data-i18n="jersey.cz.layoutsaved">Disposition enregistree</span>
           </div>
+          <div id="czDesignTools" style="display:none;width:100%;max-width:280px;margin-top:2px">
+            <div style="display:flex;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
+              <span  data-i18n="jersey.cz.design.size">Taille du design</span>
+              <input type="range" id="czDesignSize" min="20" max="95" value="58" step="1" style="flex:1">
+            </div>
+            <div style="color:#9b958a;font-size:.66rem;margin-top:6px"  data-i18n="jersey.cz.design.draghint">Glissez le design sur le maillot pour le positionner.</div>
+          </div>
           <div class="cz-prevhint" id="czPrevHint"></div>
         </div>
         <div class="cz-form">
@@ -103,17 +110,35 @@
             <div style="font-size:.72rem;color:var(--soft);margin-top:4px"  data-i18n="jersey.cz.goaliehint">Cochez la case à côté d'un joueur pour lui donner cette couleur.</div>
           </div>
 
+          <!-- Personalization mode: the classic name/number builder, or the
+               customer's own uploaded artwork (skips fonts/names/numbers). -->
           <div class="cz-field">
+            <label  data-i18n="jersey.cz.mode">Personnalisation</label>
+            <div class="cz-chips" id="czMode"></div>
+          </div>
+
+          <!-- Own-design mode: placement + same-for-all toggle + upload slots.
+               When "same design" is off, each roster row gets its own upload. -->
+          <div class="cz-field" id="czCustomField" style="display:none">
+            <label  data-i18n="jersey.cz.design">Votre design</label>
+            <div style="font-size:.72rem;color:var(--soft);margin-bottom:6px"  data-i18n="jersey.cz.design.place">Où va-t-il?</div>
+            <div class="cz-chips" id="czDesignPlace"></div>
+            <label class="cz-toggle" style="margin-top:10px"><input type="checkbox" id="czDesignSame" checked><span  data-i18n="jersey.cz.design.same">Même design pour tous les maillots</span></label>
+            <div id="czDesignSlots" style="margin-top:10px"></div>
+            <div id="czDesignRowHint" style="display:none;font-size:.72rem;color:var(--soft);margin-top:7px"  data-i18n="jersey.cz.design.rowhint">Téléversez le design de chaque maillot dans l'alignement ci-dessous.</div>
+          </div>
+
+          <div class="cz-field cz-namesonly">
             <label  data-i18n="jersey.cz.font">Police d'équipe</label>
             <div class="cz-chips" id="czFonts"></div>
           </div>
 
-          <div class="cz-field">
+          <div class="cz-field cz-namesonly">
             <label  data-i18n="jersey.cz.namesnumbers">Noms et numéros</label>
             <div class="cz-chips"><span class="cz-chip sel" style="cursor:default"><span  data-i18n="jersey.cz.dtfstd">Impression DTF</span></span></div>
           </div>
 
-          <div class="cz-field">
+          <div class="cz-field cz-namesonly">
             <label  data-i18n="jersey.cz.frontlogo">Logo avant (optionnel)</label>
             <div class="cz-chips" id="czLogoMethod"></div>
             <div id="czLogoOpts" style="display:none;margin-top:10px">
@@ -129,7 +154,7 @@
             </div>
           </div>
 
-          <div class="cz-field">
+          <div class="cz-field cz-namesonly">
             <label  data-i18n="jersey.cz.frontextra">Devant du maillot (optionnel)</label>
             <label class="cz-toggle"><input type="checkbox" id="czFrontNumber"><span  data-i18n="jersey.cz.frontnum">Numero du joueur au devant</span></label>
             <label class="cz-toggle"><input type="checkbox" id="czFrontName"><span  data-i18n="jersey.cz.frontname">Nom de l'equipe au devant</span></label>
