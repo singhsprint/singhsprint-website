@@ -40,6 +40,17 @@
     .signout-btn{padding:10px 14px;background:#f4f2eb;border:none;border-radius:10px;font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer}
     .signout-btn:hover{background:#ebe9e0}
     .loading{color:#999;font-size:.86rem}
+    /* ------- Shared mockups ("My designs") ------- */
+    .mockups-card{margin-bottom:18px;padding:20px 22px}
+    .mockups-card h2{font-size:1.05rem;font-weight:700;margin-bottom:2px}
+    .mockups-card .sub{color:#666;font-size:.86rem;margin-bottom:14px}
+    .mockups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+    .mockup-tile{border:1px solid #ece9df;border-radius:12px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+    .mockup-tile img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#f7f6f1;display:block}
+    .mockup-tile .m-body{padding:9px 11px;display:flex;flex-direction:column;gap:7px}
+    .mockup-tile .m-label{font-size:.82rem;font-weight:600;line-height:1.3;word-break:break-word}
+    .mockup-tile .m-dl{font-size:.78rem;font-weight:700;color:#1a1a1a;border:1px solid #e0ddd1;border-radius:8px;padding:6px 0;text-align:center}
+    .mockup-tile .m-dl:hover{background:#f4f2eb}
   </style>
 </head>
 <body>
@@ -120,6 +131,15 @@
       <span class="arrow" data-i18n="account.cta.manage">Manage →</span>
     </a>
   </div>
+
+  <!-- ------- Shared mockups ("My designs"): only shown when the shop has
+       shared at least one mockup with this customer. ------- -->
+  <section id="mockups-card" class="acct-card mockups-card" style="display:none">
+    <h2 data-i18n="account.dash.mockups.h2">My designs</h2>
+    <p class="sub" data-i18n="account.dash.mockups.sub">Mockups our team has shared with you. Tap to download a full-size preview.</p>
+    <div id="mockups-loading" class="loading" data-i18n="account.dash.mockups.loading">Loading…</div>
+    <div id="mockups-grid" class="mockups-grid"></div>
+  </section>
 </main>
 
 <div id="footer-placeholder"></div>
@@ -139,6 +159,47 @@
       .format((cents || 0) / 100);
   }
 
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // -------- Shared mockups ("My designs") ----------------------------------
+  // Read-only: the shop controls what's shared. The endpoint already returns
+  // ONLY rows the operator toggled visible, scoped to this customer.
+  async function loadMockups() {
+    const card = $('mockups-card');
+    const grid = $('mockups-grid');
+    const loading = $('mockups-loading');
+    if (!card || !grid) return;
+    try {
+      const r = await api.authedFetch('/api/account/mockups');
+      if (!r.ok) return; // silent: don't clutter the dashboard on error
+      const j = await r.json();
+      const mockups = (j.mockups || []).filter((m) => m.imageUrl);
+      if (!mockups.length) return; // keep the section hidden when nothing shared
+      const dl = window.acctUI && window.acctUI.t
+        ? window.acctUI.t('Download', 'Télécharger')
+        : 'Download';
+      grid.innerHTML = '';
+      mockups.forEach((m) => {
+        const el = document.createElement('div');
+        el.className = 'mockup-tile';
+        const label = m.label || m.placement || 'Mockup';
+        el.innerHTML =
+          '<img src="' + esc(m.imageUrl) + '" alt="' + esc(label) + '" loading="lazy">' +
+          '<div class="m-body">' +
+            '<div class="m-label">' + esc(label) + '</div>' +
+            '<a class="m-dl" href="' + esc(m.imageUrl) + '" target="_blank" rel="noopener" download>' + esc(dl) + '</a>' +
+          '</div>';
+        grid.appendChild(el);
+      });
+      if (loading) loading.style.display = 'none';
+      card.style.display = 'block';
+    } catch (_) { /* silent */ }
+  }
+
   (async function init() {
     const session = await api.getSession();
     if (!session) {
@@ -147,6 +208,9 @@
     }
     const user = session.user;
     $('hello').textContent = 'Signed in as ' + (user.email || user.phone || user.id);
+
+    // Shared mockups load independently (self-hides when nothing is shared).
+    loadMockups();
 
     // Fan out all dashboard reads in parallel.
     const [ordersR, creditsR, refR, bizR, myProgR] = await Promise.allSettled([
