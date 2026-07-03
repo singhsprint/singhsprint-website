@@ -6796,14 +6796,24 @@
       }
 
       // ---- progressive reveal ------------------------------------------
+      // Colour only makes sense once a BLANK exists: with tier cards on
+      // offer, the generic 10-swatch grid is meaningless until a tier is
+      // picked (the real swatches come from the picked blank). Products
+      // without a tier mapping (e.g. "Other") fall back to the generic
+      // picker immediately.
+      function tierChoicePending() {
+        var el = secEl('tier');
+        return !!(el && el.style.display !== 'none' && !tierPickApplied);
+      }
       function syncReveal() {
         if (bypass()) return;
-        var gated = ['color', 'source', 'placement', 'method'];
         var show = !!(state && state.product);
-        gated.forEach(function (k) {
+        ['source', 'placement', 'method'].forEach(function (k) {
           var el = secEl(k);
           if (el) el.classList.toggle('sp-gated', !show);
         });
+        var colorEl = secEl('color');
+        if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !tierChoicePending()));
       }
 
       // ---- hooks into the existing flow --------------------------------
@@ -6812,6 +6822,10 @@
         _selectProduct(el);
         if (bypass()) return;
         syncReveal();
+        // The tier cards paint async (cached fetch) — re-evaluate the
+        // colour gate once they've had a chance to appear.
+        setTimeout(syncReveal, 150);
+        setTimeout(syncReveal, 600);
         collapse('product', state.product);
         uncollapse('tier');
         // Source: rarely changed — collapse immediately with its default.
@@ -6869,6 +6883,7 @@
           if (bypass() || !tierPickApplied) return;
           var p = catalogPick;
           collapse('tier', p ? ((p.brand || '') + ' ' + (p.style_number || '') + ' · ' + (p.name || '')) : '');
+          syncReveal();        // blank now exists → colour gate lifts
           uncollapse('color'); // colour is the next decision — open it
           renderTeaser();
           saveDraftSoon();
