@@ -5715,9 +5715,15 @@
       });
       var hidden = ['catalogProductId', 'catalogColorId', 'catalogVariantBrand', 'catalogVariantStyle', 'catalogVariantColor'];
       hidden.forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
-      // Restore the generic colour swatches the tier pick replaced.
+      // Restore the generic colour swatches the tier pick replaced, and
+      // re-sync the colour label/state to the restored selection (else the
+      // label keeps showing the tier product's colour, e.g. "Aqua").
       var grid = document.querySelector('.color-grid');
-      if (grid && window.__spOrigColorGrid) grid.innerHTML = window.__spOrigColorGrid;
+      if (grid && window.__spOrigColorGrid) {
+        grid.innerHTML = window.__spOrigColorGrid;
+        var selSw = grid.querySelector('.color-swatch.selected') || grid.querySelector('.color-swatch');
+        if (selSw && typeof selectColor === 'function') selectColor(selSw);
+      }
       calculatePrice();
     }
 
