@@ -5677,11 +5677,12 @@
           // Re-render so the picked card shows its selected state.
           var card = document.querySelector('.product-option.selected');
           spRenderTierCards(garmentKey, card ? card.dataset.value : null);
-          // Blank locked in → walk the customer straight into the design
-          // step: scroll the per-placement upload block (the customize
-          // tool's entry point — uploading engages the drag/scale editor
-          // in the preview panel) into view and pulse it briefly.
-          spNudgeCustomizer();
+          // Blank locked in → hand off to the UX layer (collapses the tier
+          // section synchronously and walks the viewport to the NEXT
+          // decision in one smooth motion — no post-hoc layout shifts).
+          // Fallback: nudge the upload block like before.
+          if (typeof spOnTierApplied === 'function') spOnTierApplied();
+          else spNudgeCustomizer();
         });
     }
 
@@ -6729,6 +6730,8 @@
         '.sp-social{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;' +
           'padding:10px 14px;border:1px solid #eee;border-radius:12px;background:#fff;font-size:.82rem;color:#555}' +
         '.sp-social b{color:#1a1a1a}' +
+        '#quoteForm{overflow-anchor:none}' +
+        '#quoteForm .form-group,#quoteForm .color-section,#quoteForm .placement-section{scroll-margin-top:90px}' +
         '.sp-draftbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fffbe6;' +
           'border:1px solid #e6c200;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:.88rem}' +
         '.sp-draftbar button{border:none;border-radius:50px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:.82rem}' +
@@ -6795,6 +6798,17 @@
         if (bar && bar.classList && bar.classList.contains('sp-sumbar')) bar.style.display = 'none';
       }
 
+      // One intentional smooth scroll to the next open decision. Every
+      // collapse is paired with one of these so the viewport never jumps
+      // as a side-effect of layout shrinking — it MOVES, visibly, to the
+      // thing the customer should look at next.
+      function spScrollTo(el) {
+        if (!el) return;
+        requestAnimationFrame(function () {
+          try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        });
+      }
+
       // ---- progressive reveal ------------------------------------------
       // Colour only makes sense once a BLANK exists: with tier cards on
       // offer, the generic 10-swatch grid is meaningless until a tier is
@@ -6823,8 +6837,15 @@
         if (bypass()) return;
         syncReveal();
         // The tier cards paint async (cached fetch) — re-evaluate the
-        // colour gate once they've had a chance to appear.
-        setTimeout(syncReveal, 150);
+        // colour gate once they've had a chance to appear, then walk the
+        // viewport to the next open decision (tier cards, or colour when
+        // the product has no tiers). Without this explicit scroll, the
+        // grid collapsing above yanks the page unpredictably.
+        setTimeout(function () {
+          syncReveal();
+          var tierEl = secEl('tier');
+          spScrollTo(tierChoicePending() ? tierEl : secEl('color'));
+        }, 200);
         setTimeout(syncReveal, 600);
         collapse('product', state.product);
         uncollapse('tier');
@@ -6854,15 +6875,21 @@
         var _selectService = selectService;
         selectService = function (el) {
           _selectService(el);
-          if (!bypass() && state.service) collapse('method', state.service);
+          if (!bypass() && state.service) {
+            collapse('method', state.service);
+            // Method answered → sizes are the next decision.
+            spScrollTo(document.getElementById('globalSizeSection'));
+          }
           saveDraftSoon();
         };
       }
+      // Colour stays OPEN after a swatch click — colour picking is
+      // exploratory (customers try a few and watch the preview), so
+      // folding the section on the first tap would fight them.
       if (typeof selectColor === 'function') {
         var _selectColor = selectColor;
         selectColor = function (el) {
           _selectColor(el);
-          if (!bypass() && state.product) collapse('color', state.colorName || '');
           saveDraftSoon();
         };
       }
@@ -6870,24 +6897,22 @@
         var _selectProductColor = selectProductColor;
         selectProductColor = function (el) {
           _selectProductColor(el);
-          if (!bypass() && state.product) collapse('color', state.colorName || '');
           syncTeaserImg();
           saveDraftSoon();
         };
       }
-      var _spApplyTierPick2 = spApplyTierPick;
-      spApplyTierPick = function (productId, garmentKey) {
-        _spApplyTierPick2(productId, garmentKey);
-        // applyCatalogProduct resolves async — collapse shortly after.
-        setTimeout(function () {
-          if (bypass() || !tierPickApplied) return;
-          var p = catalogPick;
-          collapse('tier', p ? ((p.brand || '') + ' ' + (p.style_number || '') + ' · ' + (p.name || '')) : '');
-          syncReveal();        // blank now exists → colour gate lifts
-          uncollapse('color'); // colour is the next decision — open it
-          renderTeaser();
-          saveDraftSoon();
-        }, 600);
+      // Called synchronously by spApplyTierPick the moment the blank is
+      // applied — layout settles in ONE frame, then a single smooth
+      // scroll moves to colour (the next decision).
+      window.spOnTierApplied = function () {
+        if (bypass() || !tierPickApplied) return;
+        var p = catalogPick;
+        collapse('tier', p ? ((p.brand || '') + ' ' + (p.style_number || '') + ' · ' + (p.name || '')) : '');
+        syncReveal();        // blank now exists → colour gate lifts
+        uncollapse('color'); // colour is the next decision — open it
+        renderTeaser();
+        saveDraftSoon();
+        spScrollTo(secEl('color'));
       };
       var _spClearTierPick2 = spClearTierPick;
       spClearTierPick = function () {
