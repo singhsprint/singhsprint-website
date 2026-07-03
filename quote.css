@@ -50,8 +50,11 @@
       flex-shrink:0;line-height:1;
     }
     .form-section[data-step="1"] > h2::before{content:"1"}
+    /* 2026-07-03 — the flow is 2 visible steps now: the old Step 2 form-
+       section is gone and data-step="3" (details) is visibly step 2.
+       data-step ids stay untouched so goToStep()/JS keep working. */
     .form-section[data-step="2"] > h2::before{content:"2"}
-    .form-section[data-step="3"] > h2::before{content:"3"}
+    .form-section[data-step="3"] > h2::before{content:"2"}
 
     /* Steps bar */
     .steps-bar{display:flex;gap:4px;margin-bottom:32px}
