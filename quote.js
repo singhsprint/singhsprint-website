@@ -2566,10 +2566,19 @@
       if (suf) { suf.style.display = ''; suf.textContent = '/unit'; }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
       document.getElementById('livePriceUnit').textContent = (perUnit && perUnit > 0) ? ('$' + perUnit.toFixed(2)) : '$—';
-      var tail = startingAt ? ' · starting at' : (isLive ? '' : ' · est.');
+      // Bilingual strip fragments — FR mirror shares this JS, so the label
+      // pieces come from lang.js (EN fallbacks keep the strip alive if a
+      // key is ever missing).
+      var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      var wordUnits    = _t('quote.strip.units')      || 'units';
+      var wordSide     = (sides > 1 ? (_t('quote.strip.sides') || 'sides') : (_t('quote.strip.side') || 'side'));
+      var wordStarting = _t('quote.strip.startingat') || 'starting at';
+      var wordEnter    = _t('quote.strip.enterbelow') || 'enter sizes below';
+      var wordEst      = _t('quote.strip.est')        || 'est.';
+      var tail = startingAt ? (' · ' + wordStarting) : (isLive ? '' : ' · ' + wordEst);
       var qtyLabel = qty && qty > 0
-        ? (qty + ' units · ' + sides + ' side' + (sides>1?'s':'') + tail)
-        : ('enter sizes below · ' + sides + ' side' + (sides>1?'s':'') + (startingAt ? ' · starting at' : ''));
+        ? (qty + ' ' + wordUnits + ' · ' + sides + ' ' + wordSide + tail)
+        : (wordEnter + ' · ' + sides + ' ' + wordSide + (startingAt ? ' · ' + wordStarting : ''));
       document.getElementById('livePriceQty').textContent = qtyLabel;
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (qty && perUnit) {
@@ -5637,7 +5646,8 @@
             hero +
             '<div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">' + (tierNames[t.tier] || t.tier) + (tierPickApplied === t.product_id ? ' ✓' : '') + '</div>' +
             '<div style="font-size:.85rem;font-weight:600">' + (t.brand || '') + ' ' + (t.style_number || '') + '</div>' +
-            '<div style="font-size:.76rem;color:#777;line-height:1.35;margin:2px 0 6px">' + (t.name || '') + '</div>' +
+            '<div style="font-size:.76rem;color:#777;line-height:1.35;margin:2px 0 2px">' + (t.name || '') + '</div>' +
+            '<div style="font-size:.72rem;color:#556b2f;margin:0 0 6px">' + spTierT('quote.tiers.tag.' + t.tier, '') + '</div>' +
             (from ? '<div style="font-size:.82rem"><strong>' + spTierT('quote.tiers.from', 'From') + ' ' + from + '</strong>' + spTierT('quote.tiers.perunit', '/unit') + '</div>' : '') +
             (t.color_count ? '<div style="font-size:.72rem;color:#999">' + t.color_count + ' ' + spTierT('quote.tiers.colors', 'colours') + '</div>' : '') +
             '</button>';
@@ -6669,3 +6679,397 @@
         resizeTimer = setTimeout(relocateForViewport, 150);
       });
     });
+
+    // =========================================================================
+    // UX LAYER (2026-07-04) — conversion sprint.
+    //   A. Progressive reveal: colour / source / placements / method stay
+    //      hidden until a product is picked (single-product flow only).
+    //   B. Auto-collapse: answered sections shrink to a summary bar with an
+    //      Edit affordance, so the page always shows ONE open decision.
+    //   C. Slim placements: groups beyond Front/Back sit behind "More".
+    //   D. Social proof strip above the CTAs (live Google rating).
+    //   E. Draft persistence: the form survives a closed tab (7 days).
+    //   F. Preview teaser: after a tier pick, the blank appears in the
+    //      preview panel with a "drop your logo" target.
+    // Everything hooks the existing flow by wrapping globals — cart mode and
+    // the /catalog deep-link flow bypass this layer entirely.
+    // =========================================================================
+    (function spUxLayer() {
+      var API_REVIEWS = 'https://singhsprint-crm.vercel.app/api/google-reviews';
+      var DRAFT_KEY = 'spQuoteDraft_v1';
+      var DRAFT_TTL_MS = 7 * 24 * 3600 * 1000;
+
+      function t(key, fb) {
+        var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+        return v || fb;
+      }
+      function bypass() {
+        try {
+          if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) return true;
+          if (new URLSearchParams(location.search).get('product')) return true;
+        } catch (e) {}
+        return false;
+      }
+
+      // ---- styles -------------------------------------------------------
+      var css = document.createElement('style');
+      css.textContent =
+        '.sp-gated{display:none !important}' +
+        '.sp-collapsed{display:none !important}' +
+        '.sp-sumbar{display:flex;align-items:center;justify-content:space-between;gap:12px;' +
+          'border:1px solid #e4e4e4;border-radius:12px;padding:10px 16px;margin-bottom:14px;' +
+          'background:#fafaf6;cursor:pointer}' +
+        '.sp-sumbar:hover{border-color:#bbb}' +
+        '.sp-sumbar .sp-sum-k{font-size:.7rem;font-weight:700;letter-spacing:.05em;' +
+          'text-transform:uppercase;color:#999;margin-right:6px}' +
+        '.sp-sumbar .sp-sum-v{font-size:.88rem;font-weight:600;color:#1a1a1a;flex:1;min-width:0;' +
+          'overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+        '.sp-sumbar .sp-sum-edit{font-size:.8rem;color:#666;text-decoration:underline;flex-shrink:0}' +
+        '.sp-more-hidden{display:none}' +
+        '.sp-social{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;' +
+          'padding:10px 14px;border:1px solid #eee;border-radius:12px;background:#fff;font-size:.82rem;color:#555}' +
+        '.sp-social b{color:#1a1a1a}' +
+        '.sp-draftbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fffbe6;' +
+          'border:1px solid #e6c200;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:.88rem}' +
+        '.sp-draftbar button{border:none;border-radius:50px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:.82rem}' +
+        '#spPreviewTeaser{border:1px solid #eee;border-radius:16px;padding:16px;margin:0 0 16px;background:#fff;text-align:center}' +
+        '#spPreviewTeaser img{max-width:100%;height:180px;object-fit:contain;margin-bottom:10px}' +
+        '#spPreviewTeaser .sp-drop{display:block;border:2px dashed #b9b9a8;border-radius:12px;padding:12px;' +
+          'font-size:.85rem;font-weight:600;color:#1a1a1a;cursor:pointer;background:#fafaf6}' +
+        '#spPreviewTeaser .sp-drop:hover{border-color:#1a1a1a}';
+      document.head.appendChild(css);
+
+      // ---- section registry --------------------------------------------
+      function byLabelKey(k) {
+        var lbl = document.querySelector('label [data-i18n="' + k + '"], label[data-i18n="' + k + '"]');
+        if (!lbl) return null;
+        return lbl.closest('.form-group') || lbl.closest('.color-section') || lbl.closest('.placement-section');
+      }
+      function secEl(key) {
+        switch (key) {
+          case 'product':   return document.getElementById('legacyProductGroup');
+          case 'tier':      return document.getElementById('tierBlanksSection');
+          case 'color':     return byLabelKey('quote.garmentcolor');
+          case 'source':    return byLabelKey('quote.garmentsource');
+          case 'placement': return document.querySelector('.placement-section');
+          case 'method':    return byLabelKey('quote.method');
+        }
+        return null;
+      }
+      var SUM_LABELS = {
+        product: ['quote.product.type', 'Product'],
+        tier:    ['quote.tiers.h', 'Blank quality'],
+        color:   ['quote.garmentcolor', 'Colour'],
+        source:  ['quote.garmentsource', 'Garment source'],
+        method:  ['quote.method', 'Printing method'],
+      };
+
+      function collapse(key, summary) {
+        if (bypass()) return;
+        var el = secEl(key);
+        if (!el || !summary) return;
+        el.classList.add('sp-collapsed');
+        var bar = el.previousElementSibling;
+        if (!bar || !bar.classList || !bar.classList.contains('sp-sumbar')) {
+          bar = document.createElement('div');
+          bar.className = 'sp-sumbar';
+          bar.setAttribute('role', 'button');
+          el.parentNode.insertBefore(bar, el);
+          bar.addEventListener('click', function () {
+            el.classList.remove('sp-collapsed');
+            bar.style.display = 'none';
+            try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+          });
+        }
+        var lk = SUM_LABELS[key] || ['', key];
+        bar.innerHTML = '<span><span class="sp-sum-k">' + t(lk[0], lk[1]) + '</span>' +
+          '<span class="sp-sum-v">' + summary + '</span></span>' +
+          '<span class="sp-sum-edit">' + t('quote.ux.edit', 'Edit') + '</span>';
+        bar.style.display = 'flex';
+      }
+      function uncollapse(key) {
+        var el = secEl(key);
+        if (!el) return;
+        el.classList.remove('sp-collapsed');
+        var bar = el.previousElementSibling;
+        if (bar && bar.classList && bar.classList.contains('sp-sumbar')) bar.style.display = 'none';
+      }
+
+      // ---- progressive reveal ------------------------------------------
+      function syncReveal() {
+        if (bypass()) return;
+        var gated = ['color', 'source', 'placement', 'method'];
+        var show = !!(state && state.product);
+        gated.forEach(function (k) {
+          var el = secEl(k);
+          if (el) el.classList.toggle('sp-gated', !show);
+        });
+      }
+
+      // ---- hooks into the existing flow --------------------------------
+      var _selectProduct = selectProduct;
+      selectProduct = function (el) {
+        _selectProduct(el);
+        if (bypass()) return;
+        syncReveal();
+        collapse('product', state.product);
+        uncollapse('tier');
+        // Source: rarely changed — collapse immediately with its default.
+        var srcSel = document.querySelector('[onclick="selectGarmentSource(this)"].selected strong, .method-option.selected strong');
+        collapse('source', (srcSel && srcSel.textContent) || t('quote.method.we_supply.l', 'We supply'));
+        // "Other" product: give the dead-end a path forward.
+        var hint = document.getElementById('spOtherHint');
+        if (state.product === 'Other') {
+          if (!hint) {
+            hint = document.createElement('div');
+            hint.id = 'spOtherHint';
+            hint.style.cssText = 'font-size:.85rem;color:#555;background:#fafaf6;border:1px dashed #ccc;border-radius:10px;padding:10px 14px;margin-top:10px';
+            var grid = document.querySelector('.product-grid');
+            if (grid && grid.parentNode) grid.parentNode.appendChild(hint);
+          }
+          hint.textContent = t('quote.other.hint', 'Aprons, workwear, anything at all — describe it in the notes on the next step and we’ll quote it.');
+          hint.style.display = '';
+          uncollapse('product'); // keep grid open: "Other" needs the notes hint visible
+        } else if (hint) {
+          hint.style.display = 'none';
+        }
+        saveDraftSoon();
+      };
+
+      if (typeof selectService === 'function') {
+        var _selectService = selectService;
+        selectService = function (el) {
+          _selectService(el);
+          if (!bypass() && state.service) collapse('method', state.service);
+          saveDraftSoon();
+        };
+      }
+      if (typeof selectColor === 'function') {
+        var _selectColor = selectColor;
+        selectColor = function (el) {
+          _selectColor(el);
+          if (!bypass() && state.product) collapse('color', state.colorName || '');
+          saveDraftSoon();
+        };
+      }
+      if (typeof selectProductColor === 'function') {
+        var _selectProductColor = selectProductColor;
+        selectProductColor = function (el) {
+          _selectProductColor(el);
+          if (!bypass() && state.product) collapse('color', state.colorName || '');
+          syncTeaserImg();
+          saveDraftSoon();
+        };
+      }
+      var _spApplyTierPick2 = spApplyTierPick;
+      spApplyTierPick = function (productId, garmentKey) {
+        _spApplyTierPick2(productId, garmentKey);
+        // applyCatalogProduct resolves async — collapse shortly after.
+        setTimeout(function () {
+          if (bypass() || !tierPickApplied) return;
+          var p = catalogPick;
+          collapse('tier', p ? ((p.brand || '') + ' ' + (p.style_number || '') + ' · ' + (p.name || '')) : '');
+          uncollapse('color'); // colour is the next decision — open it
+          renderTeaser();
+          saveDraftSoon();
+        }, 600);
+      };
+      var _spClearTierPick2 = spClearTierPick;
+      spClearTierPick = function () {
+        _spClearTierPick2();
+        removeTeaser();
+      };
+
+      // ---- C. slim placements ------------------------------------------
+      var _renderGroups = renderGlobalPlacementGroups;
+      renderGlobalPlacementGroups = function (garmentType) {
+        _renderGroups(garmentType);
+        var host = document.getElementById('placementGroupsHost');
+        if (!host) return;
+        var groups = [].slice.call(host.querySelectorAll('.placement-group'));
+        if (groups.length <= 2) return;
+        var hidden = groups.slice(2);
+        // Keep any group that carries an ACTIVE selection visible.
+        var activeIds = Object.values(presetByLocation || {});
+        hidden = hidden.filter(function (g) {
+          return !activeIds.some(function (id) { return g.querySelector('[data-preset="' + id + '"]'); });
+        });
+        if (!hidden.length) return;
+        hidden.forEach(function (g) { g.classList.add('sp-more-hidden'); });
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'sp-more-toggle';
+        btn.style.cssText = 'background:none;border:none;font-size:.85rem;color:#555;text-decoration:underline;cursor:pointer;padding:4px 0';
+        btn.textContent = t('quote.placement.more', 'More placement options') + ' ▾';
+        btn.addEventListener('click', function () {
+          hidden.forEach(function (g) { g.classList.remove('sp-more-hidden'); });
+          btn.remove();
+        });
+        host.appendChild(btn);
+      };
+
+      // ---- D. social proof ----------------------------------------------
+      function insertSocial() {
+        // Last .form-buttons = the details step's Order & Pay / Request a
+        // quote block — the final decision point, where reassurance earns
+        // its keep. (The first .form-buttons is Step 1's Next row.)
+        var all = document.querySelectorAll('.form-buttons');
+        var host = all.length ? all[all.length - 1] : null;
+        if (!host || document.getElementById('spSocial')) return;
+        var div = document.createElement('div');
+        div.id = 'spSocial';
+        div.className = 'sp-social';
+        div.innerHTML = '<span>⭐ <b id="spSocialRating">5.0</b> · <span id="spSocialCount">23</span> ' +
+          t('quote.social.reviews', 'Google reviews') + '</span>' +
+          '<span style="color:#ddd">|</span>' +
+          '<span>' + t('quote.social.trusted', 'Trusted by McGill Sororities, CUSEC, Concordia SSA & Montreal teams big and small') + '</span>';
+        host.parentNode.insertBefore(div, host);
+        fetch(API_REVIEWS).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+          if (!j || !j.rating) return;
+          var r = document.getElementById('spSocialRating'), c = document.getElementById('spSocialCount');
+          if (r) r.textContent = Number(j.rating).toFixed(1);
+          if (c) c.textContent = j.count;
+        }).catch(function () {});
+      }
+
+      // ---- E. draft persistence -----------------------------------------
+      var saveTimer = null;
+      function saveDraftSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 600); }
+      function saveDraft() {
+        if (bypass()) return;
+        try {
+          if (!state.product) return;
+          // The product-type CARD value, not state.product — a tier pick
+          // overwrites state.product with the blank's name ("Jersey Tee"),
+          // which wouldn't match any card on restore.
+          var cardSel = document.querySelector('.product-option.selected');
+          var productKey = (cardSel && cardSel.dataset.value) || state.product;
+          var sizes = {};
+          document.querySelectorAll('.size-grid input').forEach(function (i) {
+            if (parseInt(i.value) > 0) sizes[i.name] = i.value;
+          });
+          var fields = {};
+          ['name', 'email', 'phone', 'company', 'details'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el && el.value) fields[id] = el.value;
+          });
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            ts: Date.now(),
+            product: productKey,
+            service: state.service || '',
+            tierProduct: tierPickApplied || null,
+            tierGarment: state.garment || null,
+            colorId: (document.getElementById('catalogColorId') || {}).value || null,
+            sizes: sizes,
+            fields: fields,
+          }));
+        } catch (e) {}
+      }
+      function restoreBanner() {
+        if (bypass()) return;
+        var raw = null;
+        try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) {}
+        if (!raw) return;
+        var d = null;
+        try { d = JSON.parse(raw); } catch (e) { return; }
+        if (!d || !d.product || (Date.now() - (d.ts || 0)) > DRAFT_TTL_MS) return;
+        var form = document.getElementById('quoteForm');
+        if (!form || document.getElementById('spDraftBar')) return;
+        var totalQty = Object.values(d.sizes || {}).reduce(function (a, b) { return a + (parseInt(b) || 0); }, 0);
+        var bar = document.createElement('div');
+        bar.id = 'spDraftBar';
+        bar.className = 'sp-draftbar';
+        bar.innerHTML = '<span style="flex:1">' + t('quote.draft.back', 'Welcome back — we saved your draft') +
+          ' (<b>' + d.product + (totalQty ? ' · ' + totalQty + '</b>' : '</b>') + ')</span>' +
+          '<button type="button" id="spDraftResume" style="background:#1a1a1a;color:#fff">' + t('quote.draft.resume', 'Resume') + '</button>' +
+          '<button type="button" id="spDraftFresh" style="background:transparent;border:1px solid #999 !important;color:#555">' + t('quote.draft.fresh', 'Start fresh') + '</button>';
+        form.insertBefore(bar, form.firstChild);
+        document.getElementById('spDraftFresh').addEventListener('click', function () {
+          try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+          bar.remove();
+        });
+        document.getElementById('spDraftResume').addEventListener('click', function () {
+          bar.remove();
+          restoreDraft(d);
+        });
+      }
+      function restoreDraft(d) {
+        var card = [].slice.call(document.querySelectorAll('[onclick="selectProduct(this)"]'))
+          .filter(function (el) { return el.dataset.value === d.product; })[0];
+        if (card) selectProduct(card);
+        Object.keys(d.sizes || {}).forEach(function (n) {
+          var el = document.querySelector('.size-grid input[name="' + n + '"]');
+          if (el) el.value = d.sizes[n];
+        });
+        if (typeof updateSizeTotal === 'function') updateSizeTotal();
+        Object.keys(d.fields || {}).forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.value = d.fields[id];
+        });
+        if (d.service) {
+          var m = [].slice.call(document.querySelectorAll('[onclick="selectService(this)"]'))
+            .filter(function (el) { return (el.dataset.value || el.textContent).toLowerCase().indexOf(d.service.toLowerCase()) >= 0; })[0];
+          if (m) selectService(m);
+        }
+        if (d.tierProduct) {
+          // Re-apply the tier blank once the tier cards have painted, then
+          // re-select the saved colour once the swatches have painted.
+          setTimeout(function () {
+            spApplyTierPick(d.tierProduct, d.tierGarment || state.garment);
+            if (d.colorId) setTimeout(function () {
+              var sw = document.querySelector('.color-grid .color-swatch[data-color-id="' + d.colorId + '"]');
+              if (sw) selectProductColor(sw);
+            }, 1500);
+          }, 700);
+        }
+      }
+
+      // ---- F. preview teaser --------------------------------------------
+      function teaserImgFor() {
+        if (!catalogPick) return '';
+        var cid = (document.getElementById('catalogColorId') || {}).value;
+        var c = (catalogPick.colors || []).filter(function (x) { return x.color_id === cid; })[0];
+        return imgUrl((c && c.mockup_front_url) || catalogPick.hero_image_url || '');
+      }
+      function renderTeaser() {
+        var panel = document.querySelector('.mockup-panel');
+        if (!panel) return;
+        var el = document.getElementById('spPreviewTeaser');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'spPreviewTeaser';
+          panel.insertBefore(el, panel.firstChild.nextSibling); // after the live-price strip
+        }
+        el.innerHTML = '<img src="' + teaserImgFor() + '" alt="" onerror="this.style.display=\'none\'">' +
+          '<span class="sp-drop">⬆ ' + t('quote.teaser.drop', 'Drop your logo here — see it on the garment') + '</span>';
+        el.querySelector('.sp-drop').addEventListener('click', function () {
+          var input = document.querySelector('#placementUploadList input[type="file"]');
+          if (input) input.click();
+          else {
+            var list = document.getElementById('placementUploadList');
+            if (list) { try { list.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+          }
+        });
+      }
+      function syncTeaserImg() {
+        var el = document.querySelector('#spPreviewTeaser img');
+        if (el && catalogPick) { el.style.display = ''; el.src = teaserImgFor(); }
+      }
+      function removeTeaser() {
+        var el = document.getElementById('spPreviewTeaser');
+        if (el) el.remove();
+      }
+
+      // ---- boot -----------------------------------------------------------
+      window.addEventListener('load', function () {
+        if (bypass()) return;
+        syncReveal();
+        insertSocial();
+        restoreBanner();
+        var form = document.getElementById('quoteForm');
+        if (form) {
+          form.addEventListener('input', saveDraftSoon);
+          form.addEventListener('change', saveDraftSoon);
+        }
+      });
+    })();
