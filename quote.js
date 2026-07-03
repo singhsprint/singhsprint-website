@@ -130,6 +130,11 @@
       renderGlobalPlacementGroups(state.garment);
       // Product picked → reveal the Step-1 size grid.
       refreshGlobalSizeSection();
+      // Tier cards: switching product type drops any previously applied
+      // tier blank (its pricing belongs to the old garment) and renders
+      // the Standard/Plus/Premium cards for the new one.
+      if (typeof spClearTierPick === 'function') spClearTierPick();
+      if (typeof spRenderTierCards === 'function') spRenderTierCards(state.garment, state.product);
     }
 
     // ===== COLOR =====
@@ -5453,8 +5458,20 @@
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
           if (!data || !data.products || !data.products.length) return false;
-          var p = data.products[0];
-          var c = (p.colors || []).find(function(x) { return x.color_id === colorId; }) || p.colors[0];
+          return applyCatalogProduct(data.products[0], colorId, qtyHint, {});
+        })
+        .catch(function() { return false; });
+    }
+
+    // Shared "lock in a catalog product" path — used by the ?product=
+    // deep link (prefillFromCatalog above) AND the Standard/Plus/Premium
+    // tier cards (spRenderTierCards below). Sets catalogPick, paints the
+    // "Your pick" card + real colour swatches, and wires live pricing.
+    // opts.keepGrid: keep the legacy product-type grid visible so the
+    // tier flow still lets the customer switch product types afterwards.
+    function applyCatalogProduct(p, colorId, qtyHint, opts) {
+      opts = opts || {};
+      var c = (p.colors || []).find(function(x) { return x.color_id === colorId; }) || p.colors[0];
 
           // Paint the "Your pick" card
           document.getElementById('catalogPickImg').src        = imgUrl((c && c.mockup_front_url) || p.hero_image_url);
@@ -5488,14 +5505,20 @@
           // generic Color picker / legacy Product grid are all implied and
           // just create noise. We drive them programmatically from the pick.
           document.getElementById('catalogPick').style.display = 'flex';
-          ['legacyProductGroup','blankBrandSection','canadianBlanksSection']
+          (opts.keepGrid
+            ? ['blankBrandSection','canadianBlanksSection']
+            : ['legacyProductGroup','blankBrandSection','canadianBlanksSection'])
             .forEach(function(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; });
           // Garment Source + Garment Color both live in form-group siblings —
           // walk the catalog-pick parent to find and hide them by label text.
           document.querySelectorAll('.form-group, .color-section').forEach(function(g) {
             var lbl = g.querySelector('label');
             var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
-            if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = 'none';
+            // Tier flow (keepGrid): the customer hasn't chosen a colour yet,
+            // so keep the colour section visible — paintProductColors below
+            // swaps its static swatches for this blank's real colours.
+            if (k === 'quote.garmentsource') g.style.display = 'none';
+            if (k === 'quote.garmentcolor' && !opts.keepGrid) g.style.display = 'none';
           });
 
           // Wire state so the rest of the form knows which garment we're on
@@ -5539,8 +5562,127 @@
           // Catalog product locked in → reveal the Step-1 size grid.
           refreshGlobalSizeSection();
           return true;
+    }
+
+    // =========================================================================
+    // TIER BLANKS (2026-07-04) — Standard / Plus / Premium cards under the
+    // legacy product-type grid. Picking a tier locks in the real catalog
+    // blank behind it (via applyCatalogProduct), so colours, live pricing,
+    // stock and Order & Pay Now all reuse the catalog-pick machinery — the
+    // customer completes a full order without ever opening /catalog.
+    // Mapping is CRM-managed (Settings → Pricing → Quote-page tier blanks)
+    // and served by /api/pricing/tier-blanks.
+    // =========================================================================
+    var TIER_BLANKS_API = 'https://singhsprint-crm.vercel.app/api/pricing/tier-blanks';
+    var tierBlanksByKey = null;   // { tshirt: [{tier, product_id, ...}], ... } | null while loading
+    var tierPickApplied = null;   // product_id of the currently applied tier blank
+
+    function spFetchTierBlanks() {
+      if (tierBlanksByKey) return Promise.resolve(tierBlanksByKey);
+      return fetch(TIER_BLANKS_API)
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(json) {
+          var map = {};
+          ((json && json.tiers) || []).forEach(function(t) {
+            if (t.in_stock === false) return;      // never offer an out-of-stock blank
+            (map[t.garment_key] = map[t.garment_key] || []).push(t);
+          });
+          var order = { standard: 0, plus: 1, premium: 2 };
+          Object.keys(map).forEach(function(k) {
+            map[k].sort(function(a, b) { return (order[a.tier] || 0) - (order[b.tier] || 0); });
+          });
+          tierBlanksByKey = map;
+          return map;
         })
-        .catch(function() { return false; });
+        .catch(function() { return null; });       // CRM down → legacy flow untouched
+    }
+
+    function spTierT(key, fallback) {
+      var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+      return v || fallback;
+    }
+
+    // Render the tier cards for a garment key (or hide the section when the
+    // key has no mapping — e.g. "Other"). Called from selectProduct().
+    function spRenderTierCards(garmentKey, productLabel) {
+      var host = document.getElementById('tierBlanksSection');
+      if (!host) return;
+      // "Other" cards carry data-garment="tshirt" as a pricing fallback but
+      // must not offer t-shirt tiers.
+      if (!garmentKey || productLabel === 'Other') { host.style.display = 'none'; host.innerHTML = ''; return; }
+      spFetchTierBlanks().then(function(map) {
+        var tiers = map && map[garmentKey];
+        if (!tiers || !tiers.length) { host.style.display = 'none'; host.innerHTML = ''; return; }
+        var tierNames = {
+          standard: spTierT('quote.tiers.standard', 'Standard'),
+          plus:     spTierT('quote.tiers.plus', 'Plus'),
+          premium:  spTierT('quote.tiers.premium', 'Premium'),
+        };
+        var html = '<label style="display:block">' + spTierT('quote.tiers.h', 'Blank quality') + '</label>' +
+          '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
+          spTierT('quote.tiers.sub', 'Pick a quality tier — we handle the blank. Price updates live; you can order right away.') + '</p>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">';
+        tiers.forEach(function(t) {
+          var from = (typeof t.price_from === 'number') ? ('$' + t.price_from.toFixed(2)) : '';
+          html += '<button type="button" class="tier-card" data-tier-product="' + t.product_id + '"' +
+            ' style="text-align:left;border:2px solid ' + (tierPickApplied === t.product_id ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;padding:14px 16px;background:' + (tierPickApplied === t.product_id ? '#fafaf2' : '#fff') + ';cursor:pointer">' +
+            '<div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">' + (tierNames[t.tier] || t.tier) + (tierPickApplied === t.product_id ? ' ✓' : '') + '</div>' +
+            '<div style="font-size:.85rem;font-weight:600">' + (t.brand || '') + ' ' + (t.style_number || '') + '</div>' +
+            '<div style="font-size:.76rem;color:#777;line-height:1.35;margin:2px 0 6px">' + (t.name || '') + '</div>' +
+            (from ? '<div style="font-size:.82rem"><strong>' + spTierT('quote.tiers.from', 'From') + ' ' + from + '</strong>' + spTierT('quote.tiers.perunit', '/unit') + '</div>' : '') +
+            (t.color_count ? '<div style="font-size:.72rem;color:#999">' + t.color_count + ' ' + spTierT('quote.tiers.colors', 'colours') + '</div>' : '') +
+            '</button>';
+        });
+        html += '</div>';
+        host.innerHTML = html;
+        host.style.display = 'block';
+        host.querySelectorAll('.tier-card').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            spApplyTierPick(btn.getAttribute('data-tier-product'), garmentKey);
+          });
+        });
+      });
+    }
+
+    function spApplyTierPick(productId, garmentKey) {
+      fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(productId))
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (!data || !data.products || !data.products.length) return;
+          // Snapshot the static colour grid once so switching product type
+          // after a tier pick can restore the generic swatches.
+          var grid = document.querySelector('.color-grid');
+          if (grid && !window.__spOrigColorGrid) window.__spOrigColorGrid = grid.innerHTML;
+          applyCatalogProduct(data.products[0], null, null, { keepGrid: true });
+          tierPickApplied = productId;
+          // Re-render so the picked card shows its selected state.
+          var card = document.querySelector('.product-option.selected');
+          spRenderTierCards(garmentKey, card ? card.dataset.value : null);
+        });
+    }
+
+    // Undo a tier pick when the customer switches product type: drop the
+    // catalog lock and restore the legacy sections applyCatalogProduct hid.
+    function spClearTierPick() {
+      if (!tierPickApplied) return;
+      tierPickApplied = null;
+      catalogPick = null;
+      var pickCard = document.getElementById('catalogPick');
+      if (pickCard) pickCard.style.display = 'none';
+      ['blankBrandSection', 'canadianBlanksSection'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.style.display = '';
+      });
+      document.querySelectorAll('.form-group, .color-section').forEach(function(g) {
+        var lbl = g.querySelector('label');
+        var k = lbl ? (lbl.getAttribute('data-i18n') || '') : '';
+        if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = '';
+      });
+      var hidden = ['catalogProductId', 'catalogColorId', 'catalogVariantBrand', 'catalogVariantStyle', 'catalogVariantColor'];
+      hidden.forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+      // Restore the generic colour swatches the tier pick replaced.
+      var grid = document.querySelector('.color-grid');
+      if (grid && window.__spOrigColorGrid) grid.innerHTML = window.__spOrigColorGrid;
+      calculatePrice();
     }
 
     // Init
@@ -5570,6 +5712,9 @@
       } else {
         prefillFromCatalog();         // single-product mode — paint the card from URL
       }
+      // Warm the tier-blank mapping so the cards paint instantly on the
+      // first product-type click (payload is tiny and edge-cached).
+      if (typeof spFetchTierBlanks === 'function') spFetchTierBlanks();
     });
 
     // On submit: (1) stash hidden inputs for the Web3Forms email + (2)
