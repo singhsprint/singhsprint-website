@@ -5624,8 +5624,17 @@
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">';
         tiers.forEach(function(t) {
           var from = (typeof t.price_from === 'number') ? ('$' + t.price_from.toFixed(2)) : '';
+          // Product photo — proxied through the CRM for S&S hotlink
+          // protection, same as every other product image on the page.
+          var heroSrc = t.hero_image_url ? imgUrl(t.hero_image_url) : '';
+          var hero = heroSrc
+            ? '<img src="' + heroSrc + '" alt="" loading="lazy"' +
+              ' style="width:100%;height:92px;object-fit:contain;border-radius:10px;background:#f7f7f3;margin-bottom:8px"' +
+              ' onerror="this.style.display=\'none\'">'
+            : '';
           html += '<button type="button" class="tier-card" data-tier-product="' + t.product_id + '"' +
             ' style="text-align:left;border:2px solid ' + (tierPickApplied === t.product_id ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;padding:14px 16px;background:' + (tierPickApplied === t.product_id ? '#fafaf2' : '#fff') + ';cursor:pointer">' +
+            hero +
             '<div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">' + (tierNames[t.tier] || t.tier) + (tierPickApplied === t.product_id ? ' ✓' : '') + '</div>' +
             '<div style="font-size:.85rem;font-weight:600">' + (t.brand || '') + ' ' + (t.style_number || '') + '</div>' +
             '<div style="font-size:.76rem;color:#777;line-height:1.35;margin:2px 0 6px">' + (t.name || '') + '</div>' +
@@ -5658,7 +5667,34 @@
           // Re-render so the picked card shows its selected state.
           var card = document.querySelector('.product-option.selected');
           spRenderTierCards(garmentKey, card ? card.dataset.value : null);
+          // Blank locked in → walk the customer straight into the design
+          // step: scroll the per-placement upload block (the customize
+          // tool's entry point — uploading engages the drag/scale editor
+          // in the preview panel) into view and pulse it briefly.
+          spNudgeCustomizer();
         });
+    }
+
+    // Scroll to + briefly highlight the artwork upload block after a tier
+    // pick, so "what next?" is obvious: add your design, watch it land on
+    // the live mockup. No-op if the block isn't on the page.
+    function spNudgeCustomizer() {
+      var target = document.getElementById('placementUploadList');
+      if (!target) return;
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      var prevTransition = target.style.transition;
+      var prevShadow = target.style.boxShadow;
+      var prevRadius = target.style.borderRadius;
+      target.style.transition = 'box-shadow .4s ease';
+      target.style.borderRadius = '14px';
+      target.style.boxShadow = '0 0 0 3px #e8ff3c';
+      setTimeout(function() {
+        target.style.boxShadow = prevShadow || '';
+        setTimeout(function() {
+          target.style.transition = prevTransition || '';
+          target.style.borderRadius = prevRadius || '';
+        }, 450);
+      }, 1400);
     }
 
     // Undo a tier pick when the customer switches product type: drop the
