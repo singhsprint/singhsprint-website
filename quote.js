@@ -2564,7 +2564,7 @@
       var tail = startingAt ? ' · starting at' : (isLive ? '' : ' · est.');
       var qtyLabel = qty && qty > 0
         ? (qty + ' units · ' + sides + ' side' + (sides>1?'s':'') + tail)
-        : ('pick qty in Step 2 · ' + sides + ' side' + (sides>1?'s':'') + (startingAt ? ' · starting at' : ''));
+        : ('enter sizes below · ' + sides + ' side' + (sides>1?'s':'') + (startingAt ? ' · starting at' : ''));
       document.getElementById('livePriceQty').textContent = qtyLabel;
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (qty && perUnit) {
