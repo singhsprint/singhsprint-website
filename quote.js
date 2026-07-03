@@ -7062,9 +7062,11 @@
 
       // ---- boot -----------------------------------------------------------
       window.addEventListener('load', function () {
+        // Social proof helps every path — catalog deep-links and cart
+        // mode included. Everything else stays type-first-flow only.
+        insertSocial();
         if (bypass()) return;
         syncReveal();
-        insertSocial();
         restoreBanner();
         var form = document.getElementById('quoteForm');
         if (form) {
