@@ -1728,6 +1728,8 @@
       // so refresh the rate cards + the "Add $X more for FREE shipping"
       // delta. Debounced inside the helper so rapid keystrokes coalesce.
       if (typeof spRecalcShippingIfStale === 'function') spRecalcShippingIfStale();
+      // Quantity changed → re-evaluate the 5-piece quote minimum CTA gate.
+      if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate();
     }
 
     // 2026-07-03 — the size grid lives on Step 1 now (the old Step 2 is
@@ -1943,6 +1945,11 @@
       var form = document.getElementById('quoteForm');
       if (form) {
         form.addEventListener('submit', function() {
+          // Micro-run (1-4 pcs) submits are blocked by the quote min-qty
+          // gate below — no quote goes out, so don't fire the account
+          // OTP email either. (This listener registers before the gate,
+          // so stopImmediatePropagation can't reach it.)
+          if (typeof spIsMicroRun === 'function' && spIsMicroRun()) return;
           setTimeout(function() {
             var optin = document.getElementById('sp-quote-signup-optin');
             if (!optin || !optin.checked) return;
@@ -1972,6 +1979,99 @@
         });
       }
     })();
+
+    // ===== QUOTE MIN-QTY GATE (2026-07-03) =====
+    // Micro-runs (1-4 pieces) are checkout-only: the customer must use the
+    // "Order & Pay Now" Stripe path instead of requesting a quote. Quotes
+    // start at QUOTE_MIN_QTY pieces. Qty 0 (nothing picked yet) is NOT
+    // gated — "talk pricing first" before choosing sizes stays legit.
+    var QUOTE_MIN_QTY = 5;
+
+    // Live total across both flows: cart mode sums per-item size grids
+    // (authoritative once filled — mirrors updateCartTotal's effectiveUnits)
+    // falling back to per-line qty; legacy single-product mode reads the
+    // global size-grid total that updateSizeTotal() keeps in #totalQtyInput.
+    function spLiveTotalQty() {
+      try {
+        if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+          var items = SinghsCart.read().items;
+          var sizeTotal = 0, qtyTotal = 0;
+          items.forEach(function (it) {
+            qtyTotal += Number(it.qty) || ((it.roster && it.roster.length) || 0);
+            var sizes = (it.sizes && typeof it.sizes === 'object') ? it.sizes : {};
+            Object.keys(sizes).forEach(function (k) {
+              var n = Number(sizes[k]);
+              if (Number.isFinite(n) && n > 0) sizeTotal += n;
+            });
+          });
+          return sizeTotal > 0 ? sizeTotal : qtyTotal;
+        }
+      } catch (e) {}
+      var el = document.getElementById('totalQtyInput');
+      return el ? (parseInt(el.value, 10) || 0) : 0;
+    }
+
+    function spIsMicroRun() {
+      var q = spLiveTotalQty();
+      return q >= 1 && q < QUOTE_MIN_QTY;
+    }
+
+    // Show/hide the secondary "Request a quote instead" CTA and swap the
+    // note under the Order button. Called from updateSizeTotal(), every
+    // cart write, and on boot — so the CTA tracks the live quantity.
+    function spRefreshQuoteGate() {
+      var micro = spIsMicroRun();
+      var btn = document.getElementById('quoteInsteadBtn');
+      if (btn) btn.style.display = micro ? 'none' : '';
+      var note = document.getElementById('quoteOrderNote');
+      if (note) {
+        var key = micro ? 'quote.order.minqty.note' : 'quote.order.note';
+        if (note.getAttribute('data-i18n') !== key) {
+          note.setAttribute('data-i18n', key);
+          var txt = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+          if (txt) note.innerHTML = txt;
+        }
+      }
+      // Quantity moved back to 5+ — clear any stale blocked-submit warning.
+      var warn = document.getElementById('quoteMinQtyWarn');
+      if (warn && !micro) warn.remove();
+    }
+
+    // Inline warning shown if a micro-run submit still gets through
+    // (Enter key in a text field triggers implicit form submission even
+    // with the quote button hidden).
+    function spShowMinQtyWarn() {
+      var anchor = document.getElementById('orderPayBtn');
+      var warn = document.getElementById('quoteMinQtyWarn');
+      if (!warn) {
+        warn = document.createElement('div');
+        warn.id = 'quoteMinQtyWarn';
+        warn.style.cssText = 'background:#fff9db;border:1px solid #e6c200;border-radius:12px;padding:12px 16px;font-size:.88rem;line-height:1.5;color:#1a1a1a;text-align:left';
+        if (anchor && anchor.parentElement) {
+          anchor.parentElement.insertBefore(warn, anchor);
+        } else {
+          var form = document.getElementById('quoteForm');
+          if (form) form.appendChild(warn);
+        }
+      }
+      warn.innerHTML = (typeof SP_LANG !== 'undefined' && SP_LANG.t && SP_LANG.t('quote.order.minqty.alert'))
+        || '<strong>Quotes start at 5 pieces.</strong> For smaller runs, order directly with the secure Order &amp; Pay Now checkout above.';
+      if (anchor) { try { anchor.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+    }
+
+    // Registered BEFORE the analytics/CRM submit listener below and the
+    // structured-POST handler further down — listeners on the same element
+    // fire in registration order, so stopImmediatePropagation() here
+    // prevents a micro-run quote request from reaching pushLeadToCRM,
+    // spTrack, the /api/inbound POST, and the Web3Forms fallback.
+    document.getElementById('quoteForm').addEventListener('submit', function(e) {
+      if (this.dataset.spUploadCleared === '1') return; // native fallback pass
+      if (!spIsMicroRun()) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      spRefreshQuoteGate();
+      spShowMinQtyWarn();
+    });
 
     // ===== FORM SUBMIT =====
     document.getElementById('quoteForm').addEventListener('submit', function(e) {
@@ -3777,8 +3877,8 @@
         }
         return c;
       },
-      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); _queueCartSync(); },
-      writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} _queueCartSync(); },
+      write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); _queueCartSync(); if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate(); },
+      writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} _queueCartSync(); if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate(); },
       remove: function(i){ var c = this.read(); c.items.splice(i,1); this.write(c); },
       update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); if (Array.isArray(c.items[i].placements)) c.items[i].sides = c.items[i].placements.length; this.write(c); },
       updateSilent: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); if (Array.isArray(c.items[i].placements)) c.items[i].sides = c.items[i].placements.length; this.writeSilent(c); },
@@ -5579,6 +5679,11 @@
       // we set this and call form.submit() to let Web3Forms's native
       // multipart POST take over. The handler bails on the second pass.
       form.dataset.spUploadCleared = '0';
+
+      // Boot-time pass for the 5-piece quote minimum — a returning visitor
+      // can land with a 1-4 piece cart already in sessionStorage, so the
+      // quote CTA must be gated before they touch anything.
+      if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate();
 
       form.addEventListener('submit', function(e) {
         if (form.dataset.spUploadCleared === '1') {

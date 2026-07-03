@@ -67,15 +67,16 @@
     <!-- LEFT: Form -->
     <div>
       <div class="form-card">
+        <!-- 2026-07-03 — collapsed from 3 steps to 2 for ALL paths (see
+             /quote.html). Sizes now live on Step 1; step "3" keeps its
+             data-step id so goToStep()/JS stay untouched. -->
         <div class="steps-bar">
           <div class="step-pill active" data-step="1"></div>
-          <div class="step-pill" data-step="2"></div>
           <div class="step-pill" data-step="3"></div>
         </div>
-        <div class="steps-labels" aria-hidden="true" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:-6px 0 18px;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888">
-          <span data-step-label="1" style="color:#1a1a1a"  data-i18n="quote.step.label1">1 · Produit et design</span>
-          <span data-step-label="2"  data-i18n="quote.step.label2">2 · Tailles et quantité</span>
-          <span data-step-label="3"  data-i18n="quote.step.label3">3 · Vos coordonnées</span>
+        <div class="steps-labels" aria-hidden="true" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:-6px 0 18px;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888">
+          <span data-step-label="1" style="color:#1a1a1a"  data-i18n="quote.step.label1">1 · Produit, tailles et design</span>
+          <span data-step-label="3"  data-i18n="quote.step.label3">2 · Vos coordonnées</span>
         </div>
 
         <!-- Promo-applied confirmation banner. Hidden by default; surfaced by
@@ -453,27 +454,10 @@
                  Keeping this block in the DOM made the bottom of Step 1
                  feel redundant once cart mode was active. -->
 
-            <div class="form-buttons" style="justify-content:flex-end">
-              <button type="button" class="btn btn-primary" onclick="goToStep(2)"  data-i18n="quote.next">Suivant</button>
-            </div>
-          </div>
-
-          <!-- ===== STEP 2: Design Upload + Sizes ===== -->
-          <div class="form-section" data-step="2">
-            <h2  data-i18n="quote.step2.h">Visuel et tailles</h2>
-            <p class="step-desc"  data-i18n="quote.step2.desc">Déposez votre visuel pour le prévisualiser sur la maquette, puis indiquez les quantités par taille.</p>
-
-            <!-- 2026-05-24 — legacy single-input dropzone removed. The
-                 per-placement upload list in Step 1 has handled every
-                 case (single-product, catalog cart, bring-your-own) for
-                 several weeks with no submissions hitting the legacy
-                 fallback. JS references to #designFile / #dropZone /
-                 #fileName are now null-guarded so any straggler code
-                 path no-ops instead of throwing. -->
-
-
-            <!-- Size breakdown -->
-            <div class="size-section">
+            <!-- 2026-07-03 — Size breakdown moved here from the old Step 2.
+                 Hidden until a product is selected; hidden in cart mode.
+                 Visibility driven by refreshGlobalSizeSection() in quote.js. -->
+            <div id="globalSizeSection" class="size-section" style="display:none">
               <label  data-i18n="quote.sizes">Tailles requises</label>
               <div class="size-hint" style="font-size:.78rem;color:var(--soft,#666);margin:-4px 0 8px"  data-i18n="quote.size.surcharge">2XL et plus : supplément de <strong>3 $/pièce</strong> — tarif standard de l'industrie.</div>
               <div class="size-grid">
@@ -491,32 +475,16 @@
               <input type="hidden" name="total_quantity" id="totalQtyInput">
             </div>
 
-            <div class="form-group">
-              <label for="details"  data-i18n="quote.notes">Notes supplémentaires</label>
-              <textarea id="details" name="details" placeholder="Colors, placement notes, deadline, or anything that helps us quote accurately." data-i18n-placeholder="quote.notes.placeholder"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="purpose"  data-i18n="quote.purpose.label">Pour quoi est-ce ?</label>
-              <select id="purpose" name="purpose">
-                <option value=""  data-i18n="quote.purpose.opt0">Sélectionnez...</option>
-                <option  data-i18n="quote.purpose.opt1">Merch entreprise / marque</option>
-                <option  data-i18n="quote.purpose.opt2">Uniformes d'équipe</option>
-                <option  data-i18n="quote.purpose.opt3">Événement ou conférence</option>
-                <option  data-i18n="quote.purpose.opt4">Créateur de contenu / influenceur</option>
-                <option  data-i18n="quote.purpose.opt5">Personnel / cadeau</option>
-                <option  data-i18n="quote.purpose.opt6">Revente / boutique</option>
-                <option  data-i18n="quote.purpose.opt7">Autre</option>
-              </select>
-            </div>
-
-            <div class="form-buttons">
-              <button type="button" class="btn btn-outline" onclick="goToStep(1)"  data-i18n="quote.back">Retour</button>
+            <div class="form-buttons" style="justify-content:flex-end">
               <button type="button" class="btn btn-primary" onclick="goToStep(3)"  data-i18n="quote.next">Suivant</button>
             </div>
           </div>
 
-          <!-- ===== STEP 3: Contact Info ===== -->
+          <!-- ===== STEP 2 (removed 2026-07-03) =====
+               Sizes moved up into Step 1; notes + purpose moved down into
+               the details step. goToStep() re-routes stale goToStep(2). -->
+
+          <!-- ===== STEP 3: Contact Info (visible step 2 of 2) ===== -->
           <div class="form-section" data-step="3">
             <h2  data-i18n="quote.step3.h">Comment vous joindre ?</h2>
             <p class="step-desc"  data-i18n="quote.step3.desc">Nous vous enverrons votre soumission par courriel, souvent la même journée.</p>
@@ -578,6 +546,26 @@
                 </label>
               </div>
             </div>
+            <!-- 2026-07-03 — moved here from the old Step 2. -->
+            <div class="form-group">
+              <label for="details"  data-i18n="quote.notes">Notes supplémentaires</label>
+              <textarea id="details" name="details" placeholder="Colors, placement notes, deadline, or anything that helps us quote accurately." data-i18n-placeholder="quote.notes.placeholder"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="purpose"  data-i18n="quote.purpose.label">Pour quoi est-ce ?</label>
+              <select id="purpose" name="purpose">
+                <option value=""  data-i18n="quote.purpose.opt0">Sélectionnez...</option>
+                <option  data-i18n="quote.purpose.opt1">Merch entreprise / marque</option>
+                <option  data-i18n="quote.purpose.opt2">Uniformes d'équipe</option>
+                <option  data-i18n="quote.purpose.opt3">Événement ou conférence</option>
+                <option  data-i18n="quote.purpose.opt4">Créateur de contenu / influenceur</option>
+                <option  data-i18n="quote.purpose.opt5">Personnel / cadeau</option>
+                <option  data-i18n="quote.purpose.opt6">Revente / boutique</option>
+                <option  data-i18n="quote.purpose.opt7">Autre</option>
+              </select>
+            </div>
+
             <div class="form-group">
               <label for="hearAbout"  data-i18n="quote.contact.hear">Comment avez-vous entendu parler de nous ?</label>
               <select id="hearAbout" name="hear_about">
@@ -655,10 +643,10 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                 <span  data-i18n="quote.order.button">Commander et payer — paiement sécurisé</span>
               </button>
-              <p style="font-size:.8rem;color:#888;text-align:center;margin:-4px 0 2px;line-height:1.45"  data-i18n="quote.order.note">Payez en toute sécurité par carte ou Affirm. Vous préférez discuter du prix d'abord? Demandez une soumission ci-dessous.</p>
+              <p id="quoteOrderNote" style="font-size:.8rem;color:#888;text-align:center;margin:-4px 0 2px;line-height:1.45"  data-i18n="quote.order.note">Payez en toute sécurité par carte ou Affirm. Vous préférez discuter du prix d'abord? Demandez une soumission ci-dessous.</p>
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-                <button type="button" class="btn btn-outline" onclick="goToStep(2)"  data-i18n="quote.back">Retour</button>
-                <button type="submit" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem"  data-i18n="quote.order.quoteinstead">Demander une soumission</button>
+                <button type="button" class="btn btn-outline" onclick="goToStep(1)"  data-i18n="quote.back">Retour</button>
+                <button type="submit" id="quoteInsteadBtn" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem"  data-i18n="quote.order.quoteinstead">Demander une soumission</button>
               </div>
             </div>
           </div>
@@ -685,7 +673,7 @@
         <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap">
           <div>
             <div style="font-size:1.4rem;font-weight:700;line-height:1.1"><span id="livePriceUnit">$—</span><span id="livePriceUnitSuffix" style="font-size:.78rem;font-weight:500;color:#aaa"  data-i18n="quote.liveprice.unitsuffix">/unité</span></div>
-            <div id="livePriceQty" style="font-size:.78rem;color:#aaa;margin-top:4px"  data-i18n="quote.liveprice.pickqty">choisissez la quantité à l'étape 2</div>
+            <div id="livePriceQty" style="font-size:.78rem;color:#aaa;margin-top:4px"  data-i18n="quote.liveprice.pickqty">saisissez les tailles ci-dessous</div>
           </div>
           <div id="livePriceTotalWrap" style="display:none;text-align:right">
             <div style="font-size:.66rem;color:#aaa;text-transform:uppercase;letter-spacing:.06em"  data-i18n="quote.liveprice.total">Total</div>
@@ -937,7 +925,7 @@
           <div class="summary-row"><span  data-i18n="quote.summary.color">Couleur</span><span id="sumColor">Black</span></div>
           <div class="summary-row"><span  data-i18n="quote.summary.placement">Emplacement</span><span id="sumPlacement">Front</span></div>
           <div class="summary-row"><span  data-i18n="quote.summary.method">Méthode</span><span id="sumMethod"  data-i18n="quote.summary.pickstep1">Choisir à l'étape 1</span></div>
-          <div class="summary-row"><span  data-i18n="quote.summary.totalunits">Total d'unités</span><span id="sumQty"  data-i18n="quote.summary.setstep2">À l'étape 2</span></div>
+          <div class="summary-row"><span  data-i18n="quote.summary.totalunits">Total d'unités</span><span id="sumQty"  data-i18n="quote.summary.setstep2">À l'étape 1</span></div>
 
           <!-- Price calculator section (hidden until product+method+qty selected) -->
           <div class="price-section" id="priceSection" style="display:none">

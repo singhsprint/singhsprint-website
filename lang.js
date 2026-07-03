@@ -647,7 +647,7 @@ var SP_LANG = (function() {
       fr: 'Créez votre maquette, choisissez vos options et demandez une soumission en quelques minutes. Aucun compte requis.'
     },
     'quote.step1.h': { en: 'Choose your product', fr: 'Choisissez votre produit' },
-    'quote.step1.desc': { en: 'Select a garment type to start building your order.', fr: 'Sélectionnez un type de vêtement pour commencer votre commande.' },
+    'quote.step1.desc': { en: 'Pick your product, placements, and sizes — all in one place.', fr: 'Choisissez votre produit, les emplacements et les tailles — tout au même endroit.' },
     'quote.step2.h': { en: 'Upload your design & sizes', fr: 'Visuel et tailles' },
     'quote.step2.desc': { en: 'Drop your artwork to preview it on the mockup, then tell us how many of each size you need.', fr: 'Déposez votre visuel pour le prévisualiser sur la maquette, puis indiquez les quantités par taille.' },
     'quote.step3.h': { en: 'How do we reach you?', fr: 'Comment vous joindre ?' },
@@ -660,6 +660,8 @@ var SP_LANG = (function() {
     'quote.order.button': { en: 'Order & Pay Now — secure checkout', fr: 'Commander et payer — paiement sécurisé' },
     'quote.order.note': { en: 'Pay securely by card or Affirm. Prefer to talk pricing first? Request a quote below.', fr: 'Payez en toute sécurité par carte ou Affirm. Vous préférez discuter du prix d\'abord? Demandez une soumission ci-dessous.' },
     'quote.order.quoteinstead': { en: 'Request a quote instead', fr: 'Demander une soumission' },
+    'quote.order.minqty.note': { en: 'Orders under 5 pieces are checkout-only — hit <strong>Order &amp; Pay Now</strong> above and you\'re done. Quote requests start at 5 pieces.', fr: 'Les commandes de moins de 5 pièces passent directement à la caisse — cliquez sur <strong>Commander et payer</strong> ci-dessus et c\'est réglé. Les demandes de soumission commencent à 5 pièces.' },
+    'quote.order.minqty.alert': { en: '<strong>Quotes start at 5 pieces.</strong> For smaller runs, order directly with the secure Order &amp; Pay Now checkout above — same pricing, no waiting on an email.', fr: '<strong>Les soumissions commencent à 5 pièces.</strong> Pour les plus petites quantités, commandez directement avec le paiement sécurisé « Commander et payer » ci-dessus — même prix, sans attendre un courriel.' },
     'quote.garmentcolor': { en: 'Garment Color', fr: 'Couleur du vêtement' },
     'quote.placement': { en: 'Print Placement', fr: 'Emplacement de l\'impression' },
     'quote.placement.front': { en: 'Front', fr: 'Avant' },
@@ -971,9 +973,9 @@ var SP_LANG = (function() {
     'cat.detail.specs-suffix': { en: 'specs ▾', fr: 'specs ▾' },
 
     // ===== QUOTE ADDITIONS =====
-    'quote.step.label1': { en: '1 · Product &amp; design', fr: '1 · Produit et design' },
+    'quote.step.label1': { en: '1 · Product, sizes &amp; design', fr: '1 · Produit, tailles et design' },
     'quote.step.label2': { en: '2 · Sizes &amp; quantity', fr: '2 · Tailles et quantité' },
-    'quote.step.label3': { en: '3 · Your details', fr: '3 · Vos coordonnées' },
+    'quote.step.label3': { en: '2 · Your details', fr: '2 · Vos coordonnées' },
     'quote.cart.addmore': { en: '+ Add another item from catalog', fr: '+ Ajouter un autre article du catalogue' },
     'quote.cart.change': { en: 'Change product', fr: 'Changer de produit' },
     'quote.cart.empty.title': { en: 'Pick your blank from the catalog', fr: 'Choisissez votre vêtement dans le catalogue' },
@@ -1043,7 +1045,7 @@ var SP_LANG = (function() {
     },
     'quote.liveprice.tag': { en: 'Live estimate', fr: 'Estimation en direct' },
     'quote.liveprice.unitsuffix': { en: '/unit', fr: '/unité' },
-    'quote.liveprice.pickqty': { en: 'pick qty in Step 2', fr: 'choisissez la quantité à l\'étape 2' },
+    'quote.liveprice.pickqty': { en: 'enter sizes below', fr: 'saisissez les tailles ci-dessous' },
     'quote.liveprice.total': { en: 'Total', fr: 'Total' },
     'quote.liveprice.note': {
       en: 'Final quote may vary based on artwork complexity, decoration method, and delivery deadline.',
@@ -1131,7 +1133,7 @@ var SP_LANG = (function() {
     'quote.summary.product.label': { en: 'Product', fr: 'Produit' },
     'quote.summary.totalunits': { en: 'Total units', fr: 'Total d\'unités' },
     'quote.summary.pickstep1': { en: 'Pick in step 1', fr: 'Choisir à l\'étape 1' },
-    'quote.summary.setstep2': { en: 'Set in step 2', fr: 'À l\'étape 2' },
+    'quote.summary.setstep2': { en: 'Set in step 1', fr: 'À l\'étape 1' },
     'quote.view.front': { en: 'Front', fr: 'Avant' },
     'quote.view.back': { en: 'Back', fr: 'Arrière' },
     'quote.foot.approx': { en: 'Approximate preview. Final placement confirmed during production.', fr: 'Aperçu approximatif. Emplacement final confirmé lors de la production.' },
