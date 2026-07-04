@@ -7005,14 +7005,22 @@
         // once the tier converts anyway. Products without tiers (both
         // sections empty) reveal immediately, preserving the legacy flow.
         var pending = qtyChoicePending() || tierChoicePending();
+        // Gating a section must also hide its summary bar — a collapsed
+        // answer for a question that isn't relevant yet reads as noise.
+        function gateSec(el, gatedBool) {
+          if (!el) return;
+          el.classList.toggle('sp-gated', gatedBool);
+          var bar = el.previousElementSibling;
+          if (bar && bar.classList && bar.classList.contains('sp-sumbar')) {
+            bar.style.display = (!gatedBool && el.classList.contains('sp-collapsed')) ? 'flex' : 'none';
+          }
+        }
         ['source', 'placement', 'method'].forEach(function (k) {
-          var el = secEl(k);
-          if (el) el.classList.toggle('sp-gated', !(show && !pending));
+          gateSec(secEl(k), !(show && !pending));
         });
         var sizesEl = document.getElementById('globalSizeSection');
         if (sizesEl) sizesEl.classList.toggle('sp-gated', !(show && !pending));
-        var colorEl = secEl('color');
-        if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !pending));
+        gateSec(secEl('color'), !(show && !pending));
         // The live-estimate strip too: state.garment defaults to 'tshirt',
         // so pre-pick the strip would show a t-shirt category price the
         // visitor never asked for. Price appears once a product is chosen —
