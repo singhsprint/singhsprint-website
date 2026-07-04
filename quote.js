@@ -7071,11 +7071,10 @@
         var c = (catalogPick.colors || []).filter(function (x) { return x.color_id === cid; })[0];
         return imgUrl((c && c.mockup_front_url) || catalogPick.hero_image_url || '');
       }
-      // The teaser's promise is "see it on the garment", so a landed file
-      // must end in the drag/scale customizer, not just silent storage:
-      //   drop a file       → attach to the active placement → customizer
-      //   click, no art yet → open the file picker → attach → customizer
-      //   click, art exists → straight into the customizer
+      // The garment card carries the SAME "Customize & preview" button the
+      // catalog flow uses (#spCustomizeBtn is physically relocated under the
+      // photo, keeping all its existing state wiring). No novel drop-zone
+      // pattern — though a file dragged onto the card still quietly works.
       function spTeaserActivePreset() {
         try {
           var ids = Object.values(presetByLocation || {});
@@ -7089,11 +7088,14 @@
         } catch (e) { return false; }
       }
       function spTeaserLabel() {
-        var dropEl = document.querySelector('#spPreviewTeaser .sp-drop');
-        if (!dropEl) return;
-        dropEl.innerHTML = spTeaserHasArt()
-          ? '✓ ' + t('quote.teaser.edit', 'Logo added — tap to adjust it on the garment')
-          : '⬆ ' + t('quote.teaser.drop', 'Drop your logo here — see it on the garment');
+        // Reflect "art attached, mockup not baked yet" on the shared button.
+        // spMarkCustomized() overwrites this once a mockup exists — correct.
+        var btn = document.getElementById('spCustomizeBtn');
+        if (!btn || !document.getElementById('spPreviewTeaser')) return;
+        var span = btn.querySelector('span');
+        if (span && spTeaserHasArt() && span.textContent.indexOf('✓') === -1) {
+          span.textContent = '✓ ' + t('quote.teaser.edit', 'Logo added — tap to adjust it on the garment');
+        }
       }
       function renderTeaser() {
         var panel = document.querySelector('.mockup-panel');
@@ -7104,36 +7106,43 @@
           el.id = 'spPreviewTeaser';
           panel.insertBefore(el, panel.firstChild.nextSibling); // after the live-price strip
         }
-        el.innerHTML = '<img src="' + teaserImgFor() + '" alt="" onerror="this.style.display=\'none\'">' +
-          '<span class="sp-drop"></span>';
+        el.innerHTML = '<img src="' + teaserImgFor() + '" alt="" onerror="this.style.display=\'none\'">';
+        // Relocate the standard customize button under the photo — same
+        // element, same onclick, same state updates. Remember its home so
+        // clearing the tier pick can put it back.
+        var btn = document.getElementById('spCustomizeBtn');
+        if (btn) {
+          if (!btn.__spHome) btn.__spHome = { parent: btn.parentNode, next: btn.nextSibling };
+          el.appendChild(btn);
+          btn.style.display = 'flex';
+          btn.style.margin = '0';
+        }
         spTeaserLabel();
-        var drop = el.querySelector('.sp-drop');
-        drop.addEventListener('click', function () {
-          if (spTeaserHasArt() && typeof spLaunchCustomizer === 'function') { spLaunchCustomizer(); return; }
-          var input = document.querySelector('#placementUploadList input[type="file"]');
-          if (input) input.click();
-          else {
-            var list = document.getElementById('placementUploadList');
-            if (list) { try { list.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
-          }
-        });
-        // Real drag-and-drop — the label says "drop", so drops must work.
-        drop.addEventListener('dragover', function (e) {
+        // Quiet drag-and-drop bonus on the whole card (no visual promise).
+        el.addEventListener('dragover', function (e) { e.preventDefault(); el.style.borderColor = '#1a1a1a'; });
+        el.addEventListener('dragleave', function () { el.style.borderColor = '#eee'; });
+        el.addEventListener('drop', function (e) {
           e.preventDefault();
-          drop.style.borderColor = '#1a1a1a';
-          drop.style.background = '#f4ffcf';
-        });
-        drop.addEventListener('dragleave', function () {
-          drop.style.borderColor = '#b9b9a8';
-          drop.style.background = '#fafaf6';
-        });
-        drop.addEventListener('drop', function (e) {
-          e.preventDefault();
-          drop.style.borderColor = '#b9b9a8';
-          drop.style.background = '#fafaf6';
+          el.style.borderColor = '#eee';
           var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
           if (f && typeof attachPlacementFile === 'function') attachPlacementFile(spTeaserActivePreset(), f);
         });
+      }
+
+      // "Customize & preview" with no artwork yet (single-product flow):
+      // open the file picker instead of the old "add your artwork first"
+      // alert — picking a file drops straight into the customizer below.
+      if (typeof spLaunchCustomizer === 'function') {
+        var _spLaunchCust = spLaunchCustomizer;
+        spLaunchCustomizer = function () {
+          var hasCart = false;
+          try { hasCart = SinghsCart.count() > 0; } catch (e) {}
+          if (!hasCart && !spTeaserHasArt()) {
+            var input = document.querySelector('#placementUploadList input[type="file"]');
+            if (input) { input.click(); return; }
+          }
+          _spLaunchCust();
+        };
       }
 
       // Any placement upload while the teaser is live (tier flow) opens the
@@ -7159,7 +7168,19 @@
       }
       function removeTeaser() {
         var el = document.getElementById('spPreviewTeaser');
-        if (el) el.remove();
+        if (!el) return;
+        // Send the shared customize button back to its original spot in the
+        // reassure card before tearing the teaser down.
+        var btn = document.getElementById('spCustomizeBtn');
+        if (btn && btn.__spHome && el.contains(btn)) {
+          btn.style.margin = '';
+          if (btn.__spHome.next && btn.__spHome.next.parentNode === btn.__spHome.parent) {
+            btn.__spHome.parent.insertBefore(btn, btn.__spHome.next);
+          } else {
+            btn.__spHome.parent.appendChild(btn);
+          }
+        }
+        el.remove();
       }
 
       // ---- boot -----------------------------------------------------------
