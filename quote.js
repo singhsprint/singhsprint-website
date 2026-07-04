@@ -5668,21 +5668,40 @@
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
           if (!data || !data.products || !data.products.length) return;
-          // Snapshot the static colour grid once so switching product type
-          // after a tier pick can restore the generic swatches.
-          var grid = document.querySelector('.color-grid');
-          if (grid && !window.__spOrigColorGrid) window.__spOrigColorGrid = grid.innerHTML;
-          applyCatalogProduct(data.products[0], null, null, { keepGrid: true });
-          tierPickApplied = productId;
-          // Re-render so the picked card shows its selected state.
-          var card = document.querySelector('.product-option.selected');
-          spRenderTierCards(garmentKey, card ? card.dataset.value : null);
-          // Blank locked in → hand off to the UX layer (collapses the tier
-          // section synchronously and walks the viewport to the NEXT
-          // decision in one smooth motion — no post-hoc layout shifts).
-          // Fallback: nudge the upload block like before.
+          var p = data.products[0];
+          var c = (p.colors || [])[0] || {};
+          // A tier pick lands as a CART ROW — the exact same card the
+          // catalog flow produces, with its inline Customize / editable
+          // qty / swatch strip / Remove already wired. One pattern
+          // everywhere; cart mode owns the page from here.
+          // (Item shape mirrors catalog.js's SinghsCart.add payload.
+          // sides:1 lets the read() migration derive a garment-aware
+          // default placement — cap-front for hats, center-chest for tees.)
+          var item = {
+            product_id:      p.product_id,
+            color_id:        c.color_id || null,
+            color_name:      c.color_name || '',
+            brand:           p.brand || '',
+            style_number:    p.style_number || '',
+            name:            p.name || '',
+            garment_type:    p.garment_type || garmentKey || null,
+            hero_url:        (c && c.mockup_front_url) || p.hero_image_url || '',
+            qty:             50,
+            sides:           1,
+            sizes:           {},
+            decoration_type: '',
+          };
+          var cart = SinghsCart.read();
+          var dup = null;
+          for (var i = 0; i < cart.items.length; i++) {
+            if (cart.items[i].product_id === item.product_id && cart.items[i].color_id === item.color_id) { dup = cart.items[i]; break; }
+          }
+          if (!dup) { cart.items.push(item); }
+          SinghsCart.write(cart);   // renders the cart row + flips to cart mode
+          tierPickApplied = null;   // no single-flow tier state in cart mode
+          // Hand off to the UX layer to fold the guided-reveal scaffolding
+          // away (cart mode has its own self-contained per-row UI).
           if (typeof spOnTierApplied === 'function') spOnTierApplied();
-          else spNudgeCustomizer();
         });
     }
 
@@ -6901,18 +6920,26 @@
           saveDraftSoon();
         };
       }
-      // Called synchronously by spApplyTierPick the moment the blank is
-      // applied — layout settles in ONE frame, then a single smooth
-      // scroll moves to colour (the next decision).
+      // Called by spApplyTierPick once the blank has landed as a cart row.
+      // Cart mode's own per-row UI (Customize / qty / swatches / Remove)
+      // owns the page now — fold the guided-reveal scaffolding away in one
+      // frame, then land the eye on the new row.
       window.spOnTierApplied = function () {
-        if (bypass() || !tierPickApplied) return;
-        var p = catalogPick;
-        collapse('tier', p ? ((p.brand || '') + ' ' + (p.style_number || '') + ' · ' + (p.name || '')) : '');
-        syncReveal();        // blank now exists → colour gate lifts
-        uncollapse('color'); // colour is the next decision — open it
-        renderTeaser();
-        saveDraftSoon();
-        spScrollTo(secEl('color'));
+        removeTeaser();
+        var tierHost = document.getElementById('tierBlanksSection');
+        if (tierHost) { tierHost.style.display = 'none'; tierHost.innerHTML = ''; }
+        document.querySelectorAll('.sp-sumbar').forEach(function (b) { b.remove(); });
+        document.querySelectorAll('.sp-gated, .sp-collapsed').forEach(function (el) {
+          el.classList.remove('sp-gated');
+          el.classList.remove('sp-collapsed');
+        });
+        var hint = document.getElementById('spOtherHint');
+        if (hint) hint.remove();
+        // The cart persists itself (sessionStorage) — retire the single-flow draft.
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+        var bar = document.getElementById('spDraftBar');
+        if (bar) bar.remove();
+        spScrollTo(document.getElementById('cartList'));
       };
       var _spClearTierPick2 = spClearTierPick;
       spClearTierPick = function () {
@@ -7052,14 +7079,10 @@
           if (m) selectService(m);
         }
         if (d.tierProduct) {
-          // Re-apply the tier blank once the tier cards have painted, then
-          // re-select the saved colour once the swatches have painted.
+          // Re-apply the tier blank once the tier cards have painted — it
+          // lands as a cart row (cart mode persists itself from there).
           setTimeout(function () {
             spApplyTierPick(d.tierProduct, d.tierGarment || state.garment);
-            if (d.colorId) setTimeout(function () {
-              var sw = document.querySelector('.color-grid .color-swatch[data-color-id="' + d.colorId + '"]');
-              if (sw) selectProductColor(sw);
-            }, 1500);
           }, 700);
         }
       }
