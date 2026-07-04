@@ -6847,6 +6847,12 @@
         });
         var colorEl = secEl('color');
         if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !tierChoicePending()));
+        // The live-estimate strip too: state.garment defaults to 'tshirt',
+        // so pre-pick the strip would show a t-shirt category price the
+        // visitor never asked for. Price appears once a product is chosen —
+        // then "starting at" describes THEIR selection.
+        var strip = document.getElementById('livePriceStrip');
+        if (strip) strip.classList.toggle('sp-gated', !show);
       }
 
       // ---- hooks into the existing flow --------------------------------
