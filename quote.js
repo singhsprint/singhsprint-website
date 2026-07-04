@@ -5733,6 +5733,9 @@
             spApplyTierPick(btn.getAttribute('data-tier-product'), garmentKey);
           });
         });
+        // Sections just changed visibility — let the reveal layer re-gate
+        // downstream sections now that the tier question is on screen.
+        if (typeof window.spOnTierCardsPainted === 'function') window.spOnTierCardsPainted();
         // Reprice each card at the chosen band's representative qty — the
         // cached engine price the customer will actually pay at that tier,
         // not the 200-unit "from" floor. "Not sure" keeps the from-price.
@@ -7030,6 +7033,10 @@
           saveDraftSoon();
         };
       }
+      // The tier grid paints async — every time it does, re-evaluate the
+      // gates so downstream sections wait exactly as long as they should.
+      window.spOnTierCardsPainted = function () { syncReveal(); };
+
       // Band chosen → fold the chips into a summary bar and walk to the
       // tier cards (now priced at that quantity).
       window.spOnQtyBandPicked = function (band) {
