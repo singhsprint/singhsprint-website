@@ -4536,6 +4536,17 @@
       var placementsKey = placementsArr.join(',');
       var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey;
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
+      // localStorage read-through (6h TTL): the qty ladder + tier cards
+      // fire several of these per pick — returning visitors and repeat
+      // picks skip the network entirely.
+      try {
+        var lsHit = JSON.parse(localStorage.getItem('spPrice_' + key) || 'null');
+        if (lsHit && typeof lsHit.p === 'number' && (Date.now() - lsHit.ts) < 6 * 3600 * 1000) {
+          _priceCache[key] = lsHit.p;
+          cb(lsHit.p);
+          return;
+        }
+      } catch (e) {}
       var url = PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(productId) +
         '&qty=' + qty + '&sides=' + sides +
@@ -4545,7 +4556,10 @@
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
           var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
-          if (p != null) _priceCache[key] = p;
+          if (p != null) {
+            _priceCache[key] = p;
+            try { localStorage.setItem('spPrice_' + key, JSON.stringify({ p: p, ts: Date.now() })); } catch (e) {}
+          }
           cb(p);
         }).catch(function(){ cb(null); });
     }
@@ -5657,7 +5671,7 @@
         var on = spQtyBand && spQtyBand.id === b.id;
         var popular = b.id === 'b25';
         html += '<button type="button" class="qty-band" data-band="' + b.id + '"' +
-          ' style="position:relative;text-align:center;border:2px solid ' + (on ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;' +
+          ' style="position:relative;text-align:center;border:2px solid ' + (on ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;color:#1a1a1a;' +
           'padding:' + (popular ? '18px 8px 12px' : '14px 8px 12px') + ';background:' + (on ? '#fafaf2' : '#fff') + ';cursor:pointer">' +
           (popular ? '<span style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#e8ff3c;' +
             'border-radius:50px;padding:2px 10px;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap">' +
