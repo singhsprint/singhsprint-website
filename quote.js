@@ -6903,8 +6903,8 @@
           'overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
         '.sp-sumbar .sp-sum-edit{font-size:.8rem;color:#666;text-decoration:underline;flex-shrink:0}' +
         '.sp-more-hidden{display:none}' +
-        '.sp-social{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;' +
-          'padding:10px 14px;border:1px solid #eee;border-radius:12px;background:#fff;font-size:.82rem;color:#555}' +
+        '.sp-social{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;margin:0 0 16px;' +
+          'padding:12px 16px;border:1px solid #eee;border-radius:12px;background:#fff;font-size:.82rem;color:#555}' +
         '.sp-social b{color:#1a1a1a}' +
         '#quoteForm{overflow-anchor:none}' +
         '#quoteForm .form-group,#quoteForm .color-section,#quoteForm .placement-section{scroll-margin-top:90px}' +
@@ -7194,6 +7194,17 @@
       };
 
       // ---- D. social proof ----------------------------------------------
+      // Star row rendered from the live rating (4.7 → 5 filled reads wrong;
+      // fill what the number earns, grey the rest).
+      function spStarsHtml(rating) {
+        var filled = Math.round(Number(rating) || 5);
+        if (filled > 5) filled = 5;
+        var out = '';
+        for (var i = 1; i <= 5; i++) {
+          out += '<span style="color:' + (i <= filled ? '#f0b400' : '#ddd') + '">★</span>';
+        }
+        return out;
+      }
       function insertSocial() {
         // Last .form-buttons = the details step's Order & Pay / Request a
         // quote block — the final decision point, where reassurance earns
@@ -7201,19 +7212,35 @@
         var all = document.querySelectorAll('.form-buttons');
         var host = all.length ? all[all.length - 1] : null;
         if (!host || document.getElementById('spSocial')) return;
+        var CLIENTS = ['McGill Sororities', 'CUSEC', 'Concordia SSA'];
+        var chip = 'display:inline-block;background:#fafaf6;border:1px solid #e4e4e4;border-radius:50px;' +
+          'padding:3px 11px;font-size:.74rem;font-weight:600;color:#444;white-space:nowrap';
         var div = document.createElement('div');
         div.id = 'spSocial';
         div.className = 'sp-social';
-        div.innerHTML = '<span>⭐ <b id="spSocialRating">5.0</b> · <span id="spSocialCount">23</span> ' +
-          t('quote.social.reviews', 'Google reviews') + '</span>' +
-          '<span style="color:#ddd">|</span>' +
-          '<span>' + t('quote.social.trusted', 'Trusted by McGill Sororities, CUSEC, Concordia SSA & Montreal teams big and small') + '</span>';
+        div.innerHTML =
+          // Rating row — links to the real Google listing (tap to verify).
+          '<a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener"' +
+            ' style="display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:#1a1a1a">' +
+            '<span id="spSocialStars" style="font-size:.95rem;letter-spacing:1.5px;line-height:1">' + spStarsHtml(5) + '</span>' +
+            '<strong id="spSocialRating" style="font-size:.9rem">5.0</strong>' +
+            '<span style="color:#888;font-size:.8rem;text-decoration:underline;text-underline-offset:2px">' +
+              '<span id="spSocialCount">23</span> ' + t('quote.social.reviews', 'Google reviews') + '</span>' +
+          '</a>' +
+          // Client chips — proof with visual weight, in the site's pill language.
+          '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:6px">' +
+            '<span style="color:#999;font-size:.74rem">' + t('quote.social.trustedby', 'Trusted by') + '</span>' +
+            CLIENTS.map(function (c2) { return '<span style="' + chip + '">' + c2 + '</span>'; }).join('') +
+            '<span style="color:#999;font-size:.74rem">' + t('quote.social.tail', '+ Montreal teams big and small') + '</span>' +
+          '</span>';
         host.parentNode.insertBefore(div, host);
         fetch(API_REVIEWS).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
           if (!j || !j.rating) return;
           var r = document.getElementById('spSocialRating'), c = document.getElementById('spSocialCount');
+          var s = document.getElementById('spSocialStars');
           if (r) r.textContent = Number(j.rating).toFixed(1);
           if (c) c.textContent = j.count;
+          if (s) s.innerHTML = spStarsHtml(j.rating);
         }).catch(function () {});
       }
 

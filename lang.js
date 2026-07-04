@@ -692,6 +692,8 @@ var SP_LANG = (function() {
     'quote.placement.more': { en: 'More placement options', fr: 'Plus d\'emplacements' },
     'quote.social.reviews': { en: 'Google reviews', fr: 'avis Google' },
     'quote.social.trusted': { en: 'Trusted by McGill Sororities, CUSEC, Concordia SSA & Montreal teams big and small', fr: 'La confiance des sororités de McGill, CUSEC, Concordia SSA et d\'équipes montréalaises de toutes tailles' },
+    'quote.social.trustedby': { en: 'Trusted by', fr: 'Ils nous font confiance :' },
+    'quote.social.tail': { en: '+ Montreal teams big and small', fr: '+ des équipes montréalaises de toutes tailles' },
     'quote.draft.back': { en: 'Welcome back — we saved your draft', fr: 'Bon retour — votre brouillon est sauvegardé' },
     'quote.draft.resume': { en: 'Resume', fr: 'Reprendre' },
     'quote.draft.fresh': { en: 'Start fresh', fr: 'Recommencer' },
