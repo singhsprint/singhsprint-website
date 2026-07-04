@@ -226,6 +226,12 @@
               <input type="hidden" name="product" id="productInput" required>
             </div>
 
+            <!-- Rough quantity bands — painted by spRenderTierCards() after a
+                 product-type pick. Chips mirror the pricing tiers, so every
+                 tier-card price below is computed at the customer's real
+                 quantity instead of a bulk "from" floor. -->
+            <div class="form-group" id="qtyBandSection" style="display:none"></div>
+
             <!-- Tier blanks (Standard / Plus / Premium) — painted by
                  spRenderTierCards() in quote.js after a product-type pick.
                  Picking a tier locks in a real catalog blank (colours,

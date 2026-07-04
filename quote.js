@@ -5611,17 +5611,84 @@
       return v || fallback;
     }
 
+    // ---- Rough quantity bands (2026-07-04) --------------------------------
+    // Asked right after product type, BEFORE the tier cards, so every price
+    // that follows is computed at the customer's real quantity. Bands mirror
+    // the pricing engine's tiers; `qty` is the representative count used for
+    // tier-card pricing and the cart-row prefill.
+    var SP_QTY_BANDS = [
+      { id: 'u5',   label: 'Under 5',  qty: 3 },
+      { id: 'b5',   label: '5–9',      qty: 6 },
+      { id: 'b10',  label: '10–24',    qty: 15 },
+      { id: 'b25',  label: '25–49',    qty: 30 },
+      { id: 'b50',  label: '50–99',    qty: 50 },
+      { id: 'b100', label: '100–249',  qty: 120 },
+      { id: 'b250', label: '250+',     qty: 250 },
+      { id: 'ns',   label: 'Not sure yet', qty: null },
+    ];
+    var spQtyBand = null;   // selected band object | null while unanswered
+
+    function spQtyBandLabel(b) {
+      if (b.id === 'u5') return spTierT('quote.qty.under5', 'Under 5');
+      if (b.id === 'ns') return spTierT('quote.qty.notsure', 'Not sure yet');
+      return b.label;
+    }
+
+    function spRenderQtyBands(garmentKey, productLabel) {
+      var host = document.getElementById('qtyBandSection');
+      if (!host) return;
+      var html = '<label style="display:block">' + spTierT('quote.qty.h', 'How many do you need?') + '</label>' +
+        '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
+        spTierT('quote.qty.sub', 'A rough count is fine — you’ll fine-tune exact sizes later. Quantity drives your per-unit price.') + '</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      SP_QTY_BANDS.forEach(function (b) {
+        var on = spQtyBand && spQtyBand.id === b.id;
+        html += '<button type="button" class="qty-band" data-band="' + b.id + '"' +
+          ' style="border:2px solid ' + (on ? '#1a1a1a' : '#e4e4e4') + ';border-radius:50px;padding:10px 18px;' +
+          'background:' + (on ? '#fafaf2' : '#fff') + ';font-size:.88rem;font-weight:600;cursor:pointer">' +
+          spQtyBandLabel(b) + (on ? ' ✓' : '') + '</button>';
+      });
+      html += '</div>';
+      host.innerHTML = html;
+      host.style.display = 'block';
+      host.querySelectorAll('.qty-band').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          spSetQtyBandById(btn.getAttribute('data-band'), garmentKey, productLabel);
+        });
+      });
+    }
+
+    function spSetQtyBandById(bandId, garmentKey, productLabel) {
+      var band = null;
+      for (var i = 0; i < SP_QTY_BANDS.length; i++) { if (SP_QTY_BANDS[i].id === bandId) { band = SP_QTY_BANDS[i]; break; } }
+      if (!band) return;
+      spQtyBand = band;
+      spRenderQtyBands(garmentKey, productLabel);   // refresh selected state
+      spRenderTierCards(garmentKey, productLabel);  // tier cards now price at this qty
+      if (typeof window.spOnQtyBandPicked === 'function') window.spOnQtyBandPicked(band);
+    }
+
     // Render the tier cards for a garment key (or hide the section when the
     // key has no mapping — e.g. "Other"). Called from selectProduct().
     function spRenderTierCards(garmentKey, productLabel) {
       var host = document.getElementById('tierBlanksSection');
+      var qtyHost = document.getElementById('qtyBandSection');
       if (!host) return;
+      function hideBoth() {
+        host.style.display = 'none'; host.innerHTML = '';
+        if (qtyHost) { qtyHost.style.display = 'none'; qtyHost.innerHTML = ''; }
+      }
       // "Other" cards carry data-garment="tshirt" as a pricing fallback but
       // must not offer t-shirt tiers.
-      if (!garmentKey || productLabel === 'Other') { host.style.display = 'none'; host.innerHTML = ''; return; }
+      if (!garmentKey || productLabel === 'Other') { hideBoth(); return; }
       spFetchTierBlanks().then(function(map) {
         var tiers = map && map[garmentKey];
-        if (!tiers || !tiers.length) { host.style.display = 'none'; host.innerHTML = ''; return; }
+        if (!tiers || !tiers.length) { hideBoth(); return; }
+        // Quantity first: chips always render; the tier cards wait until a
+        // band is chosen so their prices can be honest from the first paint.
+        spRenderQtyBands(garmentKey, productLabel);
+        if (!spQtyBand) { host.style.display = 'none'; host.innerHTML = ''; return; }
+        var bandQty = spQtyBand.qty;   // null for "not sure" → from-prices
         var tierNames = {
           standard: spTierT('quote.tiers.standard', 'Standard'),
           plus:     spTierT('quote.tiers.plus', 'Plus'),
@@ -5629,8 +5696,12 @@
         };
         var html = '<label style="display:block">' + spTierT('quote.tiers.h', 'Blank quality') + '</label>' +
           '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
-          spTierT('quote.tiers.sub', 'Pick a quality tier — we handle the blank. Price updates live; you can order right away.') + '</p>' +
-          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">';
+          spTierT('quote.tiers.sub', 'Pick a quality tier — we handle the blank. Price updates live; you can order right away.') + '</p>';
+        if (spQtyBand.id === 'u5') {
+          html += '<div style="font-size:.82rem;background:#fafaf6;border:1px dashed #ccc;border-radius:10px;padding:10px 14px;margin:0 0 10px">' +
+            spTierT('quote.qty.under5note', 'Under 5 pieces is checkout-only — order in a couple of clicks. Quote requests start at 5.') + '</div>';
+        }
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">';
         tiers.forEach(function(t) {
           var from = (typeof t.price_from === 'number') ? ('$' + t.price_from.toFixed(2)) : '';
           // Product photo — proxied through the CRM for S&S hotlink
@@ -5648,7 +5719,9 @@
             '<div style="font-size:.85rem;font-weight:600">' + (t.brand || '') + ' ' + (t.style_number || '') + '</div>' +
             '<div style="font-size:.76rem;color:#777;line-height:1.35;margin:2px 0 2px">' + (t.name || '') + '</div>' +
             '<div style="font-size:.72rem;color:#556b2f;margin:0 0 6px">' + spTierT('quote.tiers.tag.' + t.tier, '') + '</div>' +
-            (from ? '<div style="font-size:.82rem"><strong>' + spTierT('quote.tiers.from', 'From') + ' ' + from + '</strong>' + spTierT('quote.tiers.perunit', '/unit') + '</div>' : '') +
+            '<div style="font-size:.82rem" id="sp-tierprice-' + t.product_id + '">' +
+              (from ? '<strong>' + spTierT('quote.tiers.from', 'From') + ' ' + from + '</strong>' + spTierT('quote.tiers.perunit', '/unit') : '') +
+            '</div>' +
             (t.color_count ? '<div style="font-size:.72rem;color:#999">' + t.color_count + ' ' + spTierT('quote.tiers.colors', 'colours') + '</div>' : '') +
             '</button>';
         });
@@ -5660,6 +5733,20 @@
             spApplyTierPick(btn.getAttribute('data-tier-product'), garmentKey);
           });
         });
+        // Reprice each card at the chosen band's representative qty — the
+        // cached engine price the customer will actually pay at that tier,
+        // not the 200-unit "from" floor. "Not sure" keeps the from-price.
+        if (bandQty) {
+          tiers.forEach(function(t) {
+            liveUnitPrice(t.product_id, bandQty, 1, [], function (p) {
+              var el = document.getElementById('sp-tierprice-' + t.product_id);
+              if (el && typeof p === 'number' && p > 0) {
+                el.innerHTML = '<strong>$' + p.toFixed(2) + '</strong>' + spTierT('quote.tiers.perunit', '/unit') +
+                  ' <span style="color:#999">· ' + spQtyBandLabel(spQtyBand) + ' ' + spTierT('quote.qty.pcs', 'pcs') + '</span>';
+              }
+            });
+          });
+        }
       });
     }
 
@@ -5686,7 +5773,9 @@
             name:            p.name || '',
             garment_type:    p.garment_type || garmentKey || null,
             hero_url:        (c && c.mockup_front_url) || p.hero_image_url || '',
-            qty:             50,
+            // Prefill with the chosen quantity band's representative count
+            // so the row (and its subtotal) opens at THEIR order size.
+            qty:             (spQtyBand && spQtyBand.qty) || 50,
             sides:           1,
             sizes:           {},
             decoration_type: '',
@@ -6770,6 +6859,7 @@
       function secEl(key) {
         switch (key) {
           case 'product':   return document.getElementById('legacyProductGroup');
+          case 'qtyband':   return document.getElementById('qtyBandSection');
           case 'tier':      return document.getElementById('tierBlanksSection');
           case 'color':     return byLabelKey('quote.garmentcolor');
           case 'source':    return byLabelKey('quote.garmentsource');
@@ -6780,6 +6870,7 @@
       }
       var SUM_LABELS = {
         product: ['quote.product.type', 'Product'],
+        qtyband: ['quote.qty.k', 'Quantity'],
         tier:    ['quote.tiers.h', 'Blank quality'],
         color:   ['quote.garmentcolor', 'Colour'],
         source:  ['quote.garmentsource', 'Garment source'],
@@ -6838,6 +6929,10 @@
         var el = secEl('tier');
         return !!(el && el.style.display !== 'none' && !tierPickApplied);
       }
+      function qtyChoicePending() {
+        var el = secEl('qtyband');
+        return !!(el && el.style.display !== 'none' && !spQtyBand);
+      }
       function syncReveal() {
         if (bypass()) return;
         var show = !!(state && state.product);
@@ -6846,7 +6941,7 @@
           if (el) el.classList.toggle('sp-gated', !show);
         });
         var colorEl = secEl('color');
-        if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !tierChoicePending()));
+        if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !tierChoicePending() && !qtyChoicePending()));
         // The live-estimate strip too: state.garment defaults to 'tshirt',
         // so pre-pick the strip would show a t-shirt category price the
         // visitor never asked for. Price appears once a product is chosen —
@@ -6926,6 +7021,17 @@
           saveDraftSoon();
         };
       }
+      // Band chosen → fold the chips into a summary bar and walk to the
+      // tier cards (now priced at that quantity).
+      window.spOnQtyBandPicked = function (band) {
+        if (bypass()) return;
+        collapse('qtyband', (typeof spQtyBandLabel === 'function' ? spQtyBandLabel(band) : band.label) +
+          (band.qty ? ' ' + t('quote.qty.pcs', 'pcs') : ''));
+        syncReveal();
+        spScrollTo(secEl('tier'));
+        saveDraftSoon();
+      };
+
       // Called by spApplyTierPick once the blank has landed as a cart row.
       // Cart mode's own per-row UI (Customize / qty / swatches / Remove)
       // owns the page now — fold the guided-reveal scaffolding away in one
@@ -6934,6 +7040,9 @@
         removeTeaser();
         var tierHost = document.getElementById('tierBlanksSection');
         if (tierHost) { tierHost.style.display = 'none'; tierHost.innerHTML = ''; }
+        var qtyHost = document.getElementById('qtyBandSection');
+        if (qtyHost) { qtyHost.style.display = 'none'; qtyHost.innerHTML = ''; }
+        spQtyBand = null;
         document.querySelectorAll('.sp-sumbar').forEach(function (b) { b.remove(); });
         document.querySelectorAll('.sp-gated, .sp-collapsed').forEach(function (el) {
           el.classList.remove('sp-gated');
@@ -7032,6 +7141,7 @@
             service: state.service || '',
             tierProduct: tierPickApplied || null,
             tierGarment: state.garment || null,
+            qtyBand: (spQtyBand && spQtyBand.id) || null,
             colorId: (document.getElementById('catalogColorId') || {}).value || null,
             sizes: sizes,
             fields: fields,
@@ -7070,6 +7180,10 @@
         var card = [].slice.call(document.querySelectorAll('[onclick="selectProduct(this)"]'))
           .filter(function (el) { return el.dataset.value === d.product; })[0];
         if (card) selectProduct(card);
+        if (d.qtyBand && typeof spSetQtyBandById === 'function') {
+          // Chips paint async (tier-map fetch) — re-apply the band after.
+          setTimeout(function () { spSetQtyBandById(d.qtyBand, state.garment, d.product); }, 350);
+        }
         Object.keys(d.sizes || {}).forEach(function (n) {
           var el = document.querySelector('.size-grid input[name="' + n + '"]');
           if (el) el.value = d.sizes[n];
