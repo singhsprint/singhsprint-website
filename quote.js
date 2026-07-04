@@ -5634,18 +5634,42 @@
       return b.label;
     }
 
-    function spRenderQtyBands(garmentKey, productLabel) {
+    // The selector doubles as a pricing ladder ("order more, pay less per
+    // piece" SHOWN, not told): each numeric band is a card carrying the
+    // live per-unit price of the garment's Standard blank at that qty,
+    // plus savings vs. the smallest run. Under-5 / Not-sure step back
+    // into quiet secondary pills — they're routing, not pricing.
+    function spRenderQtyBands(garmentKey, productLabel, tiers) {
       var host = document.getElementById('qtyBandSection');
       if (!host) return;
+      var std = null;
+      (tiers || []).forEach(function (t) { if (t.tier === 'standard' || !std) std = std || t; });
       var html = '<label style="display:block">' + spTierT('quote.qty.h', 'How many do you need?') + '</label>' +
         '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
         spTierT('quote.qty.sub', 'A rough count is fine — you’ll fine-tune exact sizes later. Quantity drives your per-unit price.') + '</p>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin-bottom:10px">';
       SP_QTY_BANDS.forEach(function (b) {
+        if (b.id === 'u5' || b.id === 'ns') return;   // secondary row below
         var on = spQtyBand && spQtyBand.id === b.id;
+        var popular = b.id === 'b25';
         html += '<button type="button" class="qty-band" data-band="' + b.id + '"' +
-          ' style="border:2px solid ' + (on ? '#1a1a1a' : '#e4e4e4') + ';border-radius:50px;padding:10px 18px;' +
-          'background:' + (on ? '#fafaf2' : '#fff') + ';font-size:.88rem;font-weight:600;cursor:pointer">' +
+          ' style="position:relative;text-align:center;border:2px solid ' + (on ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;' +
+          'padding:' + (popular ? '18px 8px 12px' : '14px 8px 12px') + ';background:' + (on ? '#fafaf2' : '#fff') + ';cursor:pointer">' +
+          (popular ? '<span style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#e8ff3c;' +
+            'border-radius:50px;padding:2px 10px;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap">' +
+            spTierT('quote.qty.popular', 'Most popular') + '</span>' : '') +
+          '<div style="font-size:.95rem;font-weight:700">' + b.label + (on ? ' ✓' : '') + '</div>' +
+          '<div id="sp-qb-' + b.id + '" style="font-size:.76rem;color:#777;min-height:2.1em;margin-top:3px">…</div>' +
+          '</button>';
+      });
+      html += '</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
+      ['u5', 'ns'].forEach(function (id) {
+        var b = null;
+        SP_QTY_BANDS.forEach(function (x) { if (x.id === id) b = x; });
+        var on = spQtyBand && spQtyBand.id === id;
+        html += '<button type="button" class="qty-band" data-band="' + id + '"' +
+          ' style="border:2px solid ' + (on ? '#1a1a1a' : '#eee') + ';border-radius:50px;padding:8px 16px;' +
+          'background:' + (on ? '#fafaf2' : 'transparent') + ';font-size:.8rem;font-weight:600;color:#555;cursor:pointer">' +
           spQtyBandLabel(b) + (on ? ' ✓' : '') + '</button>';
       });
       html += '</div>';
@@ -5656,6 +5680,42 @@
           spSetQtyBandById(btn.getAttribute('data-band'), garmentKey, productLabel);
         });
       });
+      // Fill the ladder: Standard-blank per-unit price at each band, then
+      // savings vs. the 5–9 run once its baseline price is known. All
+      // hits go through liveUnitPrice's cache — repeat renders are free.
+      if (std && std.product_id) {
+        var prices = {};
+        var numeric = SP_QTY_BANDS.filter(function (b) { return b.qty && b.id !== 'u5'; });
+        numeric.forEach(function (b) {
+          liveUnitPrice(std.product_id, b.qty, 1, [], function (p) {
+            if (typeof p !== 'number' || p <= 0) return;
+            prices[b.id] = p;
+            var el = document.getElementById('sp-qb-' + b.id);
+            if (el) {
+              var save = '';
+              if (prices.b5 && b.id !== 'b5') {
+                var pct = Math.round((1 - p / prices.b5) * 100);
+                if (pct >= 5) save = '<br><span style="color:#3b6d11;font-weight:600">' +
+                  spTierT('quote.qty.save', 'Save') + ' ' + pct + '%</span>';
+              }
+              el.innerHTML = '<strong style="color:#1a1a1a">$' + p.toFixed(2) + '</strong>' +
+                spTierT('quote.qty.each', '/ea') + save;
+            }
+            // Baseline arrived late → refresh the other bands' savings.
+            if (b.id === 'b5') {
+              numeric.forEach(function (o) {
+                if (o.id !== 'b5' && prices[o.id]) {
+                  var el2 = document.getElementById('sp-qb-' + o.id);
+                  var pct2 = Math.round((1 - prices[o.id] / p) * 100);
+                  if (el2 && pct2 >= 5) el2.innerHTML = '<strong style="color:#1a1a1a">$' + prices[o.id].toFixed(2) + '</strong>' +
+                    spTierT('quote.qty.each', '/ea') + '<br><span style="color:#3b6d11;font-weight:600">' +
+                    spTierT('quote.qty.save', 'Save') + ' ' + pct2 + '%</span>';
+                }
+              });
+            }
+          });
+        });
+      }
     }
 
     function spSetQtyBandById(bandId, garmentKey, productLabel) {
@@ -5663,8 +5723,9 @@
       for (var i = 0; i < SP_QTY_BANDS.length; i++) { if (SP_QTY_BANDS[i].id === bandId) { band = SP_QTY_BANDS[i]; break; } }
       if (!band) return;
       spQtyBand = band;
-      spRenderQtyBands(garmentKey, productLabel);   // refresh selected state
-      spRenderTierCards(garmentKey, productLabel);  // tier cards now price at this qty
+      // spRenderTierCards re-renders the chips too (it owns the tiers
+      // payload the price ladder needs), then paints the tier cards.
+      spRenderTierCards(garmentKey, productLabel);
       if (typeof window.spOnQtyBandPicked === 'function') window.spOnQtyBandPicked(band);
     }
 
@@ -5686,7 +5747,7 @@
         if (!tiers || !tiers.length) { hideBoth(); return; }
         // Quantity first: chips always render; the tier cards wait until a
         // band is chosen so their prices can be honest from the first paint.
-        spRenderQtyBands(garmentKey, productLabel);
+        spRenderQtyBands(garmentKey, productLabel, tiers);
         if (!spQtyBand) { host.style.display = 'none'; host.innerHTML = ''; return; }
         var bandQty = spQtyBand.qty;   // null for "not sure" → from-prices
         var tierNames = {
