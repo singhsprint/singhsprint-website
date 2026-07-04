@@ -7212,9 +7212,15 @@
         var all = document.querySelectorAll('.form-buttons');
         var host = all.length ? all[all.length - 1] : null;
         if (!host || document.getElementById('spSocial')) return;
-        var CLIENTS = ['McGill Sororities', 'CUSEC', 'Concordia SSA'];
+        // Fallback names — replaced below by the CRM's portfolio clients in
+        // THEIR sort order, so "who shows first" is managed from the CRM
+        // (Portfolio → drag to reorder), not hardcoded here.
+        var CLIENTS = ['McGill Sororities', 'Sainte-Anne-de-Bellevue', 'Artwood Construction'];
         var chip = 'display:inline-block;background:#fafaf6;border:1px solid #e4e4e4;border-radius:50px;' +
           'padding:3px 11px;font-size:.74rem;font-weight:600;color:#444;white-space:nowrap';
+        function chipsHtml(names) {
+          return names.map(function (c2) { return '<span style="' + chip + '">' + c2 + '</span>'; }).join('');
+        }
         var div = document.createElement('div');
         div.id = 'spSocial';
         div.className = 'sp-social';
@@ -7230,10 +7236,22 @@
           // Client chips — proof with visual weight, in the site's pill language.
           '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:6px">' +
             '<span style="color:#999;font-size:.74rem">' + t('quote.social.trustedby', 'Trusted by') + '</span>' +
-            CLIENTS.map(function (c2) { return '<span style="' + chip + '">' + c2 + '</span>'; }).join('') +
+            '<span id="spSocialChips" style="display:contents">' + chipsHtml(CLIENTS) + '</span>' +
             '<span style="color:#999;font-size:.74rem">' + t('quote.social.tail', '+ Montreal teams big and small') + '</span>' +
           '</span>';
         host.parentNode.insertBefore(div, host);
+        // Live client list: top 3 from the CRM portfolio, in the CRM's own
+        // sort order. Trailing years ("CUSEC 2024") are trimmed for chips.
+        fetch('https://singhsprint-crm.vercel.app/api/portfolio/clients')
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (j) {
+            var names = ((j && j.clients) || [])
+              .map(function (c2) { return String(c2.name || '').replace(/\s+\d{4}$/, '').trim(); })
+              .filter(Boolean)
+              .slice(0, 3);
+            var el = document.getElementById('spSocialChips');
+            if (el && names.length >= 2) el.innerHTML = chipsHtml(names);
+          }).catch(function () {});
         fetch(API_REVIEWS).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
           if (!j || !j.rating) return;
           var r = document.getElementById('spSocialRating'), c = document.getElementById('spSocialCount');
