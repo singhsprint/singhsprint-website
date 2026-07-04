@@ -686,6 +686,7 @@ var SP_LANG = (function() {
     'quote.draft.resume': { en: 'Resume', fr: 'Reprendre' },
     'quote.draft.fresh': { en: 'Start fresh', fr: 'Recommencer' },
     'quote.teaser.drop': { en: 'Drop your logo here — see it on the garment', fr: 'Déposez votre logo ici — voyez-le sur le vêtement' },
+    'quote.teaser.edit': { en: 'Logo added — tap to adjust it on the garment', fr: 'Logo ajouté — touchez pour l\'ajuster sur le vêtement' },
     'quote.other.hint': { en: 'Aprons, workwear, anything at all — describe it in the notes on the next step and we\'ll quote it.', fr: 'Tabliers, vêtements de travail, n\'importe quoi — décrivez-le dans les notes à l\'étape suivante et on vous fait un prix.' },
     'quote.order.minqty.alert': { en: '<strong>Quotes start at 5 pieces.</strong> For smaller runs, order directly with the secure Order &amp; Pay Now checkout above — same pricing, no waiting on an email.', fr: '<strong>Les soumissions commencent à 5 pièces.</strong> Pour les plus petites quantités, commandez directement avec le paiement sécurisé « Commander et payer » ci-dessus — même prix, sans attendre un courriel.' },
     'quote.garmentcolor': { en: 'Garment Color', fr: 'Couleur du vêtement' },

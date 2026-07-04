@@ -7071,6 +7071,30 @@
         var c = (catalogPick.colors || []).filter(function (x) { return x.color_id === cid; })[0];
         return imgUrl((c && c.mockup_front_url) || catalogPick.hero_image_url || '');
       }
+      // The teaser's promise is "see it on the garment", so a landed file
+      // must end in the drag/scale customizer, not just silent storage:
+      //   drop a file       → attach to the active placement → customizer
+      //   click, no art yet → open the file picker → attach → customizer
+      //   click, art exists → straight into the customizer
+      function spTeaserActivePreset() {
+        try {
+          var ids = Object.values(presetByLocation || {});
+          if (ids.length) return ids[0];
+        } catch (e) {}
+        return 'center-chest';
+      }
+      function spTeaserHasArt() {
+        try {
+          return Object.values(placementFiles || {}).some(function (f) { return f instanceof File; });
+        } catch (e) { return false; }
+      }
+      function spTeaserLabel() {
+        var dropEl = document.querySelector('#spPreviewTeaser .sp-drop');
+        if (!dropEl) return;
+        dropEl.innerHTML = spTeaserHasArt()
+          ? '✓ ' + t('quote.teaser.edit', 'Logo added — tap to adjust it on the garment')
+          : '⬆ ' + t('quote.teaser.drop', 'Drop your logo here — see it on the garment');
+      }
       function renderTeaser() {
         var panel = document.querySelector('.mockup-panel');
         if (!panel) return;
@@ -7081,8 +7105,11 @@
           panel.insertBefore(el, panel.firstChild.nextSibling); // after the live-price strip
         }
         el.innerHTML = '<img src="' + teaserImgFor() + '" alt="" onerror="this.style.display=\'none\'">' +
-          '<span class="sp-drop">⬆ ' + t('quote.teaser.drop', 'Drop your logo here — see it on the garment') + '</span>';
-        el.querySelector('.sp-drop').addEventListener('click', function () {
+          '<span class="sp-drop"></span>';
+        spTeaserLabel();
+        var drop = el.querySelector('.sp-drop');
+        drop.addEventListener('click', function () {
+          if (spTeaserHasArt() && typeof spLaunchCustomizer === 'function') { spLaunchCustomizer(); return; }
           var input = document.querySelector('#placementUploadList input[type="file"]');
           if (input) input.click();
           else {
@@ -7090,6 +7117,41 @@
             if (list) { try { list.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
           }
         });
+        // Real drag-and-drop — the label says "drop", so drops must work.
+        drop.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          drop.style.borderColor = '#1a1a1a';
+          drop.style.background = '#f4ffcf';
+        });
+        drop.addEventListener('dragleave', function () {
+          drop.style.borderColor = '#b9b9a8';
+          drop.style.background = '#fafaf6';
+        });
+        drop.addEventListener('drop', function (e) {
+          e.preventDefault();
+          drop.style.borderColor = '#b9b9a8';
+          drop.style.background = '#fafaf6';
+          var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (f && typeof attachPlacementFile === 'function') attachPlacementFile(spTeaserActivePreset(), f);
+        });
+      }
+
+      // Any placement upload while the teaser is live (tier flow) opens the
+      // customize tool so the design lands ON the garment immediately.
+      // Non-image files (PDF/AI/PSD) attach quietly — fabric can't preview
+      // them; the rep renders those mockups after submission, as today.
+      if (typeof attachPlacementFile === 'function') {
+        var _attachPlacementFile = attachPlacementFile;
+        attachPlacementFile = function (presetId, file) {
+          _attachPlacementFile(presetId, file);
+          spTeaserLabel();
+          if (file && document.getElementById('spPreviewTeaser') &&
+              String(file.type).indexOf('image/') === 0 &&
+              typeof spLaunchCustomizer === 'function') {
+            setTimeout(function () { spLaunchCustomizer(); }, 150);
+          }
+          saveDraftSoon();
+        };
       }
       function syncTeaserImg() {
         var el = document.querySelector('#spPreviewTeaser img');
