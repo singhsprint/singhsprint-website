@@ -6936,12 +6936,19 @@
       function syncReveal() {
         if (bypass()) return;
         var show = !!(state && state.product);
+        // While quantity or tier is still the open question, everything
+        // downstream stays hidden — those decisions belong to the cart row
+        // once the tier converts anyway. Products without tiers (both
+        // sections empty) reveal immediately, preserving the legacy flow.
+        var pending = qtyChoicePending() || tierChoicePending();
         ['source', 'placement', 'method'].forEach(function (k) {
           var el = secEl(k);
-          if (el) el.classList.toggle('sp-gated', !show);
+          if (el) el.classList.toggle('sp-gated', !(show && !pending));
         });
+        var sizesEl = document.getElementById('globalSizeSection');
+        if (sizesEl) sizesEl.classList.toggle('sp-gated', !(show && !pending));
         var colorEl = secEl('color');
-        if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !tierChoicePending() && !qtyChoicePending()));
+        if (colorEl) colorEl.classList.toggle('sp-gated', !(show && !pending));
         // The live-estimate strip too: state.garment defaults to 'tshirt',
         // so pre-pick the strip would show a t-shirt category price the
         // visitor never asked for. Price appears once a product is chosen —
@@ -6963,8 +6970,10 @@
         // grid collapsing above yanks the page unpredictably.
         setTimeout(function () {
           syncReveal();
-          var tierEl = secEl('tier');
-          spScrollTo(tierChoicePending() ? tierEl : secEl('color'));
+          // Walk to the actual next question: quantity chips if they're
+          // waiting, else tier cards, else colour (no-tier products).
+          spScrollTo(qtyChoicePending() ? secEl('qtyband')
+            : (tierChoicePending() ? secEl('tier') : secEl('color')));
         }, 200);
         setTimeout(syncReveal, 600);
         collapse('product', state.product);
