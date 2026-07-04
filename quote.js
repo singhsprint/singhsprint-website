@@ -4662,6 +4662,10 @@
         var strip = document.getElementById('livePriceStrip');
         if (strip) strip.style.display = 'none';
         refreshGlobalSizeSection();
+        // Cart emptied → hand back to the guided flow so the visitor
+        // resumes the product → qty → tier sequence instead of landing on
+        // the ungated everything-at-once legacy layout.
+        if (typeof window.spOnCartEmptied === 'function') window.spOnCartEmptied();
         return;
       }
       // Cart is active — hide single-product UI + empty CTA.
@@ -7105,6 +7109,20 @@
       // The tier grid paints async — every time it does, re-evaluate the
       // gates so downstream sections wait exactly as long as they should.
       window.spOnTierCardsPainted = function () { syncReveal(); };
+
+      // Removing the last cart row → restart the guided sequence at the
+      // product that's still selected (its card keeps the .selected state),
+      // keeping the previously chosen qty band so the visitor resumes at
+      // the tier question rather than from scratch.
+      window.spOnCartEmptied = function () {
+        if (bypass()) return;   // deep-link mode keeps legacy behaviour
+        var card = document.querySelector('.product-option.selected');
+        if (card) {
+          selectProduct(card);  // re-runs the full reveal/collapse choreography
+        } else {
+          syncReveal();
+        }
+      };
 
       // Band chosen → fold the chips into a summary bar and walk to the
       // tier cards (now priced at that quantity).
