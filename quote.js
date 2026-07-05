@@ -132,7 +132,9 @@
       refreshGlobalSizeSection();
       // Tier cards: switching product type drops any previously applied
       // tier blank (its pricing belongs to the old garment) and renders
-      // the Standard/Plus/Premium cards for the new one.
+      // the Standard/Plus/Premium cards for the new one. BYO mode resets
+      // too — the new type gets a fresh blank-or-BYO decision.
+      if (typeof spDeactivateByo === 'function') spDeactivateByo();
       if (typeof spClearTierPick === 'function') spClearTierPick();
       if (typeof spRenderTierCards === 'function') spRenderTierCards(state.garment, state.product);
     }
@@ -2017,6 +2019,11 @@
     }
 
     function spIsMicroRun() {
+      // Bring-your-own is decoration-only with no checkout path, so quote
+      // requests stay open at ANY quantity — the 5-piece checkout-only
+      // rule protects our blanks' economics, not walk-in decoration jobs.
+      var gs = document.getElementById('garmentSourceInput');
+      if (gs && gs.value === 'BYOG') return false;
       var q = spLiveTotalQty();
       return q >= 1 && q < QUOTE_MIN_QTY;
     }
@@ -2028,6 +2035,9 @@
       var micro = spIsMicroRun();
       var btn = document.getElementById('quoteInsteadBtn');
       if (btn) btn.style.display = micro ? 'none' : '';
+      // BYO mode owns the CTA copy (no checkout path) — leave its note alone.
+      var gsB = document.getElementById('garmentSourceInput');
+      if (gsB && gsB.value === 'BYOG') return;
       var note = document.getElementById('quoteOrderNote');
       if (note) {
         var key = micro ? 'quote.order.minqty.note' : 'quote.order.note';
@@ -5736,6 +5746,31 @@
       }
     }
 
+    // ---- Bring-your-own garments (2026-07-04) -----------------------------
+    // Entry lives on the Blank-quality step: no blank to sell, so the tier
+    // section folds to "Your own garments" and the existing decoration-only
+    // engine (method + placements + qty → per-piece price) takes over.
+    var spByoActive = false;
+    function spActivateByo() {
+      if (spByoActive) return;
+      spByoActive = true;
+      var byoCard = document.querySelector('.svc-btn[data-value="BYOG"]');
+      if (byoCard && typeof selectGarmentSource === 'function') selectGarmentSource(byoCard);
+      // Seed the decoration-only qty with the chosen band so the first
+      // estimate is at THEIR order size, not the input's default.
+      var bq = document.getElementById('byoQty');
+      if (bq && spQtyBand && spQtyBand.qty) bq.value = spQtyBand.qty;
+      if (typeof refreshByoPrice === 'function') refreshByoPrice();
+      if (typeof window.spOnByoActivated === 'function') window.spOnByoActivated();
+    }
+    function spDeactivateByo() {
+      if (!spByoActive) return;
+      spByoActive = false;
+      var weCard = document.querySelector('.svc-btn[data-value="We Supply"]');
+      if (weCard && typeof selectGarmentSource === 'function') selectGarmentSource(weCard);
+      if (typeof window.spOnByoDeactivated === 'function') window.spOnByoDeactivated();
+    }
+
     function spSetQtyBandById(bandId, garmentKey, productLabel) {
       var band = null;
       for (var i = 0; i < SP_QTY_BANDS.length; i++) { if (SP_QTY_BANDS[i].id === bandId) { band = SP_QTY_BANDS[i]; break; } }
@@ -5805,6 +5840,11 @@
             '</button>';
         });
         html += '</div>';
+        // Quiet BYO entry — discoverable one line below the tiers without
+        // competing with blank sales (decoration-only, quote-request path).
+        html += '<button type="button" id="spByoLink" style="background:none;border:none;padding:10px 0 0;' +
+          'font-size:.85rem;color:#555;text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:left">' +
+          spTierT('quote.byo.link', 'Bringing your own garments? Decoration-only pricing →') + '</button>';
         host.innerHTML = html;
         host.style.display = 'block';
         host.querySelectorAll('.tier-card').forEach(function(btn) {
@@ -5812,6 +5852,8 @@
             spApplyTierPick(btn.getAttribute('data-tier-product'), garmentKey);
           });
         });
+        var byoLink = host.querySelector('#spByoLink');
+        if (byoLink) byoLink.addEventListener('click', spActivateByo);
         // Sections just changed visibility — let the reveal layer re-gate
         // downstream sections now that the tier question is on screen.
         if (typeof window.spOnTierCardsPainted === 'function') window.spOnTierCardsPainted();
@@ -5837,6 +5879,7 @@
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
           if (!data || !data.products || !data.products.length) return;
+          spDeactivateByo();   // picking a real blank exits BYO mode
           var p = data.products[0];
           var c = (p.colors || [])[0] || {};
           // A tier pick lands as a CART ROW — the exact same card the
@@ -7022,7 +7065,7 @@
         // downstream stays hidden — those decisions belong to the cart row
         // once the tier converts anyway. Products without tiers (both
         // sections empty) reveal immediately, preserving the legacy flow.
-        var pending = qtyChoicePending() || tierChoicePending();
+        var pending = qtyChoicePending() || (tierChoicePending() && !spByoActive);
         // Gating a section must also hide its summary bar — a collapsed
         // answer for a question that isn't relevant yet reads as noise.
         function gateSec(el, gatedBool) {
@@ -7038,7 +7081,9 @@
         });
         var sizesEl = document.getElementById('globalSizeSection');
         if (sizesEl) sizesEl.classList.toggle('sp-gated', !(show && !pending));
-        gateSec(secEl('color'), !(show && !pending));
+        // Colour is OUR blanks' concern — in BYO mode the garment is theirs,
+        // so the swatch section stays out of the flow entirely.
+        gateSec(secEl('color'), !(show && !pending && !spByoActive));
         // The live-estimate strip too: state.garment defaults to 'tshirt',
         // so pre-pick the strip would show a t-shirt category price the
         // visitor never asked for. Price appears once a product is chosen —
@@ -7146,6 +7191,39 @@
           (band.qty ? ' ' + t('quote.qty.pcs', 'pcs') : ''));
         syncReveal();
         spScrollTo(secEl('tier'));
+        saveDraftSoon();
+      };
+
+      // BYO chosen → tier + source fold to summary bars, downstream opens,
+      // and the CTA becomes quote-only (no SKU to checkout). One smooth
+      // walk to placements — the "how many prints" question that drives
+      // the decoration-only estimate.
+      window.spOnByoActivated = function () {
+        if (bypass()) return;
+        collapse('tier', t('quote.byo.short', 'Your own garments — decoration only'));
+        collapse('source', t('quote.method.byo.l', 'Bring Your Own'));
+        syncReveal();
+        removeTeaser();
+        var pay = document.getElementById('orderPayBtn');
+        if (pay) pay.style.display = 'none';
+        var note = document.getElementById('quoteOrderNote');
+        if (note) {
+          note.setAttribute('data-i18n', 'quote.byo.ctanote');
+          note.innerHTML = t('quote.byo.ctanote', 'Decoration-only orders are confirmed by quote — we reply within the hour (9am–6pm), any quantity welcome.');
+        }
+        spScrollTo(secEl('placement'));
+        saveDraftSoon();
+      };
+      window.spOnByoDeactivated = function () {
+        var pay = document.getElementById('orderPayBtn');
+        if (pay) pay.style.display = '';
+        var note = document.getElementById('quoteOrderNote');
+        if (note && note.getAttribute('data-i18n') === 'quote.byo.ctanote') {
+          note.setAttribute('data-i18n', 'quote.order.note');
+          note.innerHTML = t('quote.order.note', 'Pay securely by card or Affirm. Prefer to talk pricing first? Request a quote below.');
+        }
+        uncollapse('tier');
+        syncReveal();
         saveDraftSoon();
       };
 
@@ -7304,6 +7382,7 @@
             tierProduct: tierPickApplied || null,
             tierGarment: state.garment || null,
             qtyBand: (spQtyBand && spQtyBand.id) || null,
+            byo: spByoActive || undefined,
             colorId: (document.getElementById('catalogColorId') || {}).value || null,
             sizes: sizes,
             fields: fields,
@@ -7344,7 +7423,12 @@
         if (card) selectProduct(card);
         if (d.qtyBand && typeof spSetQtyBandById === 'function') {
           // Chips paint async (tier-map fetch) — re-apply the band after.
-          setTimeout(function () { spSetQtyBandById(d.qtyBand, state.garment, d.product); }, 350);
+          setTimeout(function () {
+            spSetQtyBandById(d.qtyBand, state.garment, d.product);
+            if (d.byo && typeof spActivateByo === 'function') {
+              setTimeout(spActivateByo, 350);
+            }
+          }, 350);
         }
         Object.keys(d.sizes || {}).forEach(function (n) {
           var el = document.querySelector('.size-grid input[name="' + n + '"]');
