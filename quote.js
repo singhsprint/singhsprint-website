@@ -223,6 +223,15 @@
         }
       } catch (e) { placements = []; }
 
+      // A location can be checked without a preset chosen yet (bare
+      // loc-check toggle) — presetByLocation would then undercount the
+      // prints. When that happens, price by location count instead so
+      // the estimate never quietly underquotes.
+      try {
+        var checkedLocs = document.querySelectorAll('.loc-check.checked').length;
+        if (checkedLocs > placements.length) { placements = []; sides = checkedLocs; }
+      } catch (e) {}
+
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only' +
                 '?qty=' + qty + '&method=' + method;
       if (placements.length > 0) {
@@ -1349,6 +1358,9 @@
       // Placement set changed → the matrix's per-placement overrides
       // may add or remove surcharge on some sizes, so refresh.
       try { if (typeof spRefreshSizeSurcharges === 'function') spRefreshSizeSurcharges(); } catch(e) {}
+      // BYO estimate is priced per print location — re-quote when the
+      // placement set changes. (No-ops unless the BYO panel is open.)
+      try { if (typeof refreshByoPrice === 'function') refreshByoPrice(); } catch(e) {}
     }
 
     // ===== VIEW TABS (on mockup) — switch which location is being edited =====
