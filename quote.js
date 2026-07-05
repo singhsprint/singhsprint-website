@@ -191,9 +191,11 @@
     // cost — no blank, no FX, no shipping — so customers see what we'd
     // charge to decorate garments they ship to us.
     // -----------------------------------------------------------------
+    var byoPriceSeq = 0; // discard out-of-order responses (racing fetches)
     function refreshByoPrice() {
       var panel = document.getElementById('byoPricePanel');
       if (!panel || panel.style.display === 'none') return;
+      var seq = ++byoPriceSeq;
       var qty   = parseInt(document.getElementById('byoQty')?.value || '50', 10) || 50;
       var sides = parseInt(document.getElementById('printCountInput')?.value || '1', 10) || 1;
       var method = (state.service || 'DTF').toLowerCase();
@@ -232,6 +234,7 @@
       document.getElementById('byoPriceUnit').textContent  = '…';
       document.getElementById('byoPriceTotal').textContent = '…';
       fetch(url).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+        if (seq !== byoPriceSeq) return; // a newer request superseded this one
         if (!d || typeof d.unit_price !== 'number') {
           document.getElementById('byoPriceUnit').textContent  = '—';
           document.getElementById('byoPriceTotal').textContent = '—';
@@ -5754,12 +5757,13 @@
     function spActivateByo() {
       if (spByoActive) return;
       spByoActive = true;
-      var byoCard = document.querySelector('.svc-btn[data-value="BYOG"]');
-      if (byoCard && typeof selectGarmentSource === 'function') selectGarmentSource(byoCard);
-      // Seed the decoration-only qty with the chosen band so the first
-      // estimate is at THEIR order size, not the input's default.
+      // Seed the decoration-only qty with the chosen band BEFORE waking the
+      // panel — selectGarmentSource fires its own refreshByoPrice, and
+      // seeding afterwards races that fetch (stale total at the default 50).
       var bq = document.getElementById('byoQty');
       if (bq && spQtyBand && spQtyBand.qty) bq.value = spQtyBand.qty;
+      var byoCard = document.querySelector('.svc-btn[data-value="BYOG"]');
+      if (byoCard && typeof selectGarmentSource === 'function') selectGarmentSource(byoCard);
       if (typeof refreshByoPrice === 'function') refreshByoPrice();
       if (typeof window.spOnByoActivated === 'function') window.spOnByoActivated();
     }
