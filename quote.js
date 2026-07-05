@@ -4541,7 +4541,24 @@
     // would miss → headline shows $— even though the API returned a
     // real price. Legacy callers omitting the param fall back to the
     // global current method (unchanged behavior).
-    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride) {
+    // Combined-order volume pricing: every cart line with 5+ pieces pools
+    // into one quantity and each pooled line prices at that combined tier
+    // (10 hats + 15 shirts → both at the 25-pc rate). Sub-5 lines keep
+    // their own qty. The server's checkout pricer applies the identical
+    // rule, so the charge always matches what the cart showed.
+    function spCartPoolQty(items) {
+      var pool = 0;
+      (items || []).forEach(function (it) {
+        var q = Number(it.qty) || ((it.roster && it.roster.length) || 0);
+        if (q >= 5) pool += q;
+      });
+      return pool;
+    }
+    function spItemTierQty(q, pool) {
+      return (q >= 5 && pool > q) ? pool : 0;
+    }
+
+    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride, tierQty) {
       // Backwards-compat: older callers pass (productId, qty, sides, cb)
       // with no placements arg. Detect and shift.
       if (typeof placements === 'function') { cb = placements; placements = []; }
@@ -4559,7 +4576,8 @@
       }
       var placementsArr = Array.isArray(placements) ? placements.slice() : [];
       var placementsKey = placementsArr.join(',');
-      var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey;
+      var tq = spItemTierQty(Number(qty) || 0, Number(tierQty) || 0);
+      var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey + (tq ? '_t' + tq : '');
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
       // localStorage read-through (6h TTL): the qty ladder + tier cards
       // fire several of these per pick — returning visitors and repeat
@@ -4577,6 +4595,7 @@
         '&qty=' + qty + '&sides=' + sides +
         '&decoration_method=' + method;
       if (placementsKey) url += '&embroidery_placements=' + encodeURIComponent(placementsKey);
+      if (tq) url += '&tier_qty=' + tq;
       fetch(url)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
@@ -4736,7 +4755,20 @@
       var lblColor  = _t('quote.cart.item.color')  || 'Color:';
       var lblQty    = _t('quote.cart.item.qty')    || 'Qty';
       var lblRemove = _t('quote.cart.item.remove') || 'Remove';
-      host.innerHTML = items.map(function(it, idx) {
+      // Combined-order volume banner: when two or more 5+ lines pool, say
+      // so plainly — it's a real discount and the reason to add more items.
+      var comboPool = spCartPoolQty(items);
+      var comboLines = items.filter(function (it) {
+        return (Number(it.qty) || ((it.roster && it.roster.length) || 0)) >= 5;
+      }).length;
+      var comboStrip = '';
+      if (comboLines >= 2 && comboPool >= 5) {
+        var comboMsg = (_t('quote.cart.combo') || 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.')
+          .replace(/\{n\}/g, comboPool);
+        comboStrip = '<div id="spComboStrip" style="flex-basis:100%;display:flex;align-items:center;gap:8px;background:#eefaf1;border:1px solid #bfe8cd;border-radius:10px;padding:9px 12px;font-size:.8rem;color:#155c33;font-weight:600">' +
+          '<span aria-hidden="true" style="font-size:.9rem">✓</span><span>' + comboMsg + '</span></div>';
+      }
+      host.innerHTML = comboStrip + items.map(function(it, idx) {
         if (it.is_jersey) return jerseyCartItemHtml(it, idx);
         var label = (it.color_name || '').replace(/_\d+$/, '');
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
@@ -4810,12 +4842,15 @@
           if (!el) return;
           if (price != null) {
             var qty = it.qty || 50;
-            el.innerHTML = '<strong style="color:#1a1a1a">$' + price.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (price*qty).toFixed(2) + '</strong>';
+            var comboNote = spItemTierQty(qty, comboPool)
+              ? ' <span style="color:#155c33;font-weight:600">· ' + ((_t('quote.cart.item.comborate') || '{n}-pc rate').replace(/\{n\}/g, comboPool)) + '</span>'
+              : '';
+            el.innerHTML = '<strong style="color:#1a1a1a">$' + price.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (price*qty).toFixed(2) + '</strong>' + comboNote;
           } else {
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        }, it.decoration_type);
+        }, it.decoration_type, comboPool);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
         // Hits /api/pricing/live-matrix which returns engine-derived prices
@@ -4852,7 +4887,11 @@
         var qtyLabel = function(r) {
           return r.qty_max == null ? (r.qty_min + '+') : (r.qty_min + '–' + r.qty_max);
         };
-        var activeQty = Number(it.qty) || 50;
+        // Highlight the tier the line is actually PRICED at — with combined-
+        // order pricing that's the pooled quantity, not just this row's qty.
+        var _mxPool = spCartPoolQty(SinghsCart.read().items);
+        var _mxOwn  = Number(it.qty) || 50;
+        var activeQty = spItemTierQty(_mxOwn, _mxPool) || _mxOwn;
 
         // Render a single method's table (DTF or Embroidery). `accessor` is
         // the property name on each row ('dtf' or 'embroidery'); `label` is
@@ -5156,6 +5195,7 @@
       // fall back to the legacy global state.service for items that
       // predate the per-item picker.
       var cartUnitSum = 0, cartUnits = 0, cartLineTotal = 0, knownAll = true;
+      var _cartPool = spCartPoolQty(items);
       items.forEach(function (it) {
         var qty = Number(it.qty) || ((it.roster && it.roster.length) || 0);
         cartUnits += qty;
@@ -5172,7 +5212,10 @@
         var pk    = (it.placements || []).join(',');
         var rawM  = (it.decoration_type || '').toLowerCase();
         var method = rawM === 'embroidery' ? 'embroidery' : (rawM ? 'dtf' : currentDecorationMethod());
-        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk];
+        // Same combined-tier suffix liveUnitPrice used when it cached this
+        // row's price — pooled lines live under the _t<pool> key.
+        var _ctq  = spItemTierQty(qty, _cartPool);
+        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk + (_ctq ? '_t' + _ctq : '')];
         if (typeof p === 'number') {
           cartUnitSum  += p;
           cartLineTotal += p * qty;

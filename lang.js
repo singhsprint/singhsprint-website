@@ -1031,6 +1031,8 @@ var SP_LANG = (function() {
     'quote.cart.item.sides': { en: 'Sides', fr: 'Côtés' },
     'quote.cart.item.remove': { en: 'Remove', fr: 'Retirer' },
     'quote.cart.item.priceloading': { en: 'Price loading…', fr: 'Chargement du prix…' },
+    'quote.cart.combo': { en: 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.', fr: 'Prix de volume débloqué : {n} pièces combinées dans votre commande — chaque article obtient le tarif de {n} pièces.' },
+    'quote.cart.item.comborate': { en: '{n}-pc rate', fr: 'tarif {n} pcs' },
     'quote.cart.item.swatches.more': { en: '+ {n} more ▾', fr: '+ {n} autres ▾' },
     'quote.cart.item.swatches.fewer': { en: 'Show fewer ▴', fr: 'Voir moins ▴' },
     'quote.product.type': { en: 'Product type', fr: 'Type de produit' },
