@@ -107,6 +107,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/lang.js" defer></script>
 <script src="/account/auth.js"></script>
+<script src="/delivery.js" defer></script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -204,6 +205,20 @@
       btn.disabled = false;
       btn.textContent = original;
     }
+  });
+
+  // Add-delivery: flip a pickup order to delivery + pay shipping only.
+  document.addEventListener('click', async (e) => {
+    const b = e.target && e.target.closest && e.target.closest('button[data-add-delivery]');
+    if (!b) return;
+    const orderNumber = b.getAttribute('data-add-delivery');
+    if (!orderNumber || !window.SPDelivery) return;
+    try {
+      const s = await api.getSession();
+      const email = s && s.user && s.user.email;
+      if (!email) { location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname)); return; }
+      window.SPDelivery.openConvertModal({ orderNumber, email });
+    } catch (_) {}
   });
 
   function renderDrops(rows) {
@@ -308,6 +323,7 @@
         ${orgPaidPill}
         <span class="pill pill--${esc(order.status || 'unknown')}">${esc(status)}</span>
         <div class="actions">
+          ${bucket === 'active' && order.order_number ? `<button class="btn btn--ghost" data-add-delivery="${esc(order.order_number)}">Add delivery</button>` : ''}
           ${trackUrl ? `<a class="btn btn--ghost" href="${esc(trackUrl)}">Track</a>` : ''}
           ${bucket === 'active'
             ? `<a class="btn btn--primary" href="/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
