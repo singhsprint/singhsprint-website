@@ -323,7 +323,7 @@
         ${orgPaidPill}
         <span class="pill pill--${esc(order.status || 'unknown')}">${esc(status)}</span>
         <div class="actions">
-          ${bucket === 'active' && order.order_number ? `<button class="btn btn--ghost" data-add-delivery="${esc(order.order_number)}">Add delivery</button>` : ''}
+          ${bucket === 'active' && order.order_number && order.fulfillment_method !== 'delivery' ? `<button class="btn btn--ghost" data-add-delivery="${esc(order.order_number)}">Add delivery</button>` : ''}
           ${trackUrl ? `<a class="btn btn--ghost" href="${esc(trackUrl)}">Track</a>` : ''}
           ${bucket === 'active'
             ? `<a class="btn btn--primary" href="/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
