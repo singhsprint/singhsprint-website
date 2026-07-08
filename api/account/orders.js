@@ -45,7 +45,10 @@ const ROW_COLUMNS = [
   // launcher + invoice link, or hide them in favor of a "Paid by your
   // program" pill. cohort_invoice_id is exposed so the UI can deep-link
   // to the cohort invoice if/when we build that surface.
-  'paid_by', 'cohort_invoice_id'
+  'paid_by', 'cohort_invoice_id',
+  // Fulfillment method (pickup|delivery) so the account UI can offer
+  // "Add delivery" only on orders that are still pickup.
+  'fulfillment_method'
 ].join(', ');
 
 module.exports = async function handler(req, res) {
