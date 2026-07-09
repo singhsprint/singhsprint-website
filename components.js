@@ -1434,7 +1434,7 @@ function loadMidPageCTA() {
   card.innerHTML = ''
     + '<span class="sp-mid-cta__eyebrow" data-i18n="midcta.eyebrow">Quick check</span>'
     + '<h3 class="sp-mid-cta__title" data-i18n="midcta.title">Got a project like this in mind?</h3>'
-    + '<p class="sp-mid-cta__copy" data-i18n="midcta.copy">Send us the details and we\'ll come back with a quote, sample timeline, and price within the hour.</p>'
+    + '<p class="sp-mid-cta__copy" data-i18n="midcta.copy">Send us the details and we\'ll come back with a quote, mockup timeline, and price within the hour.</p>'
     + '<div class="sp-mid-cta__row">'
     +   '<a href="/quote" class="sp-mid-cta__btn" data-i18n="midcta.btn">Get a free quote →</a>'
     +   '<a href="tel:4385443800" class="sp-mid-cta__alt" data-i18n="midcta.alt">or call 438-544-3800</a>'

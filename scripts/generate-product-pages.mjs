@@ -57,7 +57,7 @@ const REVIEWS = [
 // if shop ever charges an explicit shipping line item.
 const SHIPPING = { country: 'CA', valueCAD: '0', handlingMin: 3, handlingMax: 5, transitMin: 1, transitMax: 5 };
 // 14-day window covers reprints/replacements for print quality + garment
-// defects — matches the satisfaction guarantee in the homepage FAQ.
+// defects — matches the misprint guarantee in the homepage FAQ.
 const RETURNS  = { country: 'CA', windowDays: 14 };
 
 function aggregateRatingNode() {
@@ -268,13 +268,13 @@ const I18N = {
                      fr: 'Surtout des entreprises de l\'Ouest-de-l\'Île, des organisations étudiantes de McGill, des organisateurs de courses caritatives et des équipes d\'approvisionnement corporatives qui gèrent des programmes d\'uniformes. Modalités Net-30 disponibles pour les comptes récurrents approuvés.' },
 
   quoteH2:         { en: 'Get your quote', fr: 'Obtenez votre soumission' },
-  quoteP:          { en: 'Pick a decoration method, send us your artwork (or use our free design help) and we\'ll come back with a firm quote, sample timeline and Net-30 paperwork, usually within the hour during business hours (9 AM to 9 PM, 7 days a week).',
-                     fr: 'Choisissez une méthode de décoration, envoyez votre visuel (ou utilisez notre service de design gratuit) et on revient avec une soumission ferme, un échéancier d\'échantillon et la paperasse Net-30, généralement en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h, 7 jours sur 7).' },
+  quoteP:          { en: 'Pick a decoration method, send us your artwork (or use our free design help) and we\'ll come back with a firm quote, mockup timeline and Net-30 paperwork, usually within the hour during business hours (9 AM to 9 PM, 7 days a week).',
+                     fr: 'Choisissez une méthode de décoration, envoyez votre visuel (ou utilisez notre service de design gratuit) et on revient avec une soumission ferme, un échéancier de maquette et la paperasse Net-30, généralement en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h, 7 jours sur 7).' },
 
   // Footer CTA
   ctaSecH2Prefix:  { en: 'Get a quote for', fr: 'Demandez une soumission pour' },
-  ctaSecP:         { en: 'Firm pricing, real timeline, no commitment until you approve the sample.',
-                     fr: 'Prix ferme, échéancier réel, aucun engagement avant l\'approbation de l\'échantillon.' },
+  ctaSecP:         { en: 'Firm pricing, real timeline, no commitment until you approve the mockup.',
+                     fr: 'Prix ferme, échéancier réel, aucun engagement avant l\'approbation de la maquette.' },
   ctaSecBtn:       { en: 'Start your quote →', fr: 'Commencer ma soumission →' },
 
   // Alt text + breadcrumb item name in JSON-LD

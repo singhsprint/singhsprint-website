@@ -94,12 +94,12 @@ var SP_LANG = (function() {
     'home.hero.h1a': { en: "West Island's", fr: "L'Ouest-de-l'Île," },
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
-      en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and real sample approval before production.",
-      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et un véritable échantillon avant chaque production. 20 $ de rabais sur votre première commande de 100 $ et plus."
+      en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and a mockup you approve before we print.",
+      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et une maquette que vous approuvez avant l'impression. 20 $ de rabais sur votre première commande de 100 $ et plus."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
-    'home.hero.guarantee': { en: 'Quality Guarantee: Love it or we reprint it.', fr: 'Garantie qualité : Satisfait ou on réimprime.' },
+    'home.hero.guarantee': { en: 'Quality guarantee: if we misprint it, we reprint it.', fr: 'Garantie qualité : une erreur d\'impression, on réimprime.' },
     // Inline hero social-proof line (replaces old hero-stats block)
     'home.heroproof.orders': { en: 'orders',         fr: 'commandes' },
     'home.heroproof.rating': { en: '(23 reviews)',   fr: '(23 avis)' },
@@ -135,10 +135,10 @@ var SP_LANG = (function() {
       en: 'We confirm specs, timeline, and pricing. No surprises, no hidden fees.',
       fr: 'On confirme les détails, l\'échéancier et le prix. Pas de surprises, pas de frais cachés.'
     },
-    'home.hiw.step3.h': { en: 'Approve your sample', fr: 'Approuvez votre échantillon' },
+    'home.hiw.step3.h': { en: 'Approve your mockup', fr: 'Approuvez votre maquette' },
     'home.hiw.step3.p': {
-      en: 'We print a real physical sample. You check everything before the full run.',
-      fr: 'On imprime un véritable échantillon physique. Vous vérifiez tout avant la production complète.'
+      en: 'You sign off on a photoreal mockup before we print. Want a printed sample first? Add one at checkout for the cost of a blank.',
+      fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.'
     },
     'home.hiw.step4.h': { en: 'Pick up or get it shipped', fr: 'Ramassage ou expédition' },
     'home.hiw.step4.p': {
@@ -161,10 +161,10 @@ var SP_LANG = (function() {
     'home.proof.production': { en: 'In-House Production', fr: 'Production sur place' },
     // Why us
     'home.why.h2':            { en: 'Built for brands that care about quality', fr: 'Conçu pour les marques qui se soucient de la qualité' },
-    'home.why.guarantee.h':   { en: 'Satisfaction guarantee', fr: 'Garantie de satisfaction' },
+    'home.why.guarantee.h':   { en: 'Misprint guarantee', fr: 'Garantie contre les erreurs d\'impression' },
     'home.why.guarantee.p':   { en: "If there's a print issue or defect, we reprint or replace it. Period.", fr: "S'il y a un problème d'impression ou un défaut, on réimprime ou on remplace. Point final." },
-    'home.why.sample.h':      { en: 'Sample before production', fr: 'Échantillon avant production' },
-    'home.why.sample.p':      { en: 'Every order gets a physical sample. You never pay for a full run unseen.', fr: 'Chaque commande inclut un échantillon physique. Vous ne payez jamais une commande complète sans l\'avoir vue.' },
+    'home.why.sample.h':      { en: 'Mockup before production', fr: 'Maquette avant production' },
+    'home.why.sample.p':      { en: 'You approve a mockup before production. Want a printed sample in hand? Add one at checkout for the cost of a blank.', fr: 'Vous approuvez une maquette avant la production. Un échantillon imprimé en main ? Ajoutez-le au paiement, pour le prix d\'un vêtement.' },
     'home.why.turnaround.h':  { en: '2-4 day turnaround', fr: 'Délai de 2 à 4 jours' },
     'home.why.turnaround.p':  { en: 'Most orders done in days. Rush options with same-day Montreal pickup.', fr: 'La plupart des commandes en quelques jours. Options urgentes avec ramassage le jour même à Montréal.' },
     'home.why.design.h':      { en: 'Free design help', fr: 'Aide au design gratuite' },
@@ -182,7 +182,7 @@ var SP_LANG = (function() {
     'home.diff.r2.them': { en: '24-piece minimums', fr: 'Minimums de 24 pièces' },
     'home.diff.r2.us': { en: "No minimums. We'll print one.", fr: 'Aucun minimum. On en imprime un seul.' },
     'home.diff.r3.them': { en: 'First look at pickup, fingers crossed', fr: 'Premier aperçu au ramassage, on croise les doigts' },
-    'home.diff.r3.us': { en: 'Mockup in ~1 hour + a real sample you approve before the run', fr: 'Maquette en ~1 heure + un vrai échantillon que vous approuvez avant la production' },
+    'home.diff.r3.us': { en: 'Mockup in ~1 hour you approve before the run (printed sample optional)', fr: 'Maquette en ~1 heure que vous approuvez avant la production (échantillon imprimé en option)' },
     'home.diff.r4.them': { en: 'Setup fees discovered on the invoice', fr: 'Frais de montage découverts sur la facture' },
     'home.diff.r4.us': { en: 'The quote price is the price you pay', fr: 'Le prix de la soumission est le prix que vous payez' },
     'home.diff.r5.them': { en: 'Outsourced to who-knows-where', fr: 'Sous-traité on ne sait où' },
@@ -206,8 +206,8 @@ var SP_LANG = (function() {
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
     'home.faq.a5': { en: "PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Don't have print-ready art? We offer free design help.", fr: 'PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l\'impression ? Notre studio de design vous aide gratuitement.' },
     'home.faq.q6': { en: 'Can I see a sample first?', fr: 'Puis-je voir un échantillon d\'abord ?' },
-    'home.faq.a6': { en: 'Absolutely. We produce a real physical sample so you can verify colors, placement, and quality before the full run. This is standard with every order.', fr: 'Absolument. On produit un véritable échantillon physique pour que vous puissiez vérifier couleurs, placement et qualité avant la commande complète. C\'est inclus avec chaque commande.' },
-    'home.faq.q7': { en: 'Do you offer a satisfaction guarantee?', fr: 'Offrez-vous une garantie de satisfaction ?' },
+    'home.faq.a6': { en: 'You approve a photoreal mockup before we print anything — colors, placement, sizing. Want a physical proof in hand first? Add a printed sample at checkout for the cost of one blank.', fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement, taille. Une preuve physique en main d\'abord ? Ajoutez un échantillon imprimé au paiement, pour le prix d\'un vêtement.' },
+    'home.faq.q7': { en: 'Do you guarantee against misprints?', fr: 'Offrez-vous une garantie contre les erreurs d\'impression ?' },
     'home.faq.a7': { en: 'Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.', fr: 'Oui. S\'il y a un problème de qualité d\'impression ou un défaut de vêtement, on réimprime ou on remplace l\'article sans frais.' },
     'home.faq.q8': { en: 'Do you offer a first-order discount?', fr: 'Offrez-vous un rabais sur la première commande ?' },
     'home.faq.a8': { en: 'Yes — your first order of $100 or more is $20 off, applied automatically when you request your quote. No code needed.', fr: 'Oui — votre première commande de 100 $ ou plus bénéficie de 20 $ de rabais, appliqué automatiquement lors de la soumission. Aucun code requis.' },
@@ -234,7 +234,7 @@ var SP_LANG = (function() {
     // Mid-page CTA injected by components.js on long-form pages
     'midcta.eyebrow': { en: 'Quick check',                                       fr: 'Petite question' },
     'midcta.title':   { en: 'Got a project like this in mind?',                  fr: 'Vous avez un projet similaire en tête ?' },
-    'midcta.copy':    { en: "Send us the details and we'll come back with a quote, sample timeline, and price within the hour.", fr: 'Envoyez-nous les détails — soumission, échéancier d\'échantillon et prix dans l\'heure.' },
+    'midcta.copy':    { en: "Send us the details and we'll come back with a quote, mockup timeline, and price within the hour.", fr: 'Envoyez-nous les détails — soumission, échéancier de maquette et prix dans l\'heure.' },
     'midcta.btn':     { en: 'Get a free quote →',                                fr: 'Soumission gratuite →' },
     'midcta.alt':     { en: 'or call 438-544-3800',                              fr: 'ou appelez le 438-544-3800' },
     // Product category cards
@@ -302,7 +302,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r2.them': { en: "24-piece minimum before they'll even open your file.", fr: 'Minimum de 24 pièces avant même d\'ouvrir votre fichier.' },
     'whyus.cmp.r2.us': { en: "<strong>No minimums.</strong> We'll print one shirt with the same care as a thousand.", fr: '<strong>Aucun minimum.</strong> On imprime un seul chandail avec le même soin que mille.' },
     'whyus.cmp.r3.them': { en: 'The first time you see your shirt is at pickup. Fingers crossed.', fr: 'La première fois que vous voyez votre chandail, c\'est au ramassage. On croise les doigts.' },
-    'whyus.cmp.r3.us': { en: '<strong>Photoreal mockup in about an hour.</strong> Then a real printed sample you approve before the full run.', fr: '<strong>Maquette photoréaliste en environ une heure.</strong> Puis un vrai échantillon imprimé que vous approuvez avant la production complète.' },
+    'whyus.cmp.r3.us': { en: '<strong>Photoreal mockup in about an hour</strong> that you approve before we print. Printed sample optional, for the cost of a blank.', fr: '<strong>Maquette photoréaliste en environ une heure</strong> que vous approuvez avant l\'impression. Échantillon imprimé en option, pour le prix d\'un vêtement.' },
     'whyus.cmp.r4.them': { en: 'Setup fee. Art fee. Rush fee. All discovered on the invoice.', fr: 'Frais de montage. Frais de graphisme. Frais d\'urgence. Tous découverts sur la facture.' },
     'whyus.cmp.r4.us': { en: '<strong>The price on the quote is the price you pay.</strong> Taxes and shipping shown at checkout, not after.', fr: '<strong>Le prix de la soumission est le prix que vous payez.</strong> Taxes et livraison affichées au paiement, pas après.' },
     'whyus.cmp.r5.them': { en: "Production outsourced to a shop you'll never see, on a timeline nobody controls.", fr: 'Production sous-traitée à un atelier que vous ne verrez jamais, sur un échéancier que personne ne contrôle.' },
@@ -311,7 +311,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r6.us': { en: '<strong>Print issue or defect? We reprint or replace it. Period.</strong> No form, no fight.', fr: '<strong>Défaut d\'impression ? On réimprime ou on remplace. Point.</strong> Pas de formulaire, pas de chicane.' },
     'whyus.risk.h2': { en: "Here's the worst that can happen.", fr: 'Voici le pire qui puisse arriver.' },
     'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;6pm, Monday to Saturday. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 18 h, du lundi au samedi. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
-    'whyus.risk.p2': { en: 'If you do order: $20 off your first order of $100+, a printed sample before the full run, and a reprint guarantee after it.', fr: 'Si vous commandez : 20 $ de rabais sur votre première commande de 100 $+, un échantillon imprimé avant la production, et une garantie de réimpression après.' },
+    'whyus.risk.p2': { en: 'If you do order: $20 off your first order of $100+, an optional printed sample for the cost of a blank, and a fix-it-free promise on any misprint.', fr: 'Si vous commandez : 20 $ de rabais sur votre première commande de 100 $+, un échantillon imprimé en option pour le prix d\'un vêtement, et une promesse de correction gratuite en cas d\'erreur d\'impression.' },
     'whyus.risk.kicker': { en: "The risk lives on our side of the table. That's on purpose.", fr: 'Le risque est de notre côté de la table. C\'est voulu.' },
     'whyus.proof.rating': { en: '(23 reviews) on Google', fr: '(23 avis) sur Google' },
     'whyus.proof.orders': { en: 'orders delivered', fr: 'commandes livrées' },
@@ -341,8 +341,8 @@ var SP_LANG = (function() {
       fr: 'Singhs Print a été lancée par une petite équipe familiale à Sainte-Anne-de-Bellevue parce qu\'on en avait assez de voir l\'impression personnalisée mal faite : délais lents, qualité incohérente et ateliers qui traitaient les petites commandes comme un dérangement.'
     },
     'about.who.p2': {
-      en: 'Every order, whether it\'s 5 t-shirts for a birthday or 500 hoodies for a brand launch, runs through the same sample-and-approve process. Everything is decorated in-house in our Montreal studio so we control quality from artwork prep through final QC. We\'re Quebec-registered (Imprimerie Singhs Print · NEQ 1181573313), and GST and QST compliant. Important if you\'re a procurement-led organization or just like knowing the people printing your gear aren\'t trading out of a parking lot.',
-      fr: 'Chaque commande, que ce soit 5 t-shirts pour un anniversaire ou 500 hoodies pour un lancement de marque, passe par le même processus d\'échantillon et d\'approbation. Tout est décoré sur place dans notre studio de Montréal pour qu\'on contrôle la qualité de la préparation du fichier au CQ final. Nous sommes immatriculés au Québec (Imprimerie Singhs Print · NEQ 1181573313), conformes à la TPS et à la TVQ. Important si vous êtes une organisation pilotée par les achats ou si vous aimez simplement savoir que les gens qui impriment vos vêtements ne travaillent pas depuis un stationnement.'
+      en: 'Every order, whether it\'s 5 t-shirts for a birthday or 500 hoodies for a brand launch, runs through the same mockup-and-approve process. Everything is decorated in-house in our Montreal studio so we control quality from artwork prep through final QC. We\'re Quebec-registered (Imprimerie Singhs Print · NEQ 1181573313), and GST and QST compliant. Important if you\'re a procurement-led organization or just like knowing the people printing your gear aren\'t trading out of a parking lot.',
+      fr: 'Chaque commande, que ce soit 5 t-shirts pour un anniversaire ou 500 hoodies pour un lancement de marque, passe par le même processus de maquette et d\'approbation. Tout est décoré sur place dans notre studio de Montréal pour qu\'on contrôle la qualité de la préparation du fichier au CQ final. Nous sommes immatriculés au Québec (Imprimerie Singhs Print · NEQ 1181573313), conformes à la TPS et à la TVQ. Important si vous êtes une organisation pilotée par les achats ou si vous aimez simplement savoir que les gens qui impriment vos vêtements ne travaillent pas depuis un stationnement.'
     },
 
     'about.stats.orders':  { en: 'Orders decorated',                fr: 'Commandes décorées' },
@@ -382,10 +382,10 @@ var SP_LANG = (function() {
       en: 'A firm written quote upfront with no hidden fees. Bulk tiers kick in at 5+ units, Net-30 terms for approved repeat accounts.',
       fr: 'Une soumission écrite ferme dès le départ, sans frais cachés. Les paliers volume commencent à 5+ unités, Net-30 pour les comptes récurrents approuvés.'
     },
-    'about.values.sample.h': { en: 'Sample-first approach', fr: 'Approche échantillon d\'abord' },
+    'about.values.sample.h': { en: 'Mockup-first approach', fr: 'Approche maquette d\'abord' },
     'about.values.sample.p': {
-      en: 'Every order gets a real physical sample before full production. You verify colors, placement and quality before we print a single extra piece.',
-      fr: 'Chaque commande reçoit un véritable échantillon physique avant la production complète. Vous vérifiez les couleurs, le placement et la qualité avant qu\'on imprime une seule pièce supplémentaire.'
+      en: 'You approve a photoreal mockup before we print anything — colors, placement and sizing. Want a physical proof in hand first? Add a printed sample at checkout for the cost of a blank.',
+      fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement et taille. Une preuve physique en main d\'abord ? Ajoutez un échantillon imprimé au paiement, pour le prix d\'un vêtement.'
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
@@ -446,8 +446,8 @@ var SP_LANG = (function() {
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
-      en: 'Send us your spec and we\'ll come back with a firm quote, sample timeline and Net-30 paperwork, usually within the hour during business hours.',
-      fr: 'Envoyez-nous votre devis et on revient avec une soumission ferme, un échéancier d\'échantillon et la paperasse Net-30, généralement en moins d\'une heure pendant les heures d\'ouverture.'
+      en: 'Send us your spec and we\'ll come back with a firm quote, mockup timeline and Net-30 paperwork, usually within the hour during business hours.',
+      fr: 'Envoyez-nous votre devis et on revient avec une soumission ferme, un échéancier de maquette et la paperasse Net-30, généralement en moins d\'une heure pendant les heures d\'ouverture.'
     },
     'about.cta.btn': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
 
@@ -576,10 +576,10 @@ var SP_LANG = (function() {
       en: 'No surprises. See your exact per-unit cost upfront based on quantity and print sides.',
       fr: 'Pas de surprises. Voyez votre coût exact par unite selon la quantité et les côtés d\'impression.'
     },
-    'biz.why.sample.h': { en: 'Sample Before Production', fr: 'Échantillon avant production' },
+    'biz.why.sample.h': { en: 'Mockup Before Production', fr: 'Maquette avant production' },
     'biz.why.sample.p': {
-      en: 'Every order gets a physical sample for approval before we print the full run.',
-      fr: 'Chaque commande reçoit un échantillon physique pour approbation avant la production complète.'
+      en: 'You approve a photoreal mockup before we print the full run. Want a printed sample first? Add one at checkout for the cost of a blank.',
+      fr: 'Vous approuvez une maquette photoréaliste avant la production complète. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.'
     },
     'biz.why.turnaround.h': { en: '2-4 Day Turnaround', fr: 'Délai de 2 à 4 jours' },
     'biz.why.turnaround.p': {
@@ -623,10 +623,10 @@ var SP_LANG = (function() {
       en: 'We respond within hours with a clear price breakdown. No back-and-forth, no hidden fees.',
       fr: 'On répond en quelques heures avec une ventilation claire des prix. Pas de va-et-vient, pas de frais cachés.'
     },
-    'biz.hiw.step3.h': { en: 'Approve a sample', fr: 'Approuvez un échantillon' },
+    'biz.hiw.step3.h': { en: 'Approve a mockup', fr: 'Approuvez une maquette' },
     'biz.hiw.step3.p': {
-      en: 'We print a physical sample for your approval. You check colors, placement, and quality before full production.',
-      fr: 'On imprimé un échantillon physique pour votre approbation. Vous vérifiez les couleurs, le placement et la qualité avant la production.'
+      en: 'You approve a photoreal mockup — colors, placement, and sizing — before full production. Want a printed sample first? Add one at checkout for the cost of a blank.',
+      fr: 'Vous approuvez une maquette photoréaliste — couleurs, placement et taille — avant la production complète. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.'
     },
     'biz.hiw.step4.h': { en: 'We deliver', fr: 'On livre' },
     'biz.hiw.step4.p': {
@@ -1162,7 +1162,7 @@ var SP_LANG = (function() {
     'quote.sidebar.pickup.note': { en: 'We\u2019ll text or email you when your order is ready for pickup.', fr: 'Nous vous écrirons ou vous appellerons quand votre commande sera prête.' },
     'quote.sidebar.next.h': { en: 'What happens next?', fr: 'Et la suite ?' },
     'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–6pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h).' },
-    'quote.sidebar.next.p2': { en: 'Once approved, we print a real sample before your full order.', fr: 'Une fois approuvée, on imprime un échantillon physique avant la commande complète.' },
+    'quote.sidebar.next.p2': { en: 'You approve a mockup before we print. Want a printed sample first? Add one at checkout for the cost of a blank.', fr: 'Vous approuvez une maquette avant l\'impression. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
     'quote.sidebar.talk.hours': { en: 'Open Mon–Sat, 9AM – 6PM', fr: 'Ouvert du lundi au samedi, 9 h à 18 h' },
     'quote.sidebar.promo.h': { en: '$20 off your first order of $100+', fr: '20 $ de rabais sur votre première commande de 100 $ et plus' },
@@ -1185,7 +1185,7 @@ var SP_LANG = (function() {
     // ===== RFP =====
     'rfp.label': { en: 'For Procurement &amp; Operations Teams', fr: 'Pour les équipes d\'approvisionnement et d\'opérations' },
     'rfp.h1': { en: 'Request procurement pricing', fr: 'Demander des prix d\'approvisionnement' },
-    'rfp.sub': { en: 'Tell us about the program. We\'ll come back with a quote, sample timeline, and term sheet — usually within an hour during business hours.', fr: 'Parlez-nous du programme. On revient avec une soumission, un échéancier d\'échantillon et une fiche de modalités — habituellement en moins d\'une heure pendant les heures d\'ouverture.' },
+    'rfp.sub': { en: 'Tell us about the program. We\'ll come back with a quote, mockup timeline, and term sheet — usually within an hour during business hours.', fr: 'Parlez-nous du programme. On revient avec une soumission, un échéancier de maquette et une fiche de modalités — habituellement en moins d\'une heure pendant les heures d\'ouverture.' },
     'rfp.sect.company': { en: 'Company', fr: 'Entreprise' },
     'rfp.sect.order': { en: 'The order', fr: 'La commande' },
     'rfp.sect.terms': { en: 'Terms &amp; compliance', fr: 'Modalités et conformité' },
@@ -1229,7 +1229,7 @@ var SP_LANG = (function() {
     'rfp.label.garments': { en: 'What are you ordering?', fr: 'Que commandez-vous ?' },
     'rfp.ph.garments': { en: 'E.g. 80 hi-vis t-shirts (cotton blend, embroidered logo left chest), 40 fleece hoodies for winter. Include any spec you have.', fr: 'Ex. 80 t-shirts hi-vis (coton mélangé, logo brodé poitrine gauche), 40 hoodies en molleton pour l\'hiver. Incluez toute spécification utile.' },
     'rfp.label.needed': { en: 'Needed by', fr: 'Requis pour le' },
-    'rfp.hint.turnaround': { en: 'Standard turnaround is 7–14 business days from sample approval. Faster possible with rush surcharge.', fr: 'Délai standard de 7 à 14 jours ouvrables après l\'approbation de l\'échantillon. Plus rapide possible avec supplément urgent.' },
+    'rfp.hint.turnaround': { en: 'Standard turnaround is 7–14 business days from mockup approval. Faster possible with rush surcharge.', fr: 'Délai standard de 7 à 14 jours ouvrables après l\'approbation de la maquette. Plus rapide possible avec supplément urgent.' },
     'rfp.label.terms': { en: 'Preferred payment terms', fr: 'Modalités de paiement souhaitées' },
     'rfp.terms.prepaid': { en: 'Prepaid (2% discount)', fr: 'Prépayé (rabais de 2 %)' },
     'rfp.terms.deposit30': { en: '50% deposit + Net 30 balance', fr: 'Dépôt 50 % + solde Net 30' },
@@ -1250,16 +1250,16 @@ var SP_LANG = (function() {
     'rfp.compliance.line': { en: 'By submitting, you agree we may contact you with quote details. No spam, no list-sharing. We respond within an hour during business hours.', fr: 'En soumettant, vous acceptez qu\'on vous contacte avec les détails de la soumission. Aucun pourriel, aucun partage de liste. On répond en moins d\'une heure pendant les heures d\'ouverture.' },
     'rfp.submit': { en: 'Send RFP →', fr: 'Envoyer la demande →' },
     'rfp.success.h2': { en: 'RFP received', fr: 'Demande reçue' },
-    'rfp.success.p': { en: 'We\'ll be in touch with quoted pricing, a sample timeline, and proposed payment terms — usually within the hour during business hours, otherwise first thing next business day.', fr: 'On vous reviendra avec les prix, un échéancier d\'échantillon et les modalités de paiement proposées — habituellement en moins d\'une heure pendant les heures d\'ouverture, sinon dès le prochain jour ouvrable.' },
+    'rfp.success.p': { en: 'We\'ll be in touch with quoted pricing, a mockup timeline, and proposed payment terms — usually within the hour during business hours, otherwise first thing next business day.', fr: 'On vous reviendra avec les prix, un échéancier de maquette et les modalités de paiement proposées — habituellement en moins d\'une heure pendant les heures d\'ouverture, sinon dès le prochain jour ouvrable.' },
     'rfp.rail.next.h': { en: 'What happens after you submit', fr: 'Et la suite après votre envoi' },
     'rfp.rail.next.li1': { en: 'We reply within the hour during business hours with quoted bulk pricing.', fr: 'On répond en moins d\'une heure pendant les heures d\'ouverture avec des prix de gros.' },
-    'rfp.rail.next.li2': { en: 'We send a physical sample for approval before any production run.', fr: 'On envoie un échantillon physique pour approbation avant toute production.' },
-    'rfp.rail.next.li3': { en: 'Approved samples kick off production. Standard turnaround is 7–14 business days.', fr: 'Les échantillons approuvés lancent la production. Délai standard de 7 à 14 jours ouvrables.' },
+    'rfp.rail.next.li2': { en: 'You approve a photoreal mockup before any production run. A printed sample is optional, for the cost of a blank.', fr: 'Vous approuvez une maquette photoréaliste avant toute production. Un échantillon imprimé est en option, pour le prix d\'un vêtement.' },
+    'rfp.rail.next.li3': { en: 'An approved mockup kicks off production. Standard turnaround is 7–14 business days.', fr: 'Une maquette approuvée lance la production. Délai standard de 7 à 14 jours ouvrables.' },
     'rfp.rail.next.li4': { en: 'Reorders for new hires or program refreshes go through your dedicated account manager.', fr: 'Les recommandes pour nouveaux employés ou renouvellements passent par votre gestionnaire de compte attitré.' },
     'rfp.rail.terms.h': { en: 'Standard terms', fr: 'Modalités standards' },
     'rfp.rail.terms.li1': { en: '50% deposit to start production, balance Net 30 from invoice date.', fr: 'Dépôt 50 % pour démarrer la production, solde Net 30 à partir de la date de facture.' },
     'rfp.rail.terms.li2': { en: 'Custom terms available for repeat accounts and standing programs.', fr: 'Modalités sur mesure pour les comptes habituels et les programmes permanents.' },
-    'rfp.rail.terms.li3': { en: 'Free quote — no obligation, no commitment until you approve the sample.', fr: 'Soumission gratuite — sans obligation, aucun engagement avant l\'approbation de l\'échantillon.' },
+    'rfp.rail.terms.li3': { en: 'Free quote — no obligation, no commitment until you approve the mockup.', fr: 'Soumission gratuite — sans obligation, aucun engagement avant l\'approbation de la maquette.' },
     'rfp.rail.terms.li4': { en: '5.0 stars on Google from 25 verified Montreal clients.', fr: '5,0 étoiles sur Google par 25 clients montréalais vérifiés.' },
     'rfp.rail.quote.body': { en: 'Perfect quality and excellent service. Definitely worth checking out!', fr: 'Qualité parfaite et excellent service. Vaut vraiment la peine d\'essayer !' },
     'rfp.rail.quote.attr': { en: '— Bavneet Kaur, verified Google review (5.0 / 23 on Google)', fr: '— Bavneet Kaur, avis Google vérifié (5,0 / 23 sur Google)' },
@@ -1268,7 +1268,7 @@ var SP_LANG = (function() {
     // Construction
     'ind.construction.label': { en: 'For Construction &amp; Trades', fr: 'Pour la construction et les métiers' },
     'ind.construction.h1': { en: 'Branded workwear for Montreal construction crews', fr: 'Vêtements de travail marqués pour les équipes de construction à Montréal' },
-    'ind.construction.sub': { en: 'Hi-vis tees and hoodies, embroidered crew uniforms, branded coveralls. Built to survive the job site, the wash cycle, and the next hire. Volume pricing from 5 units, sample-first production, dedicated account manager.', fr: 'T-shirts et hoodies hi-vis, uniformes brodés, salopettes marquées. Conçus pour survivre au chantier, au lavage et au prochain embauché. Prix de volume à partir de 5 unités, production avec échantillon, gestionnaire de compte attitré.' },
+    'ind.construction.sub': { en: 'Hi-vis tees and hoodies, embroidered crew uniforms, branded coveralls. Built to survive the job site, the wash cycle, and the next hire. Volume pricing from 5 units, mockup-first production, dedicated account manager.', fr: 'T-shirts et hoodies hi-vis, uniformes brodés, salopettes marquées. Conçus pour survivre au chantier, au lavage et au prochain embauché. Prix de volume à partir de 5 unités, production avec maquette, gestionnaire de compte attitré.' },
     'ind.construction.cta1': { en: 'Request crew pricing', fr: 'Demander des prix d\'équipe' },
     'ind.construction.h2.challenges': { en: 'The three things that actually matter', fr: 'Les trois choses qui comptent vraiment' },
     'ind.construction.h2.products': { en: 'Workwear we print for Montreal contractors', fr: 'Vêtements de travail qu\'on imprime pour les entrepreneurs montréalais' },

@@ -21,8 +21,8 @@
   var T = {
     title:  FR ? 'Nous respectons votre vie privee' : 'We value your privacy',
     body:   FR
-      ? 'Nous utilisons des temoins (cookies) essentiels pour faire fonctionner le site, et — avec votre accord — des temoins de mesure d’audience et de publicite (Google, Meta) pour ameliorer nos services. Vous pouvez accepter, refuser, ou en savoir plus dans notre '
-      : 'We use essential cookies to run the site and — with your consent — analytics and advertising cookies (Google, Meta) to improve our services. You can accept, decline, or learn more in our ',
+      ? 'Nous utilisons des temoins (cookies) pour faire fonctionner le site et ameliorer votre experience. Vous pouvez accepter, refuser, ou en savoir plus dans notre '
+      : 'We use cookies to run the site and improve your experience. You can accept, decline, or learn more in our ',
     policy: FR ? 'Politique de temoins' : 'Cookie Policy',
     accept: FR ? 'Tout accepter' : 'Accept all',
     reject: FR ? 'Refuser le non-essentiel' : 'Decline non-essential',

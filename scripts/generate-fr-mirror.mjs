@@ -164,11 +164,11 @@ const META_DESC_FR = {
   'catalog.html': 'Parcourez 1 100+ vêtements vierges chez S&S Activewear, SanMar et Rue Saint-Patrick. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.',
   'quote.html': 'Demandez une soumission personnalisée pour t-shirts, hoodies, polos, casquettes et plus. Réponse humaine en moins d\'une heure pendant les heures d\'ouverture.',
   'businesses.html': 'Programmes de vêtements corporatifs pour les entreprises de Montréal. Net-30, entente-cadre, appels d\'offres acceptés. Soumission ferme en un jour ouvrable.',
-  'businesses/rfp.html': 'Formulaire d\'appel d\'offres pour Imprimerie Singhs Print. Soumission détaillée, échéancier d\'échantillon et paperasse Net-30 en moins d\'un jour ouvrable.',
+  'businesses/rfp.html': 'Formulaire d\'appel d\'offres pour Imprimerie Singhs Print. Soumission détaillée, échéancier de maquette et paperasse Net-30 en moins d\'un jour ouvrable.',
   'inkwear.html': 'Programme partenaire Inkwear · vêtements co-brandés pour les créateurs et les marques de mode établies au Québec.',
   'portfolio.html': 'Découvrez les commandes récentes décorées par Imprimerie Singhs Print pour des clubs McGill, des entreprises de l\'Ouest-de-l\'Île et des comptes corporatifs.',
   'order.html': 'Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.',
-  'why-us.html': 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes. Prix en direct, aucun minimum, un vrai échantillon avant la production et une garantie de réimpression — voici la différence Singhs Print.'
+  'why-us.html': 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes. Prix en direct, aucun minimum, une maquette que vous approuvez avant l\'impression et une garantie contre les erreurs d\'impression — voici la différence Singhs Print.'
 };
 
 // Pre-translated OG/Twitter titles + descriptions for the highest-traffic
