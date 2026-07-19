@@ -307,6 +307,8 @@
     .dmcz__chip[aria-pressed="true"] .dmcz__chip-name{color:#fff}
     .dmcz__chip[aria-pressed="true"] .dmcz__chip-desc{color:#cfcfcf}
     .dmcz__chip-name{font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.15}
+    .dmcz__chip-price{margin-left:6px;font-size:.72rem;font-weight:700;color:#2f6f3e}
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-price{color:#8fd6a0}
     .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
     .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
     .dmcz__preview{margin:16px 0 4px}

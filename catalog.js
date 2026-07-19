@@ -438,6 +438,7 @@
     renderDmczUploads();
     renderDmczPreview();
     refreshDmczPrice();
+    dmczLoadDeltas();             // pull live per-placement $ from the CRM → repaints chip hints
     dmczResetCustomizeToggle();   // every product opens in the simple state
   }
 
@@ -478,6 +479,61 @@
     renderDmczPlacements();
     renderDmczUploads();
     refreshDmczPrice();
+    dmczLoadDeltas();  // embroidery vs dtf can carry different placement deltas
+  }
+
+  // Per-placement price hint shown on each chip so the customer sees what
+  // their choice costs BEFORE clicking — the header total stays the exact
+  // source of truth (it's API-driven), these labels are guidance.
+  //
+  // The numbers come LIVE from the CRM via /api/pricing/placement-summary, so
+  // editing the placement surcharges or the per-side ladder in the CRM flows
+  // straight through to these chips (no hardcoded mirror to keep in sync).
+  // _dmczDeltas holds the last-fetched summary; a $2 side-add default covers
+  // the moment before the first fetch lands (header is authoritative anyway).
+  var _dmczDeltas = { qty: 0, side_add: 2, deltas: {}, key: '' };
+  function dmczCurrentQty() {
+    var el = document.getElementById('detailModalQtyInput');
+    return Math.max(1, parseInt(el && el.value, 10) || (state && state.qty) || 25);
+  }
+  // Fetch placement deltas for the current garment/qty/method from the CRM,
+  // then re-render the chips so their $ hints reflect live pricing. Cached by
+  // (garment|qty|method) key so we don't refetch when nothing relevant moved.
+  function dmczLoadDeltas() {
+    var p = _detailProduct; if (!p) return;
+    var gt = p.garment_type || 'tshirt';
+    var qty = dmczCurrentQty();
+    var method = dmczMethodApi(_dmczState.method);
+    var key = gt + '|' + qty + '|' + method;
+    if (_dmczDeltas.key === key) return;              // already have it
+    var url = 'https://singhsprint-crm.vercel.app/api/pricing/placement-summary?garment_type=' +
+              encodeURIComponent(gt) + '&qty=' + encodeURIComponent(qty) +
+              '&decoration_method=' + encodeURIComponent(method);
+    fetch(url, { cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d || !_detailProduct || (_detailProduct.garment_type || 'tshirt') !== gt) return;
+        _dmczDeltas = { qty: d.qty, side_add: (typeof d.side_add === 'number' ? d.side_add : 2), deltas: d.deltas || {}, key: key };
+        renderDmczPlacements();                       // repaint chips with live hints
+      })
+      .catch(function(){ /* keep last hints; header stays authoritative */ });
+  }
+  function dmczDecoDelta(pid) {
+    var d = _dmczDeltas.deltas || {};
+    return typeof d[pid] === 'number' ? d[pid] : 0;
+  }
+  // Marginal cost of ADDING this placement from the current selection.
+  // Front-family presets (loc 'front') are the primary print — their hint is
+  // the size premium only. Any other location (back, sleeves) adds a print
+  // side, so its hint includes the +$2 side cost (this is why sleeves are
+  // never "free"). Currently-selected chips show no add badge.
+  function dmczChipHint(pid, selected) {
+    if (selected) return '';
+    var pre = DMCZ_placementPresets[pid] || {};
+    var delta = dmczDecoDelta(pid);
+    var isPrimarySide = (pre.loc === 'front');
+    var add = isPrimarySide ? delta : (_dmczDeltas.side_add + delta);
+    return add > 0 ? '+$' + add : 'included';
   }
 
   // Render the placement groups for the current garment, with disallowed
@@ -494,8 +550,12 @@
       var chips = ids.map(function(pid){
         var pre = DMCZ_placementPresets[pid] || { label: pid, desc: '' };
         var on = _dmczState.placements.indexOf(pid) >= 0;
+        var hint = dmczChipHint(pid, on);
+        var hintHtml = hint
+          ? '<span class="dmcz__chip-price"' + (hint === 'included' ? ' style="color:#888"' : '') + '>' + hint + '</span>'
+          : '';
         return '<button type="button" class="dmcz__chip" data-pid="' + pid + '" aria-pressed="' + on + '">' +
-               '<span class="dmcz__chip-name">' + pre.label + '</span>' +
+               '<span class="dmcz__chip-name">' + pre.label + hintHtml + '</span>' +
                '<span class="dmcz__chip-desc">' + (pre.desc || '') + '</span>' +
                '</button>';
       }).join('');
@@ -1227,11 +1287,13 @@
     if (qtyMinus) qtyMinus.addEventListener('click', () => {
       qtyInp.value = Math.max(1, (parseInt(qtyInp.value, 10) || 1) - 1);
       syncDetailAddBtn();
+      if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();  // refresh chip $ hints across the qty-50 break
       if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
     });
     if (qtyPlus) qtyPlus.addEventListener('click', () => {
       qtyInp.value = Math.min(10000, (parseInt(qtyInp.value, 10) || 0) + 1);
       syncDetailAddBtn();
+      if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();
       if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
     });
     // While typing: don't clamp. Just update the label.
@@ -1242,6 +1304,7 @@
       qtyInp.addEventListener('input', () => {
         clearTimeout(_dmczQtyTimer);
         _dmczQtyTimer = setTimeout(() => {
+          if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();
           if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
         }, 350);
       });
