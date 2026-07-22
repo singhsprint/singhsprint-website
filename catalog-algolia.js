@@ -111,11 +111,43 @@
     };
   }
 
+  // Nav "parent" landings that mean several categories at once. The top-nav
+  // buttons (Bottoms / Accessories / Workwear) point at these aliases via
+  // ?type=<alias>; each expands to an OR-group of category_effective leaves
+  // (Workwear also folds in the hi-vis/CSA safety flag) so the parent shows
+  // the whole family instead of a single sub-category. The granular sub-menu
+  // links still pass a real category_effective value and hit the branch below.
+  // 2026-07-22.
+  var CATEGORY_GROUPS = {
+    bottoms:     ['category_effective:joggers', 'category_effective:sweatpants',
+                  'category_effective:shorts', 'category_effective:pants',
+                  'category_effective:leggings'],
+    accessories: ['category_effective:hat', 'category_effective:beanie',
+                  'category_effective:visor', 'category_effective:bag',
+                  'category_effective:gloves', 'category_effective:scarf',
+                  'category_effective:headband'],
+    workwear:    ['category_effective:coverall', 'category_effective:scrubs',
+                  'category_effective:apron', 'category_effective:chore_coat',
+                  'category_effective:workshirt', 'is_hivis_or_csa:true'],
+  };
+
   function buildFacetFilters(opts) {
     var f = [];
+    // Default browse (no category chip AND no search): hide non-printable
+    // accessories — socks, gloves, towels, koozies — so the grid opens on
+    // real decoratable sellers instead of cheap many-coloured oddities that
+    // used to top the "Bestseller" sort. 2026-07-19. Any explicit category
+    // or search lifts the filter so those items stay findable.
+    var hasQuery = !!(opts.q && String(opts.q).trim());
+    if (!opts.type && !hasQuery) f.push('printable:true');
     // Category chips filter on the corrected taxonomy (category_effective),
     // not the legacy garment_type — see the 2026-06-10 catalog re-tag.
-    if (opts.type)       f.push('category_effective:' + opts.type);
+    // A group alias (bottoms/accessories/workwear) expands to an OR-array;
+    // a plain value is a single-category equality.
+    if (opts.type) {
+      if (CATEGORY_GROUPS[opts.type]) f.push(CATEGORY_GROUPS[opts.type].slice());
+      else                            f.push('category_effective:' + opts.type);
+    }
     if (opts.canadian)   f.push('is_canadian_made:true');
     if (opts.csa)        f.push('is_hivis_or_csa:true');
     if (opts.inStockOnly) f.push('in_stock:true');

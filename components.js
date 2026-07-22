@@ -360,7 +360,7 @@ function loadNav() {
     },
     {
       en: 'Bottoms', fr: 'Bas', i18n: 'nav.bottoms',
-      href: BASE + '/catalog?type=joggers',
+      href: BASE + '/catalog?type=bottoms',
       subs: [
         { en: 'Joggers',             fr: 'Joggers',             href: BASE + '/catalog?type=joggers' },
         { en: 'Sweatpants',          fr: 'Pantalons de jogging',href: BASE + '/catalog?type=sweatpants' },
@@ -371,7 +371,7 @@ function loadNav() {
     },
     {
       en: 'Workwear', fr: 'Vêtements de travail', i18n: 'nav.workwear',
-      href: BASE + '/catalog?csa=1',
+      href: BASE + '/catalog?type=workwear',
       subs: [
         { en: 'Hi-vis & CSA',        fr: 'Haute visibilité / CSA', href: BASE + '/catalog?csa=1' },
         { en: 'Coveralls',           fr: 'Combinaisons',        href: BASE + '/catalog?type=coverall' },
@@ -381,7 +381,7 @@ function loadNav() {
     },
     {
       en: 'Accessories', fr: 'Accessoires', i18n: 'nav.accessories',
-      href: BASE + '/catalog?type=hat',
+      href: BASE + '/catalog?type=accessories',
       subs: [
         { en: 'Hats & caps',         fr: 'Chapeaux',            href: BASE + '/catalog?type=hat' },
         { en: 'Beanies & toques',    fr: 'Tuques',              href: BASE + '/catalog?type=beanie' },
