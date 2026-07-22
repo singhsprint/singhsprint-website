@@ -1550,7 +1550,10 @@
       // dropdown and the /designed-in-montreal page land on the catalog
       // pre-filtered to Rue Saint-Patrick / Canadian-made blanks.
       canadian: getQueryParam('canadian') === '1',
-      csa: false,
+      // Hydrate from `?csa=1` so the nav's "Hi-vis & CSA" deep link actually
+      // filters. Was hardcoded false, which silently ignored the param and
+      // dumped the whole catalog onto the Workwear landing. 2026-07-22.
+      csa: getQueryParam('csa') === '1',
       // Hydrate from `?q=` so deep links from the nav's search dropdown
       // (e.g. /catalog?q=hoodies) actually pre-filter the catalog instead
       // of landing on the unfiltered list with the search param ignored.
