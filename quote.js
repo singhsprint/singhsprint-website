@@ -2193,6 +2193,10 @@
       // Clear immediately to defend against accidental re-render double-fires
       window.__sp_pendingConversion = null;
 
+      // Spam guard (2026-07-25): server flagged this submission (queued:false)
+      // — success panel already rendered above, but NO conversion events.
+      if (window.__sp_suppressConversion) { window.__sp_suppressConversion = false; return; }
+
       // Meta Lead — the event the Leads-objective ad sets optimize toward.
       // Fired on BOTH the browser Pixel and the server-side CAPI with a single
       // shared event_id, so Meta de-dupes to exactly ONE Lead (no double-count)
@@ -6429,7 +6433,11 @@
               needed_by:      fd.get('need_by_date') || null,
               is_rush:        !!fd.get('is_rush')
             },
-            source_url: location.href
+            source_url: location.href,
+            // Honeypot (2026-07-25) — hidden "company_website" input in the
+            // form markup. Humans never see it; bots machine-fill it. The
+            // CRM's /api/inbound flags any non-empty value as spam.
+            website: fd.get('company_website') || null
           };
           // Now that the design file(s) are already in our bucket (or
           // none if the customer skipped artwork), POST the structured
@@ -6469,7 +6477,15 @@
               // Inline success — short-circuits Web3Forms entirely.
               form.dataset.spUploadCleared = '1';
               spHideUploadOverlay();
-              try { showSuccess(); } catch (e) { /* showSuccess is defined below; fall back if not yet */ }
+              // Spam guard (2026-07-25): the CRM answers queued:false when
+              // its spam layers flagged the submission (honeypot / rate
+              // limit / gibberish). We still show the normal success panel
+              // — never tip off a bot — but suppress the Lead conversions
+              // so fake Leads can't poison Meta/Google optimization.
+              r.json().catch(function(){ return {}; }).then(function(j){
+                if (j && j.queued === false) window.__sp_suppressConversion = true;
+                try { showSuccess(); } catch (e) { /* showSuccess is defined below; fall back if not yet */ }
+              });
             } else {
               console.warn('[inbound POST] non-2xx from CRM (status ' + (r && r.status) + ') — falling back to Web3Forms');
               finishAndSubmit();
