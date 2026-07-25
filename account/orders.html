@@ -313,10 +313,22 @@
       const orgPaidPill = isOrgPaid
         ? '<span class="pill pill--orgpaid">Paid by your program</span>'
         : '';
+      // 2026-07-25 — invoice link + live balance. The API decorates every
+      // row with invoice_url (the branded pay.singhsprint.com invoice page,
+      // embedded Stripe checkout on it) and balance_due (ledger-derived:
+      // total − payments received − store credit applied). Org-paid orders
+      // never show a pay CTA — their program covers it.
+      const balanceDue  = Number(order.balance_due || 0);
+      const paidSoFar   = Number(order.amount_paid || 0);
+      const invoiceUrl  = order.invoice_url || null;
+      const owes        = !isOrgPaid && balanceDue > 0.005;
+      const paidLine    = paidSoFar > 0 && balanceDue > 0.005
+        ? ` · ${esc(fmtMoney(paidSoFar))} paid, ${esc(fmtMoney(balanceDue))} due`
+        : '';
       el.innerHTML = `
         <div class="lead__main">
           <div class="lead__kind">Order ${esc(order.order_number || '#' + (order.id || '').slice(0,8))}</div>
-          <div class="lead__title">${esc(fmtMoney(order.total))}${items ? ' · ' + esc(items) : ''}</div>
+          <div class="lead__title">${esc(fmtMoney(order.total))}${items ? ' · ' + esc(items) : ''}${paidLine}</div>
           <div class="lead__sub">${esc(fmtDate(order.created_at))}${order.deadline ? ' · deadline ' + esc(fmtDate(order.deadline)) : ''}</div>
           <div class="reorder-msg" data-order-msg="${esc(order.id)}"></div>
         </div>
@@ -325,9 +337,13 @@
         <div class="actions">
           ${bucket === 'active' && order.order_number && order.fulfillment_method !== 'delivery' ? `<button class="btn btn--ghost" data-add-delivery="${esc(order.order_number)}">Add delivery</button>` : ''}
           ${trackUrl ? `<a class="btn btn--ghost" href="${esc(trackUrl)}">Track</a>` : ''}
-          ${bucket === 'active'
+          ${invoiceUrl && !owes ? `<a class="btn btn--ghost" href="${esc(invoiceUrl)}" target="_blank" rel="noopener">Invoice</a>` : ''}
+          ${invoiceUrl && owes ? `<a class="btn btn--primary" href="${esc(invoiceUrl)}" target="_blank" rel="noopener">Pay balance · ${esc(fmtMoney(balanceDue))}</a>` : ''}
+          ${bucket === 'active' && !owes
             ? `<a class="btn btn--primary" href="/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
-            : ''}
+            : bucket === 'active'
+              ? `<a class="btn btn--ghost" href="/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
+              : ''}
           ${bucket === 'past' ? `<button class="btn btn--primary" data-reorder="${esc(order.id)}">Reorder</button>` : ''}
         </div>`;
       root.appendChild(el);
