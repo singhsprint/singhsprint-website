@@ -943,7 +943,7 @@ function loadFooter() {
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Imprimerie Singhs Print &middot; NEQ 1181573313</span></span>'
     + '      <span class="footer-legal" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center"><a href="/privacy" data-i18n="footer.privacy">Privacy</a><a href="/cookies" data-i18n="footer.cookies">Cookies</a><a href="/terms" data-i18n="footer.terms">Terms</a><a href="/accessibility" data-i18n="footer.accessibility">Accessibility</a><a href="#" onclick="if(window.SP_CONSENT){SP_CONSENT.reopen();}return false;" data-i18n="footer.cookieprefs">Cookie preferences</a></span>'
     + '      <span data-i18n="footer.tagline">Custom Apparel Printing | Montreal, QC</span>'
-    + '      <a href="https://singhsprint-crm.vercel.app/login" style="font-size:.75rem;color:#777;font-weight:500;opacity:.7;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7" data-i18n="nav.login">Login</a>'
+    + '      <a href="https://os.singhsprint.com/login" style="font-size:.75rem;color:#777;font-weight:500;opacity:.7;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7" data-i18n="nav.login">Login</a>'
     + '    </div>'
     + '  </div>'
     + '</footer>';
