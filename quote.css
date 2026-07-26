@@ -914,9 +914,18 @@
 
       /* When live pricing engages, #livePriceStrip takes the bottom of the
          viewport (position:fixed, bottom:0, ~93px tall). Lift the sticky
-         button bar clear of it rather than letting them stack. */
-      body:has(#livePriceStrip[style*="display:block"]) .form-section[data-step="1"] .form-buttons,
-      body:has(#livePriceStrip[style*="display: block"]) .form-section[data-step="1"] .form-buttons{
+         button bar clear of it rather than letting them stack.
+
+         The `:not(.sp-gated)` is load-bearing. The strip carries an inline
+         `display:block` from the moment the pricing code first runs, but its
+         real visibility is gated by the `.sp-gated` class that quote.js
+         toggles (`.sp-gated{display:none !important}`) until a product is
+         actually chosen. Matching on the style attribute alone was therefore
+         true from page load, and lifted the bar 96px off the bottom edge
+         with nothing underneath it. Both spacing variants of the attribute
+         are listed because the serialized value differs by how it was set. */
+      body:has(#livePriceStrip[style*="display:block"]:not(.sp-gated)) .form-section[data-step="1"] .form-buttons,
+      body:has(#livePriceStrip[style*="display: block"]:not(.sp-gated)) .form-section[data-step="1"] .form-buttons{
         bottom:calc(96px + env(safe-area-inset-bottom,0px));
       }
     }
