@@ -646,6 +646,11 @@ var SP_LANG = (function() {
       en: 'Design your mockup, pick your options, and request a quote in minutes. No account needed.',
       fr: 'Créez votre maquette, choisissez vos options et demandez une soumission en quelques minutes. Aucun compte requis.'
     },
+    // Phone-only one-liner — see .page-header__short in quote.css.
+    'quote.sub.short': {
+      en: 'Free quote in minutes. No account needed.',
+      fr: 'Soumission gratuite en quelques minutes. Aucun compte requis.'
+    },
     'quote.step1.h': { en: 'Choose your product', fr: 'Choisissez votre produit' },
     'quote.step1.desc': { en: 'Pick your product, placements, and sizes — all in one place.', fr: 'Choisissez votre produit, les emplacements et les tailles — tout au même endroit.' },
     'quote.step2.h': { en: 'Upload your design & sizes', fr: 'Visuel et tailles' },

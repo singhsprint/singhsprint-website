@@ -702,6 +702,31 @@ function loadNav() {
   var searchPlaceholder = t('Search 1,100+ blanks', 'Chercher parmi 1 100+ vêtements');
   var searchOverlayPlaceholder = t('Search by brand, style, or fabric…', 'Cherchez par marque, style ou tissu…');
 
+  // 2026-07-26 — the mobile category strip is eight links that all point
+  // OFF this page (/catalog, /jerseys). On the conversion pages that is
+  // the first tappable row on the screen, i.e. eight exits above the
+  // fold. Same skip-list as loadStickyCTA() below, same reasoning.
+  var _catsPath = (location.pathname || '/').toLowerCase();
+  var _catsSkip = ['/quote', '/order'].some(function (p) {
+    return _catsPath === p || _catsPath === p + '/' || _catsPath.indexOf(p + '/') === 0 || _catsPath === p + '.html';
+  });
+  // Mobile-only horizontal category strip — six one-tap entry points
+  // into the catalog plus an "All" entry. Tucked under the sticky
+  // header so it scrolls away as the page scrolls. CSS hides this
+  // entirely above 960px. Line-art SVG icons sit in a small white
+  // circle so they match the editorial b/w aesthetic.
+  var mobileCatsHTML = _catsSkip ? '' : (''
+    + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=bag">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/jerseys">' + ICON.jersey + '<span>' + t('Jerseys', 'Maillots') + '</span></a>'
+    + '</nav>');
+
   el.innerHTML = ''
     + promoHTML
     + '<header class="sp-nav" role="banner">'
@@ -737,21 +762,7 @@ function loadNav() {
     +      row2Edit
     + '  </nav>'
     + '</header>'
-    // Mobile-only horizontal category strip — six one-tap entry points
-    // into the catalog plus an "All" entry. Tucked under the sticky
-    // header so it scrolls away as the page scrolls. CSS hides this
-    // entirely above 960px. Line-art SVG icons sit in a small white
-    // circle so they match the editorial b/w aesthetic.
-    + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=vest">' + ICON.workwear + '<span>' + t('Workwear', 'Travail') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=bag">' + ICON.bagicon + '<span>' + t('Bags', 'Sacs') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hat">' + ICON.hat + '<span>' + t('Hats', 'Chapeaux') + '</span></a>'
-    + '  <a class="sp-mobile-cat" href="' + BASE + '/jerseys">' + ICON.jersey + '<span>' + t('Jerseys', 'Maillots') + '</span></a>'
-    + '</nav>'
+    + mobileCatsHTML
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
     + '  <div class="sp-drawer-head">'
     + '    <button class="sp-drawer-close" aria-label="' + t('Close menu', 'Fermer le menu') + '" onclick="window.__spCloseDrawer()">' + ICON.close + '</button>'
@@ -1286,7 +1297,15 @@ function loadMobileTrim() {
     // Defensive — prevents any oversized child (wide tables, fixed-
     // width images) from causing the whole page to scroll horizontally.
     // Pages that need a horizontal scroll do it on a wrapper, not body.
-    +   'html,body{overflow-x:hidden !important;max-width:100vw}'
+    //
+    // 2026-07-26: the clip is on <html> only. Putting overflow-x on BODY
+    // makes body's overflow-y compute to `auto`, which turns body into a
+    // scroll container — and then every position:sticky descendant resolves
+    // against body's scrollport (the whole document) instead of the
+    // viewport, so it never sticks. Clipping at <html> gives the same
+    // horizontal protection with no sticky side-effect.
+    +   'html{overflow-x:hidden !important;max-width:100vw}'
+    +   'body{max-width:100vw}'
     +   '.section,section.section{padding:32px 0 !important}'
     // Headings: tighter scale + balance
     +   'h1{font-size:clamp(1.9rem,7vw,2.6rem) !important;line-height:1.15 !important;text-wrap:balance}'

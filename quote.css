@@ -21,6 +21,9 @@
     .page-header{padding:60px 24px 32px;text-align:center}
     .page-header h1{font-size:clamp(2rem,4vw,3rem);margin-bottom:12px}
     .page-header p{font-size:1.1rem;color:#666;max-width:560px;margin:0 auto}
+    /* Phone-only condensed subhead. Hidden everywhere by default; the
+       Ship-1 block at the foot of this file swaps it in at ≤600px. */
+    .page-header__short{display:none}
 
     /* Layout */
     .customizer-layout{display:grid;grid-template-columns:1fr 400px;gap:32px;max-width:1200px;margin:0 auto 80px;padding:0 24px;align-items:start}
@@ -498,9 +501,12 @@
       /* Mobile feedback was "overwhelming". Step headers smaller, lower
          density between rows. The 3-step progress strip + form card
          account for most of the visual noise; both shrink here. */
-      .quote-hero{padding-top:18px !important;padding-bottom:6px !important}
-      .quote-hero h1{margin-bottom:6px !important}
-      .quote-hero .sub{font-size:.88rem !important;line-height:1.5}
+      /* 2026-07-26 — these three rules used to target `.quote-hero`, which
+         does not exist in quote.html (the markup is `.page-header`). They
+         had never applied; the hero measured 223px tall on a 390px phone. */
+      .page-header{padding-top:18px !important;padding-bottom:6px !important}
+      .page-header h1{margin-bottom:6px !important}
+      .page-header p{font-size:.88rem !important;line-height:1.5}
       /* Tier-pricing table inside cart rows — phones need tighter cells +
          a smaller font, plus a hard overflow-x:auto wrapper so it scrolls
          INSIDE its column instead of forcing the cart-item flex parent to
@@ -514,7 +520,16 @@
       /* Belt-and-braces — never let the page itself scroll horizontally
          on phones. If something inside overflows, it gets clipped at the
          body edge rather than pushing the layout sideways. */
-      html,body{overflow-x:hidden;max-width:100vw}
+      /* 2026-07-26 — this was `html,body{overflow-x:hidden}`. Setting
+         overflow-x on BODY makes body's overflow-y compute to `auto`,
+         which turns body into the nearest scrolling ancestor for every
+         descendant — and body's scrollport is the whole document, so
+         position:sticky inside it never engages. Keeping the clip on
+         <html> alone gives the same horizontal protection (verified:
+         document.scrollWidth still == clientWidth) while leaving the
+         viewport as the sticky scrollport for the step button bar. */
+      html{overflow-x:hidden;max-width:100vw}
+      body{max-width:100vw}
       .step-pills{gap:6px !important;margin-bottom:14px !important}
       .step-pill{font-size:.7rem !important;padding:6px 10px !important;flex:1 1 0;min-width:0;text-align:center}
       .step-pill__num{display:none}
@@ -592,10 +607,13 @@
       /* Auto-hide when no delivery preference picked, or when "Local
          pickup" is selected — body JS toggles a class. */
       #shippingEstimateCard.is-hidden-mobile{display:none !important}
-      /* Hero gap fix — was rendering ~300px tall on phones */
-      .quote-hero{padding:14px 0 6px !important}
-      .quote-hero h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
-      .quote-hero .sub{font-size:.86rem !important;line-height:1.5;margin-bottom:0 !important}
+      /* Hero gap fix — was rendering ~300px tall on phones.
+         Retargeted 2026-07-26 from `.quote-hero` (a class the markup
+         never had) to the real `.page-header`. Horizontal padding is
+         kept from the base rule, so only the vertical is overridden. */
+      .page-header{padding-top:14px !important;padding-bottom:6px !important}
+      .page-header h1{margin-bottom:4px !important;font-size:clamp(1.6rem,6vw,2rem) !important;line-height:1.15 !important}
+      .page-header p{font-size:.86rem !important;line-height:1.5;margin-bottom:0 !important}
 
       /* ===== Empty-state catalog CTA — compact phone layout =====
          The card defaults to flex-row + a 350-char body paragraph,
@@ -628,12 +646,11 @@
       #catalogPickEmpty > div:nth-child(2) > strong{
         font-size:1rem !important;line-height:1.3 !important;
       }
-      #catalogPickEmpty > a{
-        width:100% !important;
-        text-align:center !important;
-        padding:13px 18px !important;
-        font-size:.92rem !important;
-      }
+      /* (A `#catalogPickEmpty > a` block lived here that made the CTA a
+         full-width button. Removed 2026-07-26: after the 26 Jul demotion
+         the anchor moved inside a wrapper div, so the child combinator
+         stopped matching and the rules were dead. The card's phone layout
+         is now handled by the Ship-1 block near the end of this file.) */
       /* Legacy 9-tile grid: collapse to a one-line disclosure on mobile
          when the empty-state card is visible. Customers who really
          want to skip the catalog can still tap the type tiles via
@@ -803,3 +820,113 @@
     .print-area-btn{padding:5px 10px;border-radius:6px;border:1.5px solid transparent;background:#f5f5f5;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;color:#999;min-width:28px;text-align:center}
     .print-area-btn:hover{background:#eaeaea;color:#555}
     .print-area-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+    /* =====================================================================
+       SHIP 1 — phone fold (2026-07-26)
+       ---------------------------------------------------------------------
+       Measured at 390x664 (iPhone 13 Pro): the first tappable thing that
+       moves a visitor toward a quote — the first product tile — sat at
+       y=811, i.e. 1.27 screens down. Everything in this block buys that
+       distance back. Presentation only: no form logic changes, no change
+       to what gets submitted, desktop untouched.
+       ===================================================================== */
+    @media(max-width:600px){
+
+      /* --- Hero -------------------------------------------------------
+         Swap the three-line subhead for the one-liner. The long copy
+         ("Design your mockup, pick your options, and request a quote in
+         minutes") restates .step-desc immediately below it. */
+      .page-header p{display:none}
+      .page-header p.page-header__short{
+        display:block;
+        font-size:.88rem !important;
+        color:#777;
+        margin:0 auto !important;
+      }
+
+      /* --- Empty-state card -------------------------------------------
+         146px of dashed card telling the user to do the thing the grid
+         directly below already invites them to do — and the "Choose your
+         product" h2 above it says the same. Collapse it on phones to just
+         the quiet catalog escape-hatch link.
+
+         Display is deliberately NOT touched: quote.js toggles this card
+         between inline display:none / display:flex, and the sibling rules
+         that shrink the legacy tile grid key off that inline attribute.
+         Overriding display here would either pin the card open or break
+         those siblings. */
+      #catalogPickEmpty{
+        border:0 !important;
+        background:transparent !important;
+        padding:0 !important;
+        margin:0 0 10px !important;
+        gap:0 !important;
+      }
+      #catalogPickEmpty > div:first-child{display:none !important}   /* emoji disc */
+      #catalogPickEmpty > div:nth-child(2){text-align:center !important}
+      #catalogPickEmpty > div:nth-child(2) > strong,
+      #catalogPickEmpty > div:nth-child(2) > span{display:none !important}
+      #catalogPickEmpty > div:nth-child(2) > a{
+        margin-top:0 !important;
+        display:inline-block !important;
+        padding:6px 4px !important;      /* a little vertical tap room */
+      }
+
+      /* --- Step buttons -----------------------------------------------
+         Next was a 72x48 pill parked at the bottom-right of a 3,144px
+         step, i.e. you had to scroll the entire step to find the way
+         forward. Sticky, full-width, 48px tall.
+
+         Scoped to step 1 on purpose. The other .form-buttons (step 2,
+         data-step="3") is a 449px stacked block holding "Get my free
+         quote", "Order & Pay Now", Back and their notes — pinning that
+         to the bottom would cover most of the screen.
+
+         `justify-content` needs !important — the markup carries an inline
+         `style="justify-content:flex-end"`. Negative side margins let the
+         bar span the full card width inside .form-card's 14px padding. */
+      .form-section[data-step="1"] .form-buttons{
+        position:sticky;
+        bottom:0;
+        z-index:900;
+        display:flex !important;
+        justify-content:space-between !important;
+        gap:10px;
+        margin:8px -18px 0 !important;
+        padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));
+        background:#fff;
+        border-top:1px solid #ece9df;
+        box-shadow:0 -6px 18px rgba(0,0,0,.06);
+      }
+      .form-section[data-step="1"] .form-buttons .btn{
+        flex:1 1 0;
+        min-height:48px;
+        min-width:0;
+        font-size:1rem !important;
+        padding:12px 16px !important;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+      }
+      /* Back stays secondary — it should not get half the bar. */
+      .form-section[data-step="1"] .form-buttons .btn-outline{flex:0 0 34%}
+
+      /* When live pricing engages, #livePriceStrip takes the bottom of the
+         viewport (position:fixed, bottom:0, ~93px tall). Lift the sticky
+         button bar clear of it rather than letting them stack. */
+      body:has(#livePriceStrip[style*="display:block"]) .form-section[data-step="1"] .form-buttons,
+      body:has(#livePriceStrip[style*="display: block"]) .form-section[data-step="1"] .form-buttons{
+        bottom:calc(96px + env(safe-area-inset-bottom,0px));
+      }
+    }
+
+    @media(max-width:480px){
+      /* .form-card drops to 14px side padding at this width — the bar's
+         negative margin already matches, nothing to adjust. Listed here
+         so the coupling is obvious if that padding ever changes. */
+      .form-section[data-step="1"] .form-buttons{
+        margin-left:-14px !important;margin-right:-14px !important;
+        padding-left:14px;padding-right:14px;
+      }
+    }

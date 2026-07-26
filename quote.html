@@ -69,6 +69,12 @@
   <div class="page-header">
     <h1 data-i18n="quote.h1">Design &amp; get a free quote</h1>
     <p data-i18n="quote.sub">Customize your product, preview your mockup live, and submit. We'll send pricing within hours.</p>
+    <!-- 2026-07-26 — phones only. The long subhead above restates what the
+         step-1 description already says and cost ~65px of a 664px screen.
+         CSS swaps in this one-liner at ≤600px and hides the long one; both
+         stay in the markup so desktop is untouched and lang.js can key
+         each independently. -->
+    <p class="page-header__short" data-i18n="quote.sub.short">Free quote in minutes. No account needed.</p>
   </div>
 
   <div class="customizer-layout">
