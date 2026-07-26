@@ -19,9 +19,13 @@
   catch (e) { fbq('consent', 'revoke'); }
   fbq('init', '1198620955711122');
   fbq('track', 'PageView');
+  // Quote-page arrival marker (2026-07-26). /quote previously fired no
+  // event of its own, so the only computable "conversion rate" was
+  // site-wide PageViews divided by Leads — not a quote-page rate at all.
+  // ViewContent makes the real quote funnel measurable and gives Meta a
+  // mid-funnel signal to optimise toward. Same consent gate as PageView.
+  fbq('track', 'ViewContent', { content_name: 'Quote Page', content_category: 'Quote' });
   </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1198620955711122&ev=PageView&noscript=1"/></noscript>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
@@ -140,13 +144,18 @@
                  so we end up with a real product + variant + colour selection
                  that the live pricing engine can quote against. The legacy
                  placeholder grid below stays available as a fallback. -->
-            <div id="catalogPickEmpty" style="display:none;margin-bottom:22px;border:2px dashed #d0cdc0;border-radius:14px;padding:22px 24px;background:#fafaf6;display:flex;align-items:center;gap:18px">
-              <div style="width:54px;height:54px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">📦</div>
+            <!-- 2026-07-26: the CTA here used to be a solid black button that
+                 sent people to /catalog -- i.e. the single loudest control on
+                 the page pointed OFF the quote page, and paid traffic lands
+                 here with no product picked. Demoted to a quiet text link so
+                 the product-type tiles below are the obvious next step. -->
+            <div id="catalogPickEmpty" style="display:none;margin-bottom:22px;border:2px dashed #d0cdc0;border-radius:14px;padding:18px 22px;background:#fafaf6;display:flex;align-items:center;gap:16px">
+              <div style="width:46px;height:46px;border-radius:50%;background:#1a1a1a;color:#e8ff3c;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📦</div>
               <div style="flex:1">
-                <strong style="display:block;font-size:1rem;color:#1a1a1a;margin-bottom:2px"  data-i18n="quote.cart.empty.title">Choisissez votre vêtement dans le catalogue</strong>
-                <span style="font-size:.86rem;color:#666"  data-i18n="quote.cart.empty.sub">1 100+ Bella+Canvas, Gildan, Berne, Adidas, conçus à Montréal et plus. On préremplira la soumission, on affiche le prix en direct et on évite les allers-retours.</span>
+                <strong style="display:block;font-size:.95rem;color:#1a1a1a;margin-bottom:2px" data-i18n="quote.cart.empty.title">Commencez par un type de produit ci-dessous</strong>
+                <span style="font-size:.84rem;color:#666" data-i18n="quote.cart.empty.sub">Choisissez votre vêtement et on affiche les meilleurs vendeurs Bella+Canvas, Gildan, Berne et Adidas dans chaque gamme, avec le prix en direct selon la quantité et les faces &mdash; ici même, sans passer par le catalogue.</span>
+                <a href="/catalog" style="display:inline-block;margin-top:6px;font-size:.82rem;color:#777;text-decoration:underline;text-underline-offset:2px" data-i18n="quote.cart.empty.cta">ou parcourir les 1 100+ modèles</a>
               </div>
-              <a href="/fr/catalog" style="background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 18px;border-radius:50px;font-size:.9rem;font-weight:600;white-space:nowrap"  data-i18n="quote.cart.empty.cta">Parcourir le catalogue →</a>
             </div>
             <input type="hidden" id="catalogProductId" name="product_id" value="">
             <input type="hidden" id="catalogColorId"   name="color_id"   value="">
@@ -643,19 +652,38 @@
                  #livePriceStrip on mobile (position:fixed at bottom of
                  viewport). Without it the Submit button gets visually
                  swallowed by the live-estimate bar at small heights. -->
-            <!-- DUAL CTA: pay-now order (primary) + request-a-quote (secondary).
-                 The order button posts the priced cart to /api/shop/checkout
-                 and redirects to Stripe; the quote button keeps the existing
-                 /api/inbound submit. Both consume the same built cart. -->
-            <div class="form-buttons" style="padding-bottom:120px;display:flex;flex-direction:column;gap:14px;align-items:stretch">
-              <button type="button" id="orderPayBtn" onclick="handlePayment()" class="btn btn-accent" style="width:100%;padding:18px 28px;font-size:1.05rem;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:50px">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <span  data-i18n="quote.order.button">Commander et payer — paiement sécurisé</span>
+            <!-- DUAL CTA — hierarchy reworked 2026-07-26.
+                 Previously "Order & Pay Now" carried the accent style at full
+                 width while "Request a quote instead" was a small ghost button
+                 tucked next to "Back". Cold traffic arriving from the lead ads
+                 was therefore being asked to pay $400+ up front, and the quote
+                 button is the ONLY control that fires the Meta `Lead` event —
+                 which is why the account shows more InitiateCheckout than Lead.
+                 The quote path is now primary; pay-now remains as the express
+                 lane for visitors who already know exactly what they want.
+                 spRefreshQuoteGate() promotes pay-now back to accent when a
+                 micro-run (1-4 pieces) hides the quote button. -->
+            <div class="form-buttons" style="padding-bottom:120px;display:flex;flex-direction:column;gap:10px;align-items:stretch">
+              <button type="submit" id="quoteInsteadBtn" class="btn btn-accent" style="width:100%;padding:18px 28px;font-size:1.05rem;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:50px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <span data-i18n="quote.order.quoteinstead">Obtenir ma soumission gratuite</span>
               </button>
-              <p id="quoteOrderNote" style="font-size:.8rem;color:#888;text-align:center;margin:-4px 0 2px;line-height:1.45"  data-i18n="quote.order.note">Payez en toute sécurité par carte ou Affirm. Vous préférez discuter du prix d'abord? Demandez une soumission ci-dessous.</p>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-                <button type="button" class="btn btn-outline" onclick="goToStep(1)"  data-i18n="quote.back">Retour</button>
-                <button type="submit" id="quoteInsteadBtn" class="btn btn-outline" style="padding:13px 28px;font-size:.95rem"  data-i18n="quote.order.quoteinstead">Demander une soumission</button>
+              <p id="quoteLeadNote" style="font-size:.8rem;color:#666;text-align:center;margin:-2px 0 4px;line-height:1.45" data-i18n="quote.lead.note">Aucun paiement maintenant — nous vous enverrons votre soumission par courriel en moins d'une heure pendant les heures d'ouverture.</p>
+
+              <div id="quoteCtaDivider" style="display:flex;align-items:center;gap:12px;margin:4px 0 2px;color:#bbb;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em">
+                <span style="flex:1;height:1px;background:#e4e4e4"></span>
+                <span data-i18n="quote.order.or">ou</span>
+                <span style="flex:1;height:1px;background:#e4e4e4"></span>
+              </div>
+
+              <button type="button" id="orderPayBtn" onclick="handlePayment()" class="btn btn-outline" style="width:100%;padding:15px 28px;font-size:.98rem;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:50px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span data-i18n="quote.order.button">Commander et payer — paiement sécurisé</span>
+              </button>
+              <p id="quoteOrderNote" style="font-size:.8rem;color:#888;text-align:center;margin:-2px 0 2px;line-height:1.45" data-i18n="quote.order.note">Vous savez déjà exactement ce que vous voulez? Payez en toute sécurité par carte ou Affirm et évitez les échanges.</p>
+
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;margin-top:6px">
+                <button type="button" class="btn btn-outline" onclick="goToStep(1)" style="padding:11px 22px;font-size:.9rem" data-i18n="quote.back">&larr; Retour</button>
               </div>
             </div>
           </div>

@@ -104,6 +104,140 @@
   window.fbq('track', 'PageView');
 })();
 
+// ---------------------------------------------------------------------
+// Contact-click tracking — tel: / sms: / mailto:  (moved here 2026-07-26)
+//
+// This lived in /pixel.js, which turns out to be loaded by exactly two
+// debug pages (debug-pixel.html + fr/debug-pixel.html) and nothing else —
+// so the phone-click tracking added in May 2026 and the text/email
+// tracking added in Jul 2026 have never fired on a real page view. Moved
+// into components.js, which every page loads, so the signal actually
+// reaches Meta.
+//
+// Rationale (unchanged): phone calls, "text us" taps and mailto: clicks
+// are real contact intent that Meta cannot currently see, so the ad-set
+// algorithm can't optimize toward call-likely visitors. `Contact` is a
+// Meta standard event — semantically right for "user reached out
+// directly" and it keeps the Lead signal pure for form-fills.
+//
+// Gating:
+//   - tel: on touch devices only (a desktop click doesn't open a dialer,
+//     so those would be noise). sms:/mailto: open a composer everywhere,
+//     so no touch gate.
+//   - Once per session per method, defensive against double-taps.
+//   - Capture phase, so we fire before any stopPropagation can swallow
+//     the click.
+//
+// Dedup: browser Pixel + server CAPI share one event_id, exactly as the
+// quote-form Lead does in quote.js. The CAPI POST is consent-gated on
+// sp_consent (Quebec Law 25) — the Pixel event itself is already held by
+// fbq('consent','revoke') until the banner is accepted.
+//
+// Deliberately NOT routed through SP_GTAG.trackConversion(): that helper
+// always fires the QUOTE Google Ads conversion label, so contact clicks
+// would miscount as quote submissions. GA4 gets a plain engagement event
+// instead. To make phone calls a real Google Ads conversion, add a
+// separate conversion action + SP_GADS_PHONE_LABEL and fire it here.
+// ---------------------------------------------------------------------
+(function initContactClickTracking() {
+  var CAPI_ENDPOINT = '/api/meta-capi';
+
+  var isTouch = (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
+              || ('ontouchstart' in window);
+
+  function spCookie(n) {
+    var m = document.cookie.match('(?:^|; )' + n + '=([^;]+)');
+    return m ? decodeURIComponent(m[1]) : undefined;
+  }
+
+  function newEventId() {
+    return (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : ('contact-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href^="tel:"], a[href^="sms:"], a[href^="mailto:"]');
+    if (!a) return;
+
+    var href = a.getAttribute('href') || '';
+    var method = /^tel:/i.test(href) ? 'phone'
+               : /^sms:/i.test(href) ? 'text'
+               : 'email';
+
+    if (method === 'phone' && !isTouch) return; // desktop tel: click opens no dialer
+
+    // Once-per-session guard per method — sessionStorage is scoped per tab.
+    try {
+      var guard = 'sp_' + method + '_click_fired';
+      if (sessionStorage.getItem(guard) === '1') return;
+      sessionStorage.setItem(guard, '1');
+    } catch (err) { /* private mode / disabled storage — fail open */ }
+
+    var target = href.replace(/^(tel:|sms:|mailto:)/i, '').split('?')[0];
+    var label  = method === 'phone' ? 'Phone Click' : (method === 'text' ? 'Text Click' : 'Email Click');
+    var category = method === 'phone' ? 'Phone' : (method === 'text' ? 'SMS' : 'Email');
+    var eventId = newEventId();
+
+    var customData = {
+      content_name:   label,
+      content_category: category,
+      contact_method: method
+    };
+
+    // 1) Browser Pixel — with eventID so it dedupes against the server event.
+    try {
+      if (typeof window.fbq === 'function') {
+        window.fbq('track', 'Contact', customData, { eventID: eventId });
+      }
+    } catch (err) { /* tracking must never break the handoff */ }
+
+    // 2) Server CAPI — same event_id, consent-gated. sendBeacon so it
+    //    survives the navigation to the dialer / composer.
+    try {
+      if (localStorage.getItem('sp_consent') === 'granted') {
+        var body = JSON.stringify({
+          event_name:       'Contact',
+          event_id:         eventId,
+          event_time:       Math.floor(Date.now() / 1000),
+          event_source_url: location.href,
+          action_source:    'website',
+          user_data: {
+            ph:  method === 'phone' ? target : undefined,
+            em:  method === 'email' ? target : undefined,
+            fbp: spCookie('_fbp'),
+            fbc: spCookie('_fbc')
+          },
+          custom_data: customData
+        });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(CAPI_ENDPOINT, new Blob([body], { type: 'application/json' }));
+        } else {
+          fetch(CAPI_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body,
+            keepalive: true
+          }).catch(function () {});
+        }
+      }
+    } catch (err) { /* CAPI failures must never break the handoff */ }
+
+    // 3) GA4 mirror — plain engagement event, no Google Ads conversion label.
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', method === 'phone' ? 'phone_call_click'
+                           : method === 'text'  ? 'sms_click'
+                           : 'email_click', {
+          event_category: 'engagement',
+          event_label: target,
+          contact_method: method
+        });
+      }
+    } catch (err) { /* tracking must never break the handoff */ }
+  }, true); // capture phase
+})();
+
 // Inject /promo.js once per page so [data-promo] elements get the live copy
 // from the CRM (https://singhsprint-crm.vercel.app/api/promo). Putting this
 // here means every page that loads components.js automatically picks up the
@@ -1733,28 +1867,53 @@ function loadProductModal() {
 // google-reviews.mjs) handles the same job for SEO + initial render; this
 // runtime patcher is the safety net for visitors hitting a stale deploy.
 // =========================================================================
-function loadLiveReviews() {
-  // Lightweight session cache so we don't refetch on every soft-nav.
-  try {
-    var cached = sessionStorage.getItem('sp-reviews');
-    if (cached) {
-      var c = JSON.parse(cached);
-      if (c && c._t && Date.now() - c._t < 6 * 3600 * 1000) {
-        patch(c.rating, c.count); return;
-      }
-    }
-  } catch (_) { /* ignore */ }
+// SP_REVIEWS.get() — the single shared fetch for the live Google rating.
+//
+// Two independent consumers want these numbers on /quote: loadLiveReviews()
+// below (the site-wide text patcher) and insertSocial() in quote.js (the
+// social-proof strip). Before 2026-07-26 they each called the endpoint
+// directly, so every quote page load fired two identical cross-origin
+// requests — and the 6h sessionStorage cache only ever suppressed the
+// components.js one, because quote.js never read it.
+//
+// This memoizes the in-flight promise on window, so any number of callers
+// on one page share ONE network request regardless of the order they run
+// in, and a warm sessionStorage entry skips the request entirely.
+//
+// Resolves to { rating, count } or null. Never rejects — every consumer is
+// decorative and must not have to supply its own .catch().
+window.SP_REVIEWS = window.SP_REVIEWS || {
+  get: function () {
+    if (window.__spReviewsPromise) return window.__spReviewsPromise;
 
-  fetch('https://singhsprint-crm.vercel.app/api/google-reviews', { cache: 'force-cache' })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (d) {
-      if (!d || typeof d.rating !== 'number' || typeof d.count !== 'number') return;
-      patch(d.rating, d.count);
-      try {
-        sessionStorage.setItem('sp-reviews', JSON.stringify({ rating: d.rating, count: d.count, _t: Date.now() }));
-      } catch (_) { /* private mode etc. */ }
-    })
-    .catch(function () { /* ignore — fall back to whatever HTML rendered */ });
+    // Warm cache — resolve without touching the network.
+    try {
+      var cached = JSON.parse(sessionStorage.getItem('sp-reviews') || 'null');
+      if (cached && cached._t && Date.now() - cached._t < 6 * 3600 * 1000) {
+        window.__spReviewsPromise = Promise.resolve({ rating: cached.rating, count: cached.count });
+        return window.__spReviewsPromise;
+      }
+    } catch (_) { /* private mode / bad JSON — fall through to the fetch */ }
+
+    window.__spReviewsPromise = fetch('https://singhsprint-crm.vercel.app/api/google-reviews', { cache: 'force-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || typeof d.rating !== 'number' || typeof d.count !== 'number') return null;
+        try {
+          sessionStorage.setItem('sp-reviews', JSON.stringify({ rating: d.rating, count: d.count, _t: Date.now() }));
+        } catch (_) { /* private mode etc. */ }
+        return { rating: d.rating, count: d.count };
+      })
+      .catch(function () { return null; });
+
+    return window.__spReviewsPromise;
+  }
+};
+
+function loadLiveReviews() {
+  window.SP_REVIEWS.get().then(function (d) {
+    if (d) patch(d.rating, d.count);
+  });
 
   function patch(rating, count) {
     var ratingStr = Number(rating).toFixed(1);

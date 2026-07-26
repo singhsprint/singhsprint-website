@@ -236,6 +236,18 @@
 
     if (creditsR.status === 'fulfilled') {
       $('stat-credit-val').textContent = fmtMoney(creditsR.value.balanceCents || 0);
+      // 2026-07-25 — the balance now combines referral credit AND store
+      // credit the shop granted (refunds-to-credit, goodwill). When store
+      // credit is part of it, say so under the tile — "from referrals"
+      // alone would confuse a customer who was just given a $40 refund.
+      const storeCents = creditsR.value.storeCreditCents || 0;
+      if (storeCents > 0) {
+        const sub = $('stat-credit-sub');
+        if (sub) sub.textContent = (window.acctUI && window.acctUI.t)
+          ? window.acctUI.t('Includes ' + fmtMoney(storeCents) + ' store credit from Singhs Print',
+                            'Inclut ' + fmtMoney(storeCents) + ' de crédit boutique de Singhs Print')
+          : 'Includes ' + fmtMoney(storeCents) + ' store credit from Singhs Print';
+      }
     } else { $('stat-credit-val').textContent = '$—'; }
 
     if (refR.status === 'fulfilled') {
