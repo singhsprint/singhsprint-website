@@ -1062,6 +1062,33 @@
     </div>
   </div>
 
+  <!-- GA4 quote-page arrival (2026-07-26). Companion to the ViewContent in
+       <head>: gives Google the same funnel step Meta now has, so /quote has a
+       real conversion-rate denominator instead of site-wide page_view.
+       Deliberately SP_GTAG.event() and NOT trackConversion() -- this is a
+       reporting/engagement signal, not something Ads should bid on. Routing a
+       pageview-shaped event into a conversion action is exactly the defect
+       behind ads_conversion_Begin_checkout_1. Consent Mode v2 defaults to
+       denied (set in components.js) and holds this until the banner is
+       accepted, so it adds no Law 25 exposure. SP_GTAG arrives async via
+       components.js, hence the short bounded poll. -->
+  <script>
+  (function () {
+    var tries = 0;
+    (function fire() {
+      if (window.SP_GTAG && typeof window.SP_GTAG.event === 'function') {
+        window.SP_GTAG.event('view_quote_page', {
+          page_section: 'quote',
+          language: (document.documentElement.lang || 'en').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en'
+        });
+        return;
+      }
+      if (++tries > 40) return; // ~10s then give up silently
+      setTimeout(fire, 250);
+    })();
+  })();
+  </script>
+
   <script src="/quote.js" defer></script>
   <script src="/delivery.js" defer></script>
 </body>
