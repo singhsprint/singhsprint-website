@@ -2050,6 +2050,24 @@
       var micro = spIsMicroRun();
       var btn = document.getElementById('quoteInsteadBtn');
       if (btn) btn.style.display = micro ? 'none' : '';
+
+      // CTA hierarchy (2026-07-26). "Get my free quote" is normally the primary
+      // accent button — it is the action the lead ads promise and the only one
+      // that fires the Meta `Lead` event. A micro-run (1-4 pieces) hides it, so
+      // promote "Order & Pay Now" back to accent and drop the now-dangling "or"
+      // divider + quote sub-note, otherwise the step is left with no primary.
+      var leadNote = document.getElementById('quoteLeadNote');
+      var divider  = document.getElementById('quoteCtaDivider');
+      if (leadNote) leadNote.style.display = micro ? 'none' : '';
+      if (divider)  divider.style.display  = micro ? 'none' : '';
+      var pay = document.getElementById('orderPayBtn');
+      if (pay) {
+        pay.classList.toggle('btn-accent',  micro);
+        pay.classList.toggle('btn-outline', !micro);
+        pay.style.padding  = micro ? '18px 28px' : '15px 28px';
+        pay.style.fontSize = micro ? '1.05rem'   : '.98rem';
+      }
+
       // BYO mode owns the CTA copy (no checkout path) — leave its note alone.
       var gsB = document.getElementById('garmentSourceInput');
       if (gsB && gsB.value === 'BYOG') return;
@@ -2574,7 +2592,7 @@
 
     // Top-of-form live price strip — visible whenever a catalog product is
     // picked. Updates with sides on Step 1 and qty on Step 2.
-    function updateLivePriceStrip(qty, perUnit, isLive, startingAt) {
+    function updateLivePriceStrip(qty, perUnit, isLive, startingAt, basisQty) {
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
       if (!catalogPick) {
@@ -2604,10 +2622,16 @@
       var wordStarting = _t('quote.strip.startingat') || 'starting at';
       var wordEnter    = _t('quote.strip.enterbelow') || 'enter sizes below';
       var wordEst      = _t('quote.strip.est')        || 'est.';
-      var tail = startingAt ? (' · ' + wordStarting) : (isLive ? '' : ' · ' + wordEst);
+      // Qty basis (2026-07-26). The pre-qty estimate is fetched at a bulk
+      // tier (200 pcs) but was labelled only "starting at", so the first
+      // number a visitor saw was one almost none of them would land on --
+      // they'd enter 25 pieces and watch $11.95 jump to $14.95. Naming the
+      // quantity the price belongs to removes the false anchor.
+      var wordBasis = (basisQty && basisQty > 0) ? (' ' + basisQty + '+ ' + wordUnits) : '';
+      var tail = startingAt ? (' · ' + wordStarting + wordBasis) : (isLive ? '' : ' · ' + wordEst);
       var qtyLabel = qty && qty > 0
         ? (qty + ' ' + wordUnits + ' · ' + sides + ' ' + wordSide + tail)
-        : (wordEnter + ' · ' + sides + ' ' + wordSide + (startingAt ? ' · ' + wordStarting : ''));
+        : (wordEnter + ' · ' + sides + ' ' + wordSide + (startingAt ? ' · ' + wordStarting + wordBasis : ''));
       document.getElementById('livePriceQty').textContent = qtyLabel;
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (qty && perUnit) {
@@ -2628,7 +2652,7 @@
         // the catalog's "From $X" floor). Otherwise leave the strip empty.
         if (state.garment) {
           fetchCategoryStartingPrice(function (u) {
-            if (typeof u === 'number' && u > 0) updateLivePriceStrip(0, u, false, true);
+            if (typeof u === 'number' && u > 0) updateLivePriceStrip(0, u, false, true, 200);
             else updateLivePriceStrip(0, 0, false);
           }, 200);
         } else {
@@ -2642,7 +2666,7 @@
         '&qty=200&sides=' + sides
       ).then(function(r){ return r.ok ? r.json() : null; })
        .then(function(d){
-         if (d && typeof d.unit_price === 'number') updateLivePriceStrip(0, d.unit_price, true);
+         if (d && typeof d.unit_price === 'number') updateLivePriceStrip(0, d.unit_price, true, true, 200);
        }).catch(function(){});
     }
 
@@ -2890,6 +2914,29 @@
       var items = spBuildCheckoutItems();
       if (!items.length || !items.some(function(i) { return i.qty > 0; })) {
         alert('Add at least one item with a quantity before ordering.');
+        return;
+      }
+
+      // A colour is a hard requirement for a paid order -- we can't pull a
+      // blank without knowing which one. Nothing auto-assigns a colour any
+      // more (see spApplyTierPick / applyCatalogProduct / paintProductColors),
+      // so ask for it here instead of shipping whatever the catalog listed
+      // first. Jersey lines are excluded: they're fully specified upstream.
+      var missingColour = 0;
+      if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+        missingColour = SinghsCart.read().items.filter(function(it) {
+          return !it.is_jersey && (parseInt(it.qty, 10) || 0) > 0 && !it.color_id;
+        }).length;
+      } else if (catalogPick && catalogPick.product_id) {
+        var cidCheck = document.getElementById('catalogColorId');
+        if (!(cidCheck && cidCheck.value)) missingColour = 1;
+      }
+      if (missingColour) {
+        alert('Pick a garment colour before checking out — tap a colour swatch on '
+              + (missingColour > 1 ? 'each item.' : 'your item.'));
+        try { if (typeof goToStep === 'function') goToStep(1); } catch (e) {}
+        var swEl = document.querySelector('.ci-swatches') || document.querySelector('.color-grid');
+        if (swEl) { try { swEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
         return;
       }
 
@@ -3486,8 +3533,12 @@
       var colors = (catalogPick && catalogPick.colors) || [];
       var c = null;
       for (var i = 0; i < colors.length; i++) { if (colors[i].color_id === cid) { c = colors[i]; break; } }
+      // Fall back to the first colour for PREVIEW art only -- the customizer
+      // needs some garment to draw on. It must not stand in as the customer's
+      // choice: returning it as `cid` defeated the "Pick a garment colour
+      // first" guard and silently shipped whatever the catalog listed first.
       if (!c && colors.length) c = colors[0];
-      return { cid: cid || (c && c.color_id) || null, color: c || {} };
+      return { cid: cid || null, color: c || {} };
     }
     function spMarkCustomized(mockups) {
       var btn = document.getElementById('spCustomizeBtn');
@@ -4757,6 +4808,7 @@
 
       var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       var lblColor  = _t('quote.cart.item.color')  || 'Color:';
+      var lblPickColor = _t('quote.cart.item.pickcolor') || 'Choose a colour →';
       var lblQty    = _t('quote.cart.item.qty')    || 'Qty';
       var lblRemove = _t('quote.cart.item.remove') || 'Remove';
       // Combined-order volume banner: when two or more 5+ lines pool, say
@@ -4796,7 +4848,7 @@
           '    <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase">' + (it.brand||'') + ' · ' + (it.style_number||'') + '</div>' +
           '    <div style="font-size:.95rem;font-weight:600;line-height:1.3">' + (it.name||'') + '</div>' +
           '    <div id="ci-color-row-' + idx + '" style="font-size:.78rem;color:#666;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
-          '      ' + lblColor + ' <strong id="ci-color-' + idx + '" style="color:#1a1a1a">' + (label || '—') + '</strong>' +
+          '      ' + lblColor + ' <strong id="ci-color-' + idx + '" style="color:' + (it.color_id ? '#1a1a1a' : '#b45309') + '">' + (label || lblPickColor) + '</strong>' +
           '      <span id="ci-swatches-' + idx + '" class="ci-swatches ci-swatches--collapsed" style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center"></span>' +
           '    </div>' +
           '    <div class="cart-item-price" id="ci-price-' + idx + '" style="font-size:.82rem;color:#666;margin-top:6px">$— /unit</div>' +
@@ -5043,7 +5095,10 @@
           SinghsCart.updateSilent(idx, { color_id: cid, color_name: nm, hero_url: her || '' });
           // Refresh visual state in place (no re-render).
           var nameEl = document.getElementById('ci-color-' + idx);
-          if (nameEl) nameEl.textContent = (nm || '').replace(/_\d+$/, '');
+          if (nameEl) {
+            nameEl.textContent = (nm || '').replace(/_\d+$/, '');
+            nameEl.style.color = '#1a1a1a';   // clear the "choose a colour" prompt styling
+          }
           var img = document.getElementById('ci-img-' + idx);
           if (img && her) img.src = imgUrl(her);
           host.querySelectorAll('button.ci-swatch').forEach(function(b){ b.style.boxShadow = ''; });
@@ -5360,9 +5415,22 @@
                (hasStock ? '' : ' (out of stock)') + '"></div>';
       }).join('');
       grid.innerHTML = html;
-      // Trigger an initial selection sync so colorName + hidden input match
-      var first = grid.querySelector('.color-swatch.selected') || grid.querySelector('.color-swatch:not(.oos)') || grid.querySelector('.color-swatch');
-      if (first) selectProductColor(first);
+      // Sync the label + hidden input to the selection -- but ONLY when the
+      // customer (or a ?color= deep link) actually made one. Falling through
+      // to "first in-stock swatch" is what stamped an unchosen colour onto
+      // every quote. With nothing selected the label asks for a choice.
+      var first = grid.querySelector('.color-swatch.selected');
+      if (first) { selectProductColor(first); return; }
+      var _tc = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+      var promptEl = document.getElementById('colorName');
+      if (promptEl) {
+        promptEl.textContent = _tc('quote.color.choose') || 'Choose a colour';
+        promptEl.style.color = '#b45309';
+      }
+      var colInp = document.getElementById('colorInput');
+      if (colInp) colInp.value = '';
+      var cidInp = document.getElementById('catalogColorId');
+      if (cidInp) cidInp.value = '';
     }
 
     function selectProductColor(el) {
@@ -5372,7 +5440,7 @@
       var hex  = el.getAttribute('data-color') || '';
       var id   = el.getAttribute('data-color-id') || '';
       var nameEl = document.getElementById('colorName');
-      if (nameEl)  nameEl.textContent = name;
+      if (nameEl)  { nameEl.textContent = name; nameEl.style.color = ''; }
       var input  = document.getElementById('colorInput');
       if (input)   input.value = name;
       var cidIn  = document.getElementById('catalogColorId');
@@ -5570,6 +5638,10 @@
     // tier flow still lets the customer switch product types afterwards.
     function applyCatalogProduct(p, colorId, qtyHint, opts) {
       opts = opts || {};
+      // Did the caller actually name a colour (?color= deep link), or are we
+      // about to invent one? p.colors[0] is fine as preview art but must not
+      // be committed to the hidden inputs as the customer's choice.
+      var explicitColor = !!colorId && (p.colors || []).some(function(x) { return x.color_id === colorId; });
       var c = (p.colors || []).find(function(x) { return x.color_id === colorId; }) || p.colors[0];
 
           // Paint the "Your pick" card
@@ -5577,7 +5649,7 @@
           document.getElementById('catalogPickBrand').textContent = (p.brand || '').toUpperCase() + (p.style_number ? ' · ' + p.style_number : '');
           document.getElementById('catalogPickName').textContent  = p.name || '';
           var metaParts = [];
-          if (c && c.color_name) metaParts.push(cleanColorName(c.color_name));
+          if (explicitColor && c && c.color_name) metaParts.push(cleanColorName(c.color_name));
           if (p.weight_oz)       metaParts.push(p.weight_oz + ' oz');
           // Use the deduped colour count, not the raw color_count which may
           // double-count waist-size variants of the same colour.
@@ -5594,10 +5666,10 @@
 
           // Hidden inputs that ride along on quote submit
           document.getElementById('catalogProductId').value     = p.product_id;
-          document.getElementById('catalogColorId').value       = (c && c.color_id) || '';
+          document.getElementById('catalogColorId').value       = (explicitColor && c && c.color_id) || '';
           document.getElementById('catalogVariantBrand').value  = p.brand || '';
           document.getElementById('catalogVariantStyle').value  = p.style_number || '';
-          document.getElementById('catalogVariantColor').value  = (c && c.color_name) || '';
+          document.getElementById('catalogVariantColor').value  = (explicitColor && c && c.color_name) || '';
 
           // Show the pick card, hide ALL the redundant fields. With a catalog
           // product locked in, Garment Source / Blank Brand / All-Canadian /
@@ -5617,25 +5689,29 @@
             // so keep the colour section visible — paintProductColors below
             // swaps its static swatches for this blank's real colours.
             if (k === 'quote.garmentsource') g.style.display = 'none';
-            if (k === 'quote.garmentcolor' && !opts.keepGrid) g.style.display = 'none';
+            // Hide the colour picker only when the colour is already settled
+            // (?color= deep link). With no explicit colour it MUST stay on
+            // screen -- otherwise we've stopped choosing for the customer
+            // and given them no way to choose for themselves.
+            if (k === 'quote.garmentcolor' && !opts.keepGrid && explicitColor) g.style.display = 'none';
           });
 
           // Wire state so the rest of the form knows which garment we're on
           state.garment    = p.garment_type || 'tshirt';
           state.product    = p.name || (p.brand + ' ' + p.style_number);
-          state.color      = (c && c.hex_code) || state.color;
-          state.colorName  = (c && c.color_name) || state.colorName;
+          state.color      = (explicitColor && c && c.hex_code) || state.color;
+          state.colorName  = explicitColor ? ((c && c.color_name) || '') : '';
 
           // Stash the pick globally so live price + color picker can read it.
           catalogPick = p;
           // Repaint the colour swatches with this product's actual colours
           // (replaces the static 10-colour grid).
-          paintProductColors(p, c && c.color_id);
+          paintProductColors(p, explicitColor ? (c && c.color_id) : null);
 
           // Refresh dependent UI
           updateGarmentShape();
           var sumProd = document.getElementById('sumProduct'); if (sumProd) sumProd.textContent = state.product;
-          var sumCol  = document.getElementById('sumColor');   if (sumCol)  sumCol.textContent  = state.colorName;
+          var sumCol  = document.getElementById('sumColor');   if (sumCol)  sumCol.textContent  = state.colorName || '—';
           calculatePrice();
           renderBulkPricingTable();
           // If the catalog slider passed a qty, drop it into the size-M box
@@ -5944,6 +6020,11 @@
           if (!data || !data.products || !data.products.length) return;
           spDeactivateByo();   // picking a real blank exits BYO mode
           var p = data.products[0];
+          // Preview art only -- see color_id / color_name below. A tier pick
+          // is a choice of BLANK, not of colour, so committing the first
+          // colour in the catalog response is how a phantom garment colour
+          // ended up on quotes nobody had chosen. The row's swatch strip
+          // asks for the real answer.
           var c = (p.colors || [])[0] || {};
           // A tier pick lands as a CART ROW — the exact same card the
           // catalog flow produces, with its inline Customize / editable
@@ -5954,13 +6035,13 @@
           // default placement — cap-front for hats, center-chest for tees.)
           var item = {
             product_id:      p.product_id,
-            color_id:        c.color_id || null,
-            color_name:      c.color_name || '',
+            color_id:        null,
+            color_name:      '',
             brand:           p.brand || '',
             style_number:    p.style_number || '',
             name:            p.name || '',
             garment_type:    p.garment_type || garmentKey || null,
-            hero_url:        (c && c.mockup_front_url) || p.hero_image_url || '',
+            hero_url:        p.hero_image_url || (c && c.mockup_front_url) || '',
             // Prefill with the chosen quantity band's representative count
             // so the row (and its subtotal) opens at THEIR order size.
             qty:             (spQtyBand && spQtyBand.qty) || 50,
@@ -7419,7 +7500,15 @@
             var el = document.getElementById('spSocialChips');
             if (el && names.length >= 2) el.innerHTML = chipsHtml(names);
           }).catch(function () {});
-        fetch(API_REVIEWS).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        // Shared with components.js loadLiveReviews() via SP_REVIEWS.get(),
+        // which memoizes one in-flight request per page (and honours the 6h
+        // sessionStorage cache). Previously this fetched independently, so
+        // every /quote load hit the endpoint twice. Falls back to a direct
+        // fetch if components.js somehow hasn't defined the helper yet.
+        (window.SP_REVIEWS
+          ? window.SP_REVIEWS.get()
+          : fetch(API_REVIEWS).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        ).then(function (j) {
           if (!j || !j.rating) return;
           var r = document.getElementById('spSocialRating'), c = document.getElementById('spSocialCount');
           var s = document.getElementById('spSocialStars');
