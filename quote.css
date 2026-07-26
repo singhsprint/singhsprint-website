@@ -928,6 +928,26 @@
       body:has(#livePriceStrip[style*="display: block"]:not(.sp-gated)) .form-section[data-step="1"] .form-buttons{
         bottom:calc(96px + env(safe-area-inset-bottom,0px));
       }
+
+      /* The cookie banner is the other thing that owns the bottom edge, and
+         it outranks everything (#sp-consent-banner is position:fixed,
+         bottom:0, z-index 2147483000). Measured 117px tall at every phone
+         width from 320 to 430 — it absorbs the safe-area inset in its own
+         padding, so add env() here too rather than assuming 117 covers it.
+
+         Without this, a first-time visitor on a phone gets the Next button
+         sitting exactly underneath the banner: 100% of the button covered,
+         and elementFromPoint at the button's centre returns
+         button.sp-consent-accept. Tapping "Next" would accept cookies.
+
+         consent.js removes the banner from the DOM on choice (removeBanner),
+         so :has() is an exact visibility test — no class-vs-inline-style trap
+         like the one above. This rule comes last so it wins the source-order
+         tie against the price-strip rule; the banner is taller than the strip,
+         so clearing the banner clears both. */
+      body:has(#sp-consent-banner) .form-section[data-step="1"] .form-buttons{
+        bottom:calc(117px + env(safe-area-inset-bottom,0px));
+      }
     }
 
     @media(max-width:480px){
