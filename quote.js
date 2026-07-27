@@ -7432,7 +7432,7 @@
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'sp-more-toggle';
-        btn.style.cssText = 'background:none;border:none;font-size:.85rem;color:#555;text-decoration:underline;cursor:pointer;padding:4px 0';
+        btn.style.cssText = 'background:none;border:none;font-size:.85rem;color:#555;text-decoration:underline;cursor:pointer;padding:14px 0;min-height:44px;width:100%;text-align:left';
         btn.textContent = t('quote.placement.more', 'More placement options') + ' ▾';
         btn.addEventListener('click', function () {
           hidden.forEach(function (g) { g.classList.remove('sp-more-hidden'); });

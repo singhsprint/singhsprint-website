@@ -547,12 +547,12 @@
             </div>
 
             <div class="form-row">
-              <div class="form-group"><label for="name" data-i18n="quote.contact.namelabel">Full name *</label><input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="quote.contact.name.ph" required></div>
-              <div class="form-group"><label for="company" data-i18n="quote.contact.companylabel">Company / brand</label><input type="text" id="company" name="company" placeholder="Optional" data-i18n-placeholder="quote.contact.company.ph"></div>
+              <div class="form-group"><label for="name" data-i18n="quote.contact.namelabel">Full name *</label><input type="text" id="name" name="name" autocomplete="name" placeholder="Your name" data-i18n-placeholder="quote.contact.name.ph" required></div>
+              <div class="form-group"><label for="company" data-i18n="quote.contact.companylabel">Company / brand</label><input type="text" id="company" name="company" autocomplete="organization" placeholder="Optional" data-i18n-placeholder="quote.contact.company.ph"></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label for="email" data-i18n="quote.contact.emaillabel">Email *</label><input type="email" id="email" name="email" placeholder="you@example.com" data-i18n-placeholder="quote.contact.email.ph" required></div>
-              <div class="form-group"><label for="phone" data-i18n="quote.contact.phonelabel">Phone</label><input type="tel" id="phone" name="phone" placeholder="514-xxx-xxxx" data-i18n-placeholder="quote.contact.phone.ph"></div>
+              <div class="form-group"><label for="email" data-i18n="quote.contact.emaillabel">Email *</label><input type="email" id="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com" data-i18n-placeholder="quote.contact.email.ph" required></div>
+              <div class="form-group"><label for="phone" data-i18n="quote.contact.phonelabel">Phone</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="514-xxx-xxxx" data-i18n-placeholder="quote.contact.phone.ph"></div>
             </div>
             <div class="form-group">
               <label for="delivery" data-i18n="quote.contact.delivery">Delivery preference</label>

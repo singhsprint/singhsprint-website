@@ -1001,3 +1001,87 @@
         padding-left:14px;padding-right:14px;
       }
     }
+
+    /* ================================================================
+       Mobile funnel pass — 2026-07-27
+       Everything below is phone-only and lives at the end of the file on
+       purpose: several of these rules exist to out-rank `!important`
+       declarations injected at runtime by the site-wide mobile stylesheet
+       in components.js, which no amount of editing further up would beat.
+       ================================================================ */
+    @media(max-width:760px){
+
+      /* --- 1. The floating "Text us" pill vs. the bottom of the funnel ---
+         components.js floats .sp-tw-btn at bottom:80px, z-index 9999 on
+         every page. On /quote that corner is already taken twice over:
+         the sticky Back/Next bar sits at bottom:96px (69px tall) and the
+         live-price strip at bottom:0 (93px tall). Measured at 390x844 the
+         pill covered 107x26px of the Next button and 118x13px of the price
+         strip — i.e. the primary CTA and the number the customer came for,
+         both partly under a button that leaves the funnel.
+         Nothing can be lifted clear here; between the bar and the strip the
+         bottom 165px of the viewport is already spoken for. So the pill
+         stands down on the quote page only (quote.css loads on /quote and
+         nowhere else) — texting stays one tap away from the header on
+         every other page. Delete this rule to bring it back. */
+      .sp-tw-btn,.sp-tw-panel{display:none !important}
+
+      /* --- 2. Step-3 CTAs were flattened to 40px ---
+         components.js sets `.btn{padding:11px 20px !important}` site-wide,
+         which stomps the inline 18px padding on these two and lands them
+         under the 44px tap-target floor — on the single most important
+         button in the funnel. quote.css's own min-height rule further up
+         only covers .btn-primary/.btn--primary/.step-buttons .btn, so
+         neither of these was caught. An id beats a class even when both
+         sides are !important. */
+      #quoteInsteadBtn{min-height:54px !important;padding:16px 24px !important;
+        font-size:1.02rem !important}
+      #orderPayBtn{min-height:50px !important;padding:14px 24px !important;
+        font-size:.96rem !important}
+
+      /* --- 3. Bottom clearance ---
+         Three separate rules were each paying for the fixed button bar:
+         components.js put 120px on .form-section AND another 120px on its
+         parent .form-card, and quote.css put 72px on body. 400px of empty
+         white under the last card on an 844px phone — half a screen of
+         nothing to scroll past, measured.
+
+         What the bar actually costs at the foot of the scroll:
+           nothing else on screen ....  69px (bar sits at bottom:0)
+           price strip up ...........  165px (bar rides at bottom:96px)
+           consent banner up ........  186px (bar rides at bottom:117px)
+         So charge 104px in the common case and 200px when one of the two
+         bottom-dwellers is actually present. The :has() tests mirror the
+         button-bar rules further up, including the `:not(.sp-gated)` —
+         the strip carries an inline display:block from page load and the
+         class is what really hides it. */
+      .form-card .form-section{padding-bottom:80px !important}
+      /* `body .form-card` rather than `.form-card`: components.js injects its
+         copy of this rule into a runtime <style> that lands after this file
+         in the cascade, so an equal-specificity !important would lose. */
+      body .form-card{padding-bottom:18px !important}
+      body{padding-bottom:24px !important}
+      /* 80px of grey below the card is a desktop breathing-room number. */
+      .customizer-layout{margin-bottom:24px}
+      body:has(#livePriceStrip[style*="display:block"]:not(.sp-gated)),
+      body:has(#livePriceStrip[style*="display: block"]:not(.sp-gated)),
+      body:has(#sp-consent-banner){
+        padding-bottom:calc(120px + env(safe-area-inset-bottom,0px)) !important;
+      }
+
+      /* --- 4. "Welcome back — we saved your draft" ---
+         .sp-draftbar is a wrapping flex row, but its message span carries an
+         inline `flex:1` — basis 0, so it shrinks before it wraps. Beside two
+         non-shrinking buttons on a 390px phone that left the sentence a 90px
+         column running five lines down the side of them. Give the message the
+         whole first row and let the buttons split the second. Their 8px
+         padding also left them 31px tall. */
+      #spDraftBar{gap:10px}
+      #spDraftBar > span{flex:1 1 100% !important}
+      #spDraftBar button{flex:1 1 0;min-height:44px}
+
+      /* --- 5. Back button ---
+         42px, just under the floor, and it shares the bar with a Next that
+         is already 48px. */
+      .form-section .form-buttons .btn-outline{min-height:48px}
+    }
