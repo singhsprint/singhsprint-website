@@ -69,14 +69,18 @@
   // =========================================================================
   // 1. QUOTE PAGE
   // =========================================================================
+  // [id, label, input type, payload key, autocomplete token]
+  // The autocomplete tokens matter more than they look: on a phone this is the
+  // difference between one tap of the keyboard's address suggestion and seven
+  // fields typed by thumb.
   var ADDR_FIELDS = [
-    ['sp-ship-name', 'Full name', 'text', 'name'],
-    ['sp-ship-address1', 'Street address', 'text', 'address1'],
-    ['sp-ship-address2', 'Apt / unit (optional)', 'text', 'address2'],
-    ['sp-ship-city', 'City', 'text', 'city'],
-    ['sp-ship-province', 'Province', 'text', 'province'],
-    ['sp-ship-postal', 'Postal code', 'text', 'postal_code'],
-    ['sp-ship-notes', 'Delivery notes (optional)', 'text', 'notes'],
+    ['sp-ship-name', 'Full name', 'text', 'name', 'name'],
+    ['sp-ship-address1', 'Street address', 'text', 'address1', 'address-line1'],
+    ['sp-ship-address2', 'Apt / unit (optional)', 'text', 'address2', 'address-line2'],
+    ['sp-ship-city', 'City', 'text', 'city', 'address-level2'],
+    ['sp-ship-province', 'Province', 'text', 'province', 'address-level1'],
+    ['sp-ship-postal', 'Postal code', 'text', 'postal_code', 'postal-code'],
+    ['sp-ship-notes', 'Delivery notes (optional)', 'text', 'notes', 'off'],
   ];
 
   function readAddress() {
@@ -110,22 +114,33 @@
     var wrap = el('div', { class: 'form-group', id: 'sp-fulfillment' });
     wrap.style.gridColumn = '1 / -1';
 
+    // Markup is class-based on purpose. The previous version carried inline
+    // styles copied from a dark panel (rgba(255,255,255,.18) borders on a white
+    // form -> invisible), and the radios inherited .form-group input{width:100%}
+    // from quote.css, which stretched the first radio to ~105px on a 390px
+    // phone and folded its own label into a three-line column. Styles for these
+    // classes live in quote.css under "Fulfilment".
     var addrRows = ADDR_FIELDS.map(function (f) {
-      return '<label style="display:block;margin:.4rem 0 .15rem;font-size:.85rem;opacity:.85">' + f[1] + '</label>'
-        + '<input id="' + f[0] + '" type="' + f[2] + '" style="width:100%;padding:.55rem .7rem;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.04);color:inherit">';
+      return '<label class="sp-ship-label" for="' + f[0] + '">' + f[1] + '</label>'
+        + '<input class="sp-ship-input" id="' + f[0] + '" type="' + f[2] + '"'
+        + ' autocomplete="' + (f[4] || 'off') + '"'
+        + (f[3] === 'postal_code' ? ' autocapitalize="characters" spellcheck="false"' : '')
+        + '>';
     }).join('');
 
     wrap.innerHTML =
-      '<label style="display:block;margin-bottom:.35rem">How would you like to get your order?</label>'
-      + '<div style="display:flex;gap:1.25rem;align-items:center;margin-bottom:.25rem">'
-      + '  <label style="display:flex;gap:.4rem;align-items:center;cursor:pointer"><input type="radio" name="sp_fm" id="sp-fm-pickup" value="pickup" checked> Pickup (Sainte-Anne-de-Bellevue)</label>'
-      + '  <label style="display:flex;gap:.4rem;align-items:center;cursor:pointer"><input type="radio" name="sp_fm" id="sp-fm-delivery" value="delivery"> Delivery</label>'
+      '<span class="sp-fm-title">How would you like to get your order?</span>'
+      + '<div class="sp-fm-row">'
+      + '  <label class="sp-fm-opt"><input type="radio" name="sp_fm" id="sp-fm-pickup" value="pickup" checked>'
+      + '<span class="sp-fm-txt"><b>Pickup</b><small>Sainte-Anne-de-Bellevue &middot; free</small></span></label>'
+      + '  <label class="sp-fm-opt"><input type="radio" name="sp_fm" id="sp-fm-delivery" value="delivery">'
+      + '<span class="sp-fm-txt"><b>Delivery</b><small>Rate estimated below</small></span></label>'
       + '</div>'
-      + '<div id="sp-address" hidden style="margin-top:.5rem;padding:.75rem;border:1px dashed rgba(255,255,255,.18);border-radius:10px">'
-      + '  <label style="display:block;margin:.15rem 0 .15rem;font-size:.85rem;opacity:.85">Country</label>'
-      + '  <select id="sp-ship-country" style="width:100%;padding:.55rem .7rem;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.04);color:inherit"><option value="CA">Canada</option><option value="US">United States</option></select>'
+      + '<div id="sp-address" hidden class="sp-ship-box">'
+      + '  <label class="sp-ship-label" for="sp-ship-country">Country</label>'
+      + '  <select class="sp-ship-input" id="sp-ship-country" autocomplete="country"><option value="CA">Canada</option><option value="US">United States</option></select>'
       + addrRows
-      + '  <div id="sp-ship-fee" style="margin-top:.6rem;font-size:.9rem;opacity:.9"></div>'
+      + '  <div id="sp-ship-fee" class="sp-ship-fee"></div>'
       + '</div>';
 
     anchor.parentNode.insertBefore(wrap, anchor.nextSibling);

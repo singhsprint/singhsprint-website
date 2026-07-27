@@ -401,6 +401,48 @@
     .form-group textarea{resize:vertical;min-height:90px}
     .form-group .hint{font-size:.78rem;color:#aaa;margin-top:3px}
 
+    /* Radios and checkboxes have to opt out of the width:100% above.
+       Without this the first radio in a flex label stretches to ~105px on a
+       390px phone and folds its own text into a three-line column with the
+       dot stranded on the far left — which is exactly how the pickup/delivery
+       control was rendering in the wild. [type] beats the bare `input`
+       selector on specificity, so this holds wherever it lands. */
+    .form-group input[type="radio"],.form-group input[type="checkbox"]{
+      width:auto;min-width:0;flex:0 0 auto;padding:0;margin:0;
+      border:0;border-radius:0;accent-color:#1a1a1a}
+
+    /* Fulfilment — pickup vs delivery, injected by delivery.js into the
+       contact step. Everything is scoped under #sp-fulfillment so it outranks
+       `.form-group label` (0,1,1), which would otherwise force display:block
+       onto the option labels and collapse the card layout. */
+    #sp-fulfillment .sp-fm-title{display:block;font-size:.85rem;font-weight:600;
+      margin-bottom:8px;color:#555}
+    /* auto-fit rather than a media query: two cards where there's room for
+       190px each, one full-width column on a phone. */
+    #sp-fulfillment .sp-fm-row{display:grid;gap:10px;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+    #sp-fulfillment .sp-fm-opt{display:flex;align-items:flex-start;gap:10px;margin:0;
+      padding:12px 14px;border:1.5px solid #e0e0e0;border-radius:12px;background:#fff;
+      cursor:pointer;font-weight:400;color:inherit;
+      transition:border-color .2s,background .2s}
+    #sp-fulfillment .sp-fm-opt:has(input:checked){border-color:#1a1a1a;background:#fafafa}
+    #sp-fulfillment .sp-fm-opt input{margin-top:3px}
+    #sp-fulfillment .sp-fm-txt{display:block;min-width:0}
+    #sp-fulfillment .sp-fm-txt b{display:block;font-size:.92rem;font-weight:600;
+      color:#1a1a1a;line-height:1.25}
+    #sp-fulfillment .sp-fm-txt small{display:block;font-size:.75rem;color:#888;
+      margin-top:2px;line-height:1.3}
+    #sp-fulfillment .sp-ship-box{margin-top:12px;padding:14px;border:1px solid #e8e8e8;
+      border-radius:12px;background:#fafafa}
+    #sp-fulfillment .sp-ship-box[hidden]{display:none}
+    #sp-fulfillment .sp-ship-label{display:block;font-size:.8rem;font-weight:600;
+      color:#555;margin:10px 0 4px}
+    #sp-fulfillment .sp-ship-box>.sp-ship-label:first-child{margin-top:0}
+    #sp-fulfillment .sp-ship-input{width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;
+      border-radius:10px;font-size:.95rem;font-family:inherit;background:#fff;color:#1a1a1a}
+    #sp-fulfillment .sp-ship-input:focus{outline:none;border-color:#1a1a1a}
+    #sp-fulfillment .sp-ship-fee{margin-top:10px;font-size:.85rem;color:#555;line-height:1.4}
+
     /* File upload */
     .file-upload{border:2px dashed #ddd;border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
     .file-upload:hover{border-color:#aaa;background:#fafafa}
