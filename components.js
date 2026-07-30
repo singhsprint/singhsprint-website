@@ -602,7 +602,10 @@ function loadNav() {
         { en: 'Embroidery',       fr: 'Broderie',                  href: BASE + '/embroidery-montreal' },
         { en: 'DTF Printing',     fr: 'Impression DTF',            href: BASE + '/dtf-printing-montreal' },
         { en: 'DTG Printing',     fr: 'Impression DTG',            href: BASE + '/dtg-printing-montreal' },
-        { en: 'Screen Printing',  fr: 'Sérigraphie',               href: BASE + '/screen-printing-montreal' },
+        // 2026-07-30 — screen printing removed from the services menu: we do not
+        // offer it. The landing pages are 301'd to DTF in vercel.json so the SEO
+        // equity is kept rather than thrown away. Guide + product-page mentions
+        // are a separate pass.
         { en: 'Hats & Caps',      fr: 'Chapeaux et casquettes',    href: BASE + '/custom-hats-caps-montreal' },
         { en: 'Bulk Apparel',     fr: 'Vêtements en gros',         href: BASE + '/bulk-apparel-printing-montreal' }
       ]
@@ -699,7 +702,7 @@ function loadNav() {
     return head + children;
   }).join('');
 
-  var searchPlaceholder = t('Search 1,100+ blanks', 'Chercher parmi 1 100+ vêtements');
+  var searchPlaceholder = t('Search 4,500+ blanks', 'Chercher parmi 4 500+ vêtements');
   var searchOverlayPlaceholder = t('Search by brand, style, or fabric…', 'Cherchez par marque, style ou tissu…');
 
   // 2026-07-26 — the mobile category strip is eight links that all point
@@ -1228,7 +1231,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "Do you supply the blanks or can I bring my own?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 1,100+ blank styles from S&S, AlphaBroder, and SanMar, and we also decorate customer-supplied garments at a per-piece print rate." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 4,500+ blank styles from S&S, AlphaBroder, and SanMar, and we also decorate customer-supplied garments at a per-piece print rate." }
           },
           {
             "@type": "Question",
