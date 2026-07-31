@@ -858,12 +858,18 @@
   var _dmczSleeveBlankReq = {};
   var _dmczSleevePending  = {};   // "<colorId>|<side>" -> true while generating
   function dmczSleeveSide(pid) { return /right/i.test(pid || '') ? 'right' : 'left'; }
-  function dmczSleeveBlank(colorId, side) {
+  /** Which generated view a placement needs, or null if it needs neither. */
+  function dmczBlankView(pid) {
+    if (pid === 'neck-tag') return 'neck';
+    return /sleeve/i.test(pid || '') ? 'sleeve' : null;
+  }
+  function dmczSleeveBlank(colorId, side, view) {
     if (!colorId) return Promise.resolve(null);
-    var key = colorId + '|' + side;
+    view = view || 'sleeve';
+    var key = colorId + '|' + side + '|' + view;
     if (Object.prototype.hasOwnProperty.call(_dmczSleeveBlanks, key)) return Promise.resolve(_dmczSleeveBlanks[key]);
     if (_dmczSleeveBlankReq[key]) return _dmczSleeveBlankReq[key];
-    var pr = fetch(DMCZ_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side)
+    var pr = fetch(DMCZ_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side + '&view=' + view)
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(j){
         var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null;
@@ -890,11 +896,12 @@
   // covered too.
   var _dmczSleevePrimed = {};
   function dmczPrimeSleeveBlank(pid, color) {
-    if (!/sleeve/i.test(pid || '') || !color || !color.color_id) return;
-    var pkey = color.color_id + '|' + dmczSleeveSide(pid);
+    var view = dmczBlankView(pid);
+    if (!view || !color || !color.color_id) return;
+    var pkey = color.color_id + '|' + dmczSleeveSide(pid) + '|' + view;
     if (_dmczSleevePrimed[pkey]) return;
     _dmczSleevePrimed[pkey] = true;
-    dmczSleeveBlank(color.color_id, dmczSleeveSide(pid)).then(function(info) {
+    dmczSleeveBlank(color.color_id, dmczSleeveSide(pid), view).then(function(info) {
       if (!info || !info.url) return;
       if (info.marker && !_dmczBoxTouched[pid]) {
         _dmczState.boxes[pid] = {
@@ -912,13 +919,19 @@
     var loc = pre.loc || 'front';
     var front = color.mockup_front_url || (_detailProduct && _detailProduct.hero_image_url);
     if (loc === 'back') return color.mockup_back_url || front;
+    if (loc === 'neck') {
+      // No catalog photo shows the inside of a collar — always the generated
+      // blank. The front photo is only a holding image while it loads.
+      var nk = color.color_id ? _dmczSleeveBlanks[color.color_id + '|left|neck'] : null;
+      return (nk && nk.url) ? nk.url : front;
+    }
     if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') {
       // Real photo first (3% of colours), then the AI blank we stage AND
       // composite on, then the static placeholder only while that loads or
       // if generation failed. Never the front photo — a logo on the chest
       // reads wrong for a sleeve hit.
       if (color.mockup_side_url) return color.mockup_side_url;
-      var cached = color.color_id ? _dmczSleeveBlanks[color.color_id + '|' + dmczSleeveSide(pid)] : null;
+      var cached = color.color_id ? _dmczSleeveBlanks[color.color_id + '|' + dmczSleeveSide(pid) + '|sleeve'] : null;
       if (cached && cached.url) return cached.url;
       return (loc === 'right-sleeve') ? '/images/sleeve-right.png?v=2' : '/images/sleeve-left.png?v=2';
     }
@@ -1031,8 +1044,9 @@
       // Still generating this colour's sleeve view? Say so. Sitting silently
       // on the white placeholder reads as broken, and it's the one moment
       // the wait is real.
-      if (!baked && /sleeve/i.test(active) && color.color_id
-          && _dmczSleevePending[color.color_id + '|' + dmczSleeveSide(active)]) {
+      var _vw = dmczBlankView(active);
+      if (!baked && _vw && color.color_id
+          && _dmczSleevePending[color.color_id + '|' + dmczSleeveSide(active) + '|' + _vw]) {
         _dmczSleeveNote = t('cat.detail.sleevewarm')
           || 'Matching this sleeve view to your garment colour — about 15 seconds, and only the first time anyone picks this colour.';
       } else {
