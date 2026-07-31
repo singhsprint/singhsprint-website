@@ -465,6 +465,9 @@
     var open = body.classList.toggle('open');
     if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (bar) { bar.classList.toggle('open', open); bar.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+    // Emphasise the pinned unit price while the customizer is open.
+    var col = document.getElementById('dmczCustomizer');
+    if (col) col.classList.toggle('is-customizing', open);
     // Scroll the bar (the drawer's origin) into view so the reveal is visible.
     if (open) setTimeout(function(){ try { (bar || body).scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {} }, 120);
   }
@@ -478,6 +481,8 @@
     if (body) body.classList.remove('open');
     if (btn) btn.setAttribute('aria-expanded', 'false');
     if (bar) { bar.classList.remove('open'); bar.setAttribute('aria-expanded', 'false'); }
+    var col2 = document.getElementById('dmczCustomizer');
+    if (col2) col2.classList.remove('is-customizing');
   }
 
   function initDmczCustomizer(p) {
@@ -599,44 +604,73 @@
   // the size premium only. Any other location (back, sleeves) adds a print
   // side, so its hint includes the +$2 side cost (this is why sleeves are
   // never "free"). Currently-selected chips show no add badge.
-  function dmczChipHint(pid, selected) {
-    if (selected) return '';
-    var pre = DMCZ_placementPresets[pid] || {};
-    // Add-ons carry a flat per-piece rate from the engine, not a placement
-    // delta. /api/pricing reports it as neck_tag_rate on EVERY response, not
-    // only when selected — otherwise the label would be circular: no price
-    // until you pick it, no reason to pick it without a price.
+  // Cost of having this placement in the selection, in dollars, ignoring what
+  // else is picked. Absolute — the relative maths lives in dmczChipHint.
+  function dmczChipCostAbs(pid) {
     if (dmczIsAddon(pid)) {
       return (typeof _dmczNeckTagPerUnit === 'number' && _dmczNeckTagPerUnit > 0)
-        ? '+$' + _dmczNeckTagPerUnit.toFixed(2) : '';
+        ? _dmczNeckTagPerUnit : 0;
     }
+    var pre = DMCZ_placementPresets[pid] || {};
     var delta = dmczDecoDelta(pid);
-    // Embroidery: the first location is in the quoted price and every extra
-    // one costs multiplier x the extra-location rate, which the server already
-    // folded into `delta`. There is no "primary side" — a back hit costs the
-    // same as a chest hit of the same size, so the print side_add must not
-    // apply. See /api/pricing/placement-summary.
     if (_dmczState.method === 'Embroidery') {
-      // The engine prices Sum(multipliers) with the FIRST 1.0 unit already
-      // inside the base price, so a chip's real cost depends on what is
-      // already selected:
-      //     add = (max(1, total + m) - max(1, total)) x rate
-      // With an empty picker a 1x location is free and a 2x one costs a
-      // single extra location, not two. The old `m x rate` hint overstated
-      // Left Chest by $10 and Full Front by $10 on the first pick.
+      var rate = _dmczDeltas.side_add || 0;
+      return rate ? dmczEmbMult(pid) * rate : 0;
+    }
+    // Front placements are the primary print side, already in the base price,
+    // so they cost only their size premium. Anything else adds a side too.
+    return (pre.loc === 'front') ? delta : (_dmczDeltas.side_add + delta);
+  }
+
+  function dmczFmtDelta(v) {
+    v = Math.round(v * 100) / 100;
+    if (Math.abs(v) < 0.005) return 'included';
+    var body = '$' + Math.abs(v).toFixed(Math.abs(v) % 1 ? 2 : 0);
+    return (v > 0 ? '+' : '\u2212') + body;   // proper minus sign, not a hyphen
+  }
+
+  /**
+   * Price badge for a chip.
+   *
+   * Only ONE placement per `loc` can be selected — dmczTogglePlacement swaps
+   * same-loc presets — so a front group behaves as a radio, not a checklist.
+   * Showing every option's ABSOLUTE premium against that made no sense: with
+   * Oversized Front (+$3) picked, Left Chest still read "included" when
+   * choosing it actually SAVES $3. Within the group that already has a
+   * selection, quote the difference, which can be negative. Groups with
+   * nothing selected are genuinely additive, so those stay absolute.
+   *
+   * The selected chip keeps its own price rather than going blank — you
+   * should be able to see what you're paying for without deselecting it.
+   */
+  function dmczChipHint(pid, selected) {
+    var mine = dmczChipCostAbs(pid);
+    if (selected) return mine > 0 ? '+$' + (Math.round(mine * 100) / 100) : 'included';
+
+    var pre = DMCZ_placementPresets[pid] || {};
+    var sibling = null;
+    for (var i = 0; i < _dmczState.placements.length; i++) {
+      var sel = _dmczState.placements[i];
+      var sp = DMCZ_placementPresets[sel] || {};
+      if (sel !== pid && sp.loc && sp.loc === pre.loc) { sibling = sel; break; }
+    }
+
+    if (_dmczState.method === 'Embroidery') {
+      // Embroidery prices the SUM of the multipliers with the first 1.0 unit
+      // inside the base, so a swap has to be evaluated as remove-then-add
+      // rather than as a difference of two absolutes.
       var rate = _dmczDeltas.side_add || 0;
       if (!rate) return '';
       var total = 0;
-      for (var i = 0; i < _dmczState.placements.length; i++) {
-        total += dmczEmbMult(_dmczState.placements[i]);
+      for (var j = 0; j < _dmczState.placements.length; j++) {
+        total += dmczEmbMult(_dmczState.placements[j]);
       }
-      var embAdd = (Math.max(1, total + dmczEmbMult(pid)) - Math.max(1, total)) * rate;
-      embAdd = Math.round(embAdd * 100) / 100;
-      return embAdd > 0 ? '+$' + embAdd : 'included';
+      var base = sibling ? total - dmczEmbMult(sibling) : total;
+      var after = base + dmczEmbMult(pid);
+      return dmczFmtDelta((Math.max(1, after) - Math.max(1, total)) * rate);
     }
-    var isPrimarySide = (pre.loc === 'front');
-    var add = isPrimarySide ? delta : (_dmczDeltas.side_add + delta);
-    return add > 0 ? '+$' + add : 'included';
+
+    return dmczFmtDelta(sibling ? mine - dmczChipCostAbs(sibling) : mine);
   }
 
   // Render the placement groups for the current garment, with disallowed
@@ -656,7 +690,10 @@
         var on = _dmczState.placements.indexOf(pid) >= 0;
         var hint = dmczChipHint(pid, on);
         var hintHtml = hint
-          ? '<span class="dmcz__chip-price"' + (hint === 'included' ? ' style="color:#888"' : '') + '>' + hint + '</span>'
+          ? '<span class="dmcz__chip-price' +
+              (hint === 'included' ? ' dmcz__chip-price--free' : '') +
+              (hint.charAt(0) === '\u2212' ? ' dmcz__chip-price--down' : '') +
+            '">' + hint + '</span>'
           : '';
         return '<button type="button" class="dmcz__chip" data-pid="' + pid + '" aria-pressed="' + on + '">' +
                '<span class="dmcz__chip-name">' + pre.label + hintHtml + '</span>' +
@@ -914,6 +951,53 @@
     });
   }
 
+  // ── Neutral inside-collar placeholder ────────────────────────────────
+  // No catalog photo shows the inside of a collar, and the AI blank takes
+  // ~15s the first time anyone picks a colour. Falling back to the FRONT
+  // photo for that window was actively misleading: customers saw a chest
+  // shot while placing a neck label. This draws a plain, level, colour-
+  // matched inside-back-neck instead — instant, no network, and obviously
+  // the same view the real render will replace it with.
+  function dmczShade(hex, amt) {
+    var h = String(hex || '#cccccc').replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    if (!/^[0-9a-f]{6}$/i.test(h)) h = 'cccccc';
+    var n = parseInt(h, 16);
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    var t = amt < 0 ? 0 : 255, k = Math.abs(amt);
+    r = Math.round(r + (t - r) * k);
+    g = Math.round(g + (t - g) * k);
+    b = Math.round(b + (t - b) * k);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+  var _dmczNeckPh = {};
+  function dmczNeckPlaceholder(color) {
+    var hex = (color && color.hex_code) || '#cccccc';
+    if (_dmczNeckPh[hex]) return _dmczNeckPh[hex];
+    var panel = dmczShade(hex, 0.08);   // interiors read a touch lighter
+    var lo    = dmczShade(hex, -0.06);  // falloff toward the hem
+    var band  = dmczShade(hex, -0.16);  // ribbed collar band
+    var rib   = dmczShade(hex, 0.12);
+    var edge  = 'rgba(0,0,0,.13)';
+    var svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">' +
+        '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="' + panel + '"/><stop offset="1" stop-color="' + lo + '"/>' +
+        '</linearGradient></defs>' +
+        '<rect width="800" height="800" fill="#f4f3f1"/>' +
+        '<path d="M70 300 Q90 246 150 236 L650 236 Q710 246 730 300 L748 720 Q400 752 52 720 Z" ' +
+          'fill="url(#g)" stroke="' + edge + '" stroke-width="2"/>' +
+        '<path d="M158 244 Q400 330 642 244" fill="none" stroke="' + band + '" stroke-width="54" stroke-linecap="round"/>' +
+        '<path d="M158 244 Q400 330 642 244" fill="none" stroke="' + rib + '" stroke-width="54" stroke-dasharray="2.5 10" opacity=".38"/>' +
+        '<path d="M158 217 Q400 303 642 217" fill="none" stroke="' + edge + '" stroke-width="1.5"/>' +
+        '<path d="M158 271 Q400 357 642 271" fill="none" stroke="' + edge + '" stroke-width="1.5"/>' +
+        '<path d="M158 271 Q400 357 642 271 L642 316 Q400 402 158 316 Z" fill="rgba(0,0,0,.07)"/>' +
+      '</svg>';
+    var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    _dmczNeckPh[hex] = url;
+    return url;
+  }
+
   function dmczGarmentSideUrl(pid, color) {
     var pre = DMCZ_placementPresets[pid] || {};
     var loc = pre.loc || 'front';
@@ -923,7 +1007,7 @@
       // No catalog photo shows the inside of a collar — always the generated
       // blank. The front photo is only a holding image while it loads.
       var nk = color.color_id ? _dmczSleeveBlanks[color.color_id + '|left|neck'] : null;
-      return (nk && nk.url) ? nk.url : front;
+      return (nk && nk.url) ? nk.url : dmczNeckPlaceholder(color);
     }
     if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') {
       // Real photo first (3% of colours), then the AI blank we stage AND

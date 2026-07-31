@@ -3108,6 +3108,45 @@
     var _spSleeveBlanks   = {};   // "<colorId>|<side>" -> {url,marker} | null
     var _spSleeveBlankReq = {};   // in-flight promises, so tabs don't refetch
     function spSleeveSide(pid) { return /right/i.test(pid) ? 'right' : 'left'; }
+    // Neutral inside-collar holding image. No catalog photo shows the inside
+    // of a collar and the AI blank takes ~15s on a cold colour; falling back
+    // to the FRONT photo showed a chest shot while placing a neck label.
+    function spShade(hex, amt) {
+      var h = String(hex || '#cccccc').replace('#', '');
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      if (!/^[0-9a-f]{6}$/i.test(h)) h = 'cccccc';
+      var n = parseInt(h, 16);
+      var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      var t = amt < 0 ? 0 : 255, k = Math.abs(amt);
+      r = Math.round(r + (t - r) * k);
+      g = Math.round(g + (t - g) * k);
+      b = Math.round(b + (t - b) * k);
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    var _spNeckPh = {};
+    function spNeckPlaceholder(hex) {
+      hex = hex || '#cccccc';
+      if (_spNeckPh[hex]) return _spNeckPh[hex];
+      var panel = spShade(hex, 0.08), lo = spShade(hex, -0.06),
+          band = spShade(hex, -0.16), rib = spShade(hex, 0.12), edge = 'rgba(0,0,0,.13)';
+      var svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">' +
+          '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0" stop-color="' + panel + '"/><stop offset="1" stop-color="' + lo + '"/>' +
+          '</linearGradient></defs>' +
+          '<rect width="800" height="800" fill="#f4f3f1"/>' +
+          '<path d="M70 300 Q90 246 150 236 L650 236 Q710 246 730 300 L748 720 Q400 752 52 720 Z" ' +
+            'fill="url(#g)" stroke="' + edge + '" stroke-width="2"/>' +
+          '<path d="M158 244 Q400 330 642 244" fill="none" stroke="' + band + '" stroke-width="54" stroke-linecap="round"/>' +
+          '<path d="M158 244 Q400 330 642 244" fill="none" stroke="' + rib + '" stroke-width="54" stroke-dasharray="2.5 10" opacity=".38"/>' +
+          '<path d="M158 217 Q400 303 642 217" fill="none" stroke="' + edge + '" stroke-width="1.5"/>' +
+          '<path d="M158 271 Q400 357 642 271" fill="none" stroke="' + edge + '" stroke-width="1.5"/>' +
+          '<path d="M158 271 Q400 357 642 271 L642 316 Q400 402 158 316 Z" fill="rgba(0,0,0,.07)"/>' +
+        '</svg>';
+      var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      _spNeckPh[hex] = url;
+      return url;
+    }
     /** Which generated view a placement needs, or null if it needs neither. */
     function spBlankView(pid) {
       if (pid === 'neck-tag') return 'neck';
@@ -3240,7 +3279,7 @@
       document.head.appendChild(st);
     }
 
-    // opts: { colorId, garment:{front,back,side}, placements:[presetId], fileFor:fn(presetId)->File|null,
+    // opts: { colorId, garment:{front,back,side}, colorHex, placements:[presetId], fileFor:fn(presetId)->File|null,
     //         initial:{boxes,bgKey,removeBg}, sessionId, onDone:fn(result) }
     // result: { mockups:[{placement,url}], boxes:{}, bgKey, removeBg, design:{path,signed_url} }
     //
@@ -3422,9 +3461,9 @@
         var g = opts.garment || {};
         var side = spSideFor(p);
         if (p === 'neck-tag') {
-          // No catalog photo shows the inside of a collar — always the
-          // generated blank. Front photo only while it loads.
-          return sleeveBlank[p] || g.front || g.back || '';
+          // Always the generated blank once it lands; a neutral colour-matched
+          // collar drawing (not the chest photo) while it generates.
+          return sleeveBlank[p] || spNeckPlaceholder(opts.colorHex || g.hex);
         }
         if (side === 'side' && !g.side) {
           // The colour-matched blank once it arrives; the generic render only
@@ -3699,6 +3738,7 @@
       spOpenCustomizer({
         colorId: sc.cid,
         garment: { front: c.mockup_front_url, back: c.mockup_back_url, side: c.mockup_side_url },
+        colorHex: c.hex_code,
         placements: placements,
         fileFor: function(p) { return (typeof placementFiles === 'object' && placementFiles[p] instanceof File) ? placementFiles[p] : null; },
         initial: { boxes: window.__spSingleBoxes || null, bgKey: window.__spSingleBgKey || null, removeBg: !!window.__spSingleRemoveBg },
@@ -3737,6 +3777,7 @@
           spOpenCustomizer({
             colorId: it.color_id,
             garment: { front: c.mockup_front_url || it.hero_url, back: c.mockup_back_url, side: c.mockup_side_url },
+            colorHex: c.hex_code,
             placements: placements,
             fileFor: function(p) {
               if (typeof cartItemFiles !== 'object' || !cartItemFiles) return null;

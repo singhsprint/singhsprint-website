@@ -195,6 +195,12 @@
     .detail-modal__preview-cap{font-size:.72rem;color:#888;text-align:center;line-height:1.4}
     /* Right column — controls, scrollable. */
     .detail-modal__controls-col{min-width:0;display:flex;flex-direction:column}
+    /* Unit price pins to the top of the controls column. Every control
+       below it (qty, method, placements, neck tag) moves the number, and
+       it used to scroll out of view exactly when it started changing. */
+    .detail-modal__price{position:sticky;top:0;z-index:6;font-size:1.05rem;font-weight:600;color:#1a1a1a;margin:0 0 8px;padding:6px 0 8px;background:#fff;border-bottom:1px solid transparent;transition:box-shadow .18s ease,border-color .18s ease}
+    .detail-modal__price strong{font-size:1.45rem;font-weight:800;letter-spacing:-.015em}
+    #dmczCustomizer.is-customizing .detail-modal__price{border-bottom-color:#e8e6df;box-shadow:0 6px 10px -8px rgba(0,0,0,.28)}
     /* Gallery — main image + thumbnail strip */
     .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
     .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
@@ -309,6 +315,11 @@
     .dmcz__chip-name{font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.15}
     .dmcz__chip-price{margin-left:6px;font-size:.72rem;font-weight:700;color:#2f6f3e}
     .dmcz__chip[aria-pressed="true"] .dmcz__chip-price{color:#8fd6a0}
+    /* A cheaper alternative within the same group reads as a saving, not a
+       charge — same weight, different hue, so it scans at a glance. */
+    .dmcz__chip-price--down{color:#8a6d3b}
+    .dmcz__chip-price--free{color:#888;font-weight:600}
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-price--free{color:#b9b9b9}
     .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
     .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
     .dmcz__preview{margin:16px 0 4px}
