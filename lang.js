@@ -178,7 +178,7 @@ var SP_LANG = (function() {
     'home.diff.h2': { en: "Most print shops make you pay to find out if they're any good.", fr: 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes.' },
     'home.diff.sub': { en: "If you've ordered shirts before, you know the drill. Here's how we made it obsolete.", fr: 'Si vous avez déjà commandé des chandails, vous connaissez le refrain. Voici comment on l\'a rendu obsolète.' },
     'home.diff.r1.them': { en: '&ldquo;Call for pricing&rdquo;', fr: '« Appelez pour les prix »' },
-    'home.diff.r1.us': { en: 'Live prices on 1,100+ products, before you talk to anyone', fr: 'Prix en direct sur 1 100+ produits, avant même de parler à quelqu\'un' },
+    'home.diff.r1.us': { en: 'Live prices on 4,500+ products, before you talk to anyone', fr: 'Prix en direct sur 4 500+ produits, avant même de parler à quelqu\'un' },
     'home.diff.r2.them': { en: '24-piece minimums', fr: 'Minimums de 24 pièces' },
     'home.diff.r2.us': { en: "No minimums. We'll print one.", fr: 'Aucun minimum. On en imprime un seul.' },
     'home.diff.r3.them': { en: 'First look at pickup, fingers crossed', fr: 'Premier aperçu au ramassage, on croise les doigts' },
@@ -251,7 +251,7 @@ var SP_LANG = (function() {
     'home.cat.polos':        { en: 'Polos',                  fr: 'Polos' },
     'home.cat.joggers':      { en: 'Joggers & Sweatpants',   fr: 'Joggers et pantalons molletonnés' },
     'home.products.bulknote':      { en: 'Bulk pricing available. The more you order, the less you pay per unit.', fr: 'Prix de volume disponibles. Plus vous commandez, moins vous payez à l\'unité.' },
-    'home.products.browsecatalog': { en: 'Browse the full catalog — 18,000+ blanks across S&amp;S, SanMar & more →', fr: 'Parcourez le catalogue complet — 18 000+ vêtements vierges chez S&amp;S, SanMar et plus →' },
+    'home.products.browsecatalog': { en: 'Browse the full catalog — 4,500+ blanks across S&amp;S, SanMar & more →', fr: 'Parcourez le catalogue complet — 4 500+ vêtements vierges chez S&amp;S, SanMar et plus →' },
     // Brand strip
     'home.brands.label': { en: 'We print on premium blanks from top suppliers', fr: 'On imprime sur des vêtements de qualité des meilleurs fournisseurs' },
     'home.brands.note':  { en: 'Sourced from S&amp;S Activewear, SanMar & Rue Saint-Patrick. Bring your own garments too.', fr: 'Approvisionné chez S&amp;S Activewear, SanMar et Rue Saint-Patrick. Apportez vos propres vêtements aussi.' },
@@ -298,7 +298,7 @@ var SP_LANG = (function() {
     'whyus.cmp.them': { en: 'The usual experience', fr: 'L\'expérience habituelle' },
     'whyus.cmp.us': { en: 'At Singhs Print', fr: 'Chez Singhs Print' },
     'whyus.cmp.r1.them': { en: '&ldquo;Call for pricing.&rdquo; Two emails, four days, then a PDF you have to decode.', fr: '« Appelez pour les prix. » Deux courriels, quatre jours, puis un PDF à décoder.' },
-    'whyus.cmp.r1.us': { en: '<strong>Live prices on 1,100+ products.</strong> See your number before you ever talk to a human.', fr: '<strong>Prix en direct sur 1 100+ produits.</strong> Voyez votre chiffre avant même de parler à un humain.' },
+    'whyus.cmp.r1.us': { en: '<strong>Live prices on 4,500+ products.</strong> See your number before you ever talk to a human.', fr: '<strong>Prix en direct sur 4 500+ produits.</strong> Voyez votre chiffre avant même de parler à un humain.' },
     'whyus.cmp.r2.them': { en: "24-piece minimum before they'll even open your file.", fr: 'Minimum de 24 pièces avant même d\'ouvrir votre fichier.' },
     'whyus.cmp.r2.us': { en: "<strong>No minimums.</strong> We'll print one shirt with the same care as a thousand.", fr: '<strong>Aucun minimum.</strong> On imprime un seul chandail avec le même soin que mille.' },
     'whyus.cmp.r3.them': { en: 'The first time you see your shirt is at pickup. Fingers crossed.', fr: 'La première fois que vous voyez votre chandail, c\'est au ramassage. On croise les doigts.' },
@@ -318,12 +318,12 @@ var SP_LANG = (function() {
     'whyus.proof.days': { en: 'day standard turnaround', fr: 'jours de délai standard' },
     'whyus.proof.lang': { en: 'service in both languages', fr: 'service dans les deux langues' },
     'whyus.cta.h2': { en: 'Stop emailing print shops. Start seeing prices.', fr: 'Arrêtez d\'écrire aux imprimeries. Commencez à voir les prix.' },
-    'whyus.cta.p': { en: 'Browse 1,100+ blanks with live pricing, or send us your design and get a mockup within the hour.', fr: 'Parcourez 1 100+ vêtements avec prix en direct, ou envoyez-nous votre design et recevez une maquette en moins d\'une heure.' },
+    'whyus.cta.p': { en: 'Browse 4,500+ blanks with live pricing, or send us your design and get a mockup within the hour.', fr: 'Parcourez 4 500+ vêtements avec prix en direct, ou envoyez-nous votre design et recevez une maquette en moins d\'une heure.' },
     'whyus.cta.b1': { en: 'Get a Free Quote &rarr;', fr: 'Soumission gratuite &rarr;' },
     'whyus.cta.b2': { en: 'Browse the catalog', fr: 'Parcourir le catalogue' },
     'about.hero.h1': { en: 'Montreal\'s custom apparel studio,<br>built in Sainte-Anne-de-Bellevue.', fr: 'L\'imprimerie de vêtements personnalisés de Montréal,<br>née à Sainte-Anne-de-Bellevue.' },
     'about.hero.p': {
-      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts, with 1,100+ blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
+      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts, with 4,500+ blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
       fr: 'Imprimerie Singhs Print est un décorateur de vêtements familial dans l\'Ouest-de-l\'Île de Montréal. DTG, DTF, broderie et sérigraphie pour les organisations étudiantes, les entreprises locales et les comptes corporatifs Net-30, avec plus de 1 100 styles de vêtements vierges, une soumission en 1 heure pendant les heures d\'ouverture et une vraie réponse humaine à chaque fois.'
     },
     'about.image.studio':  { en: 'The studio · Sainte-Anne-de-Bellevue', fr: 'Le studio · Sainte-Anne-de-Bellevue' },
@@ -357,7 +357,7 @@ var SP_LANG = (function() {
       fr: 'Avoir toutes les méthodes sur place nous permet de recommander la bonne pour votre projet plutôt que de tout forcer à travers une seule machine. T-shirts en coton ? DTG. Athleisure en polyester et mélanges foncés ? DTF. Broderie de logos sur casquettes, polos et vestes ? Cousue sur place. Tirages sérigraphiques mono-couleur en gros volume ? Même bâtiment.'
     },
     'about.what.p2': {
-      en: 'We carry 1,100+ blank styles from S&S Activewear, SanMar, AlphaBroder and Rue Saint-Patrick. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
+      en: 'We carry 4,500+ blank styles from S&S Activewear, SanMar, AlphaBroder and Rue Saint-Patrick. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
       fr: 'Nous offrons plus de 1 100 styles vierges chez S&S Activewear, SanMar, AlphaBroder et Rue Saint-Patrick. Toutes les grandes marques, de Gildan et Bella+Canvas à Comfort Colors, Champion, Next Level, Independent et American Apparel. Apportez vos propres vêtements si vous préférez, et nous décorerons les vôtres au même tarif par pièce.'
     },
 
@@ -389,8 +389,8 @@ var SP_LANG = (function() {
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
-      en: 'Standard turnaround is 3–5 business days from approved artwork. Rush (2–3 days) is available with a small surcharge. We don\'t quote timelines we can\'t hit.',
-      fr: 'Le délai standard est de 3 à 5 jours ouvrables à partir de l\'approbation du visuel. L\'option urgente (2 à 3 jours) est disponible moyennant un léger supplément. On ne promet pas de délais qu\'on ne peut pas tenir.'
+      en: 'Printed orders (DTG/DTF) run 3–5 business days from approved artwork, with rush (2–3 days) available for a small surcharge. Embroidery runs 7–11 days. We don\'t quote timelines we can\'t hit.',
+      fr: 'Les commandes imprimées (DTG/DTF) prennent de 3 à 5 jours ouvrables après l\'approbation du visuel, avec une option urgente (2 à 3 jours) moyennant un léger supplément. La broderie prend de 7 à 11 jours. On ne promet pas de délais qu\'on ne peut pas tenir.'
     },
     'about.values.qc.h': { en: 'Quality control', fr: 'Contrôle de qualité' },
     'about.values.qc.p': {
@@ -820,7 +820,7 @@ var SP_LANG = (function() {
     // Compact label on the mobile collapsed bar — "Quote" instead of "Get a Quote".
     'nav.quote.short':       { en: 'Quote',                  fr: 'Devis' },
     // Header search field placeholder.
-    'nav.search.placeholder':{ en: 'Search 1,100+ blanks',   fr: 'Chercher parmi 1 100+ vêtements' },
+    'nav.search.placeholder':{ en: 'Search 4,500+ blanks',   fr: 'Chercher parmi 4 500+ vêtements' },
 
     // ===== SHARED FR-ONLY NOTICE (industries + guides) =====
     'page.fr-notice': {
@@ -982,7 +982,7 @@ var SP_LANG = (function() {
     'cat.byo.title': { en: 'Bring your own blank', fr: 'Apportez votre propre vêtement' },
     'cat.byo.sub': { en: 'Got a SKU or tech pack? Send it over — we\'ll source and quote it.', fr: 'Vous avez un SKU ou un dossier technique ? Envoyez-le-nous — on le source et on vous fait une soumission.' },
     'cat.filter.refine': { en: 'Refine results', fr: 'Affiner les résultats' },
-    'cat.browseall':     { en: 'Browse all 1,000+ products alphabetically →', fr: 'Parcourir les 1 000+ produits par ordre alphabétique →' },
+    'cat.browseall':     { en: 'Browse all 4,500+ products alphabetically →', fr: 'Parcourir les 4 500+ produits par ordre alphabétique →' },
     'cat.filter.clear': { en: 'Clear all', fr: 'Tout effacer' },
     'cat.filter.apply': { en: 'Apply', fr: 'Appliquer' },
     'cat.filter.done': { en: 'Done', fr: 'Terminé' },
@@ -1032,7 +1032,7 @@ var SP_LANG = (function() {
       en: 'Pick your garment and we\'ll show the best-selling Bella+Canvas, Gildan, Berne and Adidas blanks in each tier, with live pricing as you change qty / sides — right here, no catalog trip needed.',
       fr: 'Choisissez votre vêtement et on affiche les meilleurs vendeurs Bella+Canvas, Gildan, Berne et Adidas dans chaque gamme, avec le prix en direct selon la quantité et les faces — ici même, sans passer par le catalogue.'
     },
-    'quote.cart.empty.cta': { en: 'or browse all 1,100+ styles', fr: 'ou parcourir les 1 100+ modèles' },
+    'quote.cart.empty.cta': { en: 'or browse all 4,500+ styles', fr: 'ou parcourir les 4 500+ modèles' },
     'quote.cart.item.color': { en: 'Color:', fr: 'Couleur :' },
     'quote.cart.item.pickcolor': { en: 'Choose a colour →', fr: 'Choisissez une couleur →' },
     'quote.color.choose': { en: 'Choose a colour', fr: 'Choisissez une couleur' },
@@ -1141,7 +1141,7 @@ var SP_LANG = (function() {
     'quote.contact.needby.hint': { en: 'Standard turnaround is 3–5 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.', fr: 'Le délai standard est de 3 à 5 jours ouvrables après l\'approbation. Une date plus rapprochée peut entraîner des frais d\'urgence, précisés dans notre réponse.' },
     'quote.contact.rushlabel': { en: 'Rush?', fr: 'Urgent ?' },
     'quote.contact.rush': { en: 'This is a rush order — please prioritize', fr: 'Commande urgente — veuillez prioriser' },
-    'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG, DTF, embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG, DTF et broderie librement.' },
+    'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG and embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG et broderie librement.' },
     'quote.promoApplied.body': { en: 'Applied to this quote. Visible on your final price after we confirm specs — no code needed.', fr: 'Appliqué à cette soumission. Visible sur votre prix final après confirmation des détails — aucun code requis.' },
     'quote.contact.hear': { en: 'How did you hear about us?', fr: 'Comment avez-vous entendu parler de nous ?' },
     'quote.contact.hear.opt1': { en: 'Google search', fr: 'Recherche Google' },
@@ -1225,6 +1225,21 @@ var SP_LANG = (function() {
     'rfp.label.email': { en: 'Work email', fr: 'Courriel professionnel' },
     'rfp.ph.email': { en: 'you@company.com', fr: 'vous@entreprise.com' },
     'rfp.label.phone': { en: 'Phone', fr: 'Téléphone' },
+    // Mockup customizer — background key-out control. Same four modes and the
+    // same wording as the operator modal (CustomizeMockupModal.tsx).
+    'quote.cz.bg.label': { en: 'Remove background colour', fr: 'Retirer la couleur d\u2019arri\u00e8re-plan' },
+    'quote.cz.bg.off': { en: 'Off', fr: 'Aucun' },
+    'quote.cz.bg.white': { en: 'White', fr: 'Blanc' },
+    'quote.cz.bg.black': { en: 'Black', fr: 'Noir' },
+    'quote.cz.bg.auto': { en: 'Auto', fr: 'Auto' },
+    'quote.cz.bg.help.off': { en: 'Artwork kept as-is.', fr: 'Visuel conserv\u00e9 tel quel.' },
+    'quote.cz.bg.help.auto': { en: 'Knocks out the colour sampled from the artwork corners, everywhere.', fr: 'Retire partout la couleur \u00e9chantillonn\u00e9e dans les coins du visuel.' },
+    'quote.cz.bg.help.white': { en: 'Knocks out white everywhere in the artwork.', fr: 'Retire le blanc partout dans le visuel.' },
+    'quote.cz.bg.help.black': { en: 'Knocks out black everywhere in the artwork.', fr: 'Retire le noir partout dans le visuel.' },
+    'quote.cz.bg.restage': { en: 'Background mode changed \u2014 tap \u201cPreview on garment\u201d again.', fr: 'Mode d\u2019arri\u00e8re-plan modifi\u00e9 \u2014 touchez de nouveau \u00ab\u00a0Aper\u00e7u sur le v\u00eatement\u00a0\u00bb.' },
+    'rfp.label.firstqty': { en: 'How many pieces in this first order?', fr: 'Combien de pièces pour cette première commande ?' },
+    'rfp.ph.firstqty': { en: 'e.g. 120', fr: 'ex. 120' },
+    'rfp.hint.firstqty': { en: 'Total pieces across all garments and sizes for the order you\u2019re quoting now — not your annual program. A rough number is fine.', fr: 'Nombre total de pièces, tous vêtements et tailles confondus, pour la commande que vous faites soumissionner maintenant — pas votre programme annuel. Une estimation suffit.' },
     'rfp.label.volume': { en: 'Annual unit volume', fr: 'Volume annuel d\'unités' },
     'rfp.vol.500': { en: 'Under 500 units', fr: 'Moins de 500 unités' },
     'rfp.vol.500-2000': { en: '500 – 2,000', fr: '500 à 2 000' },

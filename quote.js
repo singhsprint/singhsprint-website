@@ -7,7 +7,7 @@
       color: '#111111',
       colorName: 'Black',
       placement: 'front',
-      service: '',
+      service: 'DTG',
       view: 'front',
       designSrc: null,
       canadianBlanks: false
@@ -198,9 +198,9 @@
       var seq = ++byoPriceSeq;
       var qty   = parseInt(document.getElementById('byoQty')?.value || '50', 10) || 50;
       var sides = parseInt(document.getElementById('printCountInput')?.value || '1', 10) || 1;
-      var method = (state.service || 'DTF').toLowerCase();
+      var method = (state.service || 'DTG').toLowerCase();
       // Map service labels → API methods
-      if (!['embroidery','dtf','dtg','screen'].includes(method)) method = 'dtf';
+      if (!['embroidery','dtf','dtg','screen'].includes(method)) method = 'dtg';
 
       // Collect the customer's actually-selected placement PRESETS
       // (e.g. "full-front", "back-full") so the endpoint can apply
@@ -296,13 +296,14 @@
     }
 
     // ===== SERVICE =====
-    function selectService(el) {
+    function selectService(el, opts) {
       // Works for both the legacy .svc-btn row and the new .method-card grid.
       // Scope to siblings inside the same parent so it doesn't accidentally
       // deselect the Garment Source buttons (which also use .svc-btn).
       el.parentElement.querySelectorAll('.svc-btn, .method-card').forEach(function(o) { o.classList.remove('selected'); });
       el.classList.add('selected');
       state.service = el.dataset.value;
+      if (!(opts && opts.silent)) { try { spShowTurnaround(state.service); } catch (e) {} }
       document.getElementById('serviceInput').value = state.service;
       document.getElementById('sumMethod').textContent = state.service;
       renderBulkPricingTable();
@@ -2496,7 +2497,7 @@
       var garment = state.garment;
       var qty = qtyOverride || (parseInt(document.getElementById('sizeTotal').textContent, 10) || 0);
       var sides = parseInt(document.getElementById('printCountInput').value, 10) || 1;
-      var method = (state.service || 'dtf').toLowerCase();
+      var method = (state.service || 'dtg').toLowerCase();
       if (!garment || qty < 1) { cb(null); return; }
       var key = garment + '|' + qty + '|' + sides + '|' + method;
       if (_startingPriceCache[key] != null) { cb(_startingPriceCache[key]); return; }
@@ -3158,6 +3159,15 @@
         '.sp-cz-ctl{padding:4px 20px 0}' +
         '.sp-cz-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:.85rem;color:#ddd}' +
         '.sp-cz-row input[type=range]{flex:1;accent-color:#e8ff3c}' +
+        // 4-way background key-out control. Mirrors the operator modal
+        // (CustomizeMockupModal.tsx) so the customer and the shop are choosing
+        // from the same options, described the same way.
+        '.sp-cz-bgl{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#8a8a8a;margin:12px 0 6px}' +
+        '.sp-cz-bgs{display:flex;gap:6px;flex-wrap:wrap}' +
+        '.sp-cz-bgb{background:#262626;border:1px solid #333;color:#ccc;border-radius:50px;padding:6px 13px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit}' +
+        '.sp-cz-bgb:hover{border-color:#555;color:#eee}' +
+        '.sp-cz-bgb.active{background:#e8ff3c;color:#1a1a1a;border-color:#e8ff3c}' +
+        '.sp-cz-bgh{font-size:.72rem;color:#8a8a8a;margin:7px 0 2px;min-height:2.2em}' +
         '.sp-cz-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 20px 20px;border-top:1px solid #2a2a2a;margin-top:8px}' +
         '.sp-cz-btn{border:none;border-radius:50px;padding:11px 18px;font-weight:700;font-size:.86rem;cursor:pointer;font-family:inherit}' +
         '.sp-cz-btn--primary{background:#e8ff3c;color:#1a1a1a}' +
@@ -3188,8 +3198,13 @@
     }
 
     // opts: { colorId, garment:{front,back,side}, placements:[presetId], fileFor:fn(presetId)->File|null,
-    //         initial:{boxes,removeBg}, sessionId, onDone:fn(result) }
-    // result: { mockups:[{placement,url}], boxes:{}, removeBg, design:{path,signed_url} }
+    //         initial:{boxes,bgKey,removeBg}, sessionId, onDone:fn(result) }
+    // result: { mockups:[{placement,url}], boxes:{}, bgKey, removeBg, design:{path,signed_url} }
+    //
+    // bgKey is the background key-out mode — 'off' | 'auto' | 'white' | 'black',
+    // the same four the operator has in CustomizeMockupModal.tsx. `removeBg` is
+    // still returned (bgKey !== 'off') because persisted carts and the order
+    // line both carry the older boolean; new code should read bgKey.
     function spOpenCustomizer(opts) {
       spInjectCustomizerCSS();
       var placements = (opts.placements || []).filter(Boolean);
@@ -3224,7 +3239,16 @@
       placements.forEach(function(p) {
         boxes[p] = (opts.initial && opts.initial.boxes && opts.initial.boxes[p]) || spDefaultBox(p);
       });
-      var removeBg = !!(opts.initial && opts.initial.removeBg);
+      // Background key-out mode. Accepts the new bgKey and falls back to the
+      // legacy boolean, which maps to 'auto' — corner-sampling is what those
+      // older carts actually got, so a re-edit reproduces their mockup.
+      var BG_KEYS = ['off', 'white', 'black', 'auto'];
+      var bgKey = (function() {
+        var init = opts.initial || {};
+        if (typeof init.bgKey === 'string' && BG_KEYS.indexOf(init.bgKey) >= 0) return init.bgKey;
+        return init.removeBg ? 'auto' : 'off';
+      })();
+      function bgOn() { return bgKey !== 'off'; }
       var active = 0;
       var objURLs = {};
       function artURL(p) {
@@ -3248,7 +3272,9 @@
           '<div class="sp-cz-stage"><img class="sp-cz-garment" alt="garment"/><img class="sp-cz-art" alt="your design" draggable="false"/></div>' +
           '<div class="sp-cz-ctl">' +
             '<div class="sp-cz-row"><span>Size</span><input type="range" min="0.08" max="0.9" step="0.01"></div>' +
-            '<label class="sp-cz-row" style="cursor:pointer"><input type="checkbox" class="sp-cz-bg"> Remove background around my logo</label>' +
+            '<div class="sp-cz-bgl"></div>' +
+            '<div class="sp-cz-bgs" role="group"></div>' +
+            '<p class="sp-cz-bgh"></p>' +
           '</div>' +
           '<div class="sp-cz-foot">' +
             '<span class="sp-cz-status">Drag your art, set the size, then preview.</span>' +
@@ -3274,11 +3300,48 @@
       var artImg  = overlay.querySelector('.sp-cz-art');
       var stage   = overlay.querySelector('.sp-cz-stage');
       var slider  = overlay.querySelector('input[type=range]');
-      var bgChk   = overlay.querySelector('.sp-cz-bg');
+      var bgLabEl = overlay.querySelector('.sp-cz-bgl');
+      var bgSegEl = overlay.querySelector('.sp-cz-bgs');
+      var bgHelpEl= overlay.querySelector('.sp-cz-bgh');
       var statusEl= overlay.querySelector('.sp-cz-status');
       var previewBtn = overlay.querySelector('.sp-cz-preview');
       var doneBtn = overlay.querySelector('.sp-cz-done');
-      bgChk.checked = removeBg;
+      // Same copy as the operator modal, so a customer and a rep discussing a
+      // mockup are describing the same thing.
+      function czT(key, fallback) {
+        var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+        return v || fallback;
+      }
+      function bgHelpText() {
+        if (bgKey === 'off') return czT('quote.cz.bg.help.off', 'Artwork kept as-is.');
+        if (bgKey === 'auto') return czT('quote.cz.bg.help.auto', 'Knocks out the colour sampled from the artwork corners, everywhere.');
+        return czT('quote.cz.bg.help.' + bgKey, 'Knocks out ' + bgKey + ' everywhere in the artwork.');
+      }
+      function renderBg() {
+        bgLabEl.textContent = czT('quote.cz.bg.label', 'Remove background colour');
+        bgSegEl.setAttribute('aria-label', bgLabEl.textContent);
+        bgSegEl.innerHTML = '';
+        BG_KEYS.forEach(function(k) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'sp-cz-bgb' + (k === bgKey ? ' active' : '');
+          b.setAttribute('aria-pressed', k === bgKey ? 'true' : 'false');
+          b.textContent = czT('quote.cz.bg.' + k, k.charAt(0).toUpperCase() + k.slice(1));
+          b.onclick = function() {
+            if (bgKey === k) return;
+            bgKey = k;
+            renderBg();
+            // The baked previews were rendered with the previous mode, so drop
+            // them: "Use this mockup" must never save an image that doesn't
+            // match the mode the customer is looking at.
+            bakedMockups = [];
+            paint();
+            setBusy(false, czT('quote.cz.bg.restage', 'Background mode changed — tap “Preview on garment” again.'));
+          };
+          bgSegEl.appendChild(b);
+        });
+        bgHelpEl.textContent = bgHelpText();
+      }
 
       var bakedMockups = []; // [{placement,url}]
 
@@ -3367,7 +3430,6 @@
         var b = boxes[curP()]; var n = Number(slider.value);
         b.w = n; b.x = clamp(b.x, 0, 1 - n); positionArt();
       });
-      bgChk.addEventListener('change', function() { removeBg = bgChk.checked; });
 
       function setBusy(busy, msg) {
         previewBtn.disabled = busy; doneBtn.disabled = busy;
@@ -3434,7 +3496,12 @@
                     color_id: opts.colorId, placement: p,
                     design_path: (di && di.path) || null,
                     design_url:  (di && di.signed_url) || null,
-                    box: b, remove_bg: removeBg, session_id: opts.sessionId || null
+                    box: b,
+                    remove_bg: bgOn(),
+                    // Null when off so the server's whitelist takes its 'auto'
+                    // default rather than us asserting a colour we didn't pick.
+                    remove_bg_color: bgOn() ? bgKey : null,
+                    session_id: opts.sessionId || null
                   })
                 }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
                   .then(function(res) {
@@ -3470,13 +3537,14 @@
           var mocks = out.mockups || bakedMockups;
           primaryDesign().then(function(design) {
             if (typeof opts.onDone === 'function') {
-              opts.onDone({ mockups: mocks, boxes: boxes, removeBg: removeBg, design: design });
+              opts.onDone({ mockups: mocks, boxes: boxes, bgKey: bgKey, removeBg: bgOn(), design: design });
             }
             close();
           });
         }).catch(function(e) { setBusy(false, 'Could not save: ' + ((e && e.message) || e)); });
       };
 
+      renderBg();
       paint();
     }
 
@@ -3560,12 +3628,13 @@
         garment: { front: c.mockup_front_url, back: c.mockup_back_url, side: c.mockup_side_url },
         placements: placements,
         fileFor: function(p) { return (typeof placementFiles === 'object' && placementFiles[p] instanceof File) ? placementFiles[p] : null; },
-        initial: { boxes: window.__spSingleBoxes || null, removeBg: !!window.__spSingleRemoveBg },
+        initial: { boxes: window.__spSingleBoxes || null, bgKey: window.__spSingleBgKey || null, removeBg: !!window.__spSingleRemoveBg },
         sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
         onDone: function(res) {
           window.__spSingleMockups   = res.mockups || [];
           window.__spSingleBoxes     = res.boxes;
           window.__spSingleRemoveBg  = res.removeBg;
+          window.__spSingleBgKey     = res.bgKey;
           window.__spSingleDesign    = res.design || null;
           spMarkCustomized(res.mockups);
           spShowInlineMockups(res.mockups, spLaunchSingleCustomizer);
@@ -3611,13 +3680,16 @@
               }
               return null;
             },
-            initial: { boxes: it.design_boxes || null, removeBg: !!it.design_remove_bg },
+            initial: { boxes: it.design_boxes || null, bgKey: it.design_remove_bg_color || null, removeBg: !!it.design_remove_bg },
             sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
             onDone: function(res) {
               SinghsCart.updateSilent(idx, {
                 mockups: res.mockups || [],
                 design_boxes: res.boxes,
                 design_remove_bg: res.removeBg,
+                // Recorded on the cart item so production knows WHICH key-out
+                // was approved, not just that one was.
+                design_remove_bg_color: res.bgKey,
                 design_url: (res.design && res.design.signed_url) || it.design_url || null,
                 design_path: (res.design && res.design.path) || it.design_path || null
               });
@@ -4203,6 +4275,21 @@
     function renderCartItemMethod(idx, current, garmentType) {
       var embroideryOnly = !!(garmentType && EMBROIDERY_ONLY_GARMENTS[garmentType]);
 
+      // A draft saved before DTF was retired still says 'dtf'. The chip no
+      // longer exists, so the row would render with nothing selected. Migrate
+      // to DTG — same press, same engine price, so the quote is unchanged.
+      if (current === 'dtf' && !embroideryOnly) {
+        setTimeout(function () {
+          var c0 = SinghsCart.read();
+          var it0 = c0.items[idx];
+          if (it0 && it0.decoration_type === 'dtf') {
+            SinghsCart.updateSilent(idx, { decoration_type: 'dtg' });
+            renderCartList();
+          }
+        }, 0);
+        current = 'dtg';
+      }
+
       // Auto-snap embroidery-only items to embroidery if they aren't
       // already. We schedule the write for the next tick to avoid
       // mutating SinghsCart in the middle of a renderCartList pass
@@ -4220,9 +4307,12 @@
         current = 'embroidery';
       }
 
+      // 2026-07-31 — DTF retired from the customer-facing picker. It stays
+      // valid in the data model and on jerseys (which render through
+      // jerseyCartItemHtml and never reach this function), but new quotes
+      // pick DTG. Saved carts carrying 'dtf' are migrated below.
       var allOpts = [
         { value: 'dtg',        label: 'DTG' },
-        { value: 'dtf',        label: 'DTF' },
         { value: 'embroidery', label: 'Embroidery' },
         { value: 'not-sure',   label: 'Not sure' },
       ];
@@ -4237,7 +4327,7 @@
       var chips = opts.map(function(o) {
         var active = (current === o.value);
         return '<button type="button" class="ci-method-chip' + (active?' is-active':'') + '"' +
-               ' onclick="onCartItemChange(' + idx + ', {decoration_type: \'' + o.value + '\'})"' +
+               ' onclick="onCartItemChange(' + idx + ', {decoration_type: \'' + o.value + '\'}); spShowTurnaround(\'' + o.value + '\')"' +
                (embroideryOnly ? ' disabled aria-disabled="true"' : '') +
                '>' + o.label + '</button>';
       }).join('');
@@ -4992,7 +5082,7 @@
         // there's room and the comparison is easier at a glance.
         var inner;
         if (isMobile) {
-          inner = buildMethodTable('DTF print', 'dtf', '#f7f6f0') +
+          inner = buildMethodTable('DTG print', 'dtf', '#f7f6f0') +
                   (showEmb ? buildMethodTable('Embroidery', 'embroidery', '#fef6e7') : '');
         } else {
           // Desktop wide table (original layout).
@@ -5000,7 +5090,7 @@
           var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
             '<tr>' +
               '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qty</th>' +
-              '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTF print</th>' +
+              '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTG print</th>' +
               (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Embroidery</th>' : '') +
             '</tr>' +
             '<tr>' + headSidesWide + (showEmb ? headSidesWide : '') + '</tr>' +
@@ -5151,7 +5241,13 @@
           body: JSON.stringify({
             color_id: newColorId, placement: p,
             design_path: dsn.path, design_url: dsn.signed_url || null,
-            box: box, remove_bg: !!it.design_remove_bg, session_id: sessionId
+            box: box,
+            remove_bg: !!it.design_remove_bg,
+            // Reuse the mode the customer approved. Without this, changing the
+            // garment colour silently re-bakes with 'auto' and the mockup can
+            // come back different from the one they signed off on.
+            remove_bg_color: it.design_remove_bg_color || null,
+            session_id: sessionId
           })
         }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
           .then(function(res) {
@@ -5562,7 +5658,7 @@
         'hat','coverall','chore_coat','vest','softshell','pullover_jacket',
         'cardigan','sweater','chef_coat','workshirt','lab_coat','hivis','polo',
       ]);
-      var method = embroideryFirst.has(String(garmentType)) ? 'Embroidery' : 'DTF';
+      var method = embroideryFirst.has(String(garmentType)) ? 'Embroidery' : 'DTG';
       document.querySelectorAll('.method-card').forEach(function(c) {
         var v = c.getAttribute('data-value');
         // Remove any existing recommendation badge so re-prefilling doesn't stack

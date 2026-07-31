@@ -377,9 +377,11 @@
 
   // Three customer-facing methods. Map onto the pricing API's
   // decoration_method: Embroidery → 'embroidery', everything else → 'dtf'.
+  // 2026-07-31 — DTF retired from the customer-facing picker (jerseys keep
+  // it via their own flow). Both print methods still map to the engine's
+  // 'dtf' decoration_method: same press, same per-side cost.
   var DMCZ_METHODS = [
     { id: 'DTG',         name: 'DTG',         desc: 'Soft full-color print',  method: 'dtf' },
-    { id: 'DTF',         name: 'DTF',         desc: 'Durable transfer print', method: 'dtf' },
     { id: 'Embroidery',  name: 'Embroidery',  desc: 'Stitched, premium',      method: 'embroidery' }
   ];
   function dmczMethodApi(id) {
@@ -390,7 +392,7 @@
   // Live customizer state — reset every time the modal opens.
   // boxes: { placementId:{x,y,w} } (% of stage), removeBg: white-knockout blend,
   // activePreview: which placement the inline canvas is currently showing.
-  var _dmczState = { method: 'DTF', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
+  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
 
   // Initialize the customizer for the product the modal just opened on.
   // Reveal/hide the full customizer behind the yellow button. The modal opens
@@ -422,7 +424,7 @@
   function initDmczCustomizer(p) {
     var gt = (p && p.garment_type) || 'tshirt';
     _dmczState = {
-      method: 'DTF',
+      method: 'DTG',
       placements: [dmczDefaultPlacementFor(gt)],
       uploads: {},          // { placementId: { path, signed_url, filename } }
       priceSeq: 0,
@@ -463,6 +465,7 @@
 
   function dmczSelectMethod(id) {
     _dmczState.method = id;
+    try { if (window.spShowTurnaround) window.spShowTurnaround(id); } catch (e) {}
     // Embroidery: drop disallowed placements from the current selection.
     if (id === 'Embroidery') {
       _dmczState.placements = _dmczState.placements.filter(function(pid){ return !EMB_DISALLOWED[pid]; });
@@ -1361,12 +1364,12 @@
 
       // Pull the customizer state. Default placement + DTF still apply
       // even if the customer skipped customizing entirely.
-      const st = (typeof _dmczState === 'object' && _dmczState) ? _dmczState : { method: 'DTF', placements: [], uploads: {} };
+      const st = (typeof _dmczState === 'object' && _dmczState) ? _dmczState : { method: 'DTG', placements: [], uploads: {} };
       let placements = (st.placements || []).slice();
       if (!placements.length) {
         placements = [dmczDefaultPlacementFor(p.garment_type || 'tshirt')];
       }
-      const decoration_type = dmczMethodApi(st.method || 'DTF');   // 'dtf' | 'embroidery'
+      const decoration_type = dmczMethodApi(st.method || 'DTG');   // 'dtf' | 'embroidery'
       const uploads = st.uploads || {};
       // Per-placement upload map for ALL uploaded artwork.
       const placement_designs = {};

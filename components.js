@@ -1226,7 +1226,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "How long does a typical order take?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Standard turnaround is 3–5 business days from approved artwork. Rush (2–3 days) is available with a small surcharge; talk to us before ordering." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Printed orders (DTG/DTF) are 3–5 business days from approved artwork, and rush (2–3 days) is available with a small surcharge. Embroidery takes 7–11 days; talk to us before ordering." }
           },
           {
             "@type": "Question",
@@ -2055,4 +2055,79 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(function(){ send.disabled=false; send.textContent=T('Send text','Envoyer'); consent.textContent = T('Network error - please call us.', 'Erreur reseau - appelez-nous.'); });
     });
   });
+})();
+
+
+/* ===================================================================
+ * Turnaround toast — 2026-07-31.
+ *
+ * Decoration method drives lead time and customers kept missing it:
+ * DTG runs on our own press (3-5 days, same-day rush possible) while
+ * embroidery goes to our contract embroiderer and takes 7-11 days.
+ * Quoting the print lead time on an embroidered order was the biggest
+ * source of over-promised dates, so every method toggle now says it out
+ * loud. Lives here rather than quote.js because the catalog customizer
+ * has its own method chips and needs the same behaviour.
+ *
+ * Renders to <body>: the pickers re-render their surrounding markup on
+ * change, which would destroy an inline node mid-animation.
+ * =================================================================== */
+(function () {
+  if (window.spShowTurnaround) return;
+  var TURNAROUND = {
+    dtg:        { label: 'DTG',        days: '3\u20135 business days', rush: 'same-day rush available' },
+    dtf:        { label: 'DTF',        days: '3\u20135 business days', rush: 'same-day rush available' },
+    embroidery: { label: 'Embroidery', days: '7\u201311 days',         rush: '' }
+  };
+  var CSS = [
+    '.sp-turnaround{position:fixed;left:50%;bottom:28px;z-index:9999;display:flex;align-items:center;gap:10px;',
+    'max-width:calc(100vw - 32px);white-space:nowrap;padding:12px 18px;border-radius:50px;background:#1a1a1a;',
+    'color:#fff;font-size:.82rem;font-weight:600;line-height:1.3;box-shadow:0 8px 28px rgba(0,0,0,.22);opacity:0;',
+    'pointer-events:none;transform:translateX(-50%) translateY(12px);',
+    'transition:opacity .22s ease,transform .22s cubic-bezier(.2,.8,.3,1)}',
+    '.sp-turnaround.is-in{opacity:1;transform:translateX(-50%) translateY(0)}',
+    '.sp-turnaround__dot{width:8px;height:8px;border-radius:50%;background:#e8ff3c;flex:none;',
+    'animation:sp-turn-pulse 1.4s ease-in-out infinite}',
+    '.sp-turnaround__method{color:#e8ff3c}.sp-turnaround__rush{opacity:.72;font-weight:500}',
+    '@keyframes sp-turn-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.45}}',
+    '@media (max-width:520px){.sp-turnaround{bottom:84px;font-size:.76rem;padding:10px 14px;white-space:normal}}',
+    '@media (prefers-reduced-motion:reduce){.sp-turnaround{transition:opacity .01s linear}',
+    '.sp-turnaround__dot{animation:none}}'
+  ].join('');
+  var timer = null;
+  window.spShowTurnaround = function (method) {
+    var info = TURNAROUND[String(method || '').toLowerCase()];
+    var el = document.getElementById('spTurnaround');
+    // 'Not sure' / unknown has no lead time to promise — clear any toast
+    // still on screen instead of leaving the last method's number up.
+    if (!info) {
+      if (timer) clearTimeout(timer);
+      if (el) el.classList.remove('is-in');
+      return;
+    }
+    if (!document.getElementById('spTurnaroundCss')) {
+      var st = document.createElement('style');
+      st.id = 'spTurnaroundCss';
+      st.textContent = CSS;
+      document.head.appendChild(st);
+    }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'spTurnaround';
+      el.className = 'sp-turnaround';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.innerHTML =
+      '<span class="sp-turnaround__dot"></span>' +
+      '<span><span class="sp-turnaround__method">' + info.label + '</span> \u2014 ' + info.days +
+      (info.rush ? '<span class="sp-turnaround__rush"> \u00b7 ' + info.rush + '</span>' : '') +
+      '</span>';
+    el.classList.remove('is-in');
+    void el.offsetWidth;            // restart the entry animation on re-pick
+    el.classList.add('is-in');
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { el.classList.remove('is-in'); }, 4200);
+  };
 })();

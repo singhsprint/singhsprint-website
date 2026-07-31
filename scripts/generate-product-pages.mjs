@@ -249,8 +249,8 @@ const I18N = {
                      fr: 'pour les logos et l\'identité corporative, et' },
   bodyP1Screen:    { en: 'for high-volume single-colour runs.',
                      fr: 'pour les tirages mono-couleur en gros volume.' },
-  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 12 units for embroidery. Standard turnaround is 3–5 business days from approved artwork; rush options (2–3 days) are available with a small surcharge. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
-                     fr: 'Minimums : 5 unités pour DTG/DTF, 12 unités pour la broderie. Délai standard : 3 à 5 jours ouvrables à partir de l\'approbation du visuel ; options urgentes (2 à 3 jours) moyennant un léger supplément. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
+  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 12 units for embroidery. Standard turnaround is 3–5 business days from approved artwork for DTG/DTF, with rush options (2–3 days) available for a small surcharge; embroidery takes 7–11 days. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
+                     fr: 'Minimums : 5 unités pour DTG/DTF, 12 unités pour la broderie. Délai standard en DTG/DTF : 3 à 5 jours ouvrables à partir de l\'approbation du visuel, avec options urgentes (2 à 3 jours) moyennant un léger supplément ; la broderie prend de 7 à 11 jours. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
 
   specsH2:         { en: 'Specifications', fr: 'Spécifications' },
   specBrand:       { en: 'Brand:',         fr: 'Marque :' },
