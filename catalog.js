@@ -246,6 +246,15 @@
     'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',    desc: 'Large front panel',    sil:'apron', rect:{x:12,y:16,w:18,h:22} }
   };
 
+  // Inside-neck DTG tag. Priced as a flat per-piece add-on by the engine
+  // (neck_tag_add_by_tier), NOT as a placement — it's always DTG even on an
+  // embroidered shirt, and it doesn't scale with placement multipliers.
+  // Garments here mirror the rows the migration populated; anything else
+  // resolves to $0 server-side anyway, so this list only controls the UI.
+  var DMCZ_NECK_TAG_GARMENTS = {
+    tshirt: 1, longsleeve: 1, hoodie: 1, polo: 1, crewneck: 1, hivis: 1
+  };
+
   var DMCZ_PLACEMENT_GROUPS_BY_GARMENT = {
     tshirt: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
@@ -408,7 +417,7 @@
   // Live customizer state — reset every time the modal opens.
   // boxes: { placementId:{x,y,w} } (% of stage), removeBg: white-knockout blend,
   // activePreview: which placement the inline canvas is currently showing.
-  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
+  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null, neckTag: false };
 
   // Initialize the customizer for the product the modal just opened on.
   // Reveal/hide the full customizer behind the yellow button. The modal opens
@@ -447,8 +456,10 @@
       boxes: {},            // { placementId: { x, y, w } } — % of the preview stage
       removeBg: false,      // knock out white backgrounds in the live preview
       activePreview: null,  // placement the inline canvas is showing/editing
-      garmentView: 'front'  // which blank-garment photo to show (front/back/side)
+      garmentView: 'front', // which blank-garment photo to show (front/back/side)
+      neckTag: false        // inside-neck DTG tag add-on
     };
+    _dmczNeckTagPerUnit = null;
     // The customizer is always expanded now (no accordion) — just render the
     // method picker, placements, uploads, and the live preview.
     renderDmczMethods();
@@ -614,7 +625,31 @@
       return '<div class="dmcz__group"><div class="dmcz__group-label">' + g.label + '</div>' +
              '<div class="dmcz__chips">' + chips + '</div></div>';
     }).join('');
+    // Inside-neck tag toggle — an add-on, so it sits below the placement
+    // groups rather than inside them.
+    var gtNow = (_detailProduct && _detailProduct.garment_type) || 'tshirt';
+    if (DMCZ_NECK_TAG_GARMENTS[gtNow]) {
+      var ntPrice = (typeof _dmczNeckTagPerUnit === 'number' && _dmczNeckTagPerUnit > 0)
+        ? ' <span class="dmcz__chip-price">+$' + _dmczNeckTagPerUnit.toFixed(2) + '/unit</span>' : '';
+      html += '<div class="dmcz__group"><div class="dmcz__group-label">' +
+                (t('cat.detail.necktaggroup') || 'Inside neck') + '</div>' +
+                '<label class="dmcz__necktag">' +
+                  '<input type="checkbox" id="dmczNeckTag"' + (_dmczState.neckTag ? ' checked' : '') + '>' +
+                  '<span class="dmcz__necktag-body">' +
+                    '<span class="dmcz__necktag-name">' + (t('cat.detail.necktag') || 'Print an inside-neck tag') + ntPrice + '</span>' +
+                    '<span class="dmcz__chip-desc">' + (t('cat.detail.necktagdesc') || 'Your brand on the inside collar, DTG — works with print or embroidery') + '</span>' +
+                  '</span>' +
+                '</label>' +
+              '</div>';
+    }
+
     host.innerHTML = html;
+    var ntEl = document.getElementById('dmczNeckTag');
+    if (ntEl) ntEl.addEventListener('change', function(){
+      _dmczState.neckTag = this.checked;
+      refreshDmczPrice();
+      renderDmczPlacements();
+    });
     // "Where to print" reads wrong on a stitched job.
     var head = document.querySelector('.dmcz__sub[data-i18n="cat.detail.whereprint"]');
     if (head) head.textContent = emb ? 'Where to stitch' : 'Where to print';
@@ -1115,6 +1150,8 @@
   // Live all-in price for the current method/placements/qty. Guarded
   // against races (only the latest request applies, and only if the modal
   // is still on the same product).
+  var _dmczNeckTagPerUnit = null;   // last value the API reported, for the label
+
   function refreshDmczPrice() {
     var p = _detailProduct;
     if (!p) return;
@@ -1148,7 +1185,8 @@
               '&qty=' + encodeURIComponent(qty) +
               '&sides=' + encodeURIComponent(sides) +
               '&decoration_method=' + encodeURIComponent(method) +
-              '&embroidery_placements=' + encodeURIComponent(embPlac);
+              '&embroidery_placements=' + encodeURIComponent(embPlac) +
+              (_dmczState.neckTag ? '&neck_tag=1' : '');
 
     fetch(url, { cache: 'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
@@ -1158,6 +1196,13 @@
         if (!_detailProduct || _detailProduct.product_id !== pidForGuard) return;
         var unit = d && typeof d.unit_price === 'number' ? d.unit_price : null;
         if (unit === null || isNaN(unit)) { fallback(); return; }
+        // Remember the tag rate so the checkbox can show it. It's qty-tiered,
+        // so it changes as they move the quantity.
+        if (d && typeof d.neck_tag_per_unit === 'number' && d.neck_tag_per_unit > 0
+            && d.neck_tag_per_unit !== _dmczNeckTagPerUnit) {
+          _dmczNeckTagPerUnit = d.neck_tag_per_unit;
+          try { renderDmczPlacements(); } catch (_) {}
+        }
         var sideWord = sides === 1
           ? (t('cat.card.oneside') || '1-side print')
           : sides + (t('cat.detail.sideprint') || '-side print');
@@ -1708,6 +1753,10 @@
           placements:        placements,
           sides:             placements.length,
           decoration_type:   decoration_type,
+          // Add-on, not a placement — it never enters `placements`, so it
+          // can't pick up a print side or an embroidery multiplier. The quote
+          // page reads this back and passes neck_tag=1 to /api/pricing.
+          neck_tag:          !!st.neckTag,
           design_path:       design_path,
           design_url:        design_url,
           placement_designs: placement_designs,

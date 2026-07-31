@@ -2855,7 +2855,12 @@
             // they preview — the order still works without them.
             mockups:           Array.isArray(it.mockups) ? it.mockups : [],
             design_url:        it.design_url || null,
-            design_path:       it.design_path || null
+            design_path:       it.design_path || null,
+            // This builder WHITELISTS fields — anything not named here is
+            // dropped on the way to checkout. The tag is priced into the cart
+            // row, so omitting it would quote the customer one number and
+            // charge them another.
+            neck_tag:          !!it.neck_tag
           };
         });
       }
@@ -4771,7 +4776,22 @@
       return (q >= 5 && pool > q) ? pool : 0;
     }
 
-    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride, tierQty) {
+    // Single source of truth for the _priceCache key. liveUnitPrice WRITES
+    // under it and updateCartTotal READS under it; they used to build the
+    // string independently, so any new pricing axis had to be added in two
+    // places or the cart total would silently miss every cached row and fall
+    // back to "Price loading…". Adding the neck tag made that a real risk, so
+    // it's one function now.
+    function spPriceCacheKey(productId, qty, sides, method, placementsKey, tq, neckTag) {
+      return productId + '_' + qty + '_' + sides + '_' + method + '_' + (placementsKey || '') +
+             (tq ? '_t' + tq : '') + (neckTag ? '_nt' : '');
+    }
+
+    // `neckTag` (2026-07-31): inside-neck DTG tag, a flat per-piece add-on
+    // that applies whether the garment is printed or embroidered. It is NOT a
+    // placement — it must not go through embroidery_placements, or it would
+    // pick up placement multipliers and a print side it doesn't have.
+    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride, tierQty, neckTag) {
       // Backwards-compat: older callers pass (productId, qty, sides, cb)
       // with no placements arg. Detect and shift.
       if (typeof placements === 'function') { cb = placements; placements = []; }
@@ -4790,7 +4810,7 @@
       var placementsArr = Array.isArray(placements) ? placements.slice() : [];
       var placementsKey = placementsArr.join(',');
       var tq = spItemTierQty(Number(qty) || 0, Number(tierQty) || 0);
-      var key = productId + '_' + qty + '_' + sides + '_' + method + '_' + placementsKey + (tq ? '_t' + tq : '');
+      var key = spPriceCacheKey(productId, qty, sides, method, placementsKey, tq, neckTag);
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
       // localStorage read-through (6h TTL): the qty ladder + tier cards
       // fire several of these per pick — returning visitors and repeat
@@ -4809,6 +4829,7 @@
         '&decoration_method=' + method;
       if (placementsKey) url += '&embroidery_placements=' + encodeURIComponent(placementsKey);
       if (tq) url += '&tier_qty=' + tq;
+      if (neckTag) url += '&neck_tag=1';
       fetch(url)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
@@ -5059,12 +5080,15 @@
             var comboNote = spItemTierQty(qty, comboPool)
               ? ' <span style="color:#155c33;font-weight:600">· ' + ((_t('quote.cart.item.comborate') || '{n}-pc rate').replace(/\{n\}/g, comboPool)) + '</span>'
               : '';
-            el.innerHTML = '<strong style="color:#1a1a1a">$' + price.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (price*qty).toFixed(2) + '</strong>' + comboNote;
+            var tagNote = it.neck_tag
+              ? ' <span style="color:#666">· ' + ((_t('quote.cart.item.necktag') || 'incl. inside-neck tag')) + '</span>'
+              : '';
+            el.innerHTML = '<strong style="color:#1a1a1a">$' + price.toFixed(2) + '</strong> /unit · subtotal <strong style="color:#1a1a1a">$' + (price*qty).toFixed(2) + '</strong>' + comboNote + tagNote;
           } else {
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        }, it.decoration_type, comboPool);
+        }, it.decoration_type, comboPool, !!it.neck_tag);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
         // Hits /api/pricing/live-matrix which returns engine-derived prices
@@ -5466,7 +5490,7 @@
         // Same combined-tier suffix liveUnitPrice used when it cached this
         // row's price — pooled lines live under the _t<pool> key.
         var _ctq  = spItemTierQty(qty, _cartPool);
-        var p     = _priceCache[it.product_id + '_' + qty + '_' + sides + '_' + method + '_' + pk + (_ctq ? '_t' + _ctq : '')];
+        var p     = _priceCache[spPriceCacheKey(it.product_id, qty, sides, method, pk, _ctq, !!it.neck_tag)];
         if (typeof p === 'number') {
           cartUnitSum  += p;
           cartLineTotal += p * qty;
