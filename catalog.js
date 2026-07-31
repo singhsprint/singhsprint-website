@@ -417,6 +417,24 @@
   // Live customizer state — reset every time the modal opens.
   // boxes: { placementId:{x,y,w} } (% of stage), removeBg: white-knockout blend,
   // activePreview: which placement the inline canvas is currently showing.
+  // Module-level translator.
+  //
+  // `t` in this file is a LOCAL, redeclared inside renderDmczMethods,
+  // renderDmczUploads, dmczHandleUpload, renderDmczPreview and
+  // refreshDmczPrice. Any new code that reaches for it from a function
+  // WITHOUT that local throws ReferenceError — and because the product modal
+  // builds its markup in one pass, a single throw took the whole modal down:
+  // clicking any catalog card did nothing. Ten call sites across three
+  // functions were affected (2026-07-31).
+  //
+  // Same contract as `t` — returns '' when there's no translation, so the
+  // existing `|| 'fallback'` idiom keeps working — but it can't depend on
+  // scope, so this class of bug can't recur.
+  function dmczT(key) {
+    try { return (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : ''; }
+    catch (_) { return ''; }
+  }
+
   var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null, neckTag: false };
 
   // Initialize the customizer for the product the modal just opened on.
@@ -632,12 +650,12 @@
       var ntPrice = (typeof _dmczNeckTagPerUnit === 'number' && _dmczNeckTagPerUnit > 0)
         ? ' <span class="dmcz__chip-price">+$' + _dmczNeckTagPerUnit.toFixed(2) + '/unit</span>' : '';
       html += '<div class="dmcz__group"><div class="dmcz__group-label">' +
-                (t('cat.detail.necktaggroup') || 'Inside neck') + '</div>' +
+                (dmczT('cat.detail.necktaggroup') || 'Inside neck') + '</div>' +
                 '<label class="dmcz__necktag">' +
                   '<input type="checkbox" id="dmczNeckTag"' + (_dmczState.neckTag ? ' checked' : '') + '>' +
                   '<span class="dmcz__necktag-body">' +
-                    '<span class="dmcz__necktag-name">' + (t('cat.detail.necktag') || 'Print an inside-neck tag') + ntPrice + '</span>' +
-                    '<span class="dmcz__chip-desc">' + (t('cat.detail.necktagdesc') || 'Your brand on the inside collar, DTG — works with print or embroidery') + '</span>' +
+                    '<span class="dmcz__necktag-name">' + (dmczT('cat.detail.necktag') || 'Print an inside-neck tag') + ntPrice + '</span>' +
+                    '<span class="dmcz__chip-desc">' + (dmczT('cat.detail.necktagdesc') || 'Your brand on the inside collar, DTG — works with print or embroidery') + '</span>' +
                   '</span>' +
                 '</label>' +
               '</div>';
@@ -927,13 +945,13 @@
     var pid   = _dmczState.activePreview;
     var up    = _dmczState.uploads[pid];
     var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
-    if (!up || !up.path)   { _dmczPreviewMsg = t('cat.detail.prevneedart')  || 'Upload artwork for this placement first.'; renderDmczPreview(); return; }
-    if (!color.color_id)   { _dmczPreviewMsg = t('cat.detail.prevneedcolor')|| 'Pick a garment colour first.'; renderDmczPreview(); return; }
+    if (!up || !up.path)   { _dmczPreviewMsg = dmczT('cat.detail.prevneedart')  || 'Upload artwork for this placement first.'; renderDmczPreview(); return; }
+    if (!color.color_id)   { _dmczPreviewMsg = dmczT('cat.detail.prevneedcolor')|| 'Pick a garment colour first.'; renderDmczPreview(); return; }
     var b = _dmczState.boxes[pid] || { x: 50, y: 40, w: 26 };
     var halfH = (b.w / 100) * (up.ar || 1) / 2;
     function c01(v) { return Math.max(0, Math.min(1, v)); }
     _dmczPreviewBusy = true;
-    _dmczPreviewMsg  = t('cat.detail.prevbusy') || 'Rendering your mockup…';
+    _dmczPreviewMsg  = dmczT('cat.detail.prevbusy') || 'Rendering your mockup…';
     renderDmczPreview();
     fetch(DMCZ_COMPOSE_API, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -949,12 +967,12 @@
         _dmczPreviewBusy = false;
         var url = res.ok && res.j ? (res.j.mockup_url || res.j.url) : null;
         if (url) { _dmczPreviewUrl[pid] = url; _dmczPreviewMsg = ''; }
-        else     { _dmczPreviewMsg = (t('cat.detail.prevfail') || 'Preview failed') + ': ' + ((res.j && res.j.error) || 'unknown error'); }
+        else     { _dmczPreviewMsg = (dmczT('cat.detail.prevfail') || 'Preview failed') + ': ' + ((res.j && res.j.error) || 'unknown error'); }
         renderDmczPreview();
       })
       .catch(function(e){
         _dmczPreviewBusy = false;
-        _dmczPreviewMsg  = (t('cat.detail.prevfail') || 'Preview failed') + ': ' + ((e && e.message) || e);
+        _dmczPreviewMsg  = (dmczT('cat.detail.prevfail') || 'Preview failed') + ': ' + ((e && e.message) || e);
         renderDmczPreview();
       });
   }
@@ -1733,11 +1751,11 @@
         if (composeFails.length) {
           console.warn('[catalog] mockup compose failed:', composeFails);
           _dmczPreviewMsg =
-            (t('cat.detail.prevpartial') || 'Added to your quote, but we could not render a mockup for') + ' ' +
+            (dmczT('cat.detail.prevpartial') || 'Added to your quote, but we could not render a mockup for') + ' ' +
             composeFails.map(function(f){
               return (DMCZ_placementPresets[f.placement] || {}).label || f.placement;
             }).join(', ') + '. ' +
-            (t('cat.detail.prevpartial2') || 'Our team will produce it before printing.');
+            (dmczT('cat.detail.prevpartial2') || 'Our team will produce it before printing.');
           try { renderDmczPreview(); } catch (_) {}
         }
         addToCart(p.product_id, {
