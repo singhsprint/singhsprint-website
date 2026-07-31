@@ -793,15 +793,35 @@
     if (_dmczSleeveBlankReq[key]) return _dmczSleeveBlankReq[key];
     var pr = fetch(DMCZ_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side)
       .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null; _dmczSleeveBlanks[key] = v; return v; })
-      .catch(function(){ _dmczSleeveBlanks[key] = null; return null; });
+      .then(function(j){
+        var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null;
+        // Only memoise a SUCCESS. A 404 (deploy skew) or a generation blip
+        // used to be cached as a permanent null, so one bad moment pinned the
+        // customizer to the placeholder for the rest of the session.
+        if (v) _dmczSleeveBlanks[key] = v; else delete _dmczSleeveBlankReq[key];
+        return v;
+      })
+      .catch(function(){ delete _dmczSleeveBlankReq[key]; return null; });
     _dmczSleeveBlankReq[key] = pr;
     return pr;
   }
   // Kick off the fetch for a sleeve placement; repaint (and seed the box on
   // the real print zone) once it lands.
+  //
+  // The primed latch is load-bearing. This runs from inside
+  // renderDmczPreview(), and its .then() calls renderDmczPreview() again.
+  // Once the blank is memoised, dmczSleeveBlank() resolves synchronously, so
+  // without the latch every paint schedules another paint — an unbounded
+  // microtask loop that locks the tab. It only bites after the first
+  // successful fetch, which is why it showed up as "freezes when I upload".
+  // Set BEFORE the await so re-entry during the in-flight request is
+  // covered too.
+  var _dmczSleevePrimed = {};
   function dmczPrimeSleeveBlank(pid, color) {
     if (!/sleeve/i.test(pid || '') || !color || !color.color_id) return;
+    var pkey = color.color_id + '|' + dmczSleeveSide(pid);
+    if (_dmczSleevePrimed[pkey]) return;
+    _dmczSleevePrimed[pkey] = true;
     dmczSleeveBlank(color.color_id, dmczSleeveSide(pid)).then(function(info) {
       if (!info || !info.url) return;
       if (info.marker && !_dmczBoxTouched[pid]) {

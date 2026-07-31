@@ -3112,10 +3112,12 @@
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(j) {
           var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null;
-          _spSleeveBlanks[key] = v;
+          // Success only — a transient 404 must not pin this session to the
+          // placeholder render for good.
+          if (v) _spSleeveBlanks[key] = v; else delete _spSleeveBlankReq[key];
           return v;
         })
-        .catch(function() { _spSleeveBlanks[key] = null; return null; });
+        .catch(function() { delete _spSleeveBlankReq[key]; return null; });
       _spSleeveBlankReq[key] = pr;
       return pr;
     }
