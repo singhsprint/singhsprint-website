@@ -645,7 +645,8 @@
    */
   function dmczChipHint(pid, selected) {
     var mine = dmczChipCostAbs(pid);
-    if (selected) return mine > 0 ? '+$' + (Math.round(mine * 100) / 100) : 'included';
+    // Same formatter as the deltas, so a $2.50 tag never renders as "+$2.5".
+    if (selected) return dmczFmtDelta(mine);
 
     var pre = DMCZ_placementPresets[pid] || {};
     var sibling = null;
