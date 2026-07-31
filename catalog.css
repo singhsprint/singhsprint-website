@@ -195,12 +195,14 @@
     .detail-modal__preview-cap{font-size:.72rem;color:#888;text-align:center;line-height:1.4}
     /* Right column — controls, scrollable. */
     .detail-modal__controls-col{min-width:0;display:flex;flex-direction:column}
-    /* Unit price pins to the top of the controls column. Every control
-       below it (qty, method, placements, neck tag) moves the number, and
-       it used to scroll out of view exactly when it started changing. */
-    .detail-modal__price{position:sticky;top:0;z-index:6;font-size:1.05rem;font-weight:600;color:#1a1a1a;margin:0 0 8px;padding:6px 0 8px;background:#fff;border-bottom:1px solid transparent;transition:box-shadow .18s ease,border-color .18s ease}
-    .detail-modal__price strong{font-size:1.45rem;font-weight:800;letter-spacing:-.015em}
-    #dmczCustomizer.is-customizing .detail-modal__price{border-bottom-color:#e8e6df;box-shadow:0 6px 10px -8px rgba(0,0,0,.28)}
+    /* Unit price lives in the modal header, beside the title. Every control
+       in the panel below (qty, method, placements, neck tag) moves this
+       number, so it has to stay on screen — but pinning it inside the
+       scrolling column meant it floated across the customization card. The
+       header is already fixed and never overlaps anything. */
+    .detail-modal__price{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;font-size:.82rem;font-weight:600;color:#666;line-height:1.25}
+    .detail-modal__price strong{display:block;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;color:#1a1a1a;line-height:1.1}
+    .detail-modal__price-sub{display:block;font-size:.72rem;color:#888;font-weight:500;margin-top:1px}
     /* Gallery — main image + thumbnail strip */
     .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
     .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}
@@ -336,6 +338,12 @@
     .dmcz__stage--zoom .dmcz__stage-garment{cursor:zoom-in}
     .dmcz__stage-garment{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
     .dmcz__stage--loading{background:linear-gradient(110deg,#f4f2eb 30%,#ece9df 50%,#f4f2eb 70%);background-size:200% 100%;animation:dmczShimmer 1.15s linear infinite}
+    /* Server composite in flight. The staged view IS what the composite
+       will look like, so hold it on screen and just mark it busy rather
+       than tearing it down for a skeleton. */
+    .dmcz__stage--busy img{filter:brightness(.95) saturate(.92)}
+    .dmcz__stage--busy::after{content:'';position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(0,0,0,.14);border-top-color:#1a1a1a;border-radius:50%;animation:dmczSpin .8s linear infinite;z-index:4;pointer-events:none}
+    @keyframes dmczSpin{to{transform:rotate(360deg)}}
     @keyframes dmczShimmer{to{background-position:-200% 0}}
     .dmcz__controls{display:flex;flex-direction:column;gap:9px;max-width:300px;margin:11px auto 0}
     .dmcz__size-row{display:flex;align-items:center;gap:10px;font-size:.72rem;color:#888}
@@ -389,6 +397,9 @@
     .dmcz__upload-status--err{color:#a00}
     @media (max-width:640px){
       .dmcz__methods{grid-template-columns:1fr}
+      /* Header row gets tight on a phone — shrink the price, not the title. */
+      .detail-modal__price strong{font-size:1.2rem}
+      .detail-modal__price-sub{font-size:.66rem}
     }
     /* Stack the two-column body under ~760px: live preview on top, controls
        below. Mirrors the jersey builder's single-column collapse. */

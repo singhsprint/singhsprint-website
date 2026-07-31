@@ -465,9 +465,6 @@
     var open = body.classList.toggle('open');
     if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (bar) { bar.classList.toggle('open', open); bar.setAttribute('aria-expanded', open ? 'true' : 'false'); }
-    // Emphasise the pinned unit price while the customizer is open.
-    var col = document.getElementById('dmczCustomizer');
-    if (col) col.classList.toggle('is-customizing', open);
     // Scroll the bar (the drawer's origin) into view so the reveal is visible.
     if (open) setTimeout(function(){ try { (bar || body).scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {} }, 120);
   }
@@ -481,8 +478,6 @@
     if (body) body.classList.remove('open');
     if (btn) btn.setAttribute('aria-expanded', 'false');
     if (bar) { bar.classList.remove('open'); bar.setAttribute('aria-expanded', 'false'); }
-    var col2 = document.getElementById('dmczCustomizer');
-    if (col2) col2.classList.remove('is-customizing');
   }
 
   function initDmczCustomizer(p) {
@@ -1040,6 +1035,27 @@
   var _dmczPreviewBusy   = false;
   var _dmczBoxTouched    = {};   // placement -> customer has moved/resized it
 
+  // Garment srcs we have already painted once. Without this every repaint
+  // re-applied .dmcz__stage--loading and the stage shimmered blank for a
+  // frame — including on the repaint that starts a composite render, which
+  // is exactly when the customer needs to keep seeing their layout.
+  var _dmczImgSeen = {};
+  window.dmczImgSeen = function (img) {
+    try { _dmczImgSeen[img.getAttribute('data-key') || img.src] = 1; } catch (_) {}
+    if (img.parentNode) img.parentNode.classList.remove('dmcz__stage--loading');
+  };
+
+  /**
+   * Header price block. Two lines — the figure, then the qualifier — because
+   * the header is a fixed-height row and the old single inline string
+   * ("From $22.45 /unit · 1-side print") wrapped to three lines there.
+   */
+  function dmczPriceMarkup(unit, perUnit, sideWord) {
+    return '<strong>$' + Number(unit).toFixed(2) + '</strong>' +
+           '<span class="detail-modal__price-sub">' + esc(perUnit) +
+           (sideWord ? ' \u00b7 ' + esc(sideWord) : '') + '</span>';
+  }
+
   // Any edit invalidates a baked preview: it was rendered from the old box.
   function dmczInvalidatePreview(pid) {
     if (pid) delete _dmczPreviewUrl[pid]; else _dmczPreviewUrl = {};
@@ -1068,11 +1084,34 @@
       })
     }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
       .then(function(res){
-        _dmczPreviewBusy = false;
         var url = res.ok && res.j ? (res.j.mockup_url || res.j.url) : null;
-        if (url) { _dmczPreviewUrl[pid] = url; _dmczPreviewMsg = ''; }
-        else     { _dmczPreviewMsg = (dmczT('cat.detail.prevfail') || 'Preview failed') + ': ' + ((res.j && res.j.error) || 'unknown error'); }
-        renderDmczPreview();
+        if (!url) {
+          _dmczPreviewBusy = false;
+          _dmczPreviewMsg  = (dmczT('cat.detail.prevfail') || 'Preview failed') + ': ' + ((res.j && res.j.error) || 'unknown error');
+          renderDmczPreview();
+          return;
+        }
+        // Hold the staged view (dimmed, spinner) until the composite has
+        // actually DECODED, not merely arrived. Swapping the <img> src the
+        // moment the JSON lands tore the stage down to a shimmer for however
+        // long the PNG took to fetch — the customer lost sight of their own
+        // layout at the one moment they are checking it. Preloading means the
+        // swap is a single clean frame.
+        var pre  = new Image();
+        var done = false;
+        var land = function () {
+          if (done) return;
+          done = true;
+          _dmczImgSeen[url]    = 1;
+          _dmczPreviewBusy     = false;
+          _dmczPreviewUrl[pid] = url;
+          _dmczPreviewMsg      = '';
+          renderDmczPreview();
+        };
+        pre.onload = pre.onerror = land;
+        // Never strand the spinner on a stalled image request.
+        setTimeout(land, 12000);
+        pre.src = url;
       })
       .catch(function(e){
         _dmczPreviewBusy = false;
@@ -1216,8 +1255,11 @@
       '</div>' : '';
 
     host.innerHTML = tabs +
-      '<div class="dmcz__stage dmcz__stage--loading' + (hasArt ? '' : ' dmcz__stage--zoom') + '" id="dmczStage">' +
-        '<img class="dmcz__stage-garment" src="' + esc(garment) + '" alt="" loading="eager" decoding="async" onload="this.parentNode.classList.remove(\'dmcz__stage--loading\')">' +
+      '<div class="dmcz__stage' +
+        (_dmczImgSeen[garment] ? '' : ' dmcz__stage--loading') +
+        (_dmczPreviewBusy ? ' dmcz__stage--busy' : '') +
+        (hasArt ? '' : ' dmcz__stage--zoom') + '" id="dmczStage">' +
+        '<img class="dmcz__stage-garment" src="' + esc(garment) + '" data-key="' + esc(garment) + '" alt="" loading="eager" decoding="async" onload="dmczImgSeen(this)">' +
         artImg +
       '</div>' +
       viewStrip +
@@ -1300,7 +1342,7 @@
 
     var fallback = function() {
       priceEl.innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
-        ? (t('cat.card.from') || 'From') + ' <strong>$' + p.price_from.toFixed(2) + '</strong> ' + (t('cat.card.perunit') || '/unit')
+        ? dmczPriceMarkup(p.price_from, t('cat.card.perunit') || '/unit', '')
         : '<strong>' + (t('cat.card.quote-on-request') || 'Quote on request') + '</strong>';
     };
 
@@ -1331,9 +1373,7 @@
         var sideWord = sides === 1
           ? (t('cat.card.oneside') || '1-side print')
           : sides + (t('cat.detail.sideprint') || '-side print');
-        priceEl.innerHTML = (t('cat.card.from') || 'From') + ' <strong>$' + unit.toFixed(2) + '</strong> ' +
-          (t('cat.card.perunit') || '/unit') +
-          ' · <span style="color:#888;font-weight:500">' + sideWord + '</span>';
+        priceEl.innerHTML = dmczPriceMarkup(unit, t('cat.card.perunit') || '/unit', sideWord);
       })
       .catch(function(){
         if (seq !== _dmczState.priceSeq) return;
@@ -1382,7 +1422,7 @@
     document.getElementById('detailModalTitle').textContent = p.name || '';
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     document.getElementById('detailModalPrice').innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
-      ? (_t('cat.card.from') || 'From') + ' <strong>$' + p.price_from.toFixed(2) + '</strong> ' + (_t('cat.card.perunit') || '/unit') + ' · <span style="color:#888;font-weight:500">' + (_t('cat.card.oneside') || '1-side print') + '</span>'
+      ? dmczPriceMarkup(p.price_from, _t('cat.card.perunit') || '/unit', _t('cat.card.oneside') || '1-side print')
       : '<strong>' + (_t('cat.card.quote-on-request') || 'Quote on request') + '</strong>';
     const metaBits = [];
     if (p.weight_oz)     metaBits.push(p.weight_oz + ' oz');
