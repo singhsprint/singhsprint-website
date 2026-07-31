@@ -1221,7 +1221,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "What is the minimum order quantity?",
-            "acceptedAnswer": { "@type": "Answer", "text": "We start at 5 units for DTG/DTF and 12 units for embroidery. Below that we still help, but pricing shifts to one-off retail rates." }
+            "acceptedAnswer": { "@type": "Answer", "text": "We start at 5 units for DTG/DTF and 10 units for embroidery. Embroidery has a hard 10-piece minimum; below that we can still print the same design in DTG." }
           },
           {
             "@type": "Question",

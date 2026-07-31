@@ -234,6 +234,12 @@
       <div class="section-title" data-step="2"  data-i18n="rfp.sect.order">La commande</div>
 
       <div class="form-group">
+        <label for="firstOrderQty"><span data-i18n="rfp.label.firstqty">Combien de pi&egrave;ces pour cette premi&egrave;re commande&nbsp;?</span> <span class="req">*</span></label>
+        <input type="number" id="firstOrderQty" name="first_order_qty" required min="1" max="100000" step="1" inputmode="numeric" placeholder="ex. 120" data-i18n-placeholder="rfp.ph.firstqty">
+        <p class="hint" data-i18n="rfp.hint.firstqty">Nombre total de pi&egrave;ces, tous v&ecirc;tements et tailles confondus, pour la commande que vous faites soumissionner maintenant &mdash; pas votre programme annuel. Une estimation suffit.</p>
+      </div>
+
+      <div class="form-group">
         <label><span  data-i18n="rfp.label.volume">Volume annuel d'unités</span> <span class="req">*</span></label>
         <div class="pill-group" data-name="volume">
           <span class="pill" data-value="<500"  data-i18n="rfp.vol.500">Moins de 500 unités</span>
@@ -402,26 +408,37 @@
   var SUPABASE_URL = 'https://ptrqsjexrbyupexhcjdr.supabase.co';
   var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cnFzamV4cmJ5dXBleGhjamRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODg5NzgsImV4cCI6MjA5MTc2NDk3OH0.aqYJAXmmCEjtHU97UDTLZZlWwoS9ERldFzxTvunZEgA';
 
-  // Volume-tier midpoints for the CRM estimated_value
-  var volumeMidpoint = {
-    '<500': 250, '500-2000': 1250, '2000-10000': 6000, '10000+': 15000
-  };
-  var perUnitGuess = 16; // conservative midpoint of bulk pricing range — refined when operator quotes
+  // The CRM gets NO estimated value from this form. It used to multiply an
+  // annual-volume BAND MIDPOINT by a flat $16/unit, which made every small RFP
+  // land in the pipeline as a 250-piece / $4,000 lead and inflated the forecast.
+  // Quantity now comes from a real field (first_order_qty); the money figure is
+  // left empty for a rep to quote, because a guessed dollar value in a pipeline
+  // is worse than no dollar value at all.
+  //
+  // The Meta Pixel is the ONE exception, below. Its `value` is not a forecast —
+  // it's a relative bid signal the ad set optimizes against, and it needs to be
+  // present and consistent or value-based optimization has nothing to work with.
+  // So the rough per-unit figure survives for the pixel only, and never reaches
+  // the CRM.
+  var PIXEL_PER_UNIT_CAD = 16; // rough bid signal for Meta only — NOT a quote
 
   document.getElementById('rfpForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var form = this;
 
     var volume = document.getElementById('annual_volume').value;
-    var units = volumeMidpoint[volume] || 500;
-    var estValue = units * perUnitGuess;
+    // The quantity for THIS order, as typed by the customer. Required field, so a
+    // parse failure means something is badly wrong — send nothing rather than a guess.
+    var qtyRaw = parseInt(document.getElementById('firstOrderQty').value, 10);
+    var units = (isFinite(qtyRaw) && qtyRaw > 0) ? Math.min(qtyRaw, 100000) : null;
 
     // Build payload for the CRM. source = 'rfp' so it routes to the B2B pipeline.
     var notes = [
       'RFP intake.',
       'Industry: ' + (document.getElementById('industry').value || '—'),
       'Role: ' + (document.getElementById('contactRole').value || '—'),
-      'Volume: ' + volume,
+      'First order qty: ' + (units !== null ? units + ' pcs' : '—'),
+      'Annual volume band: ' + volume,
       'Cadence: ' + (document.getElementById('order_cadence').value || '—'),
       'Terms: ' + (document.getElementById('payment_terms').value || '—'),
       'Compliance: ' + (document.getElementById('compliance').value || 'none'),
@@ -443,7 +460,7 @@
       phone: document.getElementById('phone').value || '',
       source: 'rfp',
       status: 'new',
-      estimated_value: estValue,
+      // estimated_value intentionally omitted -> stays NULL for a rep to quote.
       notes: notes + utmBits
     };
 
@@ -472,13 +489,17 @@
         phone:        payload.phone,
         company:      payload.company_name,
         timeline:     document.getElementById('targetDate').value || null,
-        total_qty:    units,
-        estimated_total: estValue,
+        // Omit rather than send null: /api/inbound clamps with Number(v), and
+        // Number(null) === 0, which would write a 0-piece order instead of blank.
+        // estimated_total is never sent, for the same reason: a 0 would read as a
+        // real $0 quote in the pipeline, which is worse than an empty cell.
+        ...(units !== null ? { total_qty: units } : {}),
         notes:        notes,
         meta: {
           industry:        document.getElementById('industry').value || null,
           contact_role:    document.getElementById('contactRole').value || null,
           annual_volume:   volume,
+          first_order_qty: units,
           order_cadence:   document.getElementById('order_cadence').value || null,
           payment_terms:   document.getElementById('payment_terms').value || null,
           compliance:      document.getElementById('compliance').value || null,
@@ -502,7 +523,10 @@
         fbq('track', 'Lead', {
           content_name: 'RFP — ' + (document.getElementById('industry').value || 'B2B'),
           content_category: 'B2B Procurement',
-          value: estValue,
+          // Bid signal only — see PIXEL_PER_UNIT_CAD above. Omitted rather than
+          // sent as 0 when the qty didn't parse, so a bad submit can't teach the
+          // ad set that RFP leads are worthless.
+          value: (units !== null) ? units * PIXEL_PER_UNIT_CAD : undefined,
           currency: 'CAD'
         });
       }

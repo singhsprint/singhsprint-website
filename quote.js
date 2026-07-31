@@ -5052,6 +5052,16 @@
         var fmtEmb = function(cell, r) {
           return (r.qty_min < EMB_MIN_QTY) ? '—' : fmt(cell);
         };
+        // 2026-07-31 (slice 81) — the engine now IGNORES `sides` for
+        // embroidery and prices the sum of placement multipliers instead, so
+        // the Nth column of the embroidery table is N stitched LOCATIONS,
+        // not N sides. A stitched job has no front/back press step to pay
+        // for; calling them sides implied a per-side cost that no longer
+        // exists and read as a different number from the placement picker.
+        var colUnit = function(n, accessor) {
+          var word = (accessor === 'embroidery') ? ' location' : ' side';
+          return n + word + (n > 1 ? 's' : '');
+        };
         var qtyLabel = function(r) {
           return r.qty_max == null ? (r.qty_min + '+') : (r.qty_min + '–' + r.qty_max);
         };
@@ -5068,7 +5078,7 @@
         // colour convention (cream for DTF, peach for Embroidery).
         function buildMethodTable(label, accessor, bg) {
           var headSides = sidesList.map(function(s){
-            return '<th style="text-align:right;padding:5px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>';
+            return '<th style="text-align:right;padding:5px 8px;font-weight:600">' + colUnit(s, accessor) + '</th>';
           }).join('');
           var body = matrix.rows.map(function(r) {
             var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);
@@ -5112,14 +5122,17 @@
                   (showEmb ? buildMethodTable('Embroidery', 'embroidery', '#fef6e7') : '');
         } else {
           // Desktop wide table (original layout).
-          var headSidesWide = sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + s + ' side' + (s>1?'s':'') + '</th>'; }).join('');
+          var headWide = function(accessor) {
+            return sidesList.map(function(s){ return '<th style="text-align:right;padding:6px 8px;font-weight:600">' + colUnit(s, accessor) + '</th>'; }).join('');
+          };
+          var headSidesWide = headWide('dtf');
           var head = '<thead style="font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:#888">' +
             '<tr>' +
               '<th rowspan="2" style="text-align:left;padding:6px 8px;font-weight:600">Qty</th>' +
               '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#f7f6f0;border-radius:6px 6px 0 0">DTG print</th>' +
               (showEmb ? '<th colspan="' + sidesList.length + '" style="text-align:center;padding:6px 8px;font-weight:600;background:#fef6e7;border-radius:6px 6px 0 0;border-left:2px solid #fff">Embroidery</th>' : '') +
             '</tr>' +
-            '<tr>' + headSidesWide + (showEmb ? headSidesWide : '') + '</tr>' +
+            '<tr>' + headSidesWide + (showEmb ? headWide('embroidery') : '') + '</tr>' +
           '</thead>';
           var body = matrix.rows.map(function(r) {
             var isActive = activeQty >= r.qty_min && (r.qty_max == null || activeQty <= r.qty_max);

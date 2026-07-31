@@ -541,6 +541,15 @@
     var d = _dmczDeltas.deltas || {};
     return typeof d[pid] === 'number' ? d[pid] : 0;
   }
+  // Embroidery only: the size multiplier behind a placement, recovered from
+  // the server's delta (which is multiplier x the extra-location rate).
+  // Unknown placements fall back to a 1x small location, matching the engine.
+  function dmczEmbMult(pid) {
+    var rate = _dmczDeltas.side_add || 0;
+    if (!rate) return 1;
+    var d = dmczDecoDelta(pid);
+    return d > 0 ? d / rate : 1;
+  }
   // Marginal cost of ADDING this placement from the current selection.
   // Front-family presets (loc 'front') are the primary print — their hint is
   // the size premium only. Any other location (back, sleeves) adds a print
@@ -556,7 +565,22 @@
     // same as a chest hit of the same size, so the print side_add must not
     // apply. See /api/pricing/placement-summary.
     if (_dmczState.method === 'Embroidery') {
-      return delta > 0 ? '+$' + delta : '';
+      // The engine prices Sum(multipliers) with the FIRST 1.0 unit already
+      // inside the base price, so a chip's real cost depends on what is
+      // already selected:
+      //     add = (max(1, total + m) - max(1, total)) x rate
+      // With an empty picker a 1x location is free and a 2x one costs a
+      // single extra location, not two. The old `m x rate` hint overstated
+      // Left Chest by $10 and Full Front by $10 on the first pick.
+      var rate = _dmczDeltas.side_add || 0;
+      if (!rate) return '';
+      var total = 0;
+      for (var i = 0; i < _dmczState.placements.length; i++) {
+        total += dmczEmbMult(_dmczState.placements[i]);
+      }
+      var embAdd = (Math.max(1, total + dmczEmbMult(pid)) - Math.max(1, total)) * rate;
+      embAdd = Math.round(embAdd * 100) / 100;
+      return embAdd > 0 ? '+$' + embAdd : 'included';
     }
     var isPrimarySide = (pre.loc === 'front');
     var add = isPrimarySide ? delta : (_dmczDeltas.side_add + delta);
