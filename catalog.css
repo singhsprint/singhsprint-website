@@ -333,11 +333,6 @@
     /* In-modal "Preview on garment" — added 2026-07-31 so the catalog can show
        the real composite before Add to quote, and surface a failed render
        instead of silently adding an item with no mockup. */
-    .dmcz__necktag{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:1.5px solid #e8e6df;border-radius:12px;background:#fff;cursor:pointer;transition:border-color .15s}
-    .dmcz__necktag:hover{border-color:#c9c6bb}
-    .dmcz__necktag input{margin-top:2px;flex:none}
-    .dmcz__necktag-body{display:flex;flex-direction:column;gap:2px}
-    .dmcz__necktag-name{font-size:.78rem;font-weight:600;color:#1a1a1a}
     .dmcz__preview-row{display:flex;flex-direction:column;gap:6px;align-items:stretch}
     .dmcz__preview-row button{appearance:none;border:1px solid #1a1a1a;background:#fff;color:#1a1a1a;border-radius:999px;padding:7px 14px;font:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
     .dmcz__preview-row button:hover:not(:disabled){background:#1a1a1a;color:#fff}

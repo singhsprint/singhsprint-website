@@ -3108,12 +3108,18 @@
     var _spSleeveBlanks   = {};   // "<colorId>|<side>" -> {url,marker} | null
     var _spSleeveBlankReq = {};   // in-flight promises, so tabs don't refetch
     function spSleeveSide(pid) { return /right/i.test(pid) ? 'right' : 'left'; }
-    function spSleeveBlank(colorId, side) {
+    /** Which generated view a placement needs, or null if it needs neither. */
+    function spBlankView(pid) {
+      if (pid === 'neck-tag') return 'neck';
+      return /sleeve/i.test(pid || '') ? 'sleeve' : null;
+    }
+    function spSleeveBlank(colorId, side, view) {
       if (!colorId) return Promise.resolve(null);
-      var key = colorId + '|' + side;
+      view = view || 'sleeve';
+      var key = colorId + '|' + side + '|' + view;
       if (Object.prototype.hasOwnProperty.call(_spSleeveBlanks, key)) return Promise.resolve(_spSleeveBlanks[key]);
       if (_spSleeveBlankReq[key]) return _spSleeveBlankReq[key];
-      var pr = fetch(SP_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side)
+      var pr = fetch(SP_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side + '&view=' + view)
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(j) {
           var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null;
@@ -3282,8 +3288,9 @@
       // lands a second later.
       var userMovedBox = {};
       placements.forEach(function(p) {
-        if (!/sleeve/i.test(p)) return;
-        spSleeveBlank(opts.colorId, spSleeveSide(p)).then(function(info) {
+        var _v = spBlankView(p);
+        if (!_v) return;
+        spSleeveBlank(opts.colorId, spSleeveSide(p), _v).then(function(info) {
           if (!info || !info.url) return;      // generation failed - keep placeholder
           sleeveBlank[p] = info.url;
           var hadSaved = !!(opts.initial && opts.initial.boxes && opts.initial.boxes[p]);
@@ -3414,6 +3421,11 @@
       function garmentFor(p) {
         var g = opts.garment || {};
         var side = spSideFor(p);
+        if (p === 'neck-tag') {
+          // No catalog photo shows the inside of a collar — always the
+          // generated blank. Front photo only while it loads.
+          return sleeveBlank[p] || g.front || g.back || '';
+        }
         if (side === 'side' && !g.side) {
           // The colour-matched blank once it arrives; the generic render only
           // while it's loading, or if generation failed. Staging on the same
@@ -3709,7 +3721,13 @@
       var it = items[idx];
       if (!it) return;
       if (!it.color_id) { alert('This item needs a colour selected first.'); return; }
-      var placements = (Array.isArray(it.placements) && it.placements.length) ? it.placements : ['center-chest'];
+      var placements = (Array.isArray(it.placements) && it.placements.length) ? it.placements.slice() : ['center-chest'];
+      // The inside-neck tag is deliberately kept OUT of it.placements so the
+      // engine never bills it as a print side — the neck_tag flag carries it.
+      // But everything downstream is keyed by placement, so re-add it here or
+      // its artwork tab, its collar preview and its recolour would all be
+      // unreachable even though the design is sitting in placement_designs.
+      if (it.neck_tag && placements.indexOf('neck-tag') < 0) placements.push('neck-tag');
       fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) {
@@ -5332,7 +5350,13 @@
       if (!it || !newColorId) return;
       var hasArt = (it.placement_designs && Object.keys(it.placement_designs).length) || it.design_path;
       if (!hasArt || !it.design_boxes) return;
-      var placements = (Array.isArray(it.placements) && it.placements.length) ? it.placements : ['center-chest'];
+      var placements = (Array.isArray(it.placements) && it.placements.length) ? it.placements.slice() : ['center-chest'];
+      // The inside-neck tag is deliberately kept OUT of it.placements so the
+      // engine never bills it as a print side — the neck_tag flag carries it.
+      // But everything downstream is keyed by placement, so re-add it here or
+      // its artwork tab, its collar preview and its recolour would all be
+      // unreachable even though the design is sitting in placement_designs.
+      if (it.neck_tag && placements.indexOf('neck-tag') < 0) placements.push('neck-tag');
       var sessionId = (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : (localStorage.getItem('singhsCartId_v1') || null);
 
       // Resolve the persisted design for a placement: per-placement design first,

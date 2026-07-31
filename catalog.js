@@ -229,6 +229,13 @@
     'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
     'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
     'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood',              desc: 'On the hood itself',    sil:'hoodie',      rect:{x:17,y:1, w:8, h:4}  },
+    // Inside-neck tag. A real placement so it gets a chip, an artwork slot and
+    // a preview through the same code as every other location — but `addon`
+    // marks it as priced by its own flat per-piece rate, NOT by the placement
+    // machinery. dmczPricingPlacements() strips it before anything reaches
+    // /api/pricing, or the engine would bill it as a print side and look up an
+    // embroidery multiplier it has no business having.
+    'neck-tag':     { loc: 'neck',         size: 'small',       cx: 0.50, cy: 0.30, label: 'Inside Neck Tag',   desc: 'Inside the collar, DTG', sil:'shirt-back',  rect:{x:16,y:6, w:10,h:5}, addon: 'neck_tag' },
     'cap-front':       { loc: 'front', size: 'medium',      cx: 0.50, cy: 0.45, label: 'Cap Front',        desc: 'Front panel, ~3"',     sil:'cap', rect:{x:16,y:18,w:10,h:7} },
     'cap-left-side':   { loc: 'front', size: 'left-chest',  cx: 0.20, cy: 0.45, label: 'Left Side Panel',  desc: 'Side hit, ~2"',        sil:'cap', rect:{x:6, y:22,w:6, h:5} },
     'cap-right-side':  { loc: 'front', size: 'right-chest', cx: 0.80, cy: 0.45, label: 'Right Side Panel', desc: 'Side hit, ~2"',        sil:'cap', rect:{x:30,y:22,w:6, h:5} },
@@ -246,30 +253,24 @@
     'apron-full':      { loc: 'front', size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',    desc: 'Large front panel',    sil:'apron', rect:{x:12,y:16,w:18,h:22} }
   };
 
-  // Inside-neck DTG tag. Priced as a flat per-piece add-on by the engine
-  // (neck_tag_add_by_tier), NOT as a placement — it's always DTG even on an
-  // embroidered shirt, and it doesn't scale with placement multipliers.
-  // Garments here mirror the rows the migration populated; anything else
-  // resolves to $0 server-side anyway, so this list only controls the UI.
-  var DMCZ_NECK_TAG_GARMENTS = {
-    tshirt: 1, longsleeve: 1, hoodie: 1, polo: 1, crewneck: 1, hivis: 1
-  };
-
   var DMCZ_PLACEMENT_GROUPS_BY_GARMENT = {
     tshirt: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
       { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+      { label: 'Inside neck', ids: ['neck-tag'] }
     ],
     longsleeve: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
       { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+      { label: 'Inside neck', ids: ['neck-tag'] }
     ],
     polo: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
       { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+      { label: 'Inside neck', ids: ['neck-tag'] }
     ],
     performance_shirt: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
@@ -283,18 +284,21 @@
     ],
     hivis: [
       { label: 'Front',   ids: ['left-chest', 'center-chest'] },
-      { label: 'Back',    ids: ['back-across', 'back-full'] }
+      { label: 'Back',    ids: ['back-across', 'back-full'] },
+      { label: 'Inside neck', ids: ['neck-tag'] }
     ],
     hoodie: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
       { label: 'Hood',    ids: ['hood'] },
       { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+      { label: 'Inside neck', ids: ['neck-tag'] }
     ],
     crewneck: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front', 'oversized'] },
       { label: 'Back',    ids: ['back-top', 'back-across', 'back-full'] },
-      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] }
+      { label: 'Sleeves', ids: ['left-sleeve', 'right-sleeve'] },
+      { label: 'Inside neck', ids: ['neck-tag'] }
     ],
     sweater: [
       { label: 'Front',   ids: ['left-chest', 'center-chest', 'full-front'] },
@@ -384,6 +388,18 @@
   // these are too large for an embroidery hoop.
   var EMB_DISALLOWED = { 'oversized':1, 'back-full':1 };
 
+  // Placements priced as flat per-piece add-ons rather than through the
+  // placement/sides machinery. Value = the /api/pricing query flag.
+  var DMCZ_ADDON_PLACEMENTS = { 'neck-tag': 'neck_tag' };
+  function dmczIsAddon(pid) { return !!DMCZ_ADDON_PLACEMENTS[pid]; }
+  function dmczPricingPlacements(list) {
+    return (list || []).filter(function(pid){ return !dmczIsAddon(pid); });
+  }
+  function dmczAddonParams(list) {
+    return (list || []).filter(dmczIsAddon)
+      .map(function(pid){ return '&' + DMCZ_ADDON_PLACEMENTS[pid] + '=1'; }).join('');
+  }
+
   // 2026-07-31 — embroidery talks in hoop sizes, not ink coverage. The market
   // sells three bands (small 4x4 / medium 7x7 / large 11x7) and prices one
   // size step exactly like one extra location, which is what the engine's
@@ -435,7 +451,7 @@
     catch (_) { return ''; }
   }
 
-  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null, neckTag: false };
+  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
 
   // Initialize the customizer for the product the modal just opened on.
   // Reveal/hide the full customizer behind the yellow button. The modal opens
@@ -474,8 +490,7 @@
       boxes: {},            // { placementId: { x, y, w } } — % of the preview stage
       removeBg: false,      // knock out white backgrounds in the live preview
       activePreview: null,  // placement the inline canvas is showing/editing
-      garmentView: 'front', // which blank-garment photo to show (front/back/side)
-      neckTag: false        // inside-neck DTG tag add-on
+      garmentView: 'front'  // which blank-garment photo to show (front/back/side)
     };
     _dmczNeckTagPerUnit = null;
     // The customizer is always expanded now (no accordion) — just render the
@@ -587,6 +602,14 @@
   function dmczChipHint(pid, selected) {
     if (selected) return '';
     var pre = DMCZ_placementPresets[pid] || {};
+    // Add-ons carry a flat per-piece rate from the engine, not a placement
+    // delta. /api/pricing reports it as neck_tag_rate on EVERY response, not
+    // only when selected — otherwise the label would be circular: no price
+    // until you pick it, no reason to pick it without a price.
+    if (dmczIsAddon(pid)) {
+      return (typeof _dmczNeckTagPerUnit === 'number' && _dmczNeckTagPerUnit > 0)
+        ? '+$' + _dmczNeckTagPerUnit.toFixed(2) : '';
+    }
     var delta = dmczDecoDelta(pid);
     // Embroidery: the first location is in the quoted price and every extra
     // one costs multiplier x the extra-location rate, which the server already
@@ -643,31 +666,7 @@
       return '<div class="dmcz__group"><div class="dmcz__group-label">' + g.label + '</div>' +
              '<div class="dmcz__chips">' + chips + '</div></div>';
     }).join('');
-    // Inside-neck tag toggle — an add-on, so it sits below the placement
-    // groups rather than inside them.
-    var gtNow = (_detailProduct && _detailProduct.garment_type) || 'tshirt';
-    if (DMCZ_NECK_TAG_GARMENTS[gtNow]) {
-      var ntPrice = (typeof _dmczNeckTagPerUnit === 'number' && _dmczNeckTagPerUnit > 0)
-        ? ' <span class="dmcz__chip-price">+$' + _dmczNeckTagPerUnit.toFixed(2) + '/unit</span>' : '';
-      html += '<div class="dmcz__group"><div class="dmcz__group-label">' +
-                (dmczT('cat.detail.necktaggroup') || 'Inside neck') + '</div>' +
-                '<label class="dmcz__necktag">' +
-                  '<input type="checkbox" id="dmczNeckTag"' + (_dmczState.neckTag ? ' checked' : '') + '>' +
-                  '<span class="dmcz__necktag-body">' +
-                    '<span class="dmcz__necktag-name">' + (dmczT('cat.detail.necktag') || 'Print an inside-neck tag') + ntPrice + '</span>' +
-                    '<span class="dmcz__chip-desc">' + (dmczT('cat.detail.necktagdesc') || 'Your brand on the inside collar, DTG — works with print or embroidery') + '</span>' +
-                  '</span>' +
-                '</label>' +
-              '</div>';
-    }
-
     host.innerHTML = html;
-    var ntEl = document.getElementById('dmczNeckTag');
-    if (ntEl) ntEl.addEventListener('change', function(){
-      _dmczState.neckTag = this.checked;
-      refreshDmczPrice();
-      renderDmczPlacements();
-    });
     // "Where to print" reads wrong on a stitched job.
     var head = document.querySelector('.dmcz__sub[data-i18n="cat.detail.whereprint"]');
     if (head) head.textContent = emb ? 'Where to stitch' : 'Where to print';
@@ -686,13 +685,14 @@
     // (~12-17s, once per colour ever); starting it here overlaps that wait
     // with choosing and uploading a design, so it's usually done by the time
     // the stage needs it.
-    if (/sleeve/i.test(pid) && _dmczState.placements.indexOf(pid) < 0) {
+    if (dmczBlankView(pid) && _dmczState.placements.indexOf(pid) < 0) {
       try {
         var _c = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
         if (_c.color_id) {
-          var _k = _c.color_id + '|' + dmczSleeveSide(pid);
+          var _vw2 = dmczBlankView(pid);
+          var _k = _c.color_id + '|' + dmczSleeveSide(pid) + '|' + _vw2;
           _dmczSleevePending[_k] = true;
-          dmczSleeveBlank(_c.color_id, dmczSleeveSide(pid)).then(function(){
+          dmczSleeveBlank(_c.color_id, dmczSleeveSide(pid), _vw2).then(function(){
             delete _dmczSleevePending[_k];
             try { renderDmczPreview(); } catch (_) {}
           });
@@ -1178,7 +1178,8 @@
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     var qtyInput = document.getElementById('detailModalQtyInput');
     var qty = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || (state && state.qty) || 25);
-    var placements = _dmczState.placements.slice();
+    var placements = dmczPricingPlacements(_dmczState.placements);
+    var addonParams = dmczAddonParams(_dmczState.placements);
     var sides = placements.length || 1;
     var method = dmczMethodApi(_dmczState.method);
     // Send placements for EVERY method, not just embroidery (2026-06-11).
@@ -1203,8 +1204,7 @@
               '&qty=' + encodeURIComponent(qty) +
               '&sides=' + encodeURIComponent(sides) +
               '&decoration_method=' + encodeURIComponent(method) +
-              '&embroidery_placements=' + encodeURIComponent(embPlac) +
-              (_dmczState.neckTag ? '&neck_tag=1' : '');
+              '&embroidery_placements=' + encodeURIComponent(embPlac) + addonParams;
 
     fetch(url, { cache: 'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
@@ -1216,9 +1216,11 @@
         if (unit === null || isNaN(unit)) { fallback(); return; }
         // Remember the tag rate so the checkbox can show it. It's qty-tiered,
         // so it changes as they move the quantity.
-        if (d && typeof d.neck_tag_per_unit === 'number' && d.neck_tag_per_unit > 0
-            && d.neck_tag_per_unit !== _dmczNeckTagPerUnit) {
-          _dmczNeckTagPerUnit = d.neck_tag_per_unit;
+        // neck_tag_rate is what it WOULD cost at this qty, selected or not.
+        // It's qty-tiered, so it moves as they change quantity.
+        if (d && typeof d.neck_tag_rate === 'number'
+            && d.neck_tag_rate !== _dmczNeckTagPerUnit) {
+          _dmczNeckTagPerUnit = d.neck_tag_rate;
           try { renderDmczPlacements(); } catch (_) {}
         }
         var sideWord = sides === 1
@@ -1649,7 +1651,11 @@
       // Pull the customizer state. Default placement + DTF still apply
       // even if the customer skipped customizing entirely.
       const st = (typeof _dmczState === 'object' && _dmczState) ? _dmczState : { method: 'DTG', placements: [], uploads: {} };
-      let placements = (st.placements || []).slice();
+      // The tag is an add-on, not a print location. Keeping it out of
+      // `placements` is what stops quote.js pricing it as an extra side; the
+      // neck_tag flag below carries it instead. Its ARTWORK still rides along
+      // in placement_designs, keyed by 'neck-tag'.
+      let placements = dmczPricingPlacements(st.placements || []);
       if (!placements.length) {
         placements = [dmczDefaultPlacementFor(p.garment_type || 'tshirt')];
       }
@@ -1774,7 +1780,9 @@
           // Add-on, not a placement — it never enters `placements`, so it
           // can't pick up a print side or an embroidery multiplier. The quote
           // page reads this back and passes neck_tag=1 to /api/pricing.
-          neck_tag:          !!st.neckTag,
+          // placements is the PRICING axis — the tag must not appear in it or
+          // quote.js would bill it as a print side. The flag carries it.
+          neck_tag:          (st.placements || []).indexOf('neck-tag') >= 0,
           design_path:       design_path,
           design_url:        design_url,
           placement_designs: placement_designs,
