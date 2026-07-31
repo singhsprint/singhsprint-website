@@ -1197,6 +1197,21 @@
         setLocationChecked(loc, true);
       }
 
+      // Warm the colour-matched blank the moment a sleeve (or the inside-neck
+      // tag) is picked, not when the customizer finally opens. First request
+      // for a given colour+view is a fresh AI generation (~13s, once per
+      // colour ever); starting it here overlaps the wait with choosing sizes
+      // and uploading artwork, so it is usually done by the time the stage
+      // needs it. Fire-and-forget: spSleeveBlank memoises the result and
+      // swallows failures, and nothing here depends on the outcome.
+      try {
+        var _wv = spBlankView(presetId);
+        if (_wv && !locActive) {
+          var _wc = spSingleColor();
+          if (_wc && _wc.cid) spSleeveBlank(_wc.cid, spSleeveSide(presetId), _wv);
+        }
+      } catch (_e) {}
+
       // Set print area for the just-clicked location (drives canvas)
       presetSizeByLocation[loc] = preset.size;
       currentPrintArea = preset.size;
@@ -3465,7 +3480,11 @@
           // collar drawing (not the chest photo) while it generates.
           return sleeveBlank[p] || spNeckPlaceholder(opts.colorHex || g.hex);
         }
-        if (side === 'side' && !g.side) {
+        // NOT `&& !g.side`: the catalog's photographed side view is a
+        // three-quarter full-body shot with no marker, and compose paints on
+        // the AI blank regardless — staging on the photo put the artwork off
+        // the sleeve and the composite came back on a different image.
+        if (side === 'side') {
           // The colour-matched blank once it arrives; the generic render only
           // while it's loading, or if generation failed. Staging on the same
           // image the server paints on is the whole point — before this, the

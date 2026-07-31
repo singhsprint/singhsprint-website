@@ -1011,11 +1011,17 @@
       return (nk && nk.url) ? nk.url : dmczNeckPlaceholder(color);
     }
     if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') {
-      // Real photo first (3% of colours), then the AI blank we stage AND
-      // composite on, then the static placeholder only while that loads or
-      // if generation failed. Never the front photo — a logo on the chest
-      // reads wrong for a sleeve hit.
-      if (color.mockup_side_url) return color.mockup_side_url;
+      // The AI blank, then the static placeholder only while it loads or if
+      // generation failed. Never the front photo — a logo on the chest reads
+      // wrong for a sleeve hit.
+      //
+      // color.mockup_side_url used to win here. It can't: /api/shop/compose
+      // sends every sleeve through the AI pipeline and never looks at the
+      // catalog photo, so preferring it meant the customer dragged their
+      // artwork around a three-quarter full-body shot and got back a bicep
+      // close-up with the logo somewhere else entirely. The catalog side
+      // photo is still the right image for the gallery — just not for
+      // staging a print.
       var cached = color.color_id ? _dmczSleeveBlanks[color.color_id + '|' + dmczSleeveSide(pid) + '|sleeve'] : null;
       if (cached && cached.url) return cached.url;
       return (loc === 'right-sleeve') ? '/images/sleeve-right.png?v=2' : '/images/sleeve-left.png?v=2';
