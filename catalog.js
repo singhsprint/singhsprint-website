@@ -628,6 +628,24 @@
   function dmczTogglePlacement(pid) {
     var pre = DMCZ_placementPresets[pid];
     if (!pre) return;
+    // Warm the colour-matched sleeve blank NOW, not when they finally upload
+    // artwork. First request for a given colour+side is a fresh AI generation
+    // (~12-17s, once per colour ever); starting it here overlaps that wait
+    // with choosing and uploading a design, so it's usually done by the time
+    // the stage needs it.
+    if (/sleeve/i.test(pid) && _dmczState.placements.indexOf(pid) < 0) {
+      try {
+        var _c = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+        if (_c.color_id) {
+          var _k = _c.color_id + '|' + dmczSleeveSide(pid);
+          _dmczSleevePending[_k] = true;
+          dmczSleeveBlank(_c.color_id, dmczSleeveSide(pid)).then(function(){
+            delete _dmczSleevePending[_k];
+            try { renderDmczPreview(); } catch (_) {}
+          });
+        }
+      } catch (_) {}
+    }
     var idx = _dmczState.placements.indexOf(pid);
     if (idx >= 0) {
       _dmczState.placements.splice(idx, 1);
@@ -785,6 +803,7 @@
   var DMCZ_SLEEVE_BLANK_API = 'https://singhsprint-crm.vercel.app/api/shop/sleeve-blank';
   var _dmczSleeveBlanks   = {};   // "<colorId>|<side>" -> {url,marker} | null
   var _dmczSleeveBlankReq = {};
+  var _dmczSleevePending  = {};   // "<colorId>|<side>" -> true while generating
   function dmczSleeveSide(pid) { return /right/i.test(pid || '') ? 'right' : 'left'; }
   function dmczSleeveBlank(colorId, side) {
     if (!colorId) return Promise.resolve(null);
@@ -860,6 +879,7 @@
   var DMCZ_COMPOSE_API   = 'https://singhsprint-crm.vercel.app/api/shop/compose';
   var _dmczPreviewUrl    = {};   // placement -> composed mockup URL
   var _dmczPreviewMsg    = '';   // status / error line under the stage
+  var _dmczSleeveNote    = '';   // "generating your colour" line, sleeve only
   var _dmczPreviewBusy   = false;
   var _dmczBoxTouched    = {};   // placement -> customer has moved/resized it
 
@@ -955,6 +975,16 @@
       var baked = _dmczPreviewUrl[active] || null;
       garment = baked ? baked : imgUrl(dmczGarmentSideUrl(active, color));
       up = _dmczState.uploads[active] || {};
+      // Still generating this colour's sleeve view? Say so. Sitting silently
+      // on the white placeholder reads as broken, and it's the one moment
+      // the wait is real.
+      if (!baked && /sleeve/i.test(active) && color.color_id
+          && _dmczSleevePending[color.color_id + '|' + dmczSleeveSide(active)]) {
+        _dmczSleeveNote = t('cat.detail.sleevewarm')
+          || 'Matching this sleeve view to your garment colour — about 15 seconds, and only the first time anyone picks this colour.';
+      } else {
+        _dmczSleeveNote = '';
+      }
       if (!_dmczState.boxes[active]) {
         var pr = DMCZ_placementPresets[active] || {};
         _dmczState.boxes[active] = {
@@ -1022,6 +1052,7 @@
               ? (t('cat.detail.prevagain') || 'Re-render preview')
               : (t('cat.detail.prevbtn')   || 'Preview on garment')) +
           '</button>' +
+          (_dmczSleeveNote ? '<span class="dmcz__preview-msg">' + esc(_dmczSleeveNote) + '</span>' : '') +
           (_dmczPreviewMsg ? '<span class="dmcz__preview-msg">' + esc(_dmczPreviewMsg) + '</span>' : '') +
         '</div>' +
       '</div>' : '';
