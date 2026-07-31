@@ -4272,7 +4272,7 @@
     // picker shows only the Embroidery chip + auto-snaps
     // decoration_type to 'embroidery' so the live price resolves.
     var EMBROIDERY_ONLY_GARMENTS = { hat: 1, cap: 1 };
-    function renderCartItemMethod(idx, current, garmentType) {
+    function renderCartItemMethod(idx, current, garmentType, qty) {
       var embroideryOnly = !!(garmentType && EMBROIDERY_ONLY_GARMENTS[garmentType]);
 
       // A draft saved before DTF was retired still says 'dtf'. The chip no
@@ -4332,8 +4332,20 @@
                '>' + o.label + '</button>';
       }).join('');
 
+      // 2026-07-31 — embroidery has a 10-piece minimum. It can't live in
+      // the pricing config (qty_tiers is shared with print), so the funnel
+      // has to say it. Warn rather than hard-block: every quote is reviewed
+      // by a rep before it goes out, and blocking mid-funnel loses the lead.
+      var EMB_MIN = 10;
+      var qtyNum  = Number(qty) || 0;
+      var embShort = (current === 'embroidery' && qtyNum > 0 && qtyNum < EMB_MIN);
+
       var hint;
-      if (embroideryOnly) {
+      if (embShort) {
+        hint = '<span class="ci-method-hint" style="color:#b45309;font-weight:600">'
+             + 'Embroidery needs ' + EMB_MIN + '+ pieces — add ' + (EMB_MIN - qtyNum)
+             + ' more, or switch to DTG</span>';
+      } else if (embroideryOnly) {
         hint = '<span class="ci-method-hint">Caps are embroidery-only on our press</span>';
       } else if (!current) {
         hint = '<span class="ci-method-hint">Pick how each item gets decorated</span>';
@@ -4922,7 +4934,7 @@
         // 2026-05-24 — per-item method + sizes widgets, surfaced below
         // the placement chips. Multi-item carts now express things like
         // "DTG tote + DTF tee + embroidered hat" cleanly.
-        var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '', it.garment_type);
+        var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '', it.garment_type, it.qty || 0);
         var sizesHtml      = renderCartItemSizes(idx, it.sizes || {}, it.qty || 0, it.garment_type);
         return '' +
           // overflow:hidden + max-width:100% + box-sizing prevent the
@@ -5030,6 +5042,16 @@
           if (!cell || cell.price == null) return '—';
           return '$' + Number(cell.price).toFixed(2);
         };
+        // 2026-07-31 — embroidery has a 10-piece minimum (our contract
+        // embroiderer prices in dozens; below 12 the per-unit cost jumps
+        // ~35%). qty_tiers is shared between print and embroidery so the
+        // pricing config can't express a per-method minimum — the engine
+        // will happily quote 5-9. Blank those cells so we never advertise
+        // a price we won't sell, matching how the 1-4 row already renders.
+        var EMB_MIN_QTY = 10;
+        var fmtEmb = function(cell, r) {
+          return (r.qty_min < EMB_MIN_QTY) ? '—' : fmt(cell);
+        };
         var qtyLabel = function(r) {
           return r.qty_max == null ? (r.qty_min + '+') : (r.qty_min + '–' + r.qty_max);
         };
@@ -5055,14 +5077,18 @@
               : 'background:#fff;color:#1a1a1a';
             var border = isActive ? '#333' : '#f0eee5';
             var cells = sidesList.map(function(s) {
+              var v = (accessor === 'embroidery') ? fmtEmb(r[accessor][s], r) : fmt(r[accessor][s]);
               return '<td style="text-align:right;padding:5px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + '">'
-                + fmt(r[accessor][s]) + '</td>';
+                + v + '</td>';
             }).join('');
             return '<tr style="' + rowStyle + '">' +
               '<td style="padding:5px 8px;font-weight:' + (isActive ? '700' : '500') + ';border-top:1px solid ' + border + '">' + qtyLabel(r) + '</td>' +
               cells +
             '</tr>';
           }).join('');
+          var minNote = (accessor === 'embroidery')
+            ? '<div style="padding:5px 10px;font-size:.66rem;color:#8a6d3b;background:#fffdf6;border-top:1px solid #f0eee5">Embroidery has a ' + EMB_MIN_QTY + '-piece minimum.</div>'
+            : '';
           return '<div style="margin-top:8px;border:1px solid #e8e6df;border-radius:10px;background:#fff;overflow:hidden">' +
             '<div style="background:' + bg + ';font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#666;padding:6px 10px">' + label + '</div>' +
             '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
@@ -5072,7 +5098,7 @@
                 '</thead>' +
                 '<tbody>' + body + '</tbody>' +
               '</table>' +
-            '</div>' +
+            '</div>' + minNote +
           '</div>';
         }
 
@@ -5104,7 +5130,7 @@
             }).join('');
             if (showEmb) {
               cells += sidesList.map(function(s){
-                return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + ';border-left:1px solid ' + border + '">' + fmt(r.embroidery[s]) + '</td>';
+                return '<td style="text-align:right;padding:6px 8px;font-variant-numeric:tabular-nums;border-top:1px solid ' + border + ';border-left:1px solid ' + border + '">' + fmtEmb(r.embroidery[s], r) + '</td>';
               }).join('');
             }
             return '<tr style="' + rowStyle + '">' +
@@ -5113,6 +5139,7 @@
           }).join('');
           inner = '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
             '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' + head + '<tbody>' + body + '</tbody></table>' +
+            (showEmb ? '<div style="padding:5px 10px;font-size:.68rem;color:#8a6d3b;background:#fffdf6;border-top:1px solid #f0eee5">Embroidery has a ' + EMB_MIN_QTY + '-piece minimum.</div>' : '') +
           '</div>';
         }
 
