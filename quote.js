@@ -3088,8 +3088,37 @@
     // Side-view sleeve render — pre-bake placeholder + fallback. The photoreal,
     // colour-matched sleeve is produced server-side by /api/shop/compose
     // (sleeve-ai); this gives the sleeve tab a side-view surface before baking.
+    // Fallback only. These are generic white-tee sleeve crops with a
+    // "Placeholder preview" badge burned in — they are NOT what the server
+    // composites on, and staging art on them is what made sleeve previews
+    // look nothing like the finished mockup. Real staging image below.
     var SP_SLEEVE_RENDER   = '/images/sleeve-left.png?v=2';
     var SP_SLEEVE_RENDER_R = '/images/sleeve-right.png?v=2';
+
+    // The colour-matched side blank the sleeve pipeline actually paints on,
+    // cached server-side per (colour, side). Fetching it here means the
+    // customer drags on the same pixels /api/shop/compose will use, and the
+    // box they produce is already in that image's coordinate space.
+    var SP_SLEEVE_BLANK_API = 'https://singhsprint-crm.vercel.app/api/shop/sleeve-blank';
+    var _spSleeveBlanks   = {};   // "<colorId>|<side>" -> {url,marker} | null
+    var _spSleeveBlankReq = {};   // in-flight promises, so tabs don't refetch
+    function spSleeveSide(pid) { return /right/i.test(pid) ? 'right' : 'left'; }
+    function spSleeveBlank(colorId, side) {
+      if (!colorId) return Promise.resolve(null);
+      var key = colorId + '|' + side;
+      if (Object.prototype.hasOwnProperty.call(_spSleeveBlanks, key)) return Promise.resolve(_spSleeveBlanks[key]);
+      if (_spSleeveBlankReq[key]) return _spSleeveBlankReq[key];
+      var pr = fetch(SP_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side)
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(j) {
+          var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null;
+          _spSleeveBlanks[key] = v;
+          return v;
+        })
+        .catch(function() { _spSleeveBlanks[key] = null; return null; });
+      _spSleeveBlankReq[key] = pr;
+      return pr;
+    }
 
     // Upload each File at most once (compose needs a server-fetchable URL/path,
     // not a blob: URL). Cached by File identity.
@@ -3127,8 +3156,9 @@
       // tuned preset centre.
       if (/sleeve/i.test(presetId)) {
         var isRight = /right/i.test(presetId);
-        // Centre the art on the sleeve print zone of the photo render
-        // (left photo: sleeve at x~0.58; right render is the mirror at x~0.42).
+        // Provisional only — tuned for the static placeholder render. Once
+        // /api/shop/sleeve-blank returns the real blank we reseed this from
+        // its marker rect, which is the actual print zone on that garment.
         return { x: isRight ? 0.32 : 0.48, y: 0.35, w: 0.20 };
       }
       var pre = placementPresets[presetId] || {};
@@ -3238,6 +3268,23 @@
       var boxes = {};
       placements.forEach(function(p) {
         boxes[p] = (opts.initial && opts.initial.boxes && opts.initial.boxes[p]) || spDefaultBox(p);
+      });
+      // placement -> real staging image URL, filled in asynchronously.
+      var sleeveBlank  = {};
+      // Don't stomp a box the customer has already touched when the blank
+      // lands a second later.
+      var userMovedBox = {};
+      placements.forEach(function(p) {
+        if (!/sleeve/i.test(p)) return;
+        spSleeveBlank(opts.colorId, spSleeveSide(p)).then(function(info) {
+          if (!info || !info.url) return;      // generation failed - keep placeholder
+          sleeveBlank[p] = info.url;
+          var hadSaved = !!(opts.initial && opts.initial.boxes && opts.initial.boxes[p]);
+          if (info.marker && !hadSaved && !userMovedBox[p]) {
+            boxes[p] = { x: info.marker.x, y: info.marker.y, w: info.marker.w };
+          }
+          try { paint(); } catch (_) {}
+        });
       });
       // Background key-out mode. Accepts the new bgKey and falls back to the
       // legacy boolean, which maps to 'auto' — corner-sampling is what those
@@ -3360,9 +3407,14 @@
       function garmentFor(p) {
         var g = opts.garment || {};
         var side = spSideFor(p);
-        // No catalog side photos exist — sleeve placements use the standard
-        // sleeve render so the preview matches what the server composites.
-        if (side === 'side' && !g.side) return /right/i.test(p) ? SP_SLEEVE_RENDER_R : SP_SLEEVE_RENDER;
+        if (side === 'side' && !g.side) {
+          // The colour-matched blank once it arrives; the generic render only
+          // while it's loading, or if generation failed. Staging on the same
+          // image the server paints on is the whole point — before this, the
+          // customer positioned art on a white placeholder and the composite
+          // came back as a different garment entirely.
+          return sleeveBlank[p] || (/right/i.test(p) ? SP_SLEEVE_RENDER_R : SP_SLEEVE_RENDER);
+        }
         return g[side] || g.front || g.back || g.side || '';
       }
       function paint() {
@@ -3415,6 +3467,7 @@
       // removed in close() so repeated opens don't pile up listeners.
       function onCzMove(e) {
         if (!grab) return;
+        userMovedBox[curP()] = true;
         var b = boxes[curP()]; var f = frac(e);
         b.x = clamp(f.px - grab.dx, 0, 1 - b.w);
         b.y = clamp(f.py - grab.dy, 0, 1 - 0.02);
@@ -3427,6 +3480,7 @@
       artImg.addEventListener('lostpointercapture', endDrag);
 
       slider.addEventListener('input', function() {
+        userMovedBox[curP()] = true;
         var b = boxes[curP()]; var n = Number(slider.value);
         b.w = n; b.x = clamp(b.x, 0, 1 - n); positionArt();
       });

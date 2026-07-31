@@ -330,6 +330,14 @@
     .dmcz__size-row{display:flex;align-items:center;gap:10px;font-size:.72rem;color:#888}
     .dmcz__size-row input[type=range]{flex:1}
     .dmcz__rmbg{display:flex;align-items:center;gap:7px;font-size:.72rem;color:#1a1a1a;cursor:pointer}
+    /* In-modal "Preview on garment" — added 2026-07-31 so the catalog can show
+       the real composite before Add to quote, and surface a failed render
+       instead of silently adding an item with no mockup. */
+    .dmcz__preview-row{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+    .dmcz__preview-row button{appearance:none;border:1px solid #1a1a1a;background:#fff;color:#1a1a1a;border-radius:999px;padding:7px 14px;font:inherit;font-size:.72rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+    .dmcz__preview-row button:hover:not(:disabled){background:#1a1a1a;color:#fff}
+    .dmcz__preview-row button:disabled{opacity:.55;cursor:wait}
+    .dmcz__preview-msg{font-size:.68rem;line-height:1.35;color:#8a6d3b;background:#fffdf6;border:1px solid #f0eee5;border-radius:8px;padding:6px 9px}
     .dmcz__preview-hint{font-size:.72rem;color:#888;text-align:center;padding:14px 8px}
     .dmcz__upload{border:1.5px dashed #d8d5cb;border-radius:12px;padding:12px 14px;background:#fafaf7}
     .dmcz__upload-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}

@@ -777,19 +777,111 @@
 
   // Pick the garment photo for a placement's side. front-ish presets → front
   // image, back → back image, sleeve/side → side image; fall back front → hero.
+  // The colour-matched side blank the sleeve pipeline composites on, cached
+  // server-side per (colour, side). Until 2026-07-31 this file staged sleeve
+  // art on /images/sleeve-left.png — a generic white crop the server stopped
+  // using when sleeve rendering moved to the AI pipeline. Customers dragged
+  // their logo around one image and got back another.
+  var DMCZ_SLEEVE_BLANK_API = 'https://singhsprint-crm.vercel.app/api/shop/sleeve-blank';
+  var _dmczSleeveBlanks   = {};   // "<colorId>|<side>" -> {url,marker} | null
+  var _dmczSleeveBlankReq = {};
+  function dmczSleeveSide(pid) { return /right/i.test(pid || '') ? 'right' : 'left'; }
+  function dmczSleeveBlank(colorId, side) {
+    if (!colorId) return Promise.resolve(null);
+    var key = colorId + '|' + side;
+    if (Object.prototype.hasOwnProperty.call(_dmczSleeveBlanks, key)) return Promise.resolve(_dmczSleeveBlanks[key]);
+    if (_dmczSleeveBlankReq[key]) return _dmczSleeveBlankReq[key];
+    var pr = fetch(DMCZ_SLEEVE_BLANK_API + '?color_id=' + encodeURIComponent(colorId) + '&side=' + side)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ var v = (j && j.url) ? { url: j.url, marker: j.marker || null } : null; _dmczSleeveBlanks[key] = v; return v; })
+      .catch(function(){ _dmczSleeveBlanks[key] = null; return null; });
+    _dmczSleeveBlankReq[key] = pr;
+    return pr;
+  }
+  // Kick off the fetch for a sleeve placement; repaint (and seed the box on
+  // the real print zone) once it lands.
+  function dmczPrimeSleeveBlank(pid, color) {
+    if (!/sleeve/i.test(pid || '') || !color || !color.color_id) return;
+    dmczSleeveBlank(color.color_id, dmczSleeveSide(pid)).then(function(info) {
+      if (!info || !info.url) return;
+      if (info.marker && !_dmczBoxTouched[pid]) {
+        _dmczState.boxes[pid] = {
+          x: Math.round((info.marker.x + info.marker.w / 2) * 100),
+          y: Math.round((info.marker.y + info.marker.h / 2) * 100),
+          w: Math.round(info.marker.w * 100)
+        };
+      }
+      try { renderDmczPreview(); } catch (_) {}
+    });
+  }
+
   function dmczGarmentSideUrl(pid, color) {
     var pre = DMCZ_placementPresets[pid] || {};
     var loc = pre.loc || 'front';
     var front = color.mockup_front_url || (_detailProduct && _detailProduct.hero_image_url);
     if (loc === 'back') return color.mockup_back_url || front;
     if (loc === 'left-sleeve' || loc === 'right-sleeve' || loc === 'side') {
-      // Prefer a real side photo if the color has one; otherwise fall back to
-      // our neutral sleeve placeholder (matching the quote composer), not the
-      // front garment — a logo on the chest reads wrong for a sleeve hit.
+      // Real photo first (3% of colours), then the AI blank we stage AND
+      // composite on, then the static placeholder only while that loads or
+      // if generation failed. Never the front photo — a logo on the chest
+      // reads wrong for a sleeve hit.
       if (color.mockup_side_url) return color.mockup_side_url;
+      var cached = color.color_id ? _dmczSleeveBlanks[color.color_id + '|' + dmczSleeveSide(pid)] : null;
+      if (cached && cached.url) return cached.url;
       return (loc === 'right-sleeve') ? '/images/sleeve-right.png?v=2' : '/images/sleeve-left.png?v=2';
     }
     return front;  // front, hood, cap, bag, apron, leg → front view
+  }
+
+  // ── In-modal preview state ────────────────────────────────────────────
+  // Before this, the catalog composed mockups only when you pressed Add to
+  // quote, and swallowed every failure — so you could add an item with no
+  // mockup and no warning. Now you can see the real composite first.
+  var DMCZ_COMPOSE_API   = 'https://singhsprint-crm.vercel.app/api/shop/compose';
+  var _dmczPreviewUrl    = {};   // placement -> composed mockup URL
+  var _dmczPreviewMsg    = '';   // status / error line under the stage
+  var _dmczPreviewBusy   = false;
+  var _dmczBoxTouched    = {};   // placement -> customer has moved/resized it
+
+  // Any edit invalidates a baked preview: it was rendered from the old box.
+  function dmczInvalidatePreview(pid) {
+    if (pid) delete _dmczPreviewUrl[pid]; else _dmczPreviewUrl = {};
+  }
+
+  function dmczPreviewOnGarment() {
+    var pid   = _dmczState.activePreview;
+    var up    = _dmczState.uploads[pid];
+    var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+    if (!up || !up.path)   { _dmczPreviewMsg = t('cat.detail.prevneedart')  || 'Upload artwork for this placement first.'; renderDmczPreview(); return; }
+    if (!color.color_id)   { _dmczPreviewMsg = t('cat.detail.prevneedcolor')|| 'Pick a garment colour first.'; renderDmczPreview(); return; }
+    var b = _dmczState.boxes[pid] || { x: 50, y: 40, w: 26 };
+    var halfH = (b.w / 100) * (up.ar || 1) / 2;
+    function c01(v) { return Math.max(0, Math.min(1, v)); }
+    _dmczPreviewBusy = true;
+    _dmczPreviewMsg  = t('cat.detail.prevbusy') || 'Rendering your mockup…';
+    renderDmczPreview();
+    fetch(DMCZ_COMPOSE_API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        color_id: color.color_id, placement: pid,
+        design_path: up.path, design_url: up.signed_url || null,
+        box: { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) },
+        remove_bg: !!_dmczState.removeBg,
+        session_id: (function(){ try { return localStorage.getItem('singhsCartId_v1'); } catch (_) { return null; } })()
+      })
+    }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        _dmczPreviewBusy = false;
+        var url = res.ok && res.j ? (res.j.mockup_url || res.j.url) : null;
+        if (url) { _dmczPreviewUrl[pid] = url; _dmczPreviewMsg = ''; }
+        else     { _dmczPreviewMsg = (t('cat.detail.prevfail') || 'Preview failed') + ': ' + ((res.j && res.j.error) || 'unknown error'); }
+        renderDmczPreview();
+      })
+      .catch(function(e){
+        _dmczPreviewBusy = false;
+        _dmczPreviewMsg  = (t('cat.detail.prevfail') || 'Preview failed') + ': ' + ((e && e.message) || e);
+        renderDmczPreview();
+      });
   }
 
   // Make the #dmczArt overlay draggable around #dmczStage; mutates the active
@@ -835,7 +927,13 @@
       // Keep activePreview pointing at a placement that still has art.
       if (withArt.indexOf(_dmczState.activePreview) < 0) _dmczState.activePreview = withArt[0];
       active = _dmczState.activePreview;
-      garment = imgUrl(dmczGarmentSideUrl(active, color));
+      // Fetch the real sleeve blank if this placement needs one (no-op for
+      // chest/back, and a no-op once cached).
+      dmczPrimeSleeveBlank(active, color);
+      // A baked composite for this placement IS the garment view — it already
+      // contains the artwork, so the draggable overlay is hidden below.
+      var baked = _dmczPreviewUrl[active] || null;
+      garment = baked ? baked : imgUrl(dmczGarmentSideUrl(active, color));
       up = _dmczState.uploads[active] || {};
       if (!_dmczState.boxes[active]) {
         var pr = DMCZ_placementPresets[active] || {};
@@ -847,7 +945,7 @@
       }
       box = _dmczState.boxes[active];
       var blend = _dmczState.removeBg ? 'mix-blend-mode:multiply;' : '';
-      artImg = '<img id="dmczArt" src="' + esc(up.signed_url || '') + '" alt="" draggable="false" ' +
+      artImg = baked ? '' : '<img id="dmczArt" src="' + esc(up.signed_url || '') + '" alt="" draggable="false" ' +
         'style="position:absolute;top:' + box.y + '%;left:' + box.x + '%;width:' + box.w + '%;' +
         'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' + blend +
         'filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">';
@@ -898,6 +996,14 @@
           '<input type="checkbox" id="dmczRemoveBg"' + (_dmczState.removeBg ? ' checked' : '') + '> ' +
           '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Remove background') + '</span>' +
         '</label>' +
+        '<div class="dmcz__preview-row">' +
+          '<button type="button" id="dmczPreviewBtn"' + (_dmczPreviewBusy ? ' disabled' : '') + '>' +
+            (_dmczPreviewUrl[active]
+              ? (t('cat.detail.prevagain') || 'Re-render preview')
+              : (t('cat.detail.prevbtn')   || 'Preview on garment')) +
+          '</button>' +
+          (_dmczPreviewMsg ? '<span class="dmcz__preview-msg">' + esc(_dmczPreviewMsg) + '</span>' : '') +
+        '</div>' +
       '</div>' : '';
 
     host.innerHTML = tabs +
@@ -928,13 +1034,25 @@
       var size = document.getElementById('dmczSize');
       if (size) size.addEventListener('input', function(){
         box.w = parseInt(this.value, 10) || 26;
+        _dmczBoxTouched[active] = true;
+        dmczInvalidatePreview(active);   // baked from the old size
         var a = document.getElementById('dmczArt');
         if (a) a.style.width = box.w + '%';
+      });
+      var pvBtn = document.getElementById('dmczPreviewBtn');
+      if (pvBtn) pvBtn.addEventListener('click', dmczPreviewOnGarment);
+      // Dragging invalidates a baked preview too — but only once the pointer
+      // actually goes down, so a repaint doesn't clear it spuriously.
+      var artEl = document.getElementById('dmczArt');
+      if (artEl) artEl.addEventListener('pointerdown', function(){
+        _dmczBoxTouched[active] = true;
+        dmczInvalidatePreview(active);
       });
       // Remove-bg toggle: re-apply the blend mode live.
       var rb = document.getElementById('dmczRemoveBg');
       if (rb) rb.addEventListener('change', function(){
         _dmczState.removeBg = this.checked;
+        dmczInvalidatePreview();   // every baked preview used the old bg mode
         var a = document.getElementById('dmczArt');
         if (a) a.style.mixBlendMode = this.checked ? 'multiply' : '';
       });
@@ -1456,9 +1574,17 @@
         };
       }
       const composeJobs = [];
+      const composeFails = [];
       (st.placements || []).forEach(function(pid) {
         const up = uploads[pid];
         if (!up || !up.path) return;
+        // Already previewed this exact placement in the modal? That render is
+        // the same call with the same box — reuse it instead of paying for a
+        // second one (a cold sleeve blank is a paid AI generation).
+        if (_dmczPreviewUrl[pid]) {
+          composeJobs.push(Promise.resolve({ placement: pid, url: _dmczPreviewUrl[pid] }));
+          return;
+        }
         const b = (st.boxes && st.boxes[pid]) || { x: 50, y: 40, w: 26 };
         const composeBox = dmczBoxToCompose(b, up.ar);
         const job = fetch(SHOP_COMPOSE_API, {
@@ -1474,11 +1600,18 @@
           })
         }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
           .then(function(res) {
-            if (!res.ok || !res.j) return null;
-            var url = res.j.mockup_url || res.j.url;
-            return url ? { placement: pid, url: url } : null;
+            var url = (res.ok && res.j) ? (res.j.mockup_url || res.j.url) : null;
+            if (url) return { placement: pid, url: url };
+            composeFails.push({ placement: pid, reason: (res.j && res.j.error) || ('HTTP ' + (res.ok ? '200' : 'error')) });
+            return null;
           })
-          .catch(function() { return null; });  // never block the add on a compose failure
+          .catch(function(e) {
+            // Still never block the add — but stop pretending it worked. This
+            // returned a silent null before, so items landed in the cart with
+            // no mockup and nobody knew until production asked for one.
+            composeFails.push({ placement: pid, reason: (e && e.message) || 'network error' });
+            return null;
+          });
         composeJobs.push(job);
       });
 
@@ -1500,6 +1633,16 @@
           addBtn.style.opacity = '';
           addBtn.style.cursor = '';
           addBtn.innerHTML = _origAddHTML;
+        }
+        if (composeFails.length) {
+          console.warn('[catalog] mockup compose failed:', composeFails);
+          _dmczPreviewMsg =
+            (t('cat.detail.prevpartial') || 'Added to your quote, but we could not render a mockup for') + ' ' +
+            composeFails.map(function(f){
+              return (DMCZ_placementPresets[f.placement] || {}).label || f.placement;
+            }).join(', ') + '. ' +
+            (t('cat.detail.prevpartial2') || 'Our team will produce it before printing.');
+          try { renderDmczPreview(); } catch (_) {}
         }
         addToCart(p.product_id, {
           color_id:     c.color_id || null,
