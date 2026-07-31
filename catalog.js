@@ -375,6 +375,22 @@
   // these are too large for an embroidery hoop.
   var EMB_DISALLOWED = { 'oversized':1, 'back-full':1 };
 
+  // 2026-07-31 — embroidery talks in hoop sizes, not ink coverage. The market
+  // sells three bands (small 4x4 / medium 7x7 / large 11x7) and prices one
+  // size step exactly like one extra location, which is what the engine's
+  // placement multipliers encode (1 / 1.5 / 2). Print descriptions like
+  // "~11\" chest panel" are meaningless on a stitched job, so swap the copy
+  // when Embroidery is the active method.
+  var EMB_PLACEMENT_DESC = {
+    'left-chest':   '4\" x 4\" — logo / pocket',
+    'center-chest': '7\" x 7\" — medium crest',
+    'full-front':   '11\" x 7\" — large crest',
+    'back-top':     '4\" x 4\" — under collar',
+    'back-across':  '11\" x 7\" — large upper back',
+    'left-sleeve':  '4\" x 4\" — bicep',
+    'right-sleeve': '4\" x 4\" — bicep'
+  };
+
   // Three customer-facing methods. Map onto the pricing API's
   // decoration_method: Embroidery → 'embroidery', everything else → 'dtf'.
   // 2026-07-31 — DTF retired from the customer-facing picker (jerseys keep
@@ -534,6 +550,14 @@
     if (selected) return '';
     var pre = DMCZ_placementPresets[pid] || {};
     var delta = dmczDecoDelta(pid);
+    // Embroidery: the first location is in the quoted price and every extra
+    // one costs multiplier x the extra-location rate, which the server already
+    // folded into `delta`. There is no "primary side" — a back hit costs the
+    // same as a chest hit of the same size, so the print side_add must not
+    // apply. See /api/pricing/placement-summary.
+    if (_dmczState.method === 'Embroidery') {
+      return delta > 0 ? '+$' + delta : '';
+    }
     var isPrimarySide = (pre.loc === 'front');
     var add = isPrimarySide ? delta : (_dmczDeltas.side_add + delta);
     return add > 0 ? '+$' + add : 'included';
@@ -552,6 +576,7 @@
       if (!ids.length) return '';
       var chips = ids.map(function(pid){
         var pre = DMCZ_placementPresets[pid] || { label: pid, desc: '' };
+        var desc = (emb && EMB_PLACEMENT_DESC[pid]) || pre.desc || '';
         var on = _dmczState.placements.indexOf(pid) >= 0;
         var hint = dmczChipHint(pid, on);
         var hintHtml = hint
@@ -559,13 +584,16 @@
           : '';
         return '<button type="button" class="dmcz__chip" data-pid="' + pid + '" aria-pressed="' + on + '">' +
                '<span class="dmcz__chip-name">' + pre.label + hintHtml + '</span>' +
-               '<span class="dmcz__chip-desc">' + (pre.desc || '') + '</span>' +
+               '<span class="dmcz__chip-desc">' + desc + '</span>' +
                '</button>';
       }).join('');
       return '<div class="dmcz__group"><div class="dmcz__group-label">' + g.label + '</div>' +
              '<div class="dmcz__chips">' + chips + '</div></div>';
     }).join('');
     host.innerHTML = html;
+    // "Where to print" reads wrong on a stitched job.
+    var head = document.querySelector('.dmcz__sub[data-i18n="cat.detail.whereprint"]');
+    if (head) head.textContent = emb ? 'Where to stitch' : 'Where to print';
     host.querySelectorAll('.dmcz__chip').forEach(function(btn){
       btn.addEventListener('click', function(){ dmczTogglePlacement(btn.getAttribute('data-pid')); });
     });
