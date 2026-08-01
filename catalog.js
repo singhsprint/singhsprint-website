@@ -1067,6 +1067,59 @@
   // and threaded onto the cart item as design_boxes.
 
   // Which placement ids currently have uploaded artwork (drives tabs + stage).
+  // Artwork that lives ONLY server-side — a design restored from /d/<token>,
+  // where the read projection hands over a storage key and never a
+  // downloadable URL. The local canvas has no bitmap to draw, so the only way
+  // to show it is a fresh composite. Called from renderDmczPreview, so ANY
+  // state change that reaches the stage self-heals: change the colour, the
+  // placement, the print method, the background key, and the design re-renders
+  // on the new blank instead of going stale or vanishing.
+  //
+  // Normal uploads keep their signed_url and redraw locally, so they are
+  // deliberately NOT re-baked here — that would be a server round trip on
+  // every swatch click for people who don't need one.
+  var _dmczRebaking = {};
+  function dmczEnsureSharedComposites() {
+    var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+    if (!color.color_id) return;
+    (_dmczState.placements || []).forEach(function (pid) {
+      var u = _dmczState.uploads[pid];
+      if (!u || !u.path || u.signed_url) return;      // nothing to do, or drawable locally
+      if (_dmczPreviewUrl[pid]) return;               // already have one for this colour
+      var key = pid + '|' + color.color_id + '|' + _dmczState.bgKey;
+      if (_dmczRebaking[key]) return;                 // in flight
+      _dmczRebaking[key] = true;
+      var b = _dmczState.boxes[pid] || { x: 50, y: 40, w: 26 };
+      var halfH = (b.w / 100) * (u.ar || 1) / 2;
+      function c01(v) { return Math.max(0, Math.min(1, v)); }
+      fetch(DMCZ_COMPOSE_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          color_id: color.color_id,
+          placement: pid,
+          design_path: u.path,
+          box: { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) },
+          remove_bg: !!_dmczState.removeBg,
+          remove_bg_color: _dmczState.removeBg ? (_dmczState.bgKey || 'auto') : null,
+          session_id: (function () { try { return localStorage.getItem('singhsCartId_v1'); } catch (e) { return null; } })()
+        })
+      }).then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (j) {
+          delete _dmczRebaking[key];
+          var url = j && (j.mockup_url || j.url);
+          if (!url) return;
+          // Guard against a slow response landing after the customer has moved
+          // on — only accept it if the colour it was rendered for is still the
+          // one on screen.
+          var now = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+          if (now.color_id !== color.color_id) return;
+          _dmczPreviewUrl[pid] = url;
+          renderDmczPreview();
+        })
+        .catch(function () { delete _dmczRebaking[key]; });
+    });
+  }
+
   function dmczPlacementsWithArt() {
     return (_dmczState.placements || []).filter(function(pid){
       var u = _dmczState.uploads[pid];
@@ -1429,6 +1482,9 @@
     var host = document.getElementById('dmczPreviewWrap');
     if (!host) return;
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    // Fill in any composite the local canvas cannot draw (restored shares),
+    // for whatever colour / placement / background is selected right now.
+    try { dmczEnsureSharedComposites(); } catch (e) {}
     var withArt = dmczPlacementsWithArt();
     var hasArt = withArt.length > 0;
     var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
@@ -1930,6 +1986,12 @@
         // neck view just went cold. Start them all now, in the background,
         // rather than when the customer next switches tabs.
         try { dmczWarmSelectedBlanks(); } catch (_) {}
+        // Every baked composite was rendered ON THE OLD COLOUR. Without this
+        // the stage kept showing the previous colour's mockup while the swatch
+        // and the price said otherwise — silently wrong rather than visibly
+        // broken, and true for any customer who previewed and then switched
+        // colour, not just for a shared design.
+        try { dmczInvalidatePreview(); } catch (_) {}
         // Refresh the in-modal customizer preview so the garment switches to
         // the newly-picked colour too (it reads the live _detailColorIdx).
         if (typeof renderDmczPreview === 'function') renderDmczPreview();
