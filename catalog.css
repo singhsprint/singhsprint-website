@@ -149,6 +149,11 @@
        what Baymard's per-unit-price guidance asks for. */
     .card .price-sub{display:block;font-size:.7rem;color:var(--soft);font-weight:500;margin-top:2px}
     .card .price-sub b{color:var(--muted);font-weight:600}
+    /* A method the engine will refuse at this quantity. Reads as
+       unavailable-with-a-reason rather than broken. */
+    .dmcz__method.is-blocked{opacity:.45;cursor:not-allowed;background:#faf9f6}
+    .dmcz__method.is-blocked .dmcz__method-desc{color:#8a7a00;font-weight:600}
+    .dmcz-price--blocked{font-size:.86rem;font-weight:600;color:#8a7a00}
 
     /* BYO card */
     .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}

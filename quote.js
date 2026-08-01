@@ -5137,7 +5137,21 @@
         if (it.is_jersey) return jerseyCartItemHtml(it, idx);
         var label = (it.color_name || '').replace(/_\d+$/, '');
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
-        var uploadsHtml    = renderCartItemUploads(idx, it.placements || []);
+        // The inside-neck tag is an ADD-ON, not a print side, so it is
+        // deliberately absent from it.placements - that is what stops the
+        // engine billing it as an extra side. But the upload rows are driven
+        // off the same list, so its artwork had nowhere to be attached: the
+        // customer selected the tag in the catalogue modal, saw it rendered
+        // in the preview, and reached the quote page with only "Design for
+        // Left Sleeve". Reported from production 2026-08-01.
+        //
+        // Two other places in this file already augment a local copy for
+        // exactly this reason (see the mockup and compose paths); this one
+        // was missed. /api/inbound already ingests placement_designs
+        // generically, so once it is attached here it reaches the CRM.
+        var uploadPlacements = (it.placements || []).slice();
+        if (it.neck_tag && uploadPlacements.indexOf('neck-tag') < 0) uploadPlacements.push('neck-tag');
+        var uploadsHtml    = renderCartItemUploads(idx, uploadPlacements);
         // 2026-05-24 — per-item method + sizes widgets, surfaced below
         // the placement chips. Multi-item carts now express things like
         // "DTG tote + DTF tee + embroidered hat" cleanly.

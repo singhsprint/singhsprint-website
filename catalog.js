@@ -513,21 +513,51 @@
     dmczResetCustomizeToggle();   // every product opens in the simple state
   }
 
+  // Embroidery minimum for the open product, as reported by /api/pricing.
+  // null = unknown or none. Never hardcoded here: the engine owns the number
+  // (it comes from embroidery_qty_tiers), so what the customer is told cannot
+  // drift from what is enforced.
+  var _dmczEmbMinQty = null;
+
+  function dmczCurrentQty() {
+    // MUST be the modal's own input. Falling back to state.qty here would
+    // reintroduce the very bug this fixes - the catalogue's quantity standing
+    // in for the line's - so the fallback is 1, not state.qty.
+    var el = document.getElementById('detailModalQtyInput');
+    var n = el ? parseInt(el.value, 10) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  }
+
   // Render the three method cards.
   function renderDmczMethods() {
     var host = document.getElementById('dmczMethods');
     if (!host) return;
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var qty = dmczCurrentQty();
     host.innerHTML = DMCZ_METHODS.map(function(m){
       var on = (_dmczState.method === m.id);
       var name = t('cat.detail.method.' + m.id.toLowerCase()) || m.name;
       var desc = t('cat.detail.methoddesc.' + m.id.toLowerCase()) || m.desc;
-      return '<button type="button" class="dmcz__method" data-method="' + m.id + '" aria-pressed="' + on + '">' +
+      // Embroidery below the minimum: disabled, and it says how many more are
+      // needed rather than just "unavailable". Before this the option was
+      // selectable, /api/pricing answered 400, and the modal fell back to the
+      // catalogue's own price - $9.95 on a Gildan 5000 at qty 7, the 500-unit
+      // rate. Reported from production 2026-08-01.
+      var blocked = (m.id === 'Embroidery' && _dmczEmbMinQty != null && qty < _dmczEmbMinQty);
+      if (blocked) {
+        var need = _dmczEmbMinQty - qty;
+        desc = (t('cat.detail.embmin') || 'Needs {min}+ · add {n} more')
+                 .replace('{min}', _dmczEmbMinQty).replace('{n}', need);
+      }
+      return '<button type="button" class="dmcz__method' + (blocked ? ' is-blocked' : '') + '"' +
+             ' data-method="' + m.id + '" aria-pressed="' + (on && !blocked) + '"' +
+             (blocked ? ' disabled aria-disabled="true"' : '') + '>' +
              '<span class="dmcz__method-name">' + name + '</span>' +
              '<span class="dmcz__method-desc">' + desc + '</span>' +
              '</button>';
     }).join('');
     host.querySelectorAll('.dmcz__method').forEach(function(btn){
+      if (btn.disabled) return;
       btn.addEventListener('click', function(){ dmczSelectMethod(btn.getAttribute('data-method')); });
     });
   }
@@ -1608,10 +1638,32 @@
     var seq = ++_dmczState.priceSeq;
     var pidForGuard = p.product_id;
 
+    // Only for NETWORK failures. A 400 from /api/pricing means the engine
+    // refused this exact configuration, and falling back to p.price_from
+    // then was the bug behind the production report on 2026-08-01: that
+    // value is the CATALOGUE's price at the CATALOGUE's quantity, so a
+    // Gildan 5000 showed $9.95/unit - the 500-unit rate - while the modal
+    // said QTY 7 with embroidery selected. Showing a stale, much lower price
+    // for a combination we will not honour is worse than showing none.
     var fallback = function() {
       priceEl.innerHTML = (typeof p.price_from === 'number' && p.price_from > 0)
         ? dmczPriceMarkup(p.price_from, t('cat.card.perunit') || '/unit', '')
         : '<strong>' + (t('cat.card.quote-on-request') || 'Quote on request') + '</strong>';
+    };
+
+    // The engine refused. Say so, in the customer's terms, and never price it.
+    var refuse = function(info) {
+      var msg;
+      if (info && info.reason === 'below_embroidery_minimum' && info.min_qty) {
+        _dmczEmbMinQty = info.min_qty;
+        var need = Math.max(0, info.min_qty - (info.qty || 0));
+        msg = (t('cat.detail.embminprice') || 'Embroidery needs {min}+ · add {n} more')
+                .replace('{min}', info.min_qty).replace('{n}', need);
+        try { renderDmczMethods(); } catch (_) {}
+      } else {
+        msg = t('cat.card.quote-on-request') || 'Quote on request';
+      }
+      priceEl.innerHTML = '<strong class="dmcz-price--blocked">' + msg + '</strong>';
     };
 
     var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
@@ -1622,13 +1674,26 @@
               '&embroidery_placements=' + encodeURIComponent(embPlac) + addonParams;
 
     fetch(url, { cache: 'no-store' })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(d){
+      .then(function(r){
+        // Keep the BODY of a 4xx: it carries the refusal reason and the
+        // minimum. Collapsing it to null is what forced the stale-price
+        // fallback that produced the wrong number.
+        return r.json().then(function(j){ return { ok: r.ok, body: j }; })
+                       .catch(function(){ return { ok: r.ok, body: null }; });
+      })
+      .then(function(res){
         // Race / product-switch guard.
         if (seq !== _dmczState.priceSeq) return;
         if (!_detailProduct || _detailProduct.product_id !== pidForGuard) return;
+        if (!res.ok) { refuse(res.body); return; }
+        var d = res.body;
         var unit = d && typeof d.unit_price === 'number' ? d.unit_price : null;
-        if (unit === null || isNaN(unit)) { fallback(); return; }
+        if (unit === null || isNaN(unit)) { refuse(d); return; }
+        // A price came back, so nothing is blocked at this qty.
+        if (_dmczEmbMinQty != null && (d.qty == null || d.qty >= _dmczEmbMinQty)) {
+          // leave the known minimum in place; renderDmczMethods re-evaluates
+          // it against the current qty on every render.
+        }
         // Remember the tag rate so the checkbox can show it. It's qty-tiered,
         // so it changes as they move the quantity.
         // neck_tag_rate is what it WOULD cost at this qty, selected or not.
@@ -1995,12 +2060,18 @@
       syncDetailAddBtn();
       if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();  // refresh chip $ hints across the qty-50 break
       if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
+      // Re-evaluate the embroidery minimum so the card enables/disables and
+      // the "add N more" count tracks the stepper, not just typed input.
+      if (typeof renderDmczMethods === 'function') renderDmczMethods();
     });
     if (qtyPlus) qtyPlus.addEventListener('click', () => {
       qtyInp.value = Math.min(10000, (parseInt(qtyInp.value, 10) || 0) + 1);
       syncDetailAddBtn();
       if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();
       if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
+      // Re-evaluate the embroidery minimum so the card enables/disables and
+      // the "add N more" count tracks the stepper, not just typed input.
+      if (typeof renderDmczMethods === 'function') renderDmczMethods();
     });
     // While typing: don't clamp. Just update the label.
     if (qtyInp) qtyInp.addEventListener('input', syncDetailAddBtn);
@@ -2012,6 +2083,9 @@
         _dmczQtyTimer = setTimeout(() => {
           if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();
           if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
+          // Re-evaluate the embroidery minimum against the new qty so the
+          // card enables/disables and the "add N more" count stays truthful.
+          if (typeof renderDmczMethods === 'function') renderDmczMethods();
         }, 350);
       });
     }
