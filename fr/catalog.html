@@ -139,46 +139,62 @@
        Customer can also tap a tick or type a custom number. The whole bar
        collapses to two rows on mobile so the slider stays touch-friendly. -->
   <style>
-    .qty-bar{max-width:1200px;margin:-4px auto 18px;padding:14px 18px;background:linear-gradient(180deg,#fffdf0,#fdf6c9);border:1.5px solid var(--hi);border-radius:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 6px 22px rgba(190,205,30,.22)}
-    .qty-bar__badge{background:var(--ink);color:var(--hi);font-size:.66rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:50px;white-space:nowrap;flex-shrink:0}
-    .qty-bar__label{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);flex-shrink:0}
-    .qty-bar__label strong{color:var(--ink);font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
-    .qty-bar__slider-wrap{flex:1;min-width:200px;position:relative;padding:2px 0 18px}
-    .qty-slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:50px;background:linear-gradient(to right,var(--ink) var(--qty-pct,80%),#e4e0c8 var(--qty-pct,80%));outline:none;margin:0;cursor:pointer}
-    .qty-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 0 0 3px var(--hi),0 1px 5px rgba(0,0,0,.28)}
-    .qty-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--ink);border:3px solid #fff;cursor:grab;box-shadow:0 0 0 3px var(--hi),0 1px 5px rgba(0,0,0,.28)}
-    .qty-ticks{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;font-size:.66rem;color:var(--soft);font-weight:500;pointer-events:none}
-    .qty-ticks span{cursor:pointer;pointer-events:auto;transition:color .15s;padding:2px 4px;margin:0 -4px}
-    .qty-ticks span:hover,.qty-ticks span.active{color:var(--ink);font-weight:700}
-    .qty-input{width:60px;padding:5px 8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;font-size:.85rem;font-family:inherit;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+    .qty-bar{max-width:1200px;margin:-4px auto 18px;padding:14px 18px;background:#fff;
+      border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;
+      gap:18px;flex-wrap:wrap}
+    .qty-bar__lede{font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--soft);font-weight:800;flex-shrink:0}
+    .qty-ladder{display:flex;align-items:center;gap:2px;flex-wrap:wrap;flex:1;min-width:0}
+    .qty-tier{appearance:none;border:0;background:transparent;font:inherit;font-weight:600;
+      font-size:.84rem;color:var(--muted);padding:8px 14px;border-radius:9px;cursor:pointer;
+      transition:background .13s,color .13s;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .qty-tier:hover{background:#f4f2ec;color:var(--ink)}
+    .qty-tier[aria-pressed="true"]{background:var(--ink);color:#fff}
+    /* 1-4 is its own group. The rule is doing real work: it says "these are
+       two kinds of order", which is truer than any label and costs nothing. */
+    .qty-ladder__sep{width:1px;align-self:stretch;background:var(--line);margin:4px 10px;flex-shrink:0}
+    .qty-bar__note{font-size:.75rem;color:var(--soft);flex-shrink:0}
+    .qty-bar__note b{color:var(--ink);font-weight:600}
+    .qty-input{width:62px;padding:6px 8px;border:1px solid var(--line);background:#fff;color:var(--ink);
+      border-radius:9px;font-size:.85rem;font-family:inherit;font-weight:700;text-align:center;
+      font-variant-numeric:tabular-nums}
     .qty-input:focus{outline:none;border-color:var(--ink)}
-    .qty-bar__custom{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);flex-shrink:0}
+    .qty-bar__custom{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--muted);flex-shrink:0}
     @media (max-width:640px) {
-      .qty-bar{flex-direction:column;align-items:stretch;gap:8px}
-      .qty-bar__label{justify-content:space-between}
-      .qty-bar__slider-wrap{min-width:0}
+      /* Grid, not wrap. Letting the chips wrap produced a ragged 4-row block
+         and destroyed the one thing the ladder is for - reading left to right
+         from cheapest-per-unit to most. So the ladder keeps its single row and
+         scrolls horizontally instead, bleeding to the card edges so the
+         overflow is visible rather than guessed at. */
+      .qty-bar{display:grid;grid-template-columns:1fr auto;
+        grid-template-areas:"lede custom" "ladder ladder" "note note";
+        align-items:center;gap:11px 12px;padding:12px 13px}
+      .qty-bar__lede{grid-area:lede}
+      .qty-bar__custom{grid-area:custom}
+      .qty-bar__note{grid-area:note;width:100%}
+      .qty-ladder{grid-area:ladder;flex-wrap:nowrap;overflow-x:auto;gap:1px;
+        margin:0 -13px;padding:0 13px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+      .qty-ladder::-webkit-scrollbar{display:none}
+      .qty-tier{padding:8px 13px;font-size:.83rem;flex-shrink:0}
+      .qty-ladder__sep{margin:4px 7px;flex-shrink:0}
     }
   </style>
   <div id="qtyPricingBar" class="qty-bar">
-    <div class="qty-bar__label">
-      <span class="qty-bar__badge">💰 Bulk pricing</span>
-      <span  data-i18n="cat.qty.label">Prix pour</span> <strong><span id="qtyReadout">200</span> <span  data-i18n="cat.qty.units">unités</span></strong>
-      <span style="font-size:.72rem;color:var(--soft);font-weight:500"  data-i18n="cat.qty.oneside">· 1 côté imprimé</span>
+    <span class="qty-bar__lede" data-i18n="cat.qty.label">Prix pour</span>
+    <div class="qty-ladder" id="qtyLadder" role="group" aria-label="Quantity">
+      <button type="button" class="qty-tier" data-qty="1" aria-pressed="false" onclick="setQty(1)">1&ndash;4</button>
+      <span class="qty-ladder__sep" aria-hidden="true"></span>
+      <button type="button" class="qty-tier" data-qty="5"   aria-pressed="false" onclick="setQty(5)">5</button>
+      <button type="button" class="qty-tier" data-qty="10"  aria-pressed="false" onclick="setQty(10)">10</button>
+      <button type="button" class="qty-tier" data-qty="25"  aria-pressed="false" onclick="setQty(25)">25</button>
+      <button type="button" class="qty-tier" data-qty="50"  aria-pressed="false" onclick="setQty(50)">50</button>
+      <button type="button" class="qty-tier" data-qty="100" aria-pressed="false" onclick="setQty(100)">100</button>
+      <button type="button" class="qty-tier" data-qty="200" aria-pressed="true"  onclick="setQty(200)">200</button>
+      <button type="button" class="qty-tier" data-qty="500" aria-pressed="false" onclick="setQty(500)">500+</button>
     </div>
-    <div class="qty-bar__slider-wrap">
-      <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
-      <div class="qty-ticks">
-        <span data-step="0" onclick="setQty(5)">5</span>
-        <span data-step="1" onclick="setQty(10)">10</span>
-        <span data-step="2" onclick="setQty(25)">25</span>
-        <span data-step="3" onclick="setQty(50)">50</span>
-        <span data-step="4" onclick="setQty(100)">100</span>
-        <span data-step="5" class="active" onclick="setQty(200)">200</span>
-        <span data-step="6" onclick="setQty(500)">500+</span>
-      </div>
-    </div>
+    <span class="qty-bar__note" id="qtyNote" data-i18n="cat.qty.note.bulk">Prix unitaire &middot; 1 côté imprimé</span>
     <label class="qty-bar__custom">
-      <span  data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 

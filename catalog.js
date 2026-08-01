@@ -2355,21 +2355,10 @@
   const QTY_TIERS = [1, 5, 10, 25, 50, 100, 200, 500];
   let _qtyDebounce = null;
 
-  // Map an arbitrary qty to the closest slider step (so the thumb stays in
-  // a sensible position even after a custom number entry).
-  function qtyToStep(q) {
-    let bestIdx = 0, bestDist = Infinity;
-    QTY_TIERS.forEach((t, i) => {
-      const d = Math.abs(t - q);
-      if (d < bestDist) { bestDist = d; bestIdx = i; }
-    });
-    return bestIdx;
-  }
-
-  function onQtySliderChanged(stepStr) {
-    const step = parseInt(stepStr, 10);
-    setQty(QTY_TIERS[step] || 200);
-  }
+  // Retained as a no-op: the slider is gone, but a browser holding a cached
+  // catalog.html from before this deploy would still have the inline
+  // oninput handler and would throw on first drag.
+  function onQtySliderChanged() { /* slider removed 2026-08-01 */ }
   function onQtyInputChanged(val) {
     const n = parseInt(val, 10);
     if (!Number.isFinite(n) || n < 1) return;
@@ -2377,41 +2366,37 @@
   }
   function setQty(n) {
     state.qty = n;
-    // Sync UI: slider position, readout, number input, tick highlight.
-    const step = qtyToStep(n);
-    const slider = document.getElementById('qtySlider');
-    if (slider) {
-      slider.value = step;
-      slider.style.setProperty('--qty-pct', ((step / (QTY_TIERS.length - 1)) * 100) + '%');
-    }
-    // Below 5 the ladder does not apply: it is one flat price for 1-4, so the
-    // bar says so rather than showing a quantity that implies a per-unit curve.
     const few = n < 5;
-    const readout = document.getElementById('qtyReadout');
-    if (readout) readout.textContent = few ? '1\u20134' : (n >= 500 ? '500+' : String(n));
-    // Toggle two translatable spans rather than rewriting one. applyLang()
-    // reassigns innerHTML for every [data-i18n] element on load and on each
-    // language switch, so a textContent override here was silently reverted
-    // to "units" - observed on production before this fix.
-    const unitWord = document.getElementById('qtyUnitWord');
-    const itemWord = document.getElementById('qtyItemWord');
-    if (unitWord) unitWord.hidden = few;
-    if (itemWord) itemWord.hidden = !few;
-    const modeBadge = document.getElementById('qtyModeBadge');
-    if (modeBadge) modeBadge.textContent = few ? '\uD83C\uDFF7\uFE0F Single item' : '\uD83D\uDCB0 Bulk pricing';
+
+    // Ladder: mark the active tier. A custom number that isn't a tier lands
+    // on the tier it actually prices at (largest tier <= n), which is the
+    // same rule hitToProduct() uses to resolve the price - so the highlight
+    // can never disagree with the number on the card.
+    const active = QTY_TIERS.filter(t => t <= n).pop() || QTY_TIERS[0];
+    document.querySelectorAll('.qty-tier').forEach(b => {
+      b.setAttribute('aria-pressed', String(parseInt(b.dataset.qty, 10) === active));
+    });
+
+    // The note is the only thing that changes voice between the two regimes.
+    // Below 5 the useful facts are that the price is flat and there's no
+    // minimum; above it, that the price shown is per unit.
+    const note = document.getElementById('qtyNote');
+    if (note) {
+      note.setAttribute('data-i18n', few ? 'cat.qty.note.few' : 'cat.qty.note.bulk');
+      note.innerHTML = few
+        ? 'One flat price \u00b7 no minimum'
+        : 'Per-unit price \u00b7 1 print side';
+    }
+
     const input = document.getElementById('qtyInput');
     if (input && document.activeElement !== input) input.value = n;
-    document.querySelectorAll('.qty-ticks span').forEach(s => s.classList.toggle('active', parseInt(s.dataset.step,10) === step));
+
     // Reflect in URL so deep links carry the qty
     const url = new URL(location.href);
     if (n === 50) url.searchParams.delete('qty'); else url.searchParams.set('qty', String(n));
     history.replaceState(null, '', url.toString());
-    // Visual loading state — fade prices so the customer sees something
-    // happens immediately, even if the API takes a beat. Cards stay legible
-    // but the per-unit text greys out until fresh prices arrive.
+
     document.querySelectorAll('.card .price').forEach(p => p.style.opacity = '.4');
-    // Debounced refetch (100ms — fast enough to feel instant but coalesces
-    // rapid slider drags into a single request)
     if (_qtyDebounce) clearTimeout(_qtyDebounce);
     _qtyDebounce = setTimeout(() => resetAndFetch(), 100);
   }
@@ -2837,6 +2822,45 @@
     maybeTranslateDetailModal();
   });
 
+  /**
+   * Two prices, always.
+   *
+   * Baymard's listing-page research is blunt: 86% of sites show only a
+   * multi-quantity price, and shoppers abandon rather than do the arithmetic.
+   * So the selected tier is the headline and the single-item price sits under
+   * it permanently - no mode, no hover, nothing hidden. Wherever the ladder is
+   * set, someone who wants one shirt can always see what one shirt costs.
+   *
+   * Hierarchy is size + weight only, never colour: colour here would read as a
+   * discount badge and cheapen the card.
+   *
+   * The sub-line is omitted rather than faked when the ladder is unavailable
+   * (the legacy /api/catalog fallback doesn't carry prices_by_qty) or when it
+   * would only repeat the headline.
+   */
+  function priceLockup(p) {
+    if (!(typeof p.price_from === 'number' && p.price_from > 0)) {
+      return `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`;
+    }
+    const few  = state.qty < 5;
+    const main = `<strong>$${p.price_from.toFixed(2)}</strong>` +
+      (few ? `<span data-i18n="cat.card.pereach">/each</span>`
+           : `<span data-i18n="cat.card.perunit">/unit</span>`);
+
+    const ladder = p.prices_by_qty || null;
+    const single = ladder ? (ladder[1] != null ? ladder[1] : ladder['1']) : null;
+
+    let sub;
+    if (few) {
+      sub = `<span data-i18n="cat.card.flat-no-min">Flat price · no minimum</span>`;
+    } else if (typeof single === 'number' && single > 0 && single !== p.price_from) {
+      sub = `<span data-i18n="cat.card.justone">Just one</span> <b>$${single.toFixed(2)}</b>`;
+    } else {
+      sub = `<span data-i18n="cat.card.oneside">1-side print</span>`;
+    }
+    return `${main}<span class="price-sub">${sub}</span>`;
+  }
+
   function productCard(p, opts) {
     // Card is now a clickable surface (not an anchor). Whole-card click =
     // "add to cart with the currently-selected color". Swatches inside it
@@ -2932,11 +2956,7 @@
         <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? (state.qty < 5
-          // 1-4 is a single flat price, so "From" would be a lie - there is no
-          // lower rung to work up from within the mode. Say "each".
-          ? `<strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.pereach">/each</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>`
-          : `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>`) : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="price">${priceLockup(p)}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
           <span class="card-cta__sub">${state.qty < 5

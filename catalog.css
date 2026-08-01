@@ -139,9 +139,16 @@
       .card .card-cta{opacity:1;transform:translateY(0)}
     }
     .card .more{font-size:.72rem;color:var(--soft);font-weight:600;margin-left:2px}
-    .card .price{font-size:.82rem;color:var(--muted)}
-    .card .price strong{color:var(--ink);font-weight:600}
+    .card .price{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+    .card .price strong{color:var(--ink);font-weight:700;font-size:1.02rem;letter-spacing:-.01em}
     .card .price-meta{color:var(--soft);font-weight:500;white-space:nowrap}
+    /* Second price line. Carries hierarchy through SIZE and WEIGHT only -
+       deliberately not colour, because a coloured second price reads as a
+       discount badge and cheapens the card. One step down on each axis is
+       enough to subordinate it while keeping it locatable, which is exactly
+       what Baymard's per-unit-price guidance asks for. */
+    .card .price-sub{display:block;font-size:.7rem;color:var(--soft);font-weight:500;margin-top:2px}
+    .card .price-sub b{color:var(--muted);font-weight:600}
 
     /* BYO card */
     .card-byo{background:#fafaf6;border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 18px;gap:8px}
