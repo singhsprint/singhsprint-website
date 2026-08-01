@@ -1307,6 +1307,57 @@
    * the header is a fixed-height row and the old single inline string
    * ("From $22.45 /unit · 1-side print") wrapped to three lines there.
    */
+  // The pricing ladder's break points. Quantities BETWEEN two breaks are one
+  // flat tier — 1-4 all cost the same — so changing the qty inside that band
+  // legitimately does not move the price. Verified against /api/pricing:
+  // Comfort Colors 1567 is $69.95 at qty 1,2,3 and 4, then $62.95 at 5.
+  // That is correct, but a customer typing a new number and seeing nothing
+  // happen reads it as a dead control, so the band and the next break are now
+  // stated under the price.
+  var DMCZ_BREAKS = [5, 10, 25, 50, 100, 200, 500];
+  var _dmczBreakPrice = {};   // cache key -> unit price at the next break
+
+  function dmczNextBreak(qty) {
+    for (var i = 0; i < DMCZ_BREAKS.length; i++) if (DMCZ_BREAKS[i] > qty) return DMCZ_BREAKS[i];
+    return null;   // already at or past the top break
+  }
+
+  // One fetch per (product, method, sides, break) — not per keystroke. Typing
+  // 1, 2, 3, 4 all resolve to the same break and reuse the first answer.
+  function dmczRenderBreakHint(p, qty, method, embPlac, sides) {
+    var host = document.getElementById('dmczBreakHint');
+    if (!host) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var next = dmczNextBreak(qty);
+    if (!next) { host.textContent = ''; return; }
+    var key = [p.product_id, method, embPlac, sides, next].join('|');
+    var show = function (unit) {
+      if (!unit) { host.textContent = ''; return; }
+      var upTo = next - 1;
+      var tpl = (qty >= upTo)
+        ? (t('cat.detail.nextbreak') || '${p} each at {n}+')
+        : (t('cat.detail.sameprice') || 'Same price to {u} · ${p} each at {n}+');
+      host.textContent = tpl
+        .replace('{u}', upTo)
+        .replace('{p}', Number(unit).toFixed(2))
+        .replace('{n}', next);
+    };
+    if (Object.prototype.hasOwnProperty.call(_dmczBreakPrice, key)) { show(_dmczBreakPrice[key]); return; }
+    host.textContent = '';
+    fetch('https://singhsprint-crm.vercel.app/api/pricing?product_id=' + encodeURIComponent(p.product_id) +
+          '&qty=' + next + '&decoration_method=' + encodeURIComponent(method) +
+          (embPlac ? '&embroidery_placements=' + encodeURIComponent(embPlac) : '') +
+          '&print_sides=' + sides)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var u = j && (j.unit_price || j.price_per_unit || j.unit);
+        _dmczBreakPrice[key] = (typeof u === 'number' && u > 0) ? u : null;
+        // Only paint if the customer is still in the same band.
+        if (dmczNextBreak(dmczCurrentQty()) === next) show(_dmczBreakPrice[key]);
+      })
+      .catch(function () { _dmczBreakPrice[key] = null; });
+  }
+
   function dmczPriceMarkup(unit, perUnit, sideWord) {
     return '<strong>$' + Number(unit).toFixed(2) + '</strong>' +
            '<span class="detail-modal__price-sub">' + esc(perUnit) +
@@ -1734,6 +1785,7 @@
         msg = t('cat.card.quote-on-request') || 'Quote on request';
       }
       priceEl.innerHTML = '<strong class="dmcz-price--blocked">' + msg + '</strong>';
+      var bh = document.getElementById('dmczBreakHint'); if (bh) bh.textContent = '';
     };
 
     var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
@@ -1777,6 +1829,9 @@
           ? (t('cat.card.oneside') || '1-side print')
           : sides + (t('cat.detail.sideprint') || '-side print');
         priceEl.innerHTML = dmczPriceMarkup(unit, t('cat.card.perunit') || '/unit', sideWord);
+        // Say what the number is doing, so an unchanged price still reads as
+        // a live control rather than a broken one.
+        try { dmczRenderBreakHint(p, qty, method, embPlac, sides); } catch (_) {}
       })
       .catch(function(){
         if (seq !== _dmczState.priceSeq) return;

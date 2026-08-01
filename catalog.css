@@ -534,3 +534,6 @@
 .sp-prev__spin{width:52px;height:52px;flex:0 0 52px;border-radius:8px;border:2px solid #e8e6df;
   border-top-color:#1a1a1a;animation:spPrevSpin .7s linear infinite}
 @keyframes spPrevSpin{to{transform:rotate(360deg)}}
+
+/* Next price break, under the modal's unit price. */
+.detail-modal__break-hint{font-size:.68rem;color:var(--soft);text-align:right;margin-top:3px;line-height:1.3;min-height:.9em}

@@ -1053,6 +1053,8 @@ var SP_LANG = (function() {
     'cat.share.toomany': { en: 'Too many links just now — try again shortly.', fr: 'Trop de liens à la fois — réessayez sous peu.' },
     'cat.share.failed': { en: 'Could not create the link. Try again.', fr: 'Impossible de créer le lien. Réessayez.' },
     'cat.share.shareddesign': { en: 'Shared design', fr: 'Design partagé' },
+    'cat.detail.sameprice': { en: 'Same price to {u} · ${p} each at {n}+', fr: 'Même prix jusqu\u2019à {u} · {p}$ ch. dès {n}' },
+    'cat.detail.nextbreak': { en: '${p} each at {n}+', fr: '{p}$ ch. dès {n}' },
     'cat.share.baking': { en: 'Preparing your mockup…', fr: 'Préparation de votre maquette…' },
     'cat.share.bakingsub': { en: 'Rendering your artwork onto the garment.', fr: 'Rendu de votre visuel sur le vêtement.' },
     'cat.share.bakefail': { en: 'Could not render the mockup. Share the blank instead, or try again.', fr: 'Impossible de rendre la maquette. Partagez le vêtement, ou réessayez.' },
