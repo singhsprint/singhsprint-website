@@ -918,7 +918,26 @@
           body: file,
         }).then(function (put) {
           if (!put.ok) throw new Error('storage put ' + put.status);
-          return { path: d.path, signed_url: d.signed_url || '' };
+          // The upload URL is minted BEFORE the object exists, so Supabase
+          // cannot sign a read URL alongside it and d.signed_url is empty.
+          // Sign now that the bytes are there — the storefront treats a
+          // missing signed_url as "no artwork", so skipping this would show
+          // an empty stage after a perfectly good upload.
+          return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url/sign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: d.path }),
+          })
+            .then(function (sr) { return sr.ok ? sr.json() : null; })
+            .then(function (sj) {
+              return {
+                path: d.path,
+                // Local object URL is the last resort: it renders the preview
+                // correctly and costs no egress, and design_path (not the URL)
+                // is what the server composites from.
+                signed_url: (sj && sj.signed_url) || d.signed_url || URL.createObjectURL(file),
+              };
+            });
         });
       })
       .catch(function () {

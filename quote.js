@@ -6522,7 +6522,17 @@
             body: file,
           }).then(function(put){
             if (!put.ok) throw new Error('storage PUT ' + put.status);
-            return { path: d.path, signed_url: d.signed_url || '', mime: d.mime, bytes: file.size };
+            // Sign AFTER the PUT — the upload URL is minted before the object
+            // exists, so Supabase returns no read URL with it.
+            return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url/sign', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: d.path }),
+            })
+              .then(function(sr){ return sr.ok ? sr.json() : null; })
+              .then(function(sj){
+                return { path: d.path, signed_url: (sj && sj.signed_url) || '', mime: d.mime, bytes: file.size };
+              });
           });
         })
         .catch(function(){ return uploadDesignFileViaRelay(file); });
