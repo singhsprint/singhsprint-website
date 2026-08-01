@@ -330,6 +330,19 @@
     .ci-sizes__total{font-size:.78rem;color:#666;font-variant-numeric:tabular-nums}
     .ci-sizes__total strong{color:#1a1a1a;font-weight:700}
     .ci-sizes__total--mismatch strong{color:#a16207}
+    /* 2026-08-01 — "no sizes yet" is a distinct state from "sizes don't add
+       up". A paid order is blocked without a breakdown, so the field says so
+       itself instead of the customer discovering it at the Pay button. Same
+       amber family as the mismatch warning so the row reads as one system;
+       the tint + inset ring say "unfinished", not "error". */
+    .ci-sizes__req{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:#fdf6e3;border:1px solid #eedfb4;color:#a16207;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
+    .ci-sizes__total--required strong{color:#a16207}
+    .ci-sizes--required .ci-sizes__grid{padding:6px;margin:-6px;border-radius:10px;background:#fffdf5;box-shadow:inset 0 0 0 1.5px #eedfb4}
+    @media (max-width:420px){
+      /* Head is label-left / total-right; the pill pushes it past a 375px
+         row, so let it wrap rather than squeezing the count. */
+      .ci-sizes__head{flex-wrap:wrap;row-gap:2px}
+    }
     .ci-sizes__match{margin-left:8px;background:transparent;border:none;color:#a16207;text-decoration:underline;font-size:.72rem;cursor:pointer;font-weight:600;padding:0}
     .ci-sizes__grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
     .ci-sizes__cell{display:flex;flex-direction:column;gap:2px}

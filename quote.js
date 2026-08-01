@@ -2875,7 +2875,12 @@
             // dropped on the way to checkout. The tag is priced into the cart
             // row, so omitting it would quote the customer one number and
             // charge them another.
-            neck_tag:          !!it.neck_tag
+            neck_tag:          !!it.neck_tag,
+            // Jerseys carry their sizes per player on `roster[].size`, never
+            // in the `sizes` map. The server's size check needs to know that
+            // or it would reject every jersey order; without this flag a
+            // jersey is indistinguishable from a tee on the wire.
+            is_jersey:         !!it.is_jersey
           };
         });
       }
@@ -2958,6 +2963,68 @@
         try { if (typeof goToStep === 'function') goToStep(1); } catch (e) {}
         var swEl = document.querySelector('.ci-swatches') || document.querySelector('.color-grid');
         if (swEl) { try { swEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+        return;
+      }
+
+      // ── Sizes are a hard requirement for a PAID order ───────────────────
+      // 2026-08-01 — until now this path only ever checked qty, so an order
+      // could arrive with `sizes: {}` and production had to phone the
+      // customer to ask what to pull. Same shape as the colour check above:
+      // block, say which line and why, and put the customer on the field.
+      //
+      // The exemption comes from spSizesApplyTo() — the SAME predicate that
+      // decides whether the grid is drawn — so this can never demand a
+      // breakdown for a row that has nowhere to enter one (caps, jerseys).
+      //
+      // Mismatch is blocked too, not just emptiness. On the free-quote path
+      // a sizes/qty mismatch is a soft amber warning because a rep reconciles
+      // it by hand; on a PAID order we're charging for `qty` pieces while
+      // only knowing sizes for `total`, and the difference is unprintable.
+      // onCartItemSizeChange() already syncs qty up to the sizes sum, so the
+      // only way to land here is editing qty after the sizes — exactly the
+      // case the existing "match qty →" button fixes in one tap.
+      var sizeIssue = null;
+      if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+        var _cartItems = SinghsCart.read().items;
+        for (var _si = 0; _si < _cartItems.length; _si++) {
+          var _cit  = _cartItems[_si];
+          var _cqty = parseInt(_cit.qty, 10) || 0;
+          if (_cqty <= 0 || !spSizesApplyTo(_cit)) continue;
+          var _stot = spSizesTotal(_cit.sizes);
+          if (_stot <= 0)       { sizeIssue = { idx: _si, kind: 'missing',  qty: _cqty, total: _stot, item: _cit }; break; }
+          if (_stot !== _cqty)  { sizeIssue = { idx: _si, kind: 'mismatch', qty: _cqty, total: _stot, item: _cit }; break; }
+        }
+      } else if (catalogPick && catalogPick.product_id) {
+        // Single-product flow reads the global grid, and spBuildCheckoutItems
+        // DERIVES qty from it — so an empty breakdown already surfaces as
+        // qty 0 and the "add at least one item with a quantity" check above
+        // catches it. Belt-and-braces for the case where sizeTotal supplied
+        // a qty but no individual cell did.
+        var _singleGarment = { garment_type: catalogPick.garment_type || state.garment, is_jersey: false };
+        if (spSizesApplyTo(_singleGarment) && spSizesTotal(items[0] && items[0].sizes) <= 0) {
+          sizeIssue = { idx: -1, kind: 'missing', qty: 0, total: 0, item: null };
+        }
+      }
+      if (sizeIssue) {
+        var _lbl = sizeIssue.item
+          ? ([sizeIssue.item.brand, sizeIssue.item.style_number].filter(Boolean).join(' ')
+             || sizeIssue.item.name || 'your item')
+          : 'your order';
+        alert(sizeIssue.kind === 'missing'
+          ? 'Enter a size breakdown for ' + _lbl + ' before ordering — we can’t pull blanks '
+            + 'without knowing how many of each size to print.'
+          : _lbl + ': your sizes add up to ' + sizeIssue.total + ' but the line quantity is '
+            + sizeIssue.qty + '. Tap “match qty →”, or edit the sizes so the two agree.');
+        try { if (typeof goToStep === 'function') goToStep(1); } catch (e) {}
+        setTimeout(function () {
+          var host = sizeIssue.idx >= 0
+            ? document.querySelector('.cart-item[data-idx="' + sizeIssue.idx + '"] .ci-sizes')
+            : document.getElementById('globalSizeSection');
+          if (!host) return;
+          try { host.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+          var firstCell = host.querySelector('input[type="number"]');
+          if (firstCell) firstCell.focus();
+        }, 60);
         return;
       }
 
@@ -4564,15 +4631,36 @@
     // size-matrix surcharge math (per-size up-charges for 2XL+).
     // ─────────────────────────────────────────────────────────────────────
     var CART_SIZES = ['XS','S','M','L','XL','2XL','3XL'];
-    function renderCartItemSizes(idx, sizes, qty, garmentType) {
-      // Hide for hats / caps — sizes are typically OSFA. Customer can
-      // still specify quantities via the standard `qty` field above.
-      if (garmentType === 'hat' || garmentType === 'cap') return '';
-      var total = 0;
-      CART_SIZES.forEach(function(s){ total += Number((sizes && sizes[s]) || 0); });
-      Object.keys(sizes || {}).forEach(function(k) {
-        if (CART_SIZES.indexOf(k) < 0) total += Number(sizes[k] || 0);
-      });
+
+    // ── The ONE definition of "does this line take a size breakdown". ────
+    // 2026-08-01 — a paid order used to be placeable with `sizes: {}`, so
+    // production got a 50-piece order and had to phone the customer to ask
+    // what to pull. handlePayment() now blocks that, and it gates on THIS
+    // predicate — the same one renderCartItemSizes() uses to decide whether
+    // to draw the grid at all. Keeping it in one place is the point: a gate
+    // that demands a field the UI never rendered is an unfixable dead end.
+    //
+    // Exempt:
+    //   • hats / caps — one-size-fits-all, no grid is drawn
+    //   • jerseys     — sized per player on `roster[].size`, and the row is
+    //                   rendered by jerseyCartItemHtml() which has no grid
+    function spSizesApplyTo(item) {
+      if (!item) return false;
+      if (item.is_jersey) return false;
+      var g = item.garment_type;
+      return g !== 'hat' && g !== 'cap';
+    }
+    // Total across BOTH the standard cells and any custom sizes (4XL, YM,
+    // OSFA…) the customer added, which live in the same map.
+    function spSizesTotal(sizes) {
+      var t = 0;
+      Object.keys(sizes || {}).forEach(function(k) { t += Number(sizes[k]) || 0; });
+      return t;
+    }
+
+    function renderCartItemSizes(idx, sizes, qty, item) {
+      if (!spSizesApplyTo(item)) return '';
+      var total = spSizesTotal(sizes);
       var mismatch = qty > 0 && total !== qty;
       var matchHint = '';
       if (mismatch) {
@@ -4603,10 +4691,22 @@
           }).join('') +
           '</div>';
       }
-      var totalCls = mismatch ? 'ci-sizes__total ci-sizes__total--mismatch' : 'ci-sizes__total';
-      return '<div class="ci-sizes" style="flex-basis:100%;min-width:0">' +
+      // Unfilled is its own state, not just "total is 0". A paid order is
+      // blocked without a breakdown, so say so HERE — at the field — rather
+      // than letting the customer fill in the whole form and meet an alert
+      // at the Pay button. The wording is "required to order" (not just
+      // "required") because this same grid renders on the free-quote path,
+      // where it genuinely is optional.
+      var unset = total === 0;
+      var totalCls = 'ci-sizes__total'
+        + (unset ? ' ci-sizes__total--required' : (mismatch ? ' ci-sizes__total--mismatch' : ''));
+      // Plain English, like every other label in this row builder ("Sizes",
+      // "Print method", "match qty →"). Threading SP_LANG in here would be
+      // the only i18n call in the function and _t isn't in scope.
+      var reqPill = unset ? ' <span class="ci-sizes__req">required to order</span>' : '';
+      return '<div class="ci-sizes' + (unset ? ' ci-sizes--required' : '') + '" style="flex-basis:100%;min-width:0">' +
         '<div class="ci-sizes__head">' +
-        '  <span class="ci-section-label">Sizes</span>' +
+        '  <span class="ci-section-label">Sizes' + reqPill + '</span>' +
         '  <span class="' + totalCls + '">' +
         '    <strong>' + total + '</strong>' + (qty > 0 ? ' / ' + qty : '') +
         matchHint +
@@ -5156,7 +5256,7 @@
         // the placement chips. Multi-item carts now express things like
         // "DTG tote + DTF tee + embroidered hat" cleanly.
         var methodHtml     = renderCartItemMethod(idx, it.decoration_type || '', it.garment_type, it.qty || 0);
-        var sizesHtml      = renderCartItemSizes(idx, it.sizes || {}, it.qty || 0, it.garment_type);
+        var sizesHtml      = renderCartItemSizes(idx, it.sizes || {}, it.qty || 0, it);
         return '' +
           // overflow:hidden + max-width:100% + box-sizing prevent the
           // 9-column tier table inside the row from forcing the cart-item
