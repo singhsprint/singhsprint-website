@@ -149,6 +149,11 @@
     .qty-ticks{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:space-between;font-size:.66rem;color:var(--soft);font-weight:500;pointer-events:none}
     .qty-ticks span{cursor:pointer;pointer-events:auto;transition:color .15s;padding:2px 4px;margin:0 -4px}
     .qty-ticks span:hover,.qty-ticks span.active{color:var(--ink);font-weight:700}
+    /* 1-4 is a different pricing regime, not another point on the ladder:
+       flat micro-run price, and embroidery is unavailable under 10. Give it
+       a chip so it reads as a mode switch sitting on the slider. */
+    .qty-ticks span.qty-tick--few{border:1px solid var(--line);background:#fff;border-radius:50px;padding:2px 9px;margin:0;font-weight:700}
+    .qty-ticks span.qty-tick--few.active{background:var(--ink);color:var(--hi);border-color:var(--ink)}
     .qty-input{width:60px;padding:5px 8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;font-size:.85rem;font-family:inherit;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
     .qty-input:focus{outline:none;border-color:var(--ink)}
     .qty-bar__custom{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);flex-shrink:0}
@@ -160,20 +165,21 @@
   </style>
   <div id="qtyPricingBar" class="qty-bar">
     <div class="qty-bar__label">
-      <span class="qty-bar__badge">💰 Bulk pricing</span>
-      <span data-i18n="cat.qty.label">Pricing for</span> <strong><span id="qtyReadout">200</span> <span data-i18n="cat.qty.units">units</span></strong>
+      <span class="qty-bar__badge" id="qtyModeBadge">💰 Bulk pricing</span>
+      <span data-i18n="cat.qty.label">Pricing for</span> <strong><span id="qtyReadout">200</span> <span id="qtyUnitWord" data-i18n="cat.qty.units">units</span></strong>
       <span style="font-size:.72rem;color:var(--soft);font-weight:500" data-i18n="cat.qty.oneside">· 1 print side · drag to compare</span>
     </div>
     <div class="qty-bar__slider-wrap">
-      <input id="qtySlider" type="range" min="0" max="6" step="1" value="5" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
+      <input id="qtySlider" type="range" min="0" max="7" step="1" value="6" class="qty-slider" oninput="onQtySliderChanged(this.value)" aria-label="Quantity for pricing"/>
       <div class="qty-ticks">
-        <span data-step="0" onclick="setQty(5)">5</span>
-        <span data-step="1" onclick="setQty(10)">10</span>
-        <span data-step="2" onclick="setQty(25)">25</span>
-        <span data-step="3" onclick="setQty(50)">50</span>
-        <span data-step="4" onclick="setQty(100)">100</span>
-        <span data-step="5" class="active" onclick="setQty(200)">200</span>
-        <span data-step="6" onclick="setQty(500)">500+</span>
+        <span data-step="0" class="qty-tick--few" onclick="setQty(1)">1&ndash;4</span>
+        <span data-step="1" onclick="setQty(5)">5</span>
+        <span data-step="2" onclick="setQty(10)">10</span>
+        <span data-step="3" onclick="setQty(25)">25</span>
+        <span data-step="4" onclick="setQty(50)">50</span>
+        <span data-step="5" onclick="setQty(100)">100</span>
+        <span data-step="6" class="active" onclick="setQty(200)">200</span>
+        <span data-step="7" onclick="setQty(500)">500+</span>
       </div>
     </div>
     <label class="qty-bar__custom">

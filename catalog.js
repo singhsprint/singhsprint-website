@@ -2341,7 +2341,18 @@
   // lets the customer override to any qty in between. Both write into
   // state.qty and refetch the catalog (debounced).
   // =========================================================================
-  const QTY_TIERS = [5, 10, 25, 50, 100, 200, 500];   // index = slider step
+  // index = slider step. 1 = the "1-4" micro-run mode (2026-08-01).
+  //
+  // The engine's sub-5 price is FLAT across 1, 2, 3 and 4 - verified on
+  // production for every category - so one stop covers the whole mode and
+  // there is no 2/3/4 to put on the slider. Crossing to 5 is a price DROP,
+  // which is why the stop sits at the cheap-looking end but is the most
+  // expensive per unit.
+  //
+  // No client-side price plumbing was needed: hitToProduct() already resolves
+  // a qty to the largest tier <= it, so once the Algolia sync emits a `1` cell
+  // (PRICE_TIERS in api/cron/sync-algolia) a qty of 1-4 lands on it by itself.
+  const QTY_TIERS = [1, 5, 10, 25, 50, 100, 200, 500];
   let _qtyDebounce = null;
 
   // Map an arbitrary qty to the closest slider step (so the thumb stays in
@@ -2373,8 +2384,15 @@
       slider.value = step;
       slider.style.setProperty('--qty-pct', ((step / (QTY_TIERS.length - 1)) * 100) + '%');
     }
+    // Below 5 the ladder does not apply: it is one flat price for 1-4, so the
+    // bar says so rather than showing a quantity that implies a per-unit curve.
+    const few = n < 5;
     const readout = document.getElementById('qtyReadout');
-    if (readout) readout.textContent = n >= 500 ? '500+' : String(n);
+    if (readout) readout.textContent = few ? '1\u20134' : (n >= 500 ? '500+' : String(n));
+    const unitWord = document.getElementById('qtyUnitWord');
+    if (unitWord) unitWord.textContent = few ? 'items' : 'units';
+    const modeBadge = document.getElementById('qtyModeBadge');
+    if (modeBadge) modeBadge.textContent = few ? '\uD83C\uDFF7\uFE0F Single item' : '\uD83D\uDCB0 Bulk pricing';
     const input = document.getElementById('qtyInput');
     if (input && document.activeElement !== input) input.value = n;
     document.querySelectorAll('.qty-ticks span').forEach(s => s.classList.toggle('active', parseInt(s.dataset.step,10) === step));
@@ -2908,10 +2926,16 @@
         <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>` : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="price">${typeof p.price_from === 'number' && p.price_from > 0 ? (state.qty < 5
+          // 1-4 is a single flat price, so "From" would be a lie - there is no
+          // lower rung to work up from within the mode. Say "each".
+          ? `<strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.pereach">/each</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>`
+          : `<span data-i18n="cat.card.from">From</span> <strong>$${p.price_from.toFixed(2)}</strong><span data-i18n="cat.card.perunit">/unit</span> · <span class="price-meta" data-i18n="cat.card.oneside">1-side print</span>`) : `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
-          <span class="card-cta__sub"><span class="card-cta__qty">${state.qty}</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span></span>
+          <span class="card-cta__sub">${state.qty < 5
+            ? '<span data-i18n="cat.card.few-at-tier">1&ndash;4 items · no minimum</span>'
+            : '<span class="card-cta__qty">' + state.qty + '</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span>'}</span>
         </div>
       </div>
     `;
