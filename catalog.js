@@ -222,10 +222,10 @@
     'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest',        desc: '~3-4" — logo / pocket', sil:'shirt-front', rect:{x:11,y:14,w:6, h:5}  },
     'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest',      desc: '~7" mid-chest',         sil:'shirt-front', rect:{x:14,y:17,w:14,h:10} },
     'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',        desc: '~11" chest panel',      sil:'shirt-front', rect:{x:11,y:14,w:20,h:18} },
-    'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~14" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
+    'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~18" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
     'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back',          desc: 'Under collar, ~5"',     sil:'shirt-back',  rect:{x:15,y:10,w:12,h:5}  },
     'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back',       desc: '~12" upper back',       sil:'shirt-back',  rect:{x:11,y:15,w:20,h:16} },
-    'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~14" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
+    'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~18" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
     'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
     'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
     'hood':         { loc: 'front',        size: 'small',       cx: 0.50, cy: 0.12, label: 'Hood',              desc: 'On the hood itself',    sil:'hoodie',      rect:{x:17,y:1, w:8, h:4}  },
@@ -884,6 +884,55 @@
     });
   }
 
+  /**
+   * Put one artwork file into the designs bucket and resolve {path, signed_url}.
+   *
+   * Files go DIRECT to Supabase via a signed upload URL rather than through
+   * /api/inbound/upload. That relay is a Vercel serverless function, and
+   * Vercel caps serverless request bodies at 4.5 MB — measured on production
+   * 2026-08-01, a 4 MB upload returned 201 and a 5 MB upload was refused at
+   * the edge before the function ran. The storefront meanwhile advertised
+   * 15 MB, so every file between ~4.5 and 15 MB failed with a bare "Upload
+   * failed" and no way forward. That is most AI-generated PNG exports and
+   * most phone photos.
+   *
+   * The server still mints the path, enforces the MIME allowlist, the size
+   * ceiling and the per-IP rate limit — only the bytes skip the function.
+   *
+   * Falls back to the old relay if the signed-URL step fails for any reason
+   * (older deploy, transient 5xx), so a small file always has a route in.
+   */
+  function dmczPutArtwork(file) {
+    var meta = { filename: file.name || 'design', mime: file.type || 'application/octet-stream', bytes: file.size };
+    return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(meta),
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.upload_url) throw new Error('no signed url');
+        return fetch(d.upload_url, {
+          method: 'PUT',
+          headers: { 'Content-Type': meta.mime, 'x-upsert': 'false' },
+          body: file,
+        }).then(function (put) {
+          if (!put.ok) throw new Error('storage put ' + put.status);
+          return { path: d.path, signed_url: d.signed_url || '' };
+        });
+      })
+      .catch(function () {
+        // Legacy relay. Only viable under ~4.5 MB, which is exactly the range
+        // it still serves correctly, so this is a real fallback and not a
+        // retry that is guaranteed to fail.
+        var fd = new FormData();
+        fd.append('file', file);
+        fd.append('kind', 'design');
+        return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload', { method: 'POST', body: fd })
+          .then(function (r) { return r.ok ? r.json() : null; });
+      });
+  }
+
   // Upload one file to the CRM inbound endpoint. 15MB cap; friendly error
   // on failure but never blocks the customer from continuing.
   function dmczHandleUpload(pid, inp) {
@@ -902,11 +951,7 @@
       return;
     }
     setStatus(t('cat.detail.uploading') || 'Uploading…', false);
-    var fd = new FormData();
-    fd.append('file', file);
-    fd.append('kind', 'design');
-    fetch('https://singhsprint-crm.vercel.app/api/inbound/upload', { method: 'POST', body: fd })
-      .then(function(r){ return r.ok ? r.json() : null; })
+    dmczPutArtwork(file)
       .then(function(d){
         if (!d || !d.path) {
           setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);

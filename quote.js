@@ -815,10 +815,10 @@
       'left-chest':   { loc: 'front',        size: 'left-chest',  cx: 0.38, cy: 0.32, label: 'Left Chest',        desc: '~3-4" — logo / pocket', sil:'shirt-front', rect:{x:11,y:14,w:6, h:5}  },
       'center-chest': { loc: 'front',        size: 'medium',      cx: 0.50, cy: 0.40, label: 'Center Chest',      desc: '~7" mid-chest',         sil:'shirt-front', rect:{x:14,y:17,w:14,h:10} },
       'full-front':   { loc: 'front',        size: 'large',       cx: 0.50, cy: 0.50, label: 'Full Front',        desc: '~11" chest panel',      sil:'shirt-front', rect:{x:11,y:14,w:20,h:18} },
-      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~14" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
+      'oversized':    { loc: 'front',        size: 'xl',          cx: 0.50, cy: 0.58, label: 'Oversized Front',   desc: '~18" chest to waist',   sil:'shirt-front', rect:{x:9, y:12,w:24,h:28} },
       'back-top':     { loc: 'back',         size: 'small',       cx: 0.50, cy: 0.22, label: 'Top Back',          desc: 'Under collar, ~5"',     sil:'shirt-back',  rect:{x:15,y:10,w:12,h:5}  },
       'back-across':  { loc: 'back',         size: 'large',       cx: 0.50, cy: 0.42, label: 'Across Back',       desc: '~12" upper back',       sil:'shirt-back',  rect:{x:11,y:15,w:20,h:16} },
-      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~14" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
+      'back-full':    { loc: 'back',         size: 'xl',          cx: 0.50, cy: 0.55, label: 'Full Back',         desc: '~18" full panel',       sil:'shirt-back',  rect:{x:9, y:12,w:24,h:28} },
       'left-sleeve':  { loc: 'left-sleeve',  size: 'left-chest',  cx: 0.22, cy: 0.32, label: 'Left Sleeve',       desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:3, y:13,w:4, h:5}  },
       'right-sleeve': { loc: 'right-sleeve', size: 'right-chest', cx: 0.78, cy: 0.32, label: 'Right Sleeve',      desc: 'Bicep, small hit',      sil:'shirt-front', rect:{x:35,y:13,w:4, h:5}  },
       // Hoodie-specific
@@ -6497,6 +6497,41 @@
           'Please compress or email it to sales@singhsprint.com.'
         ));
       }
+      // Bytes go DIRECT to storage via a signed upload URL. The relay at
+      // INBOUND_UPLOAD_API is a Vercel serverless function, and Vercel caps
+      // serverless request bodies at 4.5 MB — measured on production
+      // 2026-08-01: 4 MB → 201, 5 MB → refused at the edge before the
+      // function ran. This file promised 15 MB, so anything between the two
+      // failed with a generic error. The server still mints the path and
+      // enforces MIME, size and per-IP limits; only the payload skips it.
+      return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name || 'design',
+          mime: file.type || 'application/octet-stream',
+          bytes: file.size,
+        }),
+      })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if (!d || !d.upload_url) throw new Error('no-signed-url');
+          return fetch(d.upload_url, {
+            method: 'PUT',
+            headers: { 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false' },
+            body: file,
+          }).then(function(put){
+            if (!put.ok) throw new Error('storage PUT ' + put.status);
+            return { path: d.path, signed_url: d.signed_url || '', mime: d.mime, bytes: file.size };
+          });
+        })
+        .catch(function(){ return uploadDesignFileViaRelay(file); });
+    }
+
+    // Legacy multipart relay. Still correct under ~4.5 MB, which is exactly
+    // the range it can serve, so this is a genuine fallback rather than a
+    // retry that is certain to fail.
+    function uploadDesignFileViaRelay(file) {
       var fd = new FormData();
       fd.append('file', file);
       fd.append('kind', 'design');
