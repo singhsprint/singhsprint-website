@@ -1070,7 +1070,16 @@
   function dmczPlacementsWithArt() {
     return (_dmczState.placements || []).filter(function(pid){
       var u = _dmczState.uploads[pid];
-      return u && u.signed_url;
+      if (!u) return false;
+      // signed_url  → a live upload: we can draw it and let them drag it.
+      // baked mockup → the artwork is already burned into the garment image,
+      //                so it is visible with nothing to overlay.
+      // A design restored from /d/<token> only ever has the second: the read
+      // projection deliberately withholds a downloadable artwork URL. Without
+      // this clause the recipient of a shared design landed on a BARE BLANK
+      // captioned "Upload artwork to see it here" — the exact opposite of what
+      // was sent to them.
+      return !!(u.signed_url || (u.path && _dmczPreviewUrl[pid]));
     });
   }
 
@@ -4024,6 +4033,10 @@
       }
       if (d.mockup_url) _dmczPreviewUrl[d.placement] = d.mockup_url;
     });
+    // Point the stage at a placement we can actually show a composite for, so
+    // the design is on screen the moment the modal opens.
+    var firstBaked = (share.designs.filter(function (d) { return d && d.mockup_url; })[0] || {}).placement;
+    if (firstBaked) _dmczState.activePreview = firstBaked;
     try { renderDmczMethods(); renderDmczPlacements(); renderDmczUploads(); renderDmczPreview(); refreshDmczPrice(); } catch (e) {}
     // Open the drawer — the design IS the thing they were sent, so it should
     // not be behind a click.
