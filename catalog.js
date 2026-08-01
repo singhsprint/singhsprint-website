@@ -1716,6 +1716,7 @@
   }
 
   function openProductDetail(p, initialColorIdx) {
+    if (typeof spCloseSharePop === 'function') spCloseSharePop();
     _detailProduct = p;
     _detailColorIdx = (Number.isFinite(initialColorIdx) && initialColorIdx >= 0 && initialColorIdx < (p.colors || []).length)
       ? initialColorIdx : 0;
@@ -1977,6 +1978,7 @@
   }
 
   function closeProductDetail() {
+    if (typeof spCloseSharePop === 'function') spCloseSharePop();
     document.getElementById('detailOverlay').classList.remove('open');
     document.getElementById('detailModal').classList.remove('open');
     document.body.style.overflow = '';
@@ -2298,7 +2300,17 @@
       });
     });
     document.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Escape' && document.getElementById('detailModal').classList.contains('open')) {
+      if (ev.key !== 'Escape') return;
+      // Innermost thing first — same ordering the image lightbox relies on.
+      // Escape out of the share popover must not also close the modal.
+      const pop = document.getElementById('spSharePop');
+      if (pop && !pop.hidden) {
+        spCloseSharePop();
+        const btn = document.getElementById('spShareBtn');
+        if (btn) btn.focus();
+        return;
+      }
+      if (document.getElementById('detailModal').classList.contains('open')) {
         closeProductDetail();
       }
     });
@@ -2749,7 +2761,7 @@
           'image': heroImg ? [heroImg] : undefined,
           'description': (p.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500) || ((p.brand || '') + ' ' + (p.name || '') + ' decorated by Singhs Print Montreal — DTG, DTF, embroidery or screen.'),
           'category': p.garment_type || 'Custom Apparel',
-          'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || ''),
+          'url': BASE + '/catalog?product=' + encodeURIComponent(p.product_id || ''),
           'aggregateRating': AGGREGATE_RATING,
           'review':          REVIEWS_LIST,
           'offers': (typeof p.price_from === 'number' && p.price_from > 0) ? {
@@ -2759,7 +2771,7 @@
             'availability': (p.in_stock === false) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
             'priceValidUntil': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
             'seller': { '@id': BASE + '/#business' },
-            'url': BASE + '/catalog.html#p=' + encodeURIComponent(p.product_id || ''),
+            'url': BASE + '/catalog?product=' + encodeURIComponent(p.product_id || ''),
             'shippingDetails':         SHIPPING_DETAILS,
             'hasMerchantReturnPolicy': RETURN_POLICY
           } : undefined
@@ -3024,7 +3036,7 @@
 
     card.innerHTML = `
       ${badge}
-      <div class="photo"><img src="${esc(photoUrl)}" alt="${esc((p.brand || '') + ' ' + (p.style_number || ''))}" loading="${opts.eager ? 'eager' : 'lazy'}" decoding="async"${opts.eager ? ' fetchpriority="high"' : ''}/></div>
+      <div class="photo"><img src="${esc(photoUrl)}" alt="${esc((p.brand || '') + ' ' + (p.style_number || ''))}" loading="${opts.eager ? 'eager' : 'lazy'}" decoding="async"${opts.eager ? ' fetchpriority="high"' : ''}/><button type="button" class="sp-card-share" aria-label="${esc(spShareT('cat.share.aria', 'Share this blank'))}" title="${esc(spShareT('cat.share.aria', 'Share this blank'))}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5l5-5"/><path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/><path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg></button></div>
       <div class="body">
         <div class="brand-row">${esc((p.brand || '').toUpperCase())} · ${esc(p.style_number || '')}</div>
         <div class="name">${esc(p.name)}</div>
@@ -3051,6 +3063,13 @@
         }
       });
     });
+
+    // Share glyph. Stops propagation because the card itself is a
+    // role=button that opens the detail modal, and a share must not.
+    const shareBtn = card.querySelector('.sp-card-share');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', (ev) => spShareCard(ev, p, card._selectedColorIdx));
+    }
 
     // "View details ↗" opens the full-product modal — and crucially stops
     // propagation so clicking it doesn't also fire the whole-card add.
@@ -3707,6 +3726,296 @@
   // =========================================================================
   // Init
   // =========================================================================
+  // =========================================================================
+  // Share a blank  (2026-08-01)
+  // =========================================================================
+  // Two entry points — a glyph on each card, and a control in the detail
+  // modal's header — and three possible behaviours, chosen in spShareInvoke:
+  //
+  //   navigator.share available  → hand off to the OS share sheet. Nothing we
+  //                                could build beats the sheet the customer
+  //                                already knows, and it is the only path that
+  //                                reaches iMessage / WhatsApp directly.
+  //   else, from the modal, ≥560px → the preview popover. It shows what the
+  //                                RECIPIENT will see, not the raw URL: the
+  //                                link is server-rendered (api/share/blank.js)
+  //                                for its Open Graph tags, and this popover is
+  //                                the only place that work is visible to the
+  //                                person doing the sharing.
+  //   else                       → straight to the clipboard.
+  //
+  // The link itself is /b/<brand-style>/<colour>[/<qty>] — qty omitted at the
+  // default 50, matching setQty()'s "delete the default from the URL" habit.
+  // A raw ?product= deep link already opens the right modal, but every one of
+  // them unfurls as catalog.html's static OG tags: the same stock photo and
+  // "Apparel Catalog — Singhs Print" no matter which blank was sent.
+  // =========================================================================
+
+  // Byte-identical twin of slugify() in api/share/blank.js. The client builds
+  // the URL and that route takes it apart again; any drift 302s every link
+  // silently back to the bare catalog.
+  function spSlug(s) {
+    return String(s || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  var SP_SHARE_DEFAULT_QTY = 50;
+
+  function spShareT(key, fallback) {
+    var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+    return v || fallback;
+  }
+
+  // Everything the share surfaces need, derived from a product + a colour.
+  function spSharePayload(p, colorIdx, qty) {
+    if (!p) return null;
+    var slug = spSlug(p.brand) + '-' + spSlug(p.style_number);
+    var colors = p.colors || [];
+    var color  = colors[colorIdx] || colors[0] || null;
+    var colorName = ((color && color.color_name) || '').replace(/_\d+$/, '');
+    var isFr = /^\/fr(\/|$)/.test(location.pathname);
+
+    var parts = [slug];
+    if (colorName) parts.push(spSlug(colorName));
+    if (qty && qty !== SP_SHARE_DEFAULT_QTY) parts.push(String(qty));
+
+    var path = (isFr ? '/fr' : '') + '/b/' + parts.map(encodeURIComponent).join('/');
+    return {
+      url:       location.origin + path,
+      pretty:    location.host.replace(/^www\./, '') + path,
+      title:     [(p.brand || '') + ' ' + (p.style_number || ''), p.name || ''].join(' · ').replace(/\s+/g, ' ').trim(),
+      colorName: colorName,
+      qty:       qty || SP_SHARE_DEFAULT_QTY,
+      image:     (color && (color.mockup_front_url || color.swatch_image_url)) || p.hero_image_url || '',
+      productId: p.product_id,
+      priceFrom: (typeof p.price_from === 'number' && p.price_from > 0) ? p.price_from : null
+    };
+  }
+
+  // navigator.clipboard needs a secure context AND, on some browsers, a very
+  // fresh user gesture. Fall back to the old selection trick rather than
+  // failing silently — a share button that does nothing is worse than none.
+  function spCopy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy failed'));
+      } catch (e) { reject(e); }
+    });
+  }
+
+  function spCanNativeShare(payload) {
+    if (!navigator.share) return false;
+    if (navigator.canShare && !navigator.canShare({ url: payload.url })) return false;
+    return true;
+  }
+
+  function spNativeShare(payload) {
+    return navigator.share({
+      title: payload.title,
+      text:  [payload.title, payload.colorName].filter(Boolean).join(' — '),
+      url:   payload.url
+    });
+  }
+
+  // ---- the preview popover ------------------------------------------------
+
+  var _spSharePayload = null;
+
+  function spPriceLine(payload, price) {
+    var bits = [];
+    if (payload.colorName) bits.push(payload.colorName);
+    if (price != null) {
+      bits.push(spShareT('cat.share.fromunit', 'from ${p}/unit at {n}')
+                  .replace('{p}', '$' + price.toFixed(2))
+                  .replace('{n}', String(payload.qty)));
+    }
+    return bits.join(' · ');
+  }
+
+  function spRenderSharePop(payload) {
+    var pop = document.getElementById('spSharePop');
+    if (!pop) return;
+    var copyLabel = spShareT('cat.share.copy', 'Copy link');
+    var moreLabel = spShareT('cat.share.more', 'More sharing options…');
+    pop.innerHTML =
+      '<div class="sp-sharepop__k">' + esc(spShareT('cat.share.theyllsee', "They'll see this")) + '</div>' +
+      '<div class="sp-prev">' +
+        (payload.image ? '<img class="sp-prev__img" src="' + esc(imgUrl(payload.image, 160)) + '" alt="" loading="lazy">' : '') +
+        '<div class="sp-prev__txt">' +
+          '<div class="sp-prev__t">' + esc(payload.title) + '</div>' +
+          '<div class="sp-prev__s" id="spPrevSub">' + esc(spPriceLine(payload, payload.priceFrom)) + '</div>' +
+          '<div class="sp-prev__d">' + esc(payload.pretty) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="sp-sharepop__copy" id="spShareCopy">' +
+        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5l5-5"/><path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/><path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg>' +
+        '<span>' + esc(copyLabel) + '</span>' +
+      '</button>' +
+      (navigator.share ? '<button type="button" class="sp-sharepop__more" id="spShareMore">' + esc(moreLabel) + '</button>' : '');
+
+    document.getElementById('spShareCopy').addEventListener('click', function () {
+      var btn = this;
+      spCopy(payload.url).then(function () {
+        btn.classList.add('is-done');
+        btn.querySelector('span').textContent = spShareT('cat.share.copied', 'Link copied');
+        clearTimeout(spRenderSharePop._tid);
+        spRenderSharePop._tid = setTimeout(spCloseSharePop, 1100);
+      }).catch(function () {});
+    });
+    var more = document.getElementById('spShareMore');
+    if (more) more.addEventListener('click', function () { spNativeShare(payload).catch(function () {}); });
+
+    // The preview quotes a price at the SHARED quantity, and p.price_from was
+    // computed at whatever quantity the catalog was last fetched at. Correct
+    // it from the same endpoint the /b/ route will use, so the preview and the
+    // real unfurl cannot disagree.
+    fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
+          encodeURIComponent(payload.productId) + '&qty=' + encodeURIComponent(payload.qty) + '&limit=1')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var fresh = d && d.products && d.products[0];
+        if (!fresh || _spSharePayload !== payload) return;
+        var sub = document.getElementById('spPrevSub');
+        if (sub && typeof fresh.price_from === 'number' && fresh.price_from > 0) {
+          sub.textContent = spPriceLine(payload, fresh.price_from);
+        }
+      })
+      .catch(function () {});
+  }
+
+  function spCloseSharePop() {
+    var pop = document.getElementById('spSharePop');
+    var btn = document.getElementById('spShareBtn');
+    if (pop) { pop.classList.remove('open'); pop.hidden = true; }
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    _spSharePayload = null;
+    document.removeEventListener('click', spShareOutsideClick, true);
+  }
+
+  function spShareOutsideClick(e) {
+    var pop = document.getElementById('spSharePop');
+    var btn = document.getElementById('spShareBtn');
+    if (!pop || pop.hidden) return;
+    if (pop.contains(e.target) || (btn && btn.contains(e.target))) return;
+    spCloseSharePop();
+  }
+
+  function spOpenSharePop(payload) {
+    var pop = document.getElementById('spSharePop');
+    var btn = document.getElementById('spShareBtn');
+    if (!pop) return;
+    _spSharePayload = payload;
+    spRenderSharePop(payload);
+    pop.hidden = false;
+    // Next frame so the transition actually runs from the hidden state.
+    requestAnimationFrame(function () { pop.classList.add('open'); });
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    // Capture phase: the modal's own handlers stopPropagation in places.
+    document.addEventListener('click', spShareOutsideClick, true);
+  }
+
+  // ---- entry points -------------------------------------------------------
+
+  // Morph a button in place: matches how #qtyNote swaps between two states —
+  // rewrite data-i18n AND write the text, so a later applyLang() agrees.
+  function spFlashCopied(btn) {
+    var label = btn.querySelector('span');
+    if (!label) return;
+    var oldKey = label.getAttribute('data-i18n');
+    label.setAttribute('data-i18n', 'cat.share.copied');
+    label.innerHTML = spShareT('cat.share.copied', 'Link copied');
+    btn.classList.add('is-done');
+    clearTimeout(spFlashCopied._tid);
+    spFlashCopied._tid = setTimeout(function () {
+      if (oldKey) label.setAttribute('data-i18n', oldKey);
+      label.innerHTML = spShareT('cat.share.cta', 'Share');
+      btn.classList.remove('is-done');
+    }, 1600);
+  }
+
+  // showCartToast() hardcodes the "✓ Added to quote" lockup, so borrowing it
+  // for a share produced "✓ Added to quote · Link copied" — which claims
+  // something that did not happen. Same element, same CSS, own message.
+  function spShareToast(msg) {
+    var t = document.getElementById('cartToast');
+    if (!t) return;
+    t.innerHTML = '<strong>' + esc(msg) + '</strong>';
+    t.classList.add('show');
+    clearTimeout(showCartToast._tid);
+    clearTimeout(spShareToast._tid);
+    spShareToast._tid = setTimeout(function () { t.classList.remove('show'); }, 1800);
+  }
+
+  // Decided by the DEVICE, not by whether navigator.share exists. Safari on
+  // macOS implements the Web Share API, so keying off the API alone sent every
+  // Mac straight to the system sheet — meaning the preview popover, the whole
+  // point of this design, would never once have appeared on the machine the
+  // shop actually works from.
+  function spIsHandheld() {
+    if (window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches) return true;
+    return window.innerWidth < 560;
+  }
+
+  function spShareInvoke(payload, opts) {
+    opts = opts || {};
+    var handheld = spIsHandheld();
+    // Phone: the OS sheet beats anything we could build, and it is the only
+    // path that reaches iMessage / WhatsApp directly.
+    if (handheld && spCanNativeShare(payload)) {
+      spNativeShare(payload).catch(function () {});
+      return;
+    }
+    // Desktop, from the modal: always the preview. The popover needs room the
+    // modal doesn't have on a phone, so a handheld without navigator.share
+    // falls through to a straight copy instead of a cramped panel.
+    if (!handheld && opts.popover) { spOpenSharePop(payload); return; }
+    spCopy(payload.url).then(function () {
+      if (opts.button) spFlashCopied(opts.button);
+      else spShareToast('✓ ' + spShareT('cat.share.copied', 'Link copied'));
+    }).catch(function () {});
+  }
+
+  // Modal header.
+  function spShareToggle(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    var btn = document.getElementById('spShareBtn');
+    var pop = document.getElementById('spSharePop');
+    if (pop && !pop.hidden) { spCloseSharePop(); return; }
+    var p = (typeof _detailProduct !== 'undefined') ? _detailProduct : null;
+    if (!p) return;
+    var idx = (typeof _detailColorIdx !== 'undefined') ? _detailColorIdx : 0;
+    // The modal's own quantity, never the catalogue's — the same distinction
+    // dmczCurrentQty() exists to enforce.
+    var el = document.getElementById('detailModalQtyInput');
+    var n  = el ? parseInt(el.value, 10) : NaN;
+    var qty = (Number.isFinite(n) && n > 0) ? n : SP_SHARE_DEFAULT_QTY;
+    var payload = spSharePayload(p, idx, qty);
+    if (payload) spShareInvoke(payload, { popover: true, button: btn });
+  }
+  window.spShareToggle = spShareToggle;
+
+  // Card glyph — a quick grab, so no popover: native sheet or clipboard.
+  function spShareCard(e, p, colorIdx) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    var payload = spSharePayload(p, colorIdx, (typeof state !== 'undefined' && state.qty) || SP_SHARE_DEFAULT_QTY);
+    if (payload) spShareInvoke(payload, { popover: false });
+  }
+
+
   document.addEventListener('DOMContentLoaded', () => {
     // Initialise the qty slider from state.qty (may have been seeded from ?qty=…)
     setQty(state.qty);
@@ -3718,11 +4027,31 @@
     // actual product card inside the catalog — not just the filtered list.
     (function openProductFromUrl() {
       try {
-        var pid = new URLSearchParams(location.search).get('product');
+        var params = new URLSearchParams(location.search);
+        var pid = params.get('product');
         if (!pid) return;
+        var wantColor = params.get('color') || '';
         fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' + encodeURIComponent(pid) + '&qty=' + state.qty + '&limit=1')
           .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (d) { var p = d && d.products && d.products[0]; if (p) openProductDetail(p); })
+          .then(function (d) {
+            var p = d && d.products && d.products[0];
+            if (!p) return;
+            // ?color= carries the colour a share link was created in. Match on
+            // color_id first (what /b/ redirects with), then on the colour-name
+            // slug so a hand-written link works too. Never on index: the slim
+            // Algolia colors[] and this fat one are ordered differently, which
+            // is the same reason openProductDetail re-finds by name after its
+            // own refetch.
+            var idx = 0;
+            if (wantColor) {
+              var want = spSlug(wantColor);
+              var found = (p.colors || []).findIndex(function (c) {
+                return String(c.color_id) === wantColor || spSlug(c.color_name) === want;
+              });
+              if (found >= 0) idx = found;
+            }
+            openProductDetail(p, idx);
+          })
           .catch(function () {});
       } catch (e) {}
     })();

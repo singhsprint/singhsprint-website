@@ -1031,6 +1031,16 @@ var SP_LANG = (function() {
     'cat.detail.showall': { en: 'Show all', fr: 'Tout afficher' },
     'cat.detail.showfewer': { en: 'Show fewer specs ▴', fr: 'Afficher moins ▴' },
     'cat.detail.specs-suffix': { en: 'specs ▾', fr: 'specs ▾' },
+    // Share a blank (2026-08-01). 'cat.share.cta' also swaps to
+    // 'cat.share.copied' in place when the button morphs — both keys must
+    // exist or applyLang() leaves the wrong word on screen.
+    'cat.share.cta': { en: 'Share', fr: 'Partager' },
+    'cat.share.aria': { en: 'Share this blank', fr: 'Partager ce vêtement' },
+    'cat.share.copied': { en: 'Link copied', fr: 'Lien copié' },
+    'cat.share.theyllsee': { en: "They'll see this", fr: 'Voici ce qu\'ils verront' },
+    'cat.share.copy': { en: 'Copy link', fr: 'Copier le lien' },
+    'cat.share.more': { en: 'More sharing options…', fr: 'Plus d\'options de partage…' },
+    'cat.share.fromunit': { en: 'from {p}/unit at {n}', fr: 'à partir de {p}/unité pour {n}' },
 
     // ===== QUOTE ADDITIONS =====
     'quote.step.label1': { en: '1 · Product, sizes &amp; design', fr: '1 · Produit, tailles et design' },

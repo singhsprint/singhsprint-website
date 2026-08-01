@@ -439,3 +439,75 @@
       .detail-modal__preview-col .dmcz__stage{max-width:300px;margin:0 auto}
       .detail-modal__preview-col .dmcz__controls{max-width:300px;margin:0 auto}
     }
+
+/* ==========================================================================
+   Share a blank  (2026-08-01)
+   One control, three behaviours, decided in spShareOpen():
+     · navigator.share available  → the OS share sheet, nothing of ours opens
+     · else, viewport ≥ 560px     → the preview popover below
+     · else                       → straight to clipboard, button morphs
+   The popover deliberately shows what the RECIPIENT will see rather than the
+   raw URL: /b/<brand-style>/<colour> is server-rendered for its Open Graph
+   tags (see api/share/blank.js), and this is the only place that work is
+   visible to the person doing the sharing.
+   ========================================================================== */
+
+/* The popover anchors to the modal head. */
+.detail-modal__head{position:relative}
+
+/* Header control — matches .detail-modal__close's muted-glyph voice and the
+   .70rem/.06em micro-caps used by #detailModalBrand right above it. */
+/* Bordered pill rather than bare muted text. Grey-on-cream at .7rem reads as
+   a caption, not a control — people did not see it. The 1.5px hairline is the
+   same one .detail-modal__qty-btn uses to say "this is a button", so it is
+   more apparent without being any louder. */
+.sp-share{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;background:transparent;
+  border:1.5px solid #e0ddd2;cursor:pointer;color:#1a1a1a;font-family:inherit;font-size:.7rem;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:7px 13px;border-radius:50px;
+  line-height:1;transition:background .15s,border-color .15s}
+.sp-share:hover{background:#f4f2eb;border-color:#1a1a1a}
+.sp-share[aria-expanded="true"]{background:#f4f2eb;border-color:#1a1a1a}
+.sp-share:active{transform:scale(.97)}
+.sp-share svg{display:block;flex:0 0 auto}
+
+/* Card affordance. Badges own top-right (.badge{top:10px;right:10px}), so
+   this takes top-left. Hover-revealed like .detail-modal__zoom-hint, but
+   always visible on touch where there is no hover to reveal it. */
+.sp-card-share{position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:50%;
+  background:rgba(26,26,26,.72);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;opacity:0;z-index:3;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  transition:opacity .15s,background .15s,transform .12s}
+.card:hover .sp-card-share,.card:focus-within .sp-card-share,.sp-card-share:focus-visible{opacity:1}
+.sp-card-share:hover{background:#1a1a1a}
+.sp-card-share:active{transform:scale(.94)}
+@media (hover:none){ .sp-card-share{opacity:1} }
+
+/* Preview popover */
+.sp-sharepop{position:absolute;top:calc(100% + 10px);right:14px;width:330px;max-width:calc(100vw - 28px);
+  background:#fff;border:1.5px solid #e0ddd2;border-radius:14px;box-shadow:0 18px 48px rgba(0,0,0,.16);
+  padding:14px;z-index:20;font-family:inherit;
+  opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.sp-sharepop.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.sp-sharepop__k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#888;margin-bottom:9px}
+.sp-prev{display:flex;gap:11px;align-items:center;background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:10px}
+.sp-prev__img{flex:0 0 auto;width:52px;height:52px;border-radius:7px;background:#fff;border:1px solid #eee;object-fit:contain}
+.sp-prev__txt{min-width:0}
+.sp-prev__t{font-size:.83rem;font-weight:700;color:#1a1a1a;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-prev__s{font-size:.75rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-prev__d{font-size:.68rem;color:#aaa;margin-top:3px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-sharepop__copy{width:100%;margin-top:11px;background:#1a1a1a;color:#fff;border:none;border-radius:50px;
+  padding:11px 16px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .12s}
+.sp-sharepop__copy:active{transform:scale(.98)}
+.sp-sharepop__copy.is-done{background:#1a1a1a}
+.sp-sharepop__copy.is-done svg{color:var(--hi)}
+.sp-sharepop__more{width:100%;margin-top:8px;background:none;border:none;padding:4px;cursor:pointer;
+  font-family:inherit;font-size:.76rem;color:var(--soft);transition:color .15s}
+.sp-sharepop__more:hover{color:#1a1a1a}
+
+/* Narrow screens never open the popover (see spShareOpen), but the wordmark
+   still has to go — with it, the modal title wraps from 2 lines to 4. */
+@media (max-width:560px){
+  .sp-share span{display:none}
+  .sp-share{padding:7px}
+}

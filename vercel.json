@@ -154,6 +154,30 @@
     {
       "source": "/shop/:slug",
       "destination": "/api/shop/page?slug=:slug"
+    },
+    {
+      "source": "/b/:slug",
+      "destination": "/api/share/blank?slug=:slug"
+    },
+    {
+      "source": "/b/:slug/:color",
+      "destination": "/api/share/blank?slug=:slug&color=:color"
+    },
+    {
+      "source": "/b/:slug/:color/:qty",
+      "destination": "/api/share/blank?slug=:slug&color=:color&qty=:qty"
+    },
+    {
+      "source": "/fr/b/:slug",
+      "destination": "/api/share/blank?slug=:slug&lang=fr"
+    },
+    {
+      "source": "/fr/b/:slug/:color",
+      "destination": "/api/share/blank?slug=:slug&color=:color&lang=fr"
+    },
+    {
+      "source": "/fr/b/:slug/:color/:qty",
+      "destination": "/api/share/blank?slug=:slug&color=:color&qty=:qty&lang=fr"
     }
   ]
 }

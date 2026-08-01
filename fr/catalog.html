@@ -356,6 +356,15 @@
           <div id="detailModalBrand" style="font-size:.7rem;letter-spacing:.06em;color:#888;text-transform:uppercase;font-weight:700"></div>
           <div id="detailModalTitle" style="font-size:1.15rem;font-weight:700;margin-top:2px;line-height:1.25"></div>
         </div>
+        <!-- Share this blank. Builds /b/<brand-style>/<colour> — server-rendered
+             in api/share/blank.js purely so the link unfurls with THIS garment
+             in THIS colour instead of the catalog's generic OG image. -->
+        <button class="sp-share" type="button" id="spShareBtn" onclick="spShareToggle(event)"
+                aria-expanded="false" aria-controls="spSharePop" aria-label="Share this blank">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5l5-5"/><path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/><path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg>
+          <span id="spShareLabel" data-i18n="cat.share.cta">Share</span>
+        </button>
+        <div class="sp-sharepop" id="spSharePop" role="dialog" aria-modal="false" aria-label="Share this blank" hidden></div>
         <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Close">✕</button>
       </div>
       <div class="detail-modal__body">
