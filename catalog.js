@@ -2389,8 +2389,14 @@
     const few = n < 5;
     const readout = document.getElementById('qtyReadout');
     if (readout) readout.textContent = few ? '1\u20134' : (n >= 500 ? '500+' : String(n));
+    // Toggle two translatable spans rather than rewriting one. applyLang()
+    // reassigns innerHTML for every [data-i18n] element on load and on each
+    // language switch, so a textContent override here was silently reverted
+    // to "units" - observed on production before this fix.
     const unitWord = document.getElementById('qtyUnitWord');
-    if (unitWord) unitWord.textContent = few ? 'items' : 'units';
+    const itemWord = document.getElementById('qtyItemWord');
+    if (unitWord) unitWord.hidden = few;
+    if (itemWord) itemWord.hidden = !few;
     const modeBadge = document.getElementById('qtyModeBadge');
     if (modeBadge) modeBadge.textContent = few ? '\uD83C\uDFF7\uFE0F Single item' : '\uD83D\uDCB0 Bulk pricing';
     const input = document.getElementById('qtyInput');
