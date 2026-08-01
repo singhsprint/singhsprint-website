@@ -178,6 +178,14 @@
     {
       "source": "/fr/b/:slug/:color/:qty",
       "destination": "/api/share/blank?slug=:slug&color=:color&qty=:qty&lang=fr"
+    },
+    {
+      "source": "/d/:token",
+      "destination": "/api/share/design?token=:token"
+    },
+    {
+      "source": "/fr/d/:token",
+      "destination": "/api/share/design?token=:token&lang=fr"
     }
   ]
 }

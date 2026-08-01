@@ -1041,6 +1041,19 @@ var SP_LANG = (function() {
     'cat.share.copy': { en: 'Copy link', fr: 'Copier le lien' },
     'cat.share.more': { en: 'More sharing options…', fr: 'Plus d\'options de partage…' },
     'cat.share.fromunit': { en: 'from {p}/unit at {n}', fr: 'à partir de {p}/unité pour {n}' },
+    // Design share — /d/<token>. The email gate is on the sharer; the copy
+    // has to earn the field, hence 'emailwhy' rather than a bare label.
+    'cat.share.tab.blank': { en: 'This blank', fr: 'Ce vêtement' },
+    'cat.share.tab.design': { en: 'With my design', fr: 'Avec mon design' },
+    'cat.share.customized': { en: 'customized', fr: 'personnalisé' },
+    'cat.share.emaillabel': { en: 'Your email', fr: 'Votre courriel' },
+    'cat.share.emailwhy': { en: 'So we can save this design to your file and pick it up when you order.', fr: 'Pour enregistrer ce design à votre dossier et le retrouver lors de votre commande.' },
+    'cat.share.createlink': { en: 'Create link', fr: 'Créer le lien' },
+    'cat.share.creating': { en: 'Creating…', fr: 'Création…' },
+    'cat.share.bademail': { en: 'That email doesn\u2019t look right.', fr: 'Ce courriel semble incorrect.' },
+    'cat.share.toomany': { en: 'Too many links just now — try again shortly.', fr: 'Trop de liens à la fois — réessayez sous peu.' },
+    'cat.share.failed': { en: 'Could not create the link. Try again.', fr: 'Impossible de créer le lien. Réessayez.' },
+    'cat.share.shareddesign': { en: 'Shared design', fr: 'Design partagé' },
 
     // ===== QUOTE ADDITIONS =====
     'quote.step.label1': { en: '1 · Product, sizes &amp; design', fr: '1 · Produit, tailles et design' },

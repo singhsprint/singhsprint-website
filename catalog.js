@@ -3764,6 +3764,19 @@
 
   var SP_SHARE_DEFAULT_QTY = 50;
 
+  // One copy of the glyph. Deliberately a link/chain and not the iOS
+  // share arrow, which is the download icon mirrored and reads as "save".
+  var SP_SHARE_ICON =
+    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">' +
+    '<path d="M9.5 14.5l5-5"/>' +
+    '<path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/>' +
+    '<path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg>';
+
+  function spPlacementLabel(pid) {
+    var pre = (typeof DMCZ_placementPresets !== 'undefined') ? DMCZ_placementPresets[pid] : null;
+    return (pre && pre.label) || String(pid || '').replace(/-/g, ' ');
+  }
+
   function spShareT(key, fallback) {
     var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
     return v || fallback;
@@ -3831,6 +3844,141 @@
     });
   }
 
+  // ---- sharing a CUSTOMIZED design ---------------------------------------
+  // /b/ carries product + colour + qty. Someone who uploaded artwork and
+  // placed it in the customizer was sharing the naked blank — the least
+  // interesting version of what they were looking at. /d/<token> carries the
+  // design, and unfurls with the mockup /api/shop/compose already baked.
+  //
+  // The email gate sits on the SHARER, not the recipient: they have shown real
+  // intent by uploading artwork, and a gate on the recipient is how a shared
+  // link stops being opened. It buys the design a home on their contact record.
+
+  var SP_SHARE_EMAIL_KEY = 'sp_share_email_v1';
+
+  function spRememberedEmail() {
+    try { return localStorage.getItem(SP_SHARE_EMAIL_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  // Whatever the customizer currently has that is worth sharing, or null.
+  // A design share needs at least one BAKED mockup — without one there is
+  // nothing to unfurl that /b/ doesn't already do better.
+  function spCurrentDesign() {
+    if (typeof _dmczState === 'undefined' || !_dmczState) return null;
+    var st = _dmczState;
+    var out = [];
+    (st.placements || []).forEach(function (pid) {
+      var up = (st.uploads || {})[pid];
+      var mock = _dmczPreviewUrl[pid];
+      if (!up || !up.path || !mock) return;
+      var b = (st.boxes || {})[pid];
+      var box = null;
+      if (b && typeof b.w === 'number') {
+        // Canvas stores 0–100 CENTER coords; the CRM (and compose) speak 0–1
+        // TOP-LEFT. Same conversion as dmczBoxToCompose in the add handler.
+        var halfH = (b.w / 100) * (up.ar || 1) / 2;
+        var c01 = function (v) { return Math.max(0, Math.min(1, v)); };
+        box = { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) };
+      }
+      out.push({ placement: pid, design_path: up.path, mockup_url: mock, box: box });
+    });
+    if (!out.length) return null;
+    return {
+      designs: out,
+      decoration_method: st.method || 'DTG',
+      placements: (st.placements || []).slice(),
+      remove_bg: !!st.removeBg,
+      remove_bg_color: st.removeBg ? (st.bgKey || 'auto') : null
+    };
+  }
+
+  function spDesignShareUrl(token) {
+    var isFr = /^\/fr(\/|$)/.test(location.pathname);
+    return location.origin + (isFr ? '/fr' : '') + '/d/' + encodeURIComponent(token);
+  }
+
+  // POST the design, get a token back. Resolves { url } or rejects with a
+  // message already in the customer's language.
+  function spCreateDesignShare(payload, design, email, name) {
+    return fetch('https://singhsprint-crm.vercel.app/api/shop/design-share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        product_id: payload.productId,
+        color_id: (function () {
+          var p = _detailProduct, c = (p && p.colors || [])[_detailColorIdx];
+          return c ? c.color_id : null;
+        })(),
+        // Denormalised for the unfurl. /d/ must be able to title itself from
+        // the share row alone — /api/catalog is too slow on a cold lambda for
+        // a link-preview crawler to wait on.
+        brand: (_detailProduct && _detailProduct.brand) || null,
+        style_number: (_detailProduct && _detailProduct.style_number) || null,
+        product_name: (_detailProduct && _detailProduct.name) || null,
+        color_name: (function () {
+          var p = _detailProduct, c = (p && p.colors || [])[_detailColorIdx];
+          return c ? String(c.color_name || '').replace(/_\d+$/, '') : null;
+        })(),
+        qty: payload.qty,
+        decoration_method: design.decoration_method,
+        placements: design.placements,
+        designs: design.designs,
+        remove_bg: design.remove_bg,
+        remove_bg_color: design.remove_bg_color,
+        email: email,
+        contact_name: name || null,
+        session_id: (function () { try { return localStorage.getItem('singhsCartId_v1'); } catch (e) { return null; } })()
+      })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j || {} }; })
+                     .catch(function () { return { ok: r.ok, j: {} }; });
+    }).then(function (res) {
+      if (res.ok && res.j.token) {
+        try { localStorage.setItem(SP_SHARE_EMAIL_KEY, email); } catch (e) {}
+        return { url: spDesignShareUrl(res.j.token), token: res.j.token };
+      }
+      var reason = res.j.reason;
+      var msg = reason === 'email_required'
+        ? spShareT('cat.share.bademail', 'That email doesn’t look right.')
+        : reason === 'rate_limited'
+          ? spShareT('cat.share.toomany', 'Too many links just now — try again shortly.')
+          : spShareT('cat.share.failed', 'Could not create the link. Try again.');
+      throw new Error(msg);
+    });
+  }
+
+  // Restore a shared design into the modal. "View, then quote it": placements,
+  // colour, qty and the baked mockups come back so the recipient can add it to
+  // a quote, but the raw artwork is never handed over — the GET projection
+  // returns storage keys, not signed URLs, so there is nothing to re-download
+  // and nothing to reposition.
+  function spApplySharedDesign(share) {
+    if (!share || !Array.isArray(share.designs)) return;
+    var label = spShareT('cat.share.shareddesign', 'Shared design');
+    _dmczState.method = share.decoration_method || 'DTG';
+    _dmczState.placements = (share.placements || []).slice();
+    _dmczState.removeBg = !!share.remove_bg;
+    _dmczState.bgKey = share.remove_bg_color || (share.remove_bg ? 'auto' : 'off');
+    share.designs.forEach(function (d) {
+      if (!d || !d.placement) return;
+      if (_dmczState.placements.indexOf(d.placement) < 0) _dmczState.placements.push(d.placement);
+      // Seeding uploads + _dmczPreviewUrl is what makes the rest of the modal
+      // work unchanged: Add to quote builds placement_designs from uploads[],
+      // and skips a fresh compose because the preview URL is already there.
+      if (d.design_path) {
+        _dmczState.uploads[d.placement] = { path: d.design_path, signed_url: '', filename: label, ar: 1 };
+      }
+      if (d.mockup_url) _dmczPreviewUrl[d.placement] = d.mockup_url;
+    });
+    try { renderDmczMethods(); renderDmczPlacements(); renderDmczUploads(); renderDmczPreview(); refreshDmczPrice(); } catch (e) {}
+    // Open the drawer — the design IS the thing they were sent, so it should
+    // not be behind a click.
+    try {
+      var body = document.getElementById('dmczCustomizeBody');
+      if (body && !body.classList.contains('open')) dmczToggleCustomize();
+    } catch (e) {}
+  }
+
   // ---- the preview popover ------------------------------------------------
 
   var _spSharePayload = null;
@@ -3849,49 +3997,133 @@
   function spRenderSharePop(payload) {
     var pop = document.getElementById('spSharePop');
     if (!pop) return;
-    var copyLabel = spShareT('cat.share.copy', 'Copy link');
-    var moreLabel = spShareT('cat.share.more', 'More sharing options…');
-    pop.innerHTML =
+    var design = spCurrentDesign();
+    var mode = (payload._mode === 'design' && design) ? 'design' : 'blank';
+    payload._mode = mode;
+
+    // The choice only exists when there is something to choose. A customer who
+    // hasn't uploaded artwork never sees a tab strip explaining an option they
+    // don't have.
+    var tabs = design
+      ? '<div class="sp-sharepop__tabs" role="tablist">' +
+          '<button type="button" role="tab" class="sp-sharepop__tab' + (mode === 'blank' ? ' is-on' : '') + '" data-mode="blank" aria-selected="' + (mode === 'blank') + '">' +
+            esc(spShareT('cat.share.tab.blank', 'This blank')) + '</button>' +
+          '<button type="button" role="tab" class="sp-sharepop__tab' + (mode === 'design' ? ' is-on' : '') + '" data-mode="design" aria-selected="' + (mode === 'design') + '">' +
+            esc(spShareT('cat.share.tab.design', 'With my design')) + '</button>' +
+        '</div>'
+      : '';
+
+    var shared = payload._designUrl || null;
+    var img, sub, urlLine, title;
+    if (mode === 'design') {
+      var first = design.designs[0];
+      img   = first ? first.mockup_url : payload.image;
+      title = payload.title + ' — ' + spShareT('cat.share.customized', 'customized');
+      sub   = design.designs.map(function (d) { return spPlacementLabel(d.placement); }).join(' + ');
+      urlLine = shared || (location.host.replace(/^www\./, '') + '/d/…');
+    } else {
+      img = imgUrl(payload.image, 160);
+      title = payload.title;
+      sub = spPriceLine(payload, payload.priceFrom);
+      urlLine = payload.pretty;
+    }
+
+    var preview =
       '<div class="sp-sharepop__k">' + esc(spShareT('cat.share.theyllsee', "They'll see this")) + '</div>' +
       '<div class="sp-prev">' +
-        (payload.image ? '<img class="sp-prev__img" src="' + esc(imgUrl(payload.image, 160)) + '" alt="" loading="lazy">' : '') +
+        (img ? '<img class="sp-prev__img" src="' + esc(img) + '" alt="" loading="lazy">' : '') +
         '<div class="sp-prev__txt">' +
-          '<div class="sp-prev__t">' + esc(payload.title) + '</div>' +
-          '<div class="sp-prev__s" id="spPrevSub">' + esc(spPriceLine(payload, payload.priceFrom)) + '</div>' +
-          '<div class="sp-prev__d">' + esc(payload.pretty) + '</div>' +
+          '<div class="sp-prev__t">' + esc(title) + '</div>' +
+          '<div class="sp-prev__s" id="spPrevSub">' + esc(sub) + '</div>' +
+          '<div class="sp-prev__d" id="spPrevUrl">' + esc(urlLine) + '</div>' +
         '</div>' +
-      '</div>' +
-      '<button type="button" class="sp-sharepop__copy" id="spShareCopy">' +
-        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5l5-5"/><path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/><path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg>' +
-        '<span>' + esc(copyLabel) + '</span>' +
-      '</button>' +
-      (navigator.share ? '<button type="button" class="sp-sharepop__more" id="spShareMore">' + esc(moreLabel) + '</button>' : '');
+      '</div>';
 
-    document.getElementById('spShareCopy').addEventListener('click', function () {
-      var btn = this;
-      spCopy(payload.url).then(function () {
-        btn.classList.add('is-done');
-        btn.querySelector('span').textContent = spShareT('cat.share.copied', 'Link copied');
-        clearTimeout(spRenderSharePop._tid);
-        spRenderSharePop._tid = setTimeout(spCloseSharePop, 1100);
-      }).catch(function () {});
+    var action;
+    if (mode === 'design' && !shared) {
+      var remembered = spRememberedEmail();
+      action =
+        '<label class="sp-gate__lab" for="spShareEmail">' + esc(spShareT('cat.share.emaillabel', 'Your email')) + '</label>' +
+        '<input class="sp-gate__in" id="spShareEmail" type="email" inputmode="email" autocomplete="email" ' +
+          'placeholder="you@company.com" value="' + esc(remembered) + '">' +
+        '<div class="sp-gate__why">' + esc(spShareT('cat.share.emailwhy', 'So we can save this design to your file and pick it up when you order.')) + '</div>' +
+        '<div class="sp-gate__err" id="spShareErr" role="alert" hidden></div>' +
+        '<button type="button" class="sp-sharepop__copy" id="spShareCreate">' +
+          '<span>' + esc(spShareT('cat.share.createlink', 'Create link')) + '</span></button>';
+    } else {
+      action =
+        '<button type="button" class="sp-sharepop__copy" id="spShareCopy">' + SP_SHARE_ICON +
+          '<span>' + esc(spShareT('cat.share.copy', 'Copy link')) + '</span></button>' +
+        (navigator.share ? '<button type="button" class="sp-sharepop__more" id="spShareMore">' +
+          esc(spShareT('cat.share.more', 'More sharing options…')) + '</button>' : '');
+    }
+
+    pop.innerHTML = tabs + preview + action;
+
+    pop.querySelectorAll('.sp-sharepop__tab').forEach(function (b) {
+      b.addEventListener('click', function () {
+        payload._mode = b.getAttribute('data-mode');
+        spRenderSharePop(payload);
+      });
     });
-    var more = document.getElementById('spShareMore');
-    if (more) more.addEventListener('click', function () { spNativeShare(payload).catch(function () {}); });
 
-    // The preview quotes a price at the SHARED quantity, and p.price_from was
-    // computed at whatever quantity the catalog was last fetched at. Correct
-    // it from the same endpoint the /b/ route will use, so the preview and the
-    // real unfurl cannot disagree.
+    var copyBtn = document.getElementById('spShareCopy');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function () {
+        var btn = this;
+        spCopy(mode === 'design' ? shared : payload.url).then(function () {
+          btn.classList.add('is-done');
+          btn.querySelector('span').textContent = spShareT('cat.share.copied', 'Link copied');
+          clearTimeout(spRenderSharePop._tid);
+          spRenderSharePop._tid = setTimeout(spCloseSharePop, 1100);
+        }).catch(function () {});
+      });
+    }
+    var more = document.getElementById('spShareMore');
+    if (more) more.addEventListener('click', function () {
+      spNativeShare(mode === 'design' ? { title: payload.title, text: payload.title, url: shared } : payload)
+        .catch(function () {});
+    });
+
+    var create = document.getElementById('spShareCreate');
+    if (create) {
+      create.addEventListener('click', function () {
+        var input = document.getElementById('spShareEmail');
+        var err   = document.getElementById('spShareErr');
+        var email = (input && input.value || '').trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+          if (err) { err.textContent = spShareT('cat.share.bademail', 'That email doesn’t look right.'); err.hidden = false; }
+          if (input) input.focus();
+          return;
+        }
+        if (err) err.hidden = true;
+        create.disabled = true;
+        create.querySelector('span').textContent = spShareT('cat.share.creating', 'Creating…');
+        spCreateDesignShare(payload, design, email, null).then(function (r) {
+          payload._designUrl = r.url;
+          spRenderSharePop(payload);
+        }).catch(function (e) {
+          create.disabled = false;
+          create.querySelector('span').textContent = spShareT('cat.share.createlink', 'Create link');
+          if (err) { err.textContent = (e && e.message) || spShareT('cat.share.failed', 'Could not create the link. Try again.'); err.hidden = false; }
+        });
+      });
+    }
+
+    // Only the blank pane quotes a price, and only it can drift: p.price_from
+    // was computed at whatever qty the catalog last fetched at, not at the
+    // shared one. Correct it from the endpoint /b/ will itself use, so the
+    // preview and the real unfurl cannot disagree.
+    if (mode !== 'blank') return;
     fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
           encodeURIComponent(payload.productId) + '&qty=' + encodeURIComponent(payload.qty) + '&limit=1')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         var fresh = d && d.products && d.products[0];
         if (!fresh || _spSharePayload !== payload) return;
-        var sub = document.getElementById('spPrevSub');
-        if (sub && typeof fresh.price_from === 'number' && fresh.price_from > 0) {
-          sub.textContent = spPriceLine(payload, fresh.price_from);
+        var sub2 = document.getElementById('spPrevSub');
+        if (sub2 && typeof fresh.price_from === 'number' && fresh.price_from > 0) {
+          sub2.textContent = spPriceLine(payload, fresh.price_from);
         }
       })
       .catch(function () {});
@@ -4029,6 +4261,36 @@
       try {
         var params = new URLSearchParams(location.search);
         var pid = params.get('product');
+        // ?design=<token> is a shared CUSTOMIZED garment: the token knows its
+        // own product, colour and qty, so resolve it first and let it supply
+        // them. Falls through to the plain ?product= path if it 404s.
+        var dtok = params.get('design');
+        if (dtok && /^[A-Za-z0-9_-]{12,64}$/.test(dtok)) {
+          fetch('https://singhsprint-crm.vercel.app/api/shop/design-share/' + encodeURIComponent(dtok))
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (share) {
+              if (!share || !share.product_id) return;
+              if (share.qty) { state.qty = share.qty; try { setQty(share.qty); } catch (e) {} }
+              return fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' +
+                           encodeURIComponent(share.product_id) + '&qty=' + (share.qty || state.qty) + '&limit=1')
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (d) {
+                  var p = d && d.products && d.products[0];
+                  if (!p) return;
+                  var idx = 0;
+                  if (share.color_id) {
+                    var f = (p.colors || []).findIndex(function (c) { return String(c.color_id) === String(share.color_id); });
+                    if (f >= 0) idx = f;
+                  }
+                  openProductDetail(p, idx);
+                  // After openProductDetail's own fat refetch has settled, or
+                  // the seeded state gets overwritten by the reset it does.
+                  setTimeout(function () { try { spApplySharedDesign(share); } catch (e) {} }, 700);
+                });
+            })
+            .catch(function () {});
+          return;
+        }
         if (!pid) return;
         var wantColor = params.get('color') || '';
         fetch('https://singhsprint-crm.vercel.app/api/catalog?product_id=' + encodeURIComponent(pid) + '&qty=' + state.qty + '&limit=1')

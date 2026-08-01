@@ -513,3 +513,20 @@
   .sp-share span{display:none}
   .sp-share{padding:6px}
 }
+
+/* Design-share pane inside the popover (2026-08-01). The tab strip only
+   renders when the customizer actually has a baked mockup — a customer who
+   hasn't uploaded artwork never sees a choice they don't have. */
+.sp-sharepop__tabs{display:flex;gap:4px;background:#f0eee5;border-radius:50px;padding:3px;margin-bottom:11px}
+.sp-sharepop__tab{flex:1;background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:.72rem;
+  font-weight:600;color:var(--muted);padding:7px 10px;border-radius:50px;line-height:1;transition:background .15s,color .15s}
+.sp-sharepop__tab.is-on{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sp-sharepop__tab:hover:not(.is-on){color:#1a1a1a}
+
+.sp-gate__lab{display:block;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  color:var(--soft);margin:12px 0 5px}
+.sp-gate__in{width:100%;box-sizing:border-box;background:#fff;border:1.5px solid #e0ddd2;border-radius:9px;
+  padding:9px 11px;font-family:inherit;font-size:.85rem;color:#1a1a1a;transition:border-color .15s}
+.sp-gate__in:focus{outline:none;border-color:#1a1a1a}
+.sp-gate__why{font-size:.7rem;color:var(--soft);margin-top:6px;line-height:1.4}
+.sp-gate__err{font-size:.74rem;color:#a01a1a;margin-top:7px;line-height:1.35}
