@@ -228,8 +228,16 @@ module.exports = async (req, res) => {
   const lang = q.lang === 'fr' ? 'fr' : 'en';
   const catalogPath = lang === 'fr' ? '/fr/catalog' : '/catalog';
 
-  const qtyRaw = parseInt(q.qty, 10);
-  const qty = Number.isFinite(qtyRaw) && qtyRaw >= 1 && qtyRaw <= 10000 ? qtyRaw : DEFAULT_QTY;
+  // parseInt('1e9', 10) is 1 — it stops at the 'e' and hands back the
+  // mantissa, so the range check below used to PASS and /b/…/1e9 rendered as a
+  // one-piece share priced at the most expensive tier. Every other bad value
+  // ('0', '-5', '999999999', 'abc') fell back correctly, which is exactly why
+  // it went unnoticed. Read the whole string or refuse it: a qty that arrives
+  // as a float, a hex literal, or with a sign is a client bug worth
+  // defaulting on. (CRM twin: src/lib/http/int-param.ts.)
+  const qtyStr = String(q.qty == null ? '' : q.qty).trim();
+  const qtyNum = /^\d+$/.test(qtyStr) ? Number(qtyStr) : NaN;
+  const qty = Number.isSafeInteger(qtyNum) && qtyNum >= 1 && qtyNum <= 10000 ? qtyNum : DEFAULT_QTY;
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
