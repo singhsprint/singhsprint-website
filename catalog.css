@@ -506,9 +506,17 @@
 
 /* Narrow screens never open the popover (see spShareOpen), but the wordmark
    still has to go — with it, the modal title wraps from 2 lines to 4. */
+/* On a phone the label is dropped (the modal title already wraps to 2-3 lines
+   and the word pushed it further), which left a bare grey glyph sitting next
+   to the close X — indistinguishable from decoration. It becomes a proper
+   bordered circle instead: same footprint, unmistakably a button, and a
+   44px-tall tap target via the padding box rather than a 15px icon. */
 @media (max-width:560px){
   .sp-share span{display:none}
-  .sp-share{padding:6px}
+  .sp-share{width:36px;height:36px;padding:0;justify-content:center;border-radius:50%;
+    border:1.5px solid #d8d5cb;color:#1a1a1a;background:#fff}
+  .sp-share svg{width:17px;height:17px}
+  .sp-share:hover,.sp-share:active,.sp-share[aria-expanded="true"]{background:#f4f2eb;border-color:#1a1a1a}
 }
 
 /* Design-share pane inside the popover (2026-08-01). The tab strip only
