@@ -530,7 +530,10 @@ function loadNav() {
         { en: 'All youth & kids',    fr: 'Tout pour enfants',   href: BASE + '/catalog?gender=youth' },
         { en: 'Youth t-shirts',      fr: 'T-shirts enfants',    href: BASE + '/catalog?gender=youth&type=tshirt' },
         { en: 'Youth hoodies',       fr: 'Hoodies enfants',     href: BASE + '/catalog?gender=youth&type=hoodie' },
-        { en: 'Youth jerseys',       fr: 'Maillots enfants',    href: BASE + '/catalog?gender=youth&type=jersey' },
+        // No youth-jerseys entry: team jerseys are their own destination
+        // (/jerseys, with its own sizing, sport filters and pricing engine).
+        // A ?type=jersey catalog link priced them as tees and skipped all of
+        // that, so jerseys stay under the Jerseys tab, youth included.
         { en: 'Baby onesies',        fr: 'Cache-couches bébé',  href: BASE + '/catalog?type=bodysuit' },
         { en: 'Baby bibs',           fr: 'Bavoirs bébé',        href: BASE + '/catalog?type=bib' }
       ]
