@@ -496,8 +496,7 @@
       if (!cz.logoBox) cz.logoBox = defaultLogoBox(cz.logoPlacement);
       renderPreview();  // show the logo on the jersey right away
       if (fn) fn.textContent = t('jersey.cz.uploading','Uploading…');
-      var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
-      fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      jerseyPutArtwork(file).then(function(j){
         cz.logoUrl  = (j && (j.signed_url || j.url)) || null;
         cz.logoPath = (j && j.path) || null;   // durable; CRM re-signs from this
         if (fn) fn.textContent = (cz.logoUrl || cz.logoPath) ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
@@ -540,10 +539,51 @@
     // Upload any design file to the CRM inbox bucket. cb({url,path}) fires on
     // success; on failure we still keep the local preview and note that the
     // file will be collected with the quote (same tolerance as the logo flow).
+    var UPLOAD_URL_API = 'https://singhsprint-crm.vercel.app/api/inbound/upload-url';
+    /**
+     * Put an artwork file in the designs bucket; resolves {path, signed_url}.
+     *
+     * Direct to storage via a signed upload URL. The multipart relay at
+     * UPLOAD_API is a Vercel serverless function, and Vercel caps serverless
+     * request bodies at 4.5 MB — measured on production 2026-08-01: 4 MB
+     * returned 201, 5 MB was refused at the edge before the function ran.
+     * Team logos and full-jersey designs routinely exceed that. The server
+     * still mints the path and enforces MIME, size and per-IP limits; only
+     * the bytes skip the function. Falls back to the relay, which is still
+     * correct for the small files it can carry.
+     */
+    function jerseyPutArtwork(file){
+      return fetch(UPLOAD_URL_API, {
+        method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ filename:file.name||'design', mime:file.type||'application/octet-stream', bytes:file.size })
+      })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if (!d || !d.upload_url) throw new Error('no-signed-url');
+          return fetch(d.upload_url, {
+            method:'PUT',
+            headers:{ 'Content-Type': file.type||'application/octet-stream', 'x-upsert':'false' },
+            body:file
+          }).then(function(put){
+            if (!put.ok) throw new Error('storage PUT '+put.status);
+            // Signed AFTER the PUT: the upload URL is minted before the object
+            // exists, so Supabase can't return a read URL alongside it.
+            return fetch(UPLOAD_URL_API + '/sign', {
+              method:'POST', headers:{ 'Content-Type':'application/json' },
+              body: JSON.stringify({ path: d.path })
+            }).then(function(sr){ return sr.ok ? sr.json() : null; })
+              .then(function(sj){ return { path:d.path, signed_url:(sj && sj.signed_url) || '' }; });
+          });
+        })
+        .catch(function(){
+          var fd = new FormData(); fd.append('file', file); fd.append('kind','design');
+          return fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; });
+        });
+    }
+
     function uploadDesignFile(file, statusEl, cb){
       if (statusEl) statusEl.textContent = t('jersey.cz.uploading','Uploading…');
-      var fd = new FormData(); fd.append('file', file); fd.append('kind', 'design');
-      fetch(UPLOAD_API, { method:'POST', body:fd }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      jerseyPutArtwork(file).then(function(j){
         var url = (j && (j.signed_url || j.url)) || null, path = (j && j.path) || null;
         if (statusEl) statusEl.textContent = (url || path) ? ('✓ ' + file.name) : (file.name + ' — ' + t('jersey.cz.uploadfail','upload failed, we will collect it with your quote'));
         cb(url, path);
