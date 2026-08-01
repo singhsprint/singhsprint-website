@@ -642,10 +642,51 @@
    * The selected chip keeps its own price rather than going blank — you
    * should be able to see what you're paying for without deselecting it.
    */
+  /**
+   * Cost of the cheapest OTHER preset sharing this preset's location group,
+   * or null when it has no alternatives. Used to put the selected chip's
+   * badge on the same relative footing as its neighbours'.
+   */
+  function dmczCheapestSibling(pid) {
+    var pre = DMCZ_placementPresets[pid] || {};
+    if (!pre.loc) return null;
+    // Scope to the presets actually OFFERED for this garment, and actually
+    // rendered under the current method. Scanning every preset in the file
+    // would let a t-shirt's Left Chest count as an alternative to a cap's
+    // front panel — different garment, never on screen together.
+    var gt  = (_detailProduct && _detailProduct.garment_type) || 'tshirt';
+    var emb = (_dmczState.method === 'Embroidery');
+    var groups = dmczPlacementGroupsFor(gt);
+    var best = null;
+    for (var g = 0; g < groups.length; g++) {
+      var ids = groups[g].ids;
+      for (var i = 0; i < ids.length; i++) {
+        var k = ids[i];
+        if (k === pid) continue;
+        if (emb && EMB_DISALLOWED[k]) continue;
+        var p2 = DMCZ_placementPresets[k];
+        if (!p2 || p2.loc !== pre.loc) continue;
+        if (dmczIsAddon(k) !== dmczIsAddon(pid)) continue;  // add-ons are not swaps
+        var c = dmczChipCostAbs(k);
+        if (best === null || c < best) best = c;
+      }
+    }
+    return best;
+  }
+
   function dmczChipHint(pid, selected) {
     var mine = dmczChipCostAbs(pid);
-    // Same formatter as the deltas, so a $2.50 tag never renders as "+$2.5".
-    if (selected) return dmczFmtDelta(mine);
+    if (selected) {
+      // The selected chip has to be on the SAME basis as the ones around it,
+      // or the row contradicts itself. On an embroidered cap every location
+      // costs the same, so "Cap Front +$2" sat next to "Left Side Panel
+      // included" and implied a $2 saving that switching would not give you.
+      // Compare against the cheapest alternative in this location group: if
+      // moving off it saves nothing, it is included. With no alternative
+      // (the inside-neck tag is its own group) fall back to its own cost.
+      var alt = dmczCheapestSibling(pid);
+      return dmczFmtDelta(alt === null ? mine : mine - alt);
+    }
 
     var pre = DMCZ_placementPresets[pid] || {};
     var sibling = null;

@@ -545,11 +545,11 @@ function loadNav() {
         { en: 'Hats & caps',         fr: 'Chapeaux',            href: BASE + '/catalog?type=hat' },
         { en: 'Beanies & toques',    fr: 'Tuques',              href: BASE + '/catalog?type=beanie' },
         { en: 'Visors',              fr: 'Visières',            href: BASE + '/catalog?type=visor' },
-        { en: 'Bags & backpacks',    fr: 'Sacs',                href: BASE + '/catalog?type=bag' },
-        { en: 'Scarves',             fr: 'Foulards',            href: BASE + '/catalog?type=scarf' },
-        { en: 'Gloves',              fr: 'Gants',               href: BASE + '/catalog?type=gloves' },
-        { en: 'Socks',               fr: 'Chaussettes',         href: BASE + '/catalog?type=socks' },
-        { en: 'Blankets & towels',   fr: 'Couvertures et serviettes', href: BASE + '/catalog?type=blanket' }
+        { en: 'Bags & backpacks',    fr: 'Sacs',                href: BASE + '/catalog?type=bag' }
+        // Scarves / gloves / socks / blankets & towels removed 2026-08-01.
+        // We do not decorate them, and the Algolia sync already marks
+        // socks, gloves, towels and scarves printable:false — so those links
+        // pointed at views the storefront's default filter renders empty.
       ]
     },
     {
