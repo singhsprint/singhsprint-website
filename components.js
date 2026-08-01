@@ -520,7 +520,11 @@ function loadNav() {
       // ?gender=youth with an optional ?type=. Bodysuits and bibs are real
       // categories, added in the same pass, and need no gender qualifier
       // since every one of them is an infant garment already.
-      en: 'Youth & Baby', fr: 'Enfants et bébés', i18n: 'nav.youth',
+      // NOT i18n 'nav.youth' — that key already belongs to the Youth
+      // Initiative community programme (see the secondary nav and
+      // /youth-initiative). Reusing it rendered this catalog tab as
+      // "Youth Initiative", sitting two links away from the real one.
+      en: 'Youth & Baby', fr: 'Enfants et bébés', i18n: 'nav.youthbaby',
       href: BASE + '/catalog?gender=youth',
       subs: [
         { en: 'All youth & kids',    fr: 'Tout pour enfants',   href: BASE + '/catalog?gender=youth' },
