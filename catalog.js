@@ -4094,6 +4094,23 @@
         _dmczState.uploads[d.placement] = { path: d.design_path, signed_url: '', filename: label, ar: 1 };
       }
       if (d.mockup_url) _dmczPreviewUrl[d.placement] = d.mockup_url;
+      // Seed the box, or the design MOVES the first time anything re-bakes.
+      // The share stores compose-space coords (0–1, TOP-LEFT); the canvas and
+      // every re-bake read _dmczState.boxes, which is 0–100 CENTER. Without
+      // this the restored share showed its baked mockup in the right place,
+      // and then the moment the recipient changed colour it re-composed from
+      // renderDmczPreview's DEFAULT preset box — so the artwork jumped to the
+      // preset position and stayed there. Exact inverse of dmczBoxToCompose.
+      if (d.box && typeof d.box.w === 'number') {
+        var wC = d.box.w * 100;
+        _dmczState.boxes[d.placement] = {
+          x: d.box.x * 100 + wC / 2,
+          y: d.box.y * 100 + (wC * 1) / 2,   // ar is 1 for a restored share: we
+                                             // have no bitmap to measure, and
+                                             // the bake carries the true shape.
+          w: wC
+        };
+      }
     });
     // Point the stage at a placement we can actually show a composite for, so
     // the design is on screen the moment the modal opens.
