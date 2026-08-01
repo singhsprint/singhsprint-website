@@ -457,18 +457,20 @@
 
 /* Header control — matches .detail-modal__close's muted-glyph voice and the
    .70rem/.06em micro-caps used by #detailModalBrand right above it. */
-/* Bordered pill rather than bare muted text. Grey-on-cream at .7rem reads as
-   a caption, not a control — people did not see it. The 1.5px hairline is the
-   same one .detail-modal__qty-btn uses to say "this is a button", so it is
-   more apparent without being any louder. */
-.sp-share{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;background:transparent;
-  border:1.5px solid #e0ddd2;cursor:pointer;color:#1a1a1a;font-family:inherit;font-size:.7rem;
-  font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:7px 13px;border-radius:50px;
-  line-height:1;transition:background .15s,border-color .15s}
-.sp-share:hover{background:#f4f2eb;border-color:#1a1a1a}
-.sp-share[aria-expanded="true"]{background:#f4f2eb;border-color:#1a1a1a}
+/* Deliberately quiet: transparent, no border, .7rem micro-caps in the same
+   #888 as #detailModalBrand directly above it, resolving to ink on hover.
+   A bordered pill was tried and read as too much furniture next to the price
+   — the header carries brand, title, price and close already. Discovery leans
+   on the hover state and on the card glyph, not on resting weight. */
+.sp-share{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;background:transparent;border:none;
+  cursor:pointer;color:#888;font-family:inherit;font-size:.7rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:6px 8px;border-radius:8px;line-height:1;
+  transition:color .15s,background .15s}
+.sp-share:hover{color:#1a1a1a;background:#f4f2eb}
+.sp-share[aria-expanded="true"]{color:#1a1a1a;background:#f4f2eb}
 .sp-share:active{transform:scale(.97)}
 .sp-share svg{display:block;flex:0 0 auto}
+.sp-share.is-done{color:#1a1a1a}
 
 /* Card affordance. Badges own top-right (.badge{top:10px;right:10px}), so
    this takes top-left. Hover-revealed like .detail-modal__zoom-hint, but
@@ -509,5 +511,5 @@
    still has to go — with it, the modal title wraps from 2 lines to 4. */
 @media (max-width:560px){
   .sp-share span{display:none}
-  .sp-share{padding:7px}
+  .sp-share{padding:6px}
 }
