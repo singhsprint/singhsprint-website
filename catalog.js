@@ -1325,20 +1325,28 @@
   // One fetch per (product, method, sides, break) — not per keystroke. Typing
   // 1, 2, 3, 4 all resolve to the same break and reuse the first answer.
   function dmczRenderBreakHint(p, qty, method, embPlac, sides) {
-    var host = document.getElementById('dmczBreakHint');
-    if (!host) return;
+    // Lives INSIDE #detailModalPrice, under the "/unit · 1-side print" line.
+    // As a sibling it became a flex item in the modal header and sat beside
+    // the price, crowding the SHARE button.
+    var priceEl = document.getElementById('detailModalPrice');
+    if (!priceEl) return;
+    var host = priceEl.querySelector('.detail-modal__break-hint');
+    if (!host) {
+      host = document.createElement('div');
+      host.className = 'detail-modal__break-hint';
+      priceEl.appendChild(host);
+    }
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     var next = dmczNextBreak(qty);
     if (!next) { host.textContent = ''; return; }
     var key = [p.product_id, method, embPlac, sides, next].join('|');
     var show = function (unit) {
       if (!unit) { host.textContent = ''; return; }
-      var upTo = next - 1;
-      var tpl = (qty >= upTo)
-        ? (t('cat.detail.nextbreak') || '${p} each at {n}+')
-        : (t('cat.detail.sameprice') || 'Same price to {u} · ${p} each at {n}+');
-      host.textContent = tpl
-        .replace('{u}', upTo)
+      // One idea, not two. "Same price to 99 · $11.95 each at 100+" was
+      // explaining the tier AND advertising the break in the same breath and
+      // read as noise. The break alone answers "what do I get if I order
+      // more", and implies the tier without spelling it out.
+      host.textContent = (t('cat.detail.nextbreak') || '${p} each at {n}+')
         .replace('{p}', Number(unit).toFixed(2))
         .replace('{n}', next);
     };
@@ -1785,7 +1793,6 @@
         msg = t('cat.card.quote-on-request') || 'Quote on request';
       }
       priceEl.innerHTML = '<strong class="dmcz-price--blocked">' + msg + '</strong>';
-      var bh = document.getElementById('dmczBreakHint'); if (bh) bh.textContent = '';
     };
 
     var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
@@ -4167,6 +4174,29 @@
         };
       }
     });
+    // Say plainly that this is somebody's design, not a blank they happened
+    // to land on. Without it the recipient sees a normal product modal that
+    // just happens to have artwork on it, and nothing connects it to the link
+    // they were sent.
+    try {
+      var head = document.querySelector('.detail-modal__head') ||
+                 (document.getElementById('detailModalTitle') || {}).parentNode;
+      if (head && !document.getElementById('spSharedBanner')) {
+        var tS = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+        var who = share.designs.filter(function (d) { return d && d.mockup_url; })[0] || {};
+        var bar = document.createElement('div');
+        bar.id = 'spSharedBanner';
+        bar.className = 'sp-shared-banner';
+        bar.innerHTML =
+          (who.mockup_url ? '<img class="sp-shared-banner__thumb" src="' + esc(who.mockup_url) + '" alt="">' : '') +
+          '<div class="sp-shared-banner__txt">' +
+            '<div class="sp-shared-banner__t">' + esc(tS('cat.share.sharedwithyou') || 'A design was shared with you') + '</div>' +
+            '<div class="sp-shared-banner__s">' + esc(tS('cat.share.sharedwithyousub') || 'Change the colour, placement or quantity — the artwork stays as it was sent.') + '</div>' +
+          '</div>';
+        head.parentNode.insertBefore(bar, head.nextSibling);
+      }
+    } catch (e) {}
+
     // Point the stage at a placement we can actually show a composite for, so
     // the design is on screen the moment the modal opens.
     var firstBaked = (share.designs.filter(function (d) { return d && d.mockup_url; })[0] || {}).placement;

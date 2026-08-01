@@ -536,4 +536,20 @@
 @keyframes spPrevSpin{to{transform:rotate(360deg)}}
 
 /* Next price break, under the modal's unit price. */
-.detail-modal__break-hint{font-size:.68rem;color:var(--soft);text-align:right;margin-top:3px;line-height:1.3;min-height:.9em}
+.detail-modal__break-hint{display:block;font-size:.66rem;color:var(--soft);margin-top:1px;line-height:1.25;font-weight:500}
+
+/* "A design was shared with you" — shown only when the modal was opened from
+   a /d/<token> link. Without it the recipient just sees a product modal that
+   happens to have artwork on it, with nothing tying it to the link they were
+   sent. */
+.sp-shared-banner{display:flex;align-items:center;gap:12px;padding:11px 20px;
+  background:linear-gradient(90deg,#fbf7d8 0%,#f7f5ec 70%);border-bottom:1px solid #ece9d8}
+.sp-shared-banner__thumb{width:38px;height:38px;flex:0 0 38px;border-radius:7px;object-fit:cover;
+  background:#fff;border:1px solid #e6e3d6}
+.sp-shared-banner__txt{min-width:0}
+.sp-shared-banner__t{font-size:.8rem;font-weight:700;color:#1a1a1a;line-height:1.25}
+.sp-shared-banner__s{font-size:.72rem;color:#6a6a5f;line-height:1.35;margin-top:1px}
+@media (max-width:560px){
+  .sp-shared-banner{padding:9px 14px;gap:9px}
+  .sp-shared-banner__s{display:none}
+}
