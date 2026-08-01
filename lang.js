@@ -1039,7 +1039,6 @@ var SP_LANG = (function() {
     'cat.share.copied': { en: 'Link copied', fr: 'Lien copié' },
     'cat.share.theyllsee': { en: "They'll see this", fr: 'Voici ce qu\'ils verront' },
     'cat.share.copy': { en: 'Copy link', fr: 'Copier le lien' },
-    'cat.share.more': { en: 'More sharing options…', fr: 'Plus d\'options de partage…' },
     'cat.share.fromunit': { en: 'from {p}/unit at {n}', fr: 'à partir de {p}/unité pour {n}' },
     // Design share — /d/<token>. The email gate is on the sharer; the copy
     // has to earn the field, hence 'emailwhy' rather than a bare label.

@@ -4056,11 +4056,18 @@
         '<button type="button" class="sp-sharepop__copy" id="spShareCreate">' +
           '<span>' + esc(spShareT('cat.share.createlink', 'Create link')) + '</span></button>';
     } else {
+      // No "More sharing options" row. This popover only ever renders on
+      // desktop, and Chrome on macOS — Chrome 150, tested on the shop's own
+      // machine — reports navigator.share as a function, answers
+      // canShare({url}) with true, accepts the call, and RESOLVES the promise
+      // without ever presenting a share sheet. The page cannot even detect the
+      // failure: a resolve is indistinguishable from a real share. A control
+      // that silently does nothing is worse than no control, and on desktop
+      // the clipboard is the honest primitive anyway. Phones still get the
+      // real OS sheet — they never open this popover.
       action =
         '<button type="button" class="sp-sharepop__copy" id="spShareCopy">' + SP_SHARE_ICON +
-          '<span>' + esc(spShareT('cat.share.copy', 'Copy link')) + '</span></button>' +
-        (navigator.share ? '<button type="button" class="sp-sharepop__more" id="spShareMore">' +
-          esc(spShareT('cat.share.more', 'More sharing options…')) + '</button>' : '');
+          '<span>' + esc(spShareT('cat.share.copy', 'Copy link')) + '</span></button>';
     }
 
     pop.innerHTML = tabs + preview + action;
@@ -4084,11 +4091,6 @@
         }).catch(function () {});
       });
     }
-    var more = document.getElementById('spShareMore');
-    if (more) more.addEventListener('click', function () {
-      spNativeShare(mode === 'design' ? { title: payload.title, text: payload.title, url: shared } : payload)
-        .catch(function () {});
-    });
 
     var create = document.getElementById('spShareCreate');
     if (create) {

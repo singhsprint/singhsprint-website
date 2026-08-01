@@ -503,9 +503,6 @@
 .sp-sharepop__copy:active{transform:scale(.98)}
 .sp-sharepop__copy.is-done{background:#1a1a1a}
 .sp-sharepop__copy.is-done svg{color:var(--hi)}
-.sp-sharepop__more{width:100%;margin-top:8px;background:none;border:none;padding:4px;cursor:pointer;
-  font-family:inherit;font-size:.76rem;color:var(--soft);transition:color .15s}
-.sp-sharepop__more:hover{color:#1a1a1a}
 
 /* Narrow screens never open the popover (see spShareOpen), but the wordmark
    still has to go — with it, the modal title wraps from 2 lines to 4. */
