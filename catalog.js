@@ -594,10 +594,15 @@
   // _dmczDeltas holds the last-fetched summary; a $2 side-add default covers
   // the moment before the first fetch lands (header is authoritative anyway).
   var _dmczDeltas = { qty: 0, side_add: 2, deltas: {}, key: '' };
-  function dmczCurrentQty() {
-    var el = document.getElementById('detailModalQtyInput');
-    return Math.max(1, parseInt(el && el.value, 10) || (state && state.qty) || 25);
-  }
+  // dmczCurrentQty() was declared a second time here, with a `|| state.qty ||
+  // 25` fallback. Both were plain function declarations in one scope, so THIS
+  // one silently won for every call site — including renderDmczMethods, whose
+  // sibling definition carries a comment explicitly warning that falling back
+  // to state.qty reintroduces the catalogue-quantity-for-line-quantity bug.
+  // The guard that comment describes was dead code. Removed; the definition
+  // above (fallback 1) is now the only one, which is also the safe direction:
+  // if the input is ever missing, a low qty BLOCKS embroidery rather than
+  // silently unblocking it.
   // Fetch placement deltas for the current garment/qty/method from the CRM,
   // then re-render the chips so their $ hints reflect live pricing. Cached by
   // (garment|qty|method) key so we don't refetch when nothing relevant moved.
