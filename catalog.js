@@ -4160,8 +4160,14 @@
     _spSharePayload = payload;
     spRenderSharePop(payload);
     pop.hidden = false;
-    // Next frame so the transition actually runs from the hidden state.
-    requestAnimationFrame(function () { pop.classList.add('open'); });
+    // Flush layout, then add the class in the SAME tick. This used to sit in
+    // requestAnimationFrame, which never fires while the tab is backgrounded
+    // or occluded — so a click on SHARE left the popover hidden=false with no
+    // .open class: invisible, and the next click read !hidden and closed it,
+    // meaning two clicks did nothing. Reading offsetWidth gives the
+    // transition a start value without depending on a frame being produced.
+    void pop.offsetWidth;
+    pop.classList.add('open');
     if (btn) btn.setAttribute('aria-expanded', 'true');
     // Capture phase: the modal's own handlers stopPropagation in places.
     document.addEventListener('click', spShareOutsideClick, true);
