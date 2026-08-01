@@ -527,3 +527,10 @@
 .sp-gate__in:focus{outline:none;border-color:#1a1a1a}
 .sp-gate__why{font-size:.7rem;color:var(--soft);margin-top:6px;line-height:1.4}
 .sp-gate__err{font-size:.74rem;color:#a01a1a;margin-top:7px;line-height:1.35}
+
+/* "Preparing your mockup…" — shown when the customer opens the design tab
+   before any placement has been composed. */
+.sp-prev--busy{align-items:center}
+.sp-prev__spin{width:52px;height:52px;flex:0 0 52px;border-radius:8px;border:2px solid #e8e6df;
+  border-top-color:#1a1a1a;animation:spPrevSpin .7s linear infinite}
+@keyframes spPrevSpin{to{transform:rotate(360deg)}}

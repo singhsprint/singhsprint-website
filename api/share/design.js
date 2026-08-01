@@ -38,23 +38,53 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
+// Ids copied from DMCZ_placementPresets in catalog.js — the ONLY source of
+// truth for what a placement is called. An earlier version of this map
+// invented ids ('top-back', 'across-back', 'full-back', 'oversized-front')
+// that the customizer has never used; the real ones are 'back-top',
+// 'back-across', 'back-full' and 'oversized'. Every back and oversized share
+// was therefore unfurling with the raw slug ("top back") instead of the
+// label, and with no French at all. Missed at first because the test fixture
+// used the invented ids too, so the fallback made it look right.
 const PLACEMENT_LABELS = {
-  'left-chest':     { en: 'Left chest',     fr: 'Poitrine gauche' },
-  'center-chest':   { en: 'Center chest',   fr: 'Poitrine centre' },
-  'full-front':     { en: 'Full front',     fr: 'Devant complet' },
-  'oversized-front':{ en: 'Oversized front',fr: 'Devant surdimensionné' },
-  'top-back':       { en: 'Top back',       fr: 'Haut du dos' },
-  'across-back':    { en: 'Across back',    fr: 'Travers du dos' },
-  'full-back':      { en: 'Full back',      fr: 'Dos complet' },
-  'left-sleeve':    { en: 'Left sleeve',    fr: 'Manche gauche' },
-  'right-sleeve':   { en: 'Right sleeve',   fr: 'Manche droite' },
-  'neck-tag':       { en: 'Inside neck',    fr: 'Intérieur du col' },
+  'left-chest':        { en: 'Left Chest', fr: 'Poitrine gauche' },
+  'center-chest':      { en: 'Center Chest', fr: 'Poitrine centre' },
+  'full-front':        { en: 'Full Front', fr: 'Devant complet' },
+  'oversized':         { en: 'Oversized Front', fr: 'Devant surdimensionné' },
+  'back-top':          { en: 'Top Back', fr: 'Haut du dos' },
+  'back-across':       { en: 'Across Back', fr: 'Travers du dos' },
+  'back-full':         { en: 'Full Back', fr: 'Dos complet' },
+  'left-sleeve':       { en: 'Left Sleeve', fr: 'Manche gauche' },
+  'right-sleeve':      { en: 'Right Sleeve', fr: 'Manche droite' },
+  'hood':              { en: 'Hood', fr: 'Capuchon' },
+  'neck-tag':          { en: 'Inside Neck Tag', fr: 'Étiquette intérieure' },
+  'cap-front':         { en: 'Cap Front', fr: 'Devant de la casquette' },
+  'cap-left-side':     { en: 'Left Side Panel', fr: 'Panneau gauche' },
+  'cap-right-side':    { en: 'Right Side Panel', fr: 'Panneau droit' },
+  'cap-back':          { en: 'Back Panel', fr: 'Panneau arrière' },
+  'cap-brim':          { en: 'Brim', fr: 'Visière' },
+  'bag-front':         { en: 'Front of Bag', fr: 'Devant du sac' },
+  'bag-back':          { en: 'Back of Bag', fr: 'Arrière du sac' },
+  'bag-pocket':        { en: 'Front Pocket', fr: 'Poche avant' },
+  'leg-left-hip':      { en: 'Left Hip', fr: 'Hanche gauche' },
+  'leg-right-hip':     { en: 'Right Hip', fr: 'Hanche droite' },
+  'leg-back-pocket':   { en: 'Back Pocket', fr: 'Poche arrière' },
+  'leg-side':          { en: 'Leg Side', fr: 'Côté de la jambe' },
+  'apron-chest':       { en: 'Chest', fr: 'Poitrine' },
+  'apron-pocket':      { en: 'Pocket', fr: 'Poche' },
+  'apron-full':        { en: 'Full Front', fr: 'Devant complet' },
 };
 
 function placementLabel(pid, lang) {
   const e = PLACEMENT_LABELS[pid];
   if (e) return lang === 'fr' ? e.fr : e.en;
-  return String(pid || '').replace(/-/g, ' ');
+  // A placement added to the customizer after this map was written: title-case
+  // the slug so it still reads as a label rather than a raw id.
+  return String(pid || '')
+    .split('-')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 const METHOD_LABELS = {

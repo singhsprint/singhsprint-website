@@ -1053,6 +1053,9 @@ var SP_LANG = (function() {
     'cat.share.toomany': { en: 'Too many links just now — try again shortly.', fr: 'Trop de liens à la fois — réessayez sous peu.' },
     'cat.share.failed': { en: 'Could not create the link. Try again.', fr: 'Impossible de créer le lien. Réessayez.' },
     'cat.share.shareddesign': { en: 'Shared design', fr: 'Design partagé' },
+    'cat.share.baking': { en: 'Preparing your mockup…', fr: 'Préparation de votre maquette…' },
+    'cat.share.bakingsub': { en: 'Rendering your artwork onto the garment.', fr: 'Rendu de votre visuel sur le vêtement.' },
+    'cat.share.bakefail': { en: 'Could not render the mockup. Share the blank instead, or try again.', fr: 'Impossible de rendre la maquette. Partagez le vêtement, ou réessayez.' },
 
     // ===== QUOTE ADDITIONS =====
     'quote.step.label1': { en: '1 · Product, sizes &amp; design', fr: '1 · Produit, tailles et design' },

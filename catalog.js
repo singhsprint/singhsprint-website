@@ -3866,16 +3866,23 @@
   }
 
   // Whatever the customizer currently has that is worth sharing, or null.
-  // A design share needs at least one BAKED mockup — without one there is
-  // nothing to unfurl that /b/ doesn't already do better.
+  //
+  // The trigger is ARTWORK, not a cached mockup. This used to also require
+  // _dmczPreviewUrl[pid], which is only written by dmczPreviewOnGarment() —
+  // an explicit action — and which dmczInvalidatePreview() wipes on every
+  // edit: dragging the art, the size slider, the background key, changing
+  // placement. So a customer who had clearly customized a garment saw no
+  // "With my design" tab at all, because whether a mockup happens to be baked
+  // is an implementation detail they cannot see. Missing bakes are now filled
+  // in on demand when the tab is opened (spBakeDesign below).
   function spCurrentDesign() {
     if (typeof _dmczState === 'undefined' || !_dmczState) return null;
     var st = _dmczState;
     var out = [];
     (st.placements || []).forEach(function (pid) {
       var up = (st.uploads || {})[pid];
-      var mock = _dmczPreviewUrl[pid];
-      if (!up || !up.path || !mock) return;
+      if (!up || !up.path) return;
+      var mock = _dmczPreviewUrl[pid] || null;
       var b = (st.boxes || {})[pid];
       var box = null;
       if (b && typeof b.w === 'number') {
@@ -3885,16 +3892,52 @@
         var c01 = function (v) { return Math.max(0, Math.min(1, v)); };
         box = { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) };
       }
-      out.push({ placement: pid, design_path: up.path, mockup_url: mock, box: box });
+      out.push({ placement: pid, design_path: up.path, mockup_url: mock, box: box, ar: up.ar || 1, signed_url: up.signed_url || null });
     });
     if (!out.length) return null;
     return {
       designs: out,
+      unbaked: out.filter(function (d) { return !d.mockup_url; }).length,
       decoration_method: st.method || 'DTG',
       placements: (st.placements || []).slice(),
       remove_bg: !!st.removeBg,
       remove_bg_color: st.removeBg ? (st.bgKey || 'auto') : null
     };
+  }
+
+  // Compose the placements that have artwork but no baked mockup. Same
+  // endpoint and same box maths the Add-to-quote path uses, so a share and an
+  // order produce byte-identical renders (the cache path is a hash of the
+  // inputs, so this is usually a cache hit rather than fresh sharp work).
+  function spBakeDesign(design) {
+    var color = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+    if (!color.color_id) return Promise.reject(new Error('no colour'));
+    var jobs = design.designs.map(function (d) {
+      if (d.mockup_url) return Promise.resolve(d);
+      return fetch(DMCZ_COMPOSE_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          color_id: color.color_id,
+          placement: d.placement,
+          design_path: d.design_path,
+          design_url: d.signed_url || null,
+          box: d.box || { x: 0.37, y: 0.28, w: 0.26 },
+          remove_bg: design.remove_bg,
+          remove_bg_color: design.remove_bg_color,
+          session_id: (function () { try { return localStorage.getItem('singhsCartId_v1'); } catch (e) { return null; } })()
+        })
+      }).then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (j) {
+          var url = j && (j.mockup_url || j.url);
+          if (!url) throw new Error((j && j.error) || 'compose failed');
+          // Cache it the same place the preview does, so Add to quote reuses
+          // this render instead of paying for it twice.
+          _dmczPreviewUrl[d.placement] = url;
+          d.mockup_url = url;
+          return d;
+        });
+    });
+    return Promise.all(jobs).then(function () { return design; });
   }
 
   function spDesignShareUrl(token) {
@@ -3927,7 +3970,13 @@
         qty: payload.qty,
         decoration_method: design.decoration_method,
         placements: design.placements,
-        designs: design.designs,
+        // The API refuses a share with no mockup, by design. Anything still
+        // unbaked at this point failed to compose and would be a hollow entry.
+        designs: design.designs
+          .filter(function (d) { return !!d.mockup_url; })
+          .map(function (d) {
+            return { placement: d.placement, design_path: d.design_path, mockup_url: d.mockup_url, box: d.box };
+          }),
         remove_bg: design.remove_bg,
         remove_bg_color: design.remove_bg_color,
         email: email,
@@ -4019,10 +4068,44 @@
       : '';
 
     var shared = payload._designUrl || null;
+
+    // Artwork present but not yet composed: bake before showing the preview,
+    // rather than hiding the option. One-shot per open — payload._baking stops
+    // the re-render this triggers from starting a second round.
+    if (mode === 'design' && design.unbaked && !payload._bakeFailed) {
+      if (!payload._baking) {
+        payload._baking = true;
+        spBakeDesign(design).then(function () {
+          payload._baking = false;
+          if (_spSharePayload === payload) spRenderSharePop(payload);
+        }).catch(function (e) {
+          payload._baking = false;
+          payload._bakeFailed = (e && e.message) || 'compose failed';
+          if (_spSharePayload === payload) spRenderSharePop(payload);
+        });
+      }
+      pop.innerHTML = tabs +
+        '<div class="sp-sharepop__k">' + esc(spShareT('cat.share.theyllsee', "They'll see this")) + '</div>' +
+        '<div class="sp-prev sp-prev--busy">' +
+          '<div class="sp-prev__spin" aria-hidden="true"></div>' +
+          '<div class="sp-prev__txt"><div class="sp-prev__t">' +
+            esc(spShareT('cat.share.baking', 'Preparing your mockup…')) + '</div>' +
+            '<div class="sp-prev__s">' + esc(spShareT('cat.share.bakingsub', 'Rendering your artwork onto the garment.')) + '</div>' +
+          '</div>' +
+        '</div>';
+      pop.querySelectorAll('.sp-sharepop__tab').forEach(function (b) {
+        b.addEventListener('click', function () {
+          payload._mode = b.getAttribute('data-mode');
+          spRenderSharePop(payload);
+        });
+      });
+      return;
+    }
+
     var img, sub, urlLine, title;
     if (mode === 'design') {
-      var first = design.designs[0];
-      img   = first ? first.mockup_url : payload.image;
+      var first = design.designs.filter(function (d) { return !!d.mockup_url; })[0] || design.designs[0];
+      img   = (first && first.mockup_url) || payload.image;
       title = payload.title + ' — ' + spShareT('cat.share.customized', 'customized');
       sub   = design.designs.map(function (d) { return spPlacementLabel(d.placement); }).join(' + ');
       urlLine = shared || (location.host.replace(/^www\./, '') + '/d/…');
@@ -4048,6 +4131,9 @@
     if (mode === 'design' && !shared) {
       var remembered = spRememberedEmail();
       action =
+        (payload._bakeFailed
+          ? '<div class="sp-gate__err">' + esc(spShareT('cat.share.bakefail', 'Could not render the mockup. Share the blank instead, or try again.')) + '</div>'
+          : '') +
         '<label class="sp-gate__lab" for="spShareEmail">' + esc(spShareT('cat.share.emaillabel', 'Your email')) + '</label>' +
         '<input class="sp-gate__in" id="spShareEmail" type="email" inputmode="email" autocomplete="email" ' +
           'placeholder="you@company.com" value="' + esc(remembered) + '">' +
