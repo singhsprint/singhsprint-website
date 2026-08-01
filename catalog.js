@@ -496,7 +496,8 @@
       uploads: {},          // { placementId: { path, signed_url, filename } }
       priceSeq: 0,
       boxes: {},            // { placementId: { x, y, w } } — % of the preview stage
-      removeBg: false,      // knock out white backgrounds in the live preview
+      removeBg: false,      // derived from bgKey; the API and cart speak this flag
+      bgKey: 'off',         // 'off' | 'white' | 'black' | 'auto'
       activePreview: null,  // placement the inline canvas is showing/editing
       garmentView: 'front'  // which blank-garment photo to show (front/back/side)
     };
@@ -1010,6 +1011,14 @@
         _dmczState.activePreview = pid;
         renderDmczUploads();
         renderDmczPreview();
+        // Art uploaded while a key-out mode is already selected: compute it now
+        // so the stage never shows one frame of un-keyed artwork.
+        if (_dmczState.bgKey && _dmczState.bgKey !== 'off') {
+          dmczArtSrc(pid, function (src) {
+            var a = document.getElementById('dmczArt');
+            if (a && src) a.src = src;
+          });
+        }
       })
       .catch(function(){
         setStatus(t('cat.detail.uploadfail') || 'Upload failed — you can try again.', true);
@@ -1207,6 +1216,72 @@
            (sideWord ? ' \u00b7 ' + esc(sideWord) : '') + '</span>';
   }
 
+  /**
+   * Browser twin of the server's remove-bg 'global' colour key
+   * (lib/mockups/remove-bg.ts, mode:'global'). Same constants, same maths, so
+   * what the customer drags around IS what compose will paint. Mutates in place.
+   *
+   * The old preview faked this with mix-blend-mode:multiply, which only ever
+   * approximated a WHITE knockout — on a navy tee with a black-boxed logo it
+   * just darkened the box and the customer had to press "Preview on garment"
+   * to find out what they were actually buying.
+   */
+  var DMCZ_BG_HARD = 55;
+  var DMCZ_BG_SOFT = 140;
+  function dmczBgTarget(key, data, w, h) {
+    if (key === 'white') return { r: 255, g: 255, b: 255 };
+    if (key === 'black') return { r: 0, g: 0, b: 0 };
+    // 'auto' — average the four corners, exactly as the server does.
+    var c = [0, (w - 1) * 4, (h - 1) * w * 4, ((h - 1) * w + (w - 1)) * 4];
+    return {
+      r: (data[c[0]]     + data[c[1]]     + data[c[2]]     + data[c[3]])     / 4,
+      g: (data[c[0] + 1] + data[c[1] + 1] + data[c[2] + 1] + data[c[3] + 1]) / 4,
+      b: (data[c[0] + 2] + data[c[1] + 2] + data[c[2] + 2] + data[c[3] + 2]) / 4
+    };
+  }
+  function dmczKeyOut(data, w, h, key) {
+    var t = dmczBgTarget(key, data, w, h);
+    var band = Math.max(1, DMCZ_BG_SOFT - DMCZ_BG_HARD);
+    for (var p = 0; p < data.length; p += 4) {
+      var dr = data[p] - t.r, dg = data[p + 1] - t.g, db = data[p + 2] - t.b;
+      var d = Math.sqrt(dr * dr + dg * dg + db * db);
+      if (d <= DMCZ_BG_HARD) data[p + 3] = 0;
+      else if (d < DMCZ_BG_SOFT) data[p + 3] = Math.round(data[p + 3] * ((d - DMCZ_BG_HARD) / band));
+    }
+  }
+  /**
+   * Resolve the image src for a placement under the current bg mode, then call
+   * back. Reads pixels from the original File via a blob URL rather than the
+   * signed URL — same-origin, so the canvas is never tainted, and it costs no
+   * storage egress. Result is memoised per (placement, mode).
+   */
+  function dmczArtSrc(pid, cb) {
+    var up = _dmczState.uploads[pid];
+    if (!up) return cb('');
+    var key = _dmczState.bgKey || 'off';
+    if (key === 'off' || !up.file) return cb(up.signed_url || '');
+    up._keyed = up._keyed || {};
+    if (up._keyed[key]) return cb(up._keyed[key]);
+    var img = new Image();
+    var ourl = URL.createObjectURL(up.file);
+    img.onload = function () {
+      try {
+        var c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        var g = c.getContext('2d');
+        g.drawImage(img, 0, 0);
+        var id = g.getImageData(0, 0, c.width, c.height);
+        dmczKeyOut(id.data, c.width, c.height, key);
+        g.putImageData(id, 0, 0);
+        up._keyed[key] = c.toDataURL('image/png');
+      } catch (_) { up._keyed[key] = up.signed_url || ''; }
+      URL.revokeObjectURL(ourl);
+      cb(up._keyed[key]);
+    };
+    img.onerror = function () { URL.revokeObjectURL(ourl); cb(up.signed_url || ''); };
+    img.src = ourl;
+  }
+
   /** One line explaining what the selected key-out mode will do. */
   function dmczBgHelp() {
     var t = dmczT;
@@ -1354,10 +1429,13 @@
         };
       }
       box = _dmczState.boxes[active];
-      var blend = _dmczState.removeBg ? 'mix-blend-mode:multiply;' : '';
-      artImg = baked ? '' : '<img id="dmczArt" src="' + esc(up.signed_url || '') + '" alt="" draggable="false" ' +
+      // Paint with whatever key-out state we already have; if this mode hasn't
+      // been computed yet the callback below swaps the src in once it is.
+      var keyedNow = (_dmczState.bgKey && _dmczState.bgKey !== 'off' && up._keyed)
+        ? up._keyed[_dmczState.bgKey] : null;
+      artImg = baked ? '' : '<img id="dmczArt" src="' + esc(keyedNow || up.signed_url || '') + '" alt="" draggable="false" ' +
         'style="position:absolute;top:' + box.y + '%;left:' + box.x + '%;width:' + box.w + '%;' +
-        'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' + blend +
+        'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' +
         'filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">';
     } else {
       // Bare garment — show whichever view the customer picked (front by
@@ -1425,12 +1503,12 @@
           '</div>' +
           '<p class="dmcz__bg-help">' + esc(dmczBgHelp()) + '</p>' +
         '</div>' +
+        // No "Preview on garment" button. The stage now applies the SAME
+        // colour key the server will, so what the customer sees is already the
+        // mockup — a button that re-renders it server-side was asking them to
+        // pay a round trip to confirm what was in front of them. The real
+        // composite is still produced on Add to quote (see composeJobs).
         '<div class="dmcz__preview-row">' +
-          '<button type="button" id="dmczPreviewBtn"' + (_dmczPreviewBusy ? ' disabled' : '') + '>' +
-            (_dmczPreviewUrl[active]
-              ? (t('cat.detail.prevagain') || 'Re-render preview')
-              : (t('cat.detail.prevbtn')   || 'Preview on garment')) +
-          '</button>' +
           (_dmczSleeveNote ? '<span class="dmcz__preview-msg">' + esc(_dmczSleeveNote) + '</span>' : '') +
           (_dmczPreviewMsg ? '<span class="dmcz__preview-msg">' + esc(_dmczPreviewMsg) + '</span>' : '') +
         '</div>' +
@@ -1473,8 +1551,6 @@
         var a = document.getElementById('dmczArt');
         if (a) a.style.width = box.w + '%';
       });
-      var pvBtn = document.getElementById('dmczPreviewBtn');
-      if (pvBtn) pvBtn.addEventListener('click', dmczPreviewOnGarment);
       // Dragging invalidates a baked preview too — but only once the pointer
       // actually goes down, so a repaint doesn't clear it spuriously.
       var artEl = document.getElementById('dmczArt');
@@ -1491,6 +1567,11 @@
           _dmczState.bgKey   = k;
           _dmczState.removeBg = (k !== 'off');
           dmczInvalidatePreview();   // every baked preview used the old bg mode
+          var act = _dmczState.activePreview;
+          if (act) dmczArtSrc(act, function (src) {
+            var a = document.getElementById('dmczArt');
+            if (a && src) a.src = src; else renderDmczPreview();
+          });
           renderDmczPreview();
         });
       });
@@ -2052,6 +2133,7 @@
             design_url:  up.signed_url || null,
             box:         composeBox,
             remove_bg:   !!st.removeBg,
+            remove_bg_color: st.removeBg ? (st.bgKey || 'auto') : null,
             session_id:  (localStorage.getItem('singhsCartId_v1') || null)
           })
         }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })

@@ -3382,6 +3382,56 @@
         if (existByP[p] && existByP[p].signed_url) return existByP[p].signed_url;
         return '';
       }
+      // Browser twin of the server's remove-bg 'global' colour key (same
+      // constants, same maths), so the stage shows what compose will paint.
+      // Replaces nothing — the quote stage previously showed RAW artwork and
+      // the customer had to press "Preview on garment" to see the key-out.
+      var SP_BG_HARD = 55, SP_BG_SOFT = 140;
+      function spBgTarget(key, data, w, h) {
+        if (key === 'white') return { r: 255, g: 255, b: 255 };
+        if (key === 'black') return { r: 0, g: 0, b: 0 };
+        var c = [0, (w - 1) * 4, (h - 1) * w * 4, ((h - 1) * w + (w - 1)) * 4];
+        return {
+          r: (data[c[0]]     + data[c[1]]     + data[c[2]]     + data[c[3]])     / 4,
+          g: (data[c[0] + 1] + data[c[1] + 1] + data[c[2] + 1] + data[c[3] + 1]) / 4,
+          b: (data[c[0] + 2] + data[c[1] + 2] + data[c[2] + 2] + data[c[3] + 2]) / 4
+        };
+      }
+      function spKeyOut(data, w, h, key) {
+        var t = spBgTarget(key, data, w, h);
+        var band = Math.max(1, SP_BG_SOFT - SP_BG_HARD);
+        for (var q = 0; q < data.length; q += 4) {
+          var dr = data[q] - t.r, dg = data[q + 1] - t.g, db = data[q + 2] - t.b;
+          var d = Math.sqrt(dr * dr + dg * dg + db * db);
+          if (d <= SP_BG_HARD) data[q + 3] = 0;
+          else if (d < SP_BG_SOFT) data[q + 3] = Math.round(data[q + 3] * ((d - SP_BG_HARD) / band));
+        }
+      }
+      var keyedByP = {};   // "<placement>|<mode>" -> data URL
+      function spArtSrc(p, cb) {
+        var base = artURL(p);
+        if (!base || bgKey === 'off') return cb(base);
+        var ck = p + '|' + bgKey;
+        if (keyedByP[ck]) return cb(keyedByP[ck]);
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+          try {
+            var c = document.createElement('canvas');
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            var g = c.getContext('2d');
+            g.drawImage(img, 0, 0);
+            var id = g.getImageData(0, 0, c.width, c.height);
+            spKeyOut(id.data, c.width, c.height, bgKey);
+            g.putImageData(id, 0, 0);
+            keyedByP[ck] = c.toDataURL('image/png');
+          } catch (_) { keyedByP[ck] = base; }   // tainted canvas -> show raw
+          cb(keyedByP[ck]);
+        };
+        img.onerror = function () { cb(base); };
+        img.src = base;
+      }
+
       function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
       var overlay = document.createElement('div');
@@ -3401,7 +3451,6 @@
           '</div>' +
           '<div class="sp-cz-foot">' +
             '<span class="sp-cz-status">Drag your art, set the size, then preview.</span>' +
-            '<button type="button" class="sp-cz-btn sp-cz-btn--ghost sp-cz-preview">Preview on garment</button>' +
             '<button type="button" class="sp-cz-btn sp-cz-btn--primary sp-cz-done">Use this mockup</button>' +
           '</div>' +
         '</div>';
@@ -3428,7 +3477,6 @@
       var bgSegEl = overlay.querySelector('.sp-cz-bgs');
       var bgHelpEl= overlay.querySelector('.sp-cz-bgh');
       var statusEl= overlay.querySelector('.sp-cz-status');
-      var previewBtn = overlay.querySelector('.sp-cz-preview');
       var doneBtn = overlay.querySelector('.sp-cz-done');
       // Same copy as the operator modal, so a customer and a rep discussing a
       // mockup are describing the same thing.
@@ -3514,7 +3562,7 @@
         // the other direction.
         if (renderTagEl) renderTagEl.style.display = (gp && spBlankView(p)) ? '' : 'none';
         if (hasArt(p)) {
-          artImg.src = artURL(p);
+          spArtSrc(p, function (src) { artImg.src = src; });
           artImg.style.display = '';
           slider.disabled = false;
           slider.value = boxes[p].w;
@@ -3576,7 +3624,7 @@
       });
 
       function setBusy(busy, msg) {
-        previewBtn.disabled = busy; doneBtn.disabled = busy;
+        doneBtn.disabled = busy;
         statusEl.innerHTML = (busy ? '<span class="sp-cz-spin"></span>' : '') + (msg || '');
       }
       function close() {
@@ -3659,19 +3707,10 @@
         });
       }
 
-      previewBtn.onclick = function() {
-        bakeAll().then(function(out) {
-          bakedMockups = out.mockups;
-          // Show the active placement's baked image in the stage as confirmation.
-          // Only swap in a mockup that belongs to the current placement, so a
-          // blank tab (no art) keeps showing the plain garment.
-          var m = bakedMockups.filter(function(x) { return x.placement === curP(); })[0];
-          if (m) { garImg.src = m.url; artImg.style.display = 'none'; }
-          setBusy(false, 'Looks good? Tap “Use this mockup”.');
-        }).catch(function(e) {
-          setBusy(false, 'Preview failed: ' + ((e && e.message) || e));
-        });
-      };
+      // No "Preview on garment" button: the stage applies the same colour key
+      // the server will, so it already IS the mockup. "Use this mockup" still
+      // bakes server-side (see doneBtn — it calls bakeAll when nothing has been
+      // baked yet), so the order always carries a real composite.
 
       doneBtn.onclick = function() {
         // If they never previewed, bake now so the order still carries a mockup.
