@@ -514,6 +514,24 @@ function loadNav() {
       ]
     },
     {
+      // Youth / Kids (2026-08-01). This one is NOT a ?type= filter: youth is
+      // a gender facet that cuts across every category (673 products - 127
+      // tees, 99 jerseys, 86 hoodies, 62 shorts, ...), so the links stack
+      // ?gender=youth with an optional ?type=. Bodysuits and bibs are real
+      // categories, added in the same pass, and need no gender qualifier
+      // since every one of them is an infant garment already.
+      en: 'Youth & Baby', fr: 'Enfants et bébés', i18n: 'nav.youth',
+      href: BASE + '/catalog?gender=youth',
+      subs: [
+        { en: 'All youth & kids',    fr: 'Tout pour enfants',   href: BASE + '/catalog?gender=youth' },
+        { en: 'Youth t-shirts',      fr: 'T-shirts enfants',    href: BASE + '/catalog?gender=youth&type=tshirt' },
+        { en: 'Youth hoodies',       fr: 'Hoodies enfants',     href: BASE + '/catalog?gender=youth&type=hoodie' },
+        { en: 'Youth jerseys',       fr: 'Maillots enfants',    href: BASE + '/catalog?gender=youth&type=jersey' },
+        { en: 'Baby onesies',        fr: 'Cache-couches bébé',  href: BASE + '/catalog?type=bodysuit' },
+        { en: 'Baby bibs',           fr: 'Bavoirs bébé',        href: BASE + '/catalog?type=bib' }
+      ]
+    },
+    {
       en: 'Accessories', fr: 'Accessoires', i18n: 'nav.accessories',
       href: BASE + '/catalog?type=accessories',
       subs: [

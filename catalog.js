@@ -465,6 +465,10 @@
     var open = body.classList.toggle('open');
     if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (bar) { bar.classList.toggle('open', open); bar.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+    // Opening the drawer is the earliest honest signal that this customer is
+    // going to customize. Anything already selected (Left Chest by default,
+    // plus whatever carried over) can start warming now.
+    if (open) { try { dmczWarmSelectedBlanks(); } catch (_) {} }
     // Scroll the bar (the drawer's origin) into view so the reveal is visible.
     if (open) setTimeout(function(){ try { (bar || body).scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {} }, 120);
   }
@@ -708,6 +712,55 @@
     });
   }
 
+  /** The colour the modal is currently showing, or {} before one is picked. */
+  function dmczCurrentColor() {
+    return (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
+  }
+
+  /**
+   * Kick off generation of one placement's colour-matched blank and repaint
+   * when it lands. Safe to call repeatedly: dmczSleeveBlank memoises both the
+   * result and the in-flight promise, so extra calls cost nothing.
+   */
+  function dmczWarmBlank(pid, color) {
+    try {
+      var view = dmczBlankView(pid);
+      if (!view || !color || !color.color_id) return;
+      var side = dmczSleeveSide(pid);
+      var key  = color.color_id + '|' + side + '|' + view;
+      if (_dmczSleevePending[key]) return;
+      if (Object.prototype.hasOwnProperty.call(_dmczSleeveBlanks, key)) return;  // already have it
+      _dmczSleevePending[key] = true;
+      dmczSleeveBlank(color.color_id, side, view).then(function () {
+        delete _dmczSleevePending[key];
+        try { renderDmczPreview(); } catch (_) {}
+      });
+    } catch (_) {}
+  }
+
+  /**
+   * Warm EVERY selected placement that needs a generated blank.
+   *
+   * Selecting a placement used to be the only trigger, which left a hole the
+   * customer walked straight into: pick a colour, and only the placement you
+   * happen to be *looking at* ever warms. Switch tabs to the other one you
+   * already selected and it generates from scratch, in the foreground, with
+   * you watching. Changing colour re-opened the same hole for every
+   * placement at once, since the cache is keyed per colour.
+   *
+   * Scope is deliberately the SELECTED placements only. Speculatively
+   * generating the ones the customer has not chosen would be a real image-gen
+   * bill per colour per view across a 4,000-product catalogue, to save a wait
+   * most shoppers never reach.
+   */
+  function dmczWarmSelectedBlanks(color) {
+    var c = color || dmczCurrentColor();
+    if (!c || !c.color_id) return;
+    for (var i = 0; i < _dmczState.placements.length; i++) {
+      dmczWarmBlank(_dmczState.placements[i], c);
+    }
+  }
+
   // One preset per location: selecting a preset replaces any other selected
   // preset that shares the same .loc. Re-selecting the active one removes it.
   function dmczTogglePlacement(pid) {
@@ -719,18 +772,7 @@
     // with choosing and uploading a design, so it's usually done by the time
     // the stage needs it.
     if (dmczBlankView(pid) && _dmczState.placements.indexOf(pid) < 0) {
-      try {
-        var _c = (_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {};
-        if (_c.color_id) {
-          var _vw2 = dmczBlankView(pid);
-          var _k = _c.color_id + '|' + dmczSleeveSide(pid) + '|' + _vw2;
-          _dmczSleevePending[_k] = true;
-          dmczSleeveBlank(_c.color_id, dmczSleeveSide(pid), _vw2).then(function(){
-            delete _dmczSleevePending[_k];
-            try { renderDmczPreview(); } catch (_) {}
-          });
-        }
-      } catch (_) {}
+      dmczWarmBlank(pid, dmczCurrentColor());
     }
     var idx = _dmczState.placements.indexOf(pid);
     if (idx >= 0) {
@@ -1207,6 +1249,17 @@
       artImg = '';
     }
 
+    // Sleeve and inside-neck views do not exist as catalog photography — we
+    // generate them, colour-matched, per garment colour. That is fine as a
+    // placement guide and misleading as a product shot, so say which one the
+    // customer is looking at. Chest and back views are real supplier photos
+    // and get no badge.
+    var renderBadge = (hasArt && dmczBlankView(active))
+      ? '<span class="dmcz__render-tag" title="' +
+          esc(t('cat.detail.rendertip') || 'This view is generated to show placement. The garment colour is matched to your pick; it is not a photograph of the printed item.') +
+        '">' + esc(t('cat.detail.rendertag') || 'Render \u2014 placement guide') + '</span>'
+      : '';
+
     // Front/back/side thumbnail switcher — only in the blank state (when art is
     // present the placement tabs already drive which side shows).
     var viewStrip = '';
@@ -1261,6 +1314,7 @@
         (hasArt ? '' : ' dmcz__stage--zoom') + '" id="dmczStage">' +
         '<img class="dmcz__stage-garment" src="' + esc(garment) + '" data-key="' + esc(garment) + '" alt="" loading="eager" decoding="async" onload="dmczImgSeen(this)">' +
         artImg +
+        renderBadge +
       '</div>' +
       viewStrip +
       caption +
@@ -1578,6 +1632,10 @@
         host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
         s.setAttribute('aria-selected', 'true');
         paintDetailHero();
+        // The blank cache is keyed per colour, so every selected sleeve /
+        // neck view just went cold. Start them all now, in the background,
+        // rather than when the customer next switches tabs.
+        try { dmczWarmSelectedBlanks(); } catch (_) {}
         // Refresh the in-modal customizer preview so the garment switches to
         // the newly-picked colour too (it reads the live _detailColorIdx).
         if (typeof renderDmczPreview === 'function') renderDmczPreview();
@@ -2032,7 +2090,16 @@
       // panel UI is multi-select within a category (e.g. show me red OR blue
       // products). Empty arrays = no constraint.
       colorFamilies:   [],
-      genders:         [],
+      // Hydrate from `?gender=youth` so the nav's Youth tab deep-links into a
+      // pre-filtered catalog. Youth is a CROSS-CATEGORY facet, not a category:
+      // ~673 products carry gender:youth across tees, hoodies, jerseys,
+      // shorts and more, so it has to stack with ?type= rather than replace
+      // it. Accepts a comma list for symmetry with the filter panel.
+      genders:         (getQueryParam('gender') || '').split(',').map(function (g) {
+                         return g.trim().toLowerCase();
+                       }).filter(function (g) {
+                         return ['youth', 'womens', 'mens', 'unisex'].indexOf(g) >= 0;
+                       }),
       fabricFamilies:  [],
       weightClasses:   [],
       sizes:           [],
@@ -2124,6 +2191,7 @@
     ['vest','Vests'], ['joggers','Joggers'], ['sweatpants','Sweatpants'],
     ['shorts','Shorts'], ['pants','Pants'], ['leggings','Leggings'],
     ['jersey','Sports jerseys'], ['coverall','Coveralls'], ['scrubs','Scrubs'],
+    ['bodysuit','Bodysuits / onesies'], ['bib','Baby bibs'],
     ['apron','Aprons'], ['hat','Hats / caps'], ['beanie','Beanies / toques'],
     ['visor','Visors'], ['bag','Bags / backpacks'], ['scarf','Scarves'],
     ['gloves','Gloves'], ['socks','Socks'], ['headband','Headbands'],
@@ -3094,6 +3162,18 @@
         resetAndFetch();
       }));
     });
+
+    // Youth is a qualifier, not a type — it stacks with the type chips, so
+    // "Youth" + "Hoodies" gives the 86 youth hoodies rather than replacing
+    // the type filter. Sits first among the qualifiers because kidswear is a
+    // whole shopping mode (school, team, daycare), not a nice-to-have facet.
+    const youthOn = state.filters.genders.indexOf('youth') >= 0;
+    row.appendChild(makeChip('Youth / Kids', youthOn ? 'active' : 'passive', () => {
+      const i = state.filters.genders.indexOf('youth');
+      if (i >= 0) state.filters.genders.splice(i, 1);
+      else        state.filters.genders.push('youth');
+      resetAndFetch();
+    }));
 
     // Qualifier toggles — Canadian / Hi-Vis
     row.appendChild(makeChip('🇨🇦 Canadian', state.filters.canadian ? 'active' : 'passive', () => {

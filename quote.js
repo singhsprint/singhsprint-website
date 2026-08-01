@@ -3253,6 +3253,12 @@
         '.sp-cz-stage{position:relative;margin:14px 20px;background:#fff;border-radius:12px;overflow:hidden;aspect-ratio:1/1;width:calc(100% - 40px);touch-action:none;user-select:none}' +
         '.sp-cz-garment{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}' +
         '.sp-cz-art{position:absolute;cursor:move;touch-action:none;user-select:none;-webkit-user-drag:none}' +
+        // Marks a generated garment view so it is never read as catalog
+        // photography. Sleeve and inside-neck shots do not exist as supplier
+        // photos; we generate them, colour-matched, per colour.
+        '.sp-cz-render{position:absolute;left:8px;bottom:8px;z-index:5;background:rgba(26,26,26,.72);' +
+          'color:#fff;font-size:.6rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;' +
+          'padding:3px 7px;border-radius:5px;cursor:help}' +
         '.sp-cz-ctl{padding:4px 20px 0}' +
         '.sp-cz-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:.85rem;color:#ddd}' +
         '.sp-cz-row input[type=range]{flex:1;accent-color:#e8ff3c}' +
@@ -3384,7 +3390,9 @@
         '<div class="sp-cz" role="dialog" aria-modal="true">' +
           '<div class="sp-cz-h"><h3>Customize your mockup</h3><button type="button" class="sp-cz-x" aria-label="Close">×</button></div>' +
           '<div class="sp-cz-tabs"></div>' +
-          '<div class="sp-cz-stage"><img class="sp-cz-garment" alt="garment"/><img class="sp-cz-art" alt="your design" draggable="false"/></div>' +
+          '<div class="sp-cz-stage"><img class="sp-cz-garment" alt="garment"/><img class="sp-cz-art" alt="your design" draggable="false"/>' +
+            '<span class="sp-cz-render" style="display:none" title="This view is generated to show placement. The garment colour is matched to your pick; it is not a photograph of the printed item.">Render \u2014 placement guide</span>' +
+          '</div>' +
           '<div class="sp-cz-ctl">' +
             '<div class="sp-cz-row"><span>Size</span><input type="range" min="0.08" max="0.9" step="0.01"></div>' +
             '<div class="sp-cz-bgl"></div>' +
@@ -3414,6 +3422,7 @@
       var garImg  = overlay.querySelector('.sp-cz-garment');
       var artImg  = overlay.querySelector('.sp-cz-art');
       var stage   = overlay.querySelector('.sp-cz-stage');
+      var renderTagEl = overlay.querySelector('.sp-cz-render');
       var slider  = overlay.querySelector('input[type=range]');
       var bgLabEl = overlay.querySelector('.sp-cz-bgl');
       var bgSegEl = overlay.querySelector('.sp-cz-bgs');
@@ -3500,6 +3509,10 @@
         var gp = garmentFor(p);
         garImg.src = gp ? (typeof imgUrl === 'function' ? imgUrl(gp) : gp) : '';
         garImg.style.display = gp ? '' : 'none';
+        // Only the generated views get the badge. Chest and back are real
+        // supplier photography and labelling those a render would be a lie in
+        // the other direction.
+        if (renderTagEl) renderTagEl.style.display = (gp && spBlankView(p)) ? '' : 'none';
         if (hasArt(p)) {
           artImg.src = artURL(p);
           artImg.style.display = '';
