@@ -524,7 +524,7 @@ function loadNav() {
       // Initiative community programme (see the secondary nav and
       // /youth-initiative). Reusing it rendered this catalog tab as
       // "Youth Initiative", sitting two links away from the real one.
-      en: 'Youth & Baby', fr: 'Enfants et bébés', i18n: 'nav.youthbaby',
+      en: 'Youth', fr: 'Enfants', i18n: 'nav.youthbaby',
       href: BASE + '/catalog?gender=youth',
       subs: [
         { en: 'All youth & kids',    fr: 'Tout pour enfants',   href: BASE + '/catalog?gender=youth' },

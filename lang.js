@@ -51,7 +51,7 @@ var SP_LANG = (function() {
     'nav.youth': { en: 'Youth Initiative', fr: 'Initiative Jeunesse' },
     // Catalog tab for kids/baby blanks. Deliberately a different key from
     // 'nav.youth' above, which is the community programme.
-    'nav.youthbaby': { en: 'Youth & Baby', fr: 'Enfants et bébés' },
+    'nav.youthbaby': { en: 'Youth', fr: 'Enfants' },
     'nav.businesses': { en: 'For Businesses', fr: 'Pour entreprises' },
     'nav.about': { en: 'About', fr: 'À propos' },
     'nav.guides': { en: 'Guides', fr: 'Guides' },
