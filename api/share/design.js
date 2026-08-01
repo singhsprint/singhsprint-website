@@ -17,8 +17,11 @@
  * at it directly — no image-proxy hop, unlike /b/ where the supplier 403s
  * external referrers.
  *
- * Crawlers stop at the <head>. Humans get location.replace()'d to the catalog
- * with ?design=<token>, which catalog.js restores into the detail modal.
+ * Humans LAND here — this is a page, not a redirect. It used to
+ * location.replace() to the catalog on load, so the mockup someone had gone
+ * to the trouble of sharing flashed up for a frame and vanished. The whole
+ * point of the link is that garment with that artwork on it, so it now gets
+ * its own screen and the customer chooses to continue.
  *
  * Returns:
  *   200 → HTML with the mockup's OG tags + client redirect
@@ -151,8 +154,11 @@ function pageHtml({ share, product, color, lang, canonical, target, image }) {
       ];
   const description = descBits.filter(Boolean).join(' · ');
 
-  const opening = fr ? 'Ouverture du design…' : 'Opening the design…';
-  const manual = fr ? 'Voir ce design' : 'View this design';
+  const eyebrow  = fr ? 'Partagé avec vous' : 'Shared with you';
+  const cta      = fr ? 'Personnaliser ce design' : 'Customize this design';
+  const ctaSub   = fr ? 'Changez la couleur, l\u2019emplacement ou la quantité — le visuel reste tel quel.'
+                      : 'Change the colour, placement or quantity — the artwork stays as it is.';
+  const browse   = fr ? 'Voir tous les vêtements' : 'Browse all blanks';
 
   return `<!doctype html>
 <html lang="${fr ? 'fr' : 'en'}">
@@ -182,29 +188,36 @@ function pageHtml({ share, product, color, lang, canonical, target, image }) {
   <meta name="twitter:description" content="${esc(description)}">
   <meta name="twitter:image" content="${esc(image)}">
 
-  <noscript><meta http-equiv="refresh" content="0;url=${esc(target)}"></noscript>
   <style>
+    *{box-sizing:border-box}
     body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a1a;
-      margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .w{text-align:center;max-width:440px}
-    .w img{width:100%;max-width:300px;border-radius:14px;background:#fff;border:1px solid #e8e6df;margin-bottom:18px}
-    .b{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#888}
-    .t{font-size:1.15rem;font-weight:700;margin-top:2px;line-height:1.25}
-    .s{font-size:.85rem;color:#666;margin-top:10px}
-    .a{display:inline-block;margin-top:18px;background:#1a1a1a;color:#fff;text-decoration:none;
-      padding:11px 22px;border-radius:50px;font-weight:600;font-size:.92rem}
+      margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px 20px}
+    .w{text-align:center;max-width:460px;width:100%}
+    .eyebrow{display:inline-block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+      color:#7a7a6a;background:#f1eed9;border:1px solid #e6e2cd;padding:5px 12px;border-radius:50px;margin-bottom:18px}
+    .shot{width:100%;border-radius:16px;background:#fff;border:1px solid #e8e6df;display:block;margin-bottom:20px}
+    .b{font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:#999}
+    .t{font-size:1.28rem;font-weight:700;margin-top:3px;line-height:1.25}
+    .s{font-size:.87rem;color:#666;margin-top:9px;line-height:1.45}
+    .a{display:block;margin-top:22px;background:#1a1a1a;color:#fff;text-decoration:none;
+      padding:14px 22px;border-radius:50px;font-weight:600;font-size:.95rem}
+    .a:hover{background:#000}
+    .hint{font-size:.74rem;color:#8a8a80;margin-top:10px;line-height:1.4}
+    .alt{display:inline-block;margin-top:16px;font-size:.8rem;color:#7a7a70;text-decoration:underline}
+    @media (max-width:420px){ .t{font-size:1.12rem} }
   </style>
 </head>
 <body>
   <div class="w">
-    <img src="${esc(image)}" alt="${esc(title)}">
+    <span class="eyebrow">${esc(eyebrow)}</span>
+    <img class="shot" src="${esc(image)}" alt="${esc(title)}">
     <div class="b">${esc(brandLine)}</div>
     <div class="t">${esc(name)}</div>
     <div class="s">${esc(description)}</div>
-    <div class="s">${esc(opening)}</div>
-    <a class="a" href="${esc(target)}">${esc(manual)}</a>
+    <a class="a" href="${esc(target)}">${esc(cta)}</a>
+    <div class="hint">${esc(ctaSub)}</div>
+    <a class="alt" href="${fr ? '/fr/catalog' : '/catalog'}">${esc(browse)}</a>
   </div>
-  <script>location.replace(${JSON.stringify(target)});</script>
 </body>
 </html>`;
 }
