@@ -342,6 +342,17 @@
        will look like, so hold it on screen and just mark it busy rather
        than tearing it down for a skeleton. */
     .dmcz__stage--busy img{filter:brightness(.95) saturate(.92)}
+    /* Background key-out, four modes, mirroring the quote builder's
+       segmented control so the same job is described the same way in
+       both places. */
+    .dmcz__bg{margin:10px 0 2px}
+    .dmcz__bg-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:6px;font-weight:600}
+    .dmcz__bg-seg{display:flex;gap:6px;flex-wrap:wrap}
+    .dmcz__bg-btn{background:#fff;border:1.5px solid #e0ddd2;color:#1a1a1a;border-radius:50px;padding:5px 12px;
+      font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .12s,background .12s}
+    .dmcz__bg-btn:hover{border-color:#bbb}
+    .dmcz__bg-btn.is-on{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+    .dmcz__bg-help{font-size:.7rem;color:#888;margin:6px 0 0;line-height:1.4}
     /* Marks a generated garment view so it is never mistaken for catalog
        photography. Bottom-left keeps it clear of the artwork, which the
        customer drags around the middle and top. */

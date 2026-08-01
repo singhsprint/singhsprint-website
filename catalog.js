@@ -451,7 +451,11 @@
     catch (_) { return ''; }
   }
 
-  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, activePreview: null };
+  // bgKey mirrors the quote builder's control: 'off' | 'white' | 'black' |
+  // 'auto'. removeBg stays as the derived boolean because the compose API,
+  // the cart item and the CRM row all still speak in that flag.
+  var DMCZ_BG_KEYS = ['off', 'white', 'black', 'auto'];
+  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, bgKey: 'off', activePreview: null };
 
   // Initialize the customizer for the product the modal just opened on.
   // Reveal/hide the full customizer behind the yellow button. The modal opens
@@ -1203,6 +1207,17 @@
            (sideWord ? ' \u00b7 ' + esc(sideWord) : '') + '</span>';
   }
 
+  /** One line explaining what the selected key-out mode will do. */
+  function dmczBgHelp() {
+    var t = dmczT;
+    switch (_dmczState.bgKey) {
+      case 'white': return t('cat.detail.bg.help.white') || 'Knocks out white everywhere in the artwork.';
+      case 'black': return t('cat.detail.bg.help.black') || 'Knocks out black everywhere in the artwork.';
+      case 'auto':  return t('cat.detail.bg.help.auto')  || 'Knocks out the colour sampled from the artwork corners.';
+      default:      return t('cat.detail.bg.help.off')   || 'Artwork kept as-is.';
+    }
+  }
+
   // Any edit invalidates a baked preview: it was rendered from the old box.
   function dmczInvalidatePreview(pid) {
     if (pid) delete _dmczPreviewUrl[pid]; else _dmczPreviewUrl = {};
@@ -1227,6 +1242,7 @@
         design_path: up.path, design_url: up.signed_url || null,
         box: { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) },
         remove_bg: !!_dmczState.removeBg,
+        remove_bg_color: _dmczState.removeBg ? _dmczState.bgKey : null,
         session_id: (function(){ try { return localStorage.getItem('singhsCartId_v1'); } catch (_) { return null; } })()
       })
     }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
@@ -1397,10 +1413,18 @@
           '<span data-i18n="cat.detail.designsize">' + (t('cat.detail.designsize') || 'Size') + '</span>' +
           '<input type="range" id="dmczSize" min="10" max="80" step="1" value="' + Math.round(box.w) + '">' +
         '</div>' +
-        '<label class="dmcz__rmbg">' +
-          '<input type="checkbox" id="dmczRemoveBg"' + (_dmczState.removeBg ? ' checked' : '') + '> ' +
-          '<span data-i18n="cat.detail.removebg">' + (t('cat.detail.removebg') || 'Remove background') + '</span>' +
-        '</label>' +
+        '<div class="dmcz__bg">' +
+          '<div class="dmcz__bg-label">' + esc(t('cat.detail.removebg') || 'Remove background colour') + '</div>' +
+          '<div class="dmcz__bg-seg" role="group">' +
+            DMCZ_BG_KEYS.map(function(k){
+              return '<button type="button" class="dmcz__bg-btn' + (k === _dmczState.bgKey ? ' is-on' : '') +
+                     '" data-bg="' + k + '" aria-pressed="' + (k === _dmczState.bgKey) + '">' +
+                     esc(t('cat.detail.bg.' + k) || (k.charAt(0).toUpperCase() + k.slice(1))) +
+                     '</button>';
+            }).join('') +
+          '</div>' +
+          '<p class="dmcz__bg-help">' + esc(dmczBgHelp()) + '</p>' +
+        '</div>' +
         '<div class="dmcz__preview-row">' +
           '<button type="button" id="dmczPreviewBtn"' + (_dmczPreviewBusy ? ' disabled' : '') + '>' +
             (_dmczPreviewUrl[active]
@@ -1458,13 +1482,17 @@
         _dmczBoxTouched[active] = true;
         dmczInvalidatePreview(active);
       });
-      // Remove-bg toggle: re-apply the blend mode live.
-      var rb = document.getElementById('dmczRemoveBg');
-      if (rb) rb.addEventListener('change', function(){
-        _dmczState.removeBg = this.checked;
-        dmczInvalidatePreview();   // every baked preview used the old bg mode
-        var a = document.getElementById('dmczArt');
-        if (a) a.style.mixBlendMode = this.checked ? 'multiply' : '';
+      // Background key-out. Same four modes as the quote builder so a customer
+      // sees one control wherever they customize.
+      host.querySelectorAll('.dmcz__bg-btn').forEach(function(b){
+        b.addEventListener('click', function(){
+          var k = b.getAttribute('data-bg');
+          if (k === _dmczState.bgKey) return;
+          _dmczState.bgKey   = k;
+          _dmczState.removeBg = (k !== 'off');
+          dmczInvalidatePreview();   // every baked preview used the old bg mode
+          renderDmczPreview();
+        });
       });
       // Drag the artwork around the garment.
       dmczMakeDragEl(box);
