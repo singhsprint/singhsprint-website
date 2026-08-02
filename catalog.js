@@ -4681,16 +4681,36 @@
   function spShareInvoke(payload, opts) {
     opts = opts || {};
     var handheld = spIsHandheld();
+    // 2026-08-02 — a design is a CHOICE, and the OS sheet cannot present one.
+    //
+    // The handheld shortcut below returned before the popover was ever
+    // considered, so on a phone the share button handed iOS payload.url — the
+    // blank product page — even when the customer was looking at their own
+    // artwork on the garment. The design-share feature (/d/<token>, the email
+    // gate, the whole unfurl) was unreachable from a phone, which is where
+    // most people share from. Reported with a screenshot of the iOS sheet
+    // offering "Gildan 64000 · Unisex Softstyle" while a donkey design sat on
+    // the shirt behind it.
+    //
+    // So the shortcut now yields when there is something to choose between.
+    // Same principle spRenderSharePop already applies to its tab strip: the
+    // choice only exists when there is a choice. Nothing changes for a
+    // customer who hasn't uploaded anything — still straight to the OS sheet.
+    var hasDesign = false;
+    try { hasDesign = !!spCurrentDesign(); } catch (_) {}
+    var needsChoice = hasDesign && !!opts.popover;
+
     // Phone: the OS sheet beats anything we could build, and it is the only
     // path that reaches iMessage / WhatsApp directly.
-    if (handheld && spCanNativeShare(payload)) {
+    if (handheld && spCanNativeShare(payload) && !needsChoice) {
       spNativeShare(payload).catch(function () {});
       return;
     }
-    // Desktop, from the modal: always the preview. The popover needs room the
-    // modal doesn't have on a phone, so a handheld without navigator.share
-    // falls through to a straight copy instead of a cramped panel.
-    if (!handheld && opts.popover) { spOpenSharePop(payload); return; }
+    // From the modal: the preview. On a phone this is now reached only when a
+    // design exists — the popover's own action still hands the CHOSEN url to
+    // the native sheet, so the iMessage/WhatsApp path is kept, just after the
+    // customer has said which thing they meant to send.
+    if (opts.popover && (!handheld || needsChoice)) { spOpenSharePop(payload); return; }
     spCopy(payload.url).then(function () {
       if (opts.button) spFlashCopied(opts.button);
       else spShareToast('✓ ' + spShareT('cat.share.copied', 'Link copied'));
