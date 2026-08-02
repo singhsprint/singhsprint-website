@@ -1781,12 +1781,21 @@
     // disabled: a greyed-out slider still says "this is yours to adjust", and
     // it is not.
     var sharedLock = hasArt && _dmczSharedLock;
-    var sizeRow = sharedLock ? '' :
+    // BOTH conditions, and hasArt FIRST. `box` is only assigned in the hasArt
+    // branch above (it is declared undefined alongside active/garment/up), so
+    // Math.round(box.w) throws on a product with no artwork — which is every
+    // product the moment you open it. The original code never hit that because
+    // the whole string lived inside `hasArt ? ... : ''` and was therefore never
+    // evaluated; pulling these two rows out of that ternary to gate them on the
+    // share lock lost the laziness. Shipped 2026-08-02, took the catalog modal
+    // down on every click, reverted within the hour.
+    var showEdits = hasArt && !sharedLock;
+    var sizeRow = !showEdits ? '' :
         '<div class="dmcz__size-row">' +
           '<span data-i18n="cat.detail.designsize">' + (t('cat.detail.designsize') || 'Size') + '</span>' +
           '<input type="range" id="dmczSize" min="10" max="80" step="1" value="' + Math.round(box.w) + '">' +
         '</div>';
-    var bgBlock = sharedLock ? '' :
+    var bgBlock = !showEdits ? '' :
         '<div class="dmcz__bg">' +
           '<div class="dmcz__bg-label">' + esc(t('cat.detail.removebg') || 'Remove background colour') + '</div>' +
           '<div class="dmcz__bg-seg" role="group">' +
