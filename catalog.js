@@ -455,7 +455,31 @@
   // 'auto'. removeBg stays as the derived boolean because the compose API,
   // the cart item and the CRM row all still speak in that flag.
   var DMCZ_BG_KEYS = ['off', 'white', 'black', 'auto'];
-  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, removeBg: false, bgKey: 'off', activePreview: null };
+
+  // 2026-08-01 — the key-out mode is PER PLACEMENT.
+  //
+  // It used to be two scalars on _dmczState (bgKey + the derived removeBg)
+  // while `uploads` and `boxes` were keyed by placement id. So choosing
+  // "remove black" while looking at the back print silently applied it to the
+  // front one as well, and the add-to-cart loop handed the same flag to every
+  // placement's compose job. Reported from production: one design gets keyed
+  // out and all of them come back knocked out.
+  //
+  // Keyed exactly like uploads/boxes, and read through these three functions
+  // everywhere, so the three maps cannot drift apart again.
+  function dmczBgKeyFor(pid) {
+    if (!pid) return 'off';
+    var k = _dmczState.bgKeys && _dmczState.bgKeys[pid];
+    return DMCZ_BG_KEYS.indexOf(k) >= 0 ? k : 'off';
+  }
+  function dmczRemoveBgFor(pid) { return dmczBgKeyFor(pid) !== 'off'; }
+  function dmczSetBgKeyFor(pid, k) {
+    if (!pid) return;
+    _dmczState.bgKeys = _dmczState.bgKeys || {};
+    _dmczState.bgKeys[pid] = DMCZ_BG_KEYS.indexOf(k) >= 0 ? k : 'off';
+  }
+
+  var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, bgKeys: {}, activePreview: null };
 
   // Initialize the customizer for the product the modal just opened on.
   // Reveal/hide the full customizer behind the yellow button. The modal opens
@@ -496,8 +520,7 @@
       uploads: {},          // { placementId: { path, signed_url, filename } }
       priceSeq: 0,
       boxes: {},            // { placementId: { x, y, w } } — % of the preview stage
-      removeBg: false,      // derived from bgKey; the API and cart speak this flag
-      bgKey: 'off',         // 'off' | 'white' | 'black' | 'auto'
+      bgKeys: {},           // { placementId: 'off'|'white'|'black'|'auto' } — per placement, like boxes
       activePreview: null,  // placement the inline canvas is showing/editing
       garmentView: 'front'  // which blank-garment photo to show (front/back/side)
     };
@@ -1048,7 +1071,7 @@
         renderDmczPreview();
         // Art uploaded while a key-out mode is already selected: compute it now
         // so the stage never shows one frame of un-keyed artwork.
-        if (_dmczState.bgKey && _dmczState.bgKey !== 'off') {
+        if (dmczRemoveBgFor(pid)) {
           dmczArtSrc(pid, function (src) {
             var a = document.getElementById('dmczArt');
             if (a && src) a.src = src;
@@ -1086,7 +1109,7 @@
       var u = _dmczState.uploads[pid];
       if (!u || !u.path || u.signed_url) return;      // nothing to do, or drawable locally
       if (_dmczPreviewUrl[pid]) return;               // already have one for this colour
-      var key = pid + '|' + color.color_id + '|' + _dmczState.bgKey;
+      var key = pid + '|' + color.color_id + '|' + dmczBgKeyFor(pid);
       if (_dmczRebaking[key]) return;                 // in flight
       _dmczRebaking[key] = true;
       var b = _dmczState.boxes[pid] || { x: 50, y: 40, w: 26 };
@@ -1099,8 +1122,8 @@
           placement: pid,
           design_path: u.path,
           box: { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) },
-          remove_bg: !!_dmczState.removeBg,
-          remove_bg_color: _dmczState.removeBg ? (_dmczState.bgKey || 'auto') : null,
+          remove_bg: dmczRemoveBgFor(pid),
+          remove_bg_color: dmczRemoveBgFor(pid) ? dmczBgKeyFor(pid) : null,
           session_id: (function () { try { return localStorage.getItem('singhsCartId_v1'); } catch (e) { return null; } })()
         })
       }).then(function (r) { return r.json().catch(function () { return {}; }); })
@@ -1414,7 +1437,7 @@
   function dmczArtSrc(pid, cb) {
     var up = _dmczState.uploads[pid];
     if (!up) return cb('');
-    var key = _dmczState.bgKey || 'off';
+    var key = dmczBgKeyFor(pid);
     if (key === 'off' || !up.file) return cb(up.signed_url || '');
     up._keyed = up._keyed || {};
     if (up._keyed[key]) return cb(up._keyed[key]);
@@ -1441,7 +1464,7 @@
   /** One line explaining what the selected key-out mode will do. */
   function dmczBgHelp() {
     var t = dmczT;
-    switch (_dmczState.bgKey) {
+    switch (dmczBgKeyFor(_dmczState.activePreview)) {
       case 'white': return t('cat.detail.bg.help.white') || 'Knocks out white everywhere in the artwork.';
       case 'black': return t('cat.detail.bg.help.black') || 'Knocks out black everywhere in the artwork.';
       case 'auto':  return t('cat.detail.bg.help.auto')  || 'Knocks out the colour sampled from the artwork corners.';
@@ -1472,8 +1495,8 @@
         color_id: color.color_id, placement: pid,
         design_path: up.path, design_url: up.signed_url || null,
         box: { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) },
-        remove_bg: !!_dmczState.removeBg,
-        remove_bg_color: _dmczState.removeBg ? _dmczState.bgKey : null,
+        remove_bg: dmczRemoveBgFor(pid),
+        remove_bg_color: dmczRemoveBgFor(pid) ? dmczBgKeyFor(pid) : null,
         session_id: (function(){ try { return localStorage.getItem('singhsCartId_v1'); } catch (_) { return null; } })()
       })
     }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
@@ -1590,8 +1613,8 @@
       box = _dmczState.boxes[active];
       // Paint with whatever key-out state we already have; if this mode hasn't
       // been computed yet the callback below swaps the src in once it is.
-      var keyedNow = (_dmczState.bgKey && _dmczState.bgKey !== 'off' && up._keyed)
-        ? up._keyed[_dmczState.bgKey] : null;
+      var keyedNow = (dmczRemoveBgFor(active) && up._keyed)
+        ? up._keyed[dmczBgKeyFor(active)] : null;
       artImg = baked ? '' : '<img id="dmczArt" src="' + esc(keyedNow || up.signed_url || '') + '" alt="" draggable="false" ' +
         'style="position:absolute;top:' + box.y + '%;left:' + box.x + '%;width:' + box.w + '%;' +
         'transform:translate(-50%,-50%);object-fit:contain;cursor:move;touch-action:none;' +
@@ -1654,8 +1677,8 @@
           '<div class="dmcz__bg-label">' + esc(t('cat.detail.removebg') || 'Remove background colour') + '</div>' +
           '<div class="dmcz__bg-seg" role="group">' +
             DMCZ_BG_KEYS.map(function(k){
-              return '<button type="button" class="dmcz__bg-btn' + (k === _dmczState.bgKey ? ' is-on' : '') +
-                     '" data-bg="' + k + '" aria-pressed="' + (k === _dmczState.bgKey) + '">' +
+              return '<button type="button" class="dmcz__bg-btn' + (k === dmczBgKeyFor(active) ? ' is-on' : '') +
+                     '" data-bg="' + k + '" aria-pressed="' + (k === dmczBgKeyFor(active)) + '">' +
                      esc(t('cat.detail.bg.' + k) || (k.charAt(0).toUpperCase() + k.slice(1))) +
                      '</button>';
             }).join('') +
@@ -1722,11 +1745,13 @@
       host.querySelectorAll('.dmcz__bg-btn').forEach(function(b){
         b.addEventListener('click', function(){
           var k = b.getAttribute('data-bg');
-          if (k === _dmczState.bgKey) return;
-          _dmczState.bgKey   = k;
-          _dmczState.removeBg = (k !== 'off');
-          dmczInvalidatePreview();   // every baked preview used the old bg mode
           var act = _dmczState.activePreview;
+          if (!act || k === dmczBgKeyFor(act)) return;
+          dmczSetBgKeyFor(act, k);
+          // Only THIS placement's bake is stale now. Clearing the whole map
+          // (what the global flag forced) threw away every other placement's
+          // composite and re-fetched them all for a change they didn't share.
+          dmczInvalidatePreview(act);
           if (act) dmczArtSrc(act, function (src) {
             var a = document.getElementById('dmczArt');
             if (a && src) a.src = src; else renderDmczPreview();
@@ -2346,8 +2371,8 @@
             design_path: up.path,
             design_url:  up.signed_url || null,
             box:         composeBox,
-            remove_bg:   !!st.removeBg,
-            remove_bg_color: st.removeBg ? (st.bgKey || 'auto') : null,
+            remove_bg:   dmczRemoveBgFor(pid),
+            remove_bg_color: dmczRemoveBgFor(pid) ? dmczBgKeyFor(pid) : null,
             session_id:  (localStorage.getItem('singhsCartId_v1') || null)
           })
         }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
@@ -2429,7 +2454,27 @@
             });
             return out;
           })(),
-          design_remove_bg:  !!st.removeBg,
+          // Per placement, matching design_boxes above. The scalar pair below
+          // could only ever describe ONE print, so a tee with a keyed-out
+          // front and an untouched back reached /quote claiming both.
+          //
+          // design_remove_bg stays a BOOLEAN. quote.js reads it as one, and
+          // carts already sitting in a customer's sessionStorage carry the old
+          // shape — changing its type would make `!!{}` true for every line.
+          // The map is a new field alongside it; readers prefer the map and
+          // fall back to the pair.
+          design_bg_keys:    (function () {
+            var out = {};
+            (st.placements || []).forEach(function (pid) {
+              if (dmczRemoveBgFor(pid)) out[pid] = dmczBgKeyFor(pid);
+            });
+            return Object.keys(out).length ? out : undefined;
+          })(),
+          design_remove_bg:      (st.placements || []).some(function (pid) { return dmczRemoveBgFor(pid); }),
+          design_remove_bg_color: (function () {
+            var hit = (st.placements || []).filter(function (pid) { return dmczRemoveBgFor(pid); })[0];
+            return hit ? dmczBgKeyFor(hit) : undefined;
+          })(),
           // Photoreal mockups baked above (empty when no art was uploaded).
           mockups:           mockups.length ? mockups : undefined,
         });
@@ -2485,7 +2530,9 @@
       design_url:        payload.design_url || undefined,
       placement_designs: payload.placement_designs || undefined,
       design_boxes:      payload.design_boxes || undefined,
+      design_bg_keys:    payload.design_bg_keys || undefined,
       design_remove_bg:  payload.design_remove_bg || undefined,
+      design_remove_bg_color: payload.design_remove_bg_color || undefined,
       mockups:           payload.mockups || undefined,
     });
     // Funnel analytics — the strongest signal of intent on this page.
@@ -4025,7 +4072,14 @@
         var c01 = function (v) { return Math.max(0, Math.min(1, v)); };
         box = { x: c01((b.x - b.w / 2) / 100), y: c01(b.y / 100 - halfH), w: c01(b.w / 100) };
       }
-      out.push({ placement: pid, design_path: up.path, mockup_url: mock, box: box, ar: up.ar || 1, signed_url: up.signed_url || null });
+      out.push({
+        placement: pid, design_path: up.path, mockup_url: mock, box: box,
+        ar: up.ar || 1, signed_url: up.signed_url || null,
+        // Per design. The row-level remove_bg below stays populated for
+        // readers that predate this, but it can only describe one print.
+        remove_bg: dmczRemoveBgFor(pid),
+        remove_bg_color: dmczRemoveBgFor(pid) ? dmczBgKeyFor(pid) : null
+      });
     });
     if (!out.length) return null;
     return {
@@ -4033,8 +4087,11 @@
       unbaked: out.filter(function (d) { return !d.mockup_url; }).length,
       decoration_method: st.method || 'DTG',
       placements: (st.placements || []).slice(),
-      remove_bg: !!st.removeBg,
-      remove_bg_color: st.removeBg ? (st.bgKey || 'auto') : null
+      // Legacy row-level fields — the FIRST keyed placement, so a reader that
+      // only understands one flag gets a true statement about one of the
+      // prints rather than a made-up one about all of them.
+      remove_bg: out.some(function (d) { return d.remove_bg; }),
+      remove_bg_color: (out.find(function (d) { return d.remove_bg; }) || {}).remove_bg_color || null
     };
   }
 
@@ -4144,10 +4201,16 @@
     var label = spShareT('cat.share.shareddesign', 'Shared design');
     _dmczState.method = share.decoration_method || 'DTG';
     _dmczState.placements = (share.placements || []).slice();
-    _dmczState.removeBg = !!share.remove_bg;
-    _dmczState.bgKey = share.remove_bg_color || (share.remove_bg ? 'auto' : 'off');
+    _dmczState.bgKeys = {};
     share.designs.forEach(function (d) {
       if (!d || !d.placement) return;
+      // Per-design when the share carries it; otherwise fall back to the
+      // row-level pair, which is all an older share has.
+      var dk = d.remove_bg
+        ? (d.remove_bg_color || 'auto')
+        : (d.remove_bg === false ? 'off'
+           : (share.remove_bg ? (share.remove_bg_color || 'auto') : 'off'));
+      dmczSetBgKeyFor(d.placement, dk);
       if (_dmczState.placements.indexOf(d.placement) < 0) _dmczState.placements.push(d.placement);
       // Seeding uploads + _dmczPreviewUrl is what makes the rest of the modal
       // work unchanged: Add to quote builds placement_designs from uploads[],

@@ -3938,7 +3938,17 @@
               }
               return null;
             },
-            initial: { boxes: it.design_boxes || null, bgKey: it.design_remove_bg_color || null, removeBg: !!it.design_remove_bg },
+            // NOTE: this customizer still applies ONE key-out mode to the whole
+            // line — it has a single control, unlike the catalog modal, which is
+            // now per placement. Seed it from the first keyed print so it opens
+            // on something true rather than on 'auto'. Opening it and saving
+            // therefore flattens the line to one mode; onDone below rewrites
+            // design_bg_keys to match so the two never disagree afterwards.
+            initial: (function () {
+              var first = placements.filter(function (p) { return bgKeyFor(it, p) !== 'off'; })[0];
+              var k = first ? bgKeyFor(it, first) : null;
+              return { boxes: it.design_boxes || null, bgKey: k, removeBg: !!k };
+            })(),
             sessionId: (typeof SINGHS_CART_ID !== 'undefined') ? SINGHS_CART_ID : null,
             onDone: function(res) {
               SinghsCart.updateSilent(idx, {
@@ -3948,6 +3958,15 @@
                 // Recorded on the cart item so production knows WHICH key-out
                 // was approved, not just that one was.
                 design_remove_bg_color: res.bgKey,
+                // This customizer edits the whole line with one mode, so the
+                // per-placement map becomes that mode everywhere. Leaving the
+                // old map in place would have it contradict the scalars.
+                design_bg_keys: (function () {
+                  if (!res.removeBg || !res.bgKey) return undefined;
+                  var out = {};
+                  placements.forEach(function (p) { out[p] = res.bgKey; });
+                  return out;
+                })(),
                 design_url: (res.design && res.design.signed_url) || it.design_url || null,
                 design_path: (res.design && res.design.path) || it.design_path || null
               });
@@ -4650,6 +4669,22 @@
       var g = item.garment_type;
       return g !== 'hat' && g !== 'cap';
     }
+    // The key-out mode for ONE print on a cart line.
+    //
+    // 2026-08-02 — the catalog customizer used to hold a single bgKey for the
+    // whole garment while artwork and boxes were per placement, so choosing
+    // "remove black" on the back knocked it out of the front as well. It now
+    // writes design_bg_keys, keyed by placement. The scalar pair is what older
+    // cart items (and anything still sitting in a customer's sessionStorage)
+    // carry; it can only describe one print, so it is the fallback, not the
+    // source of truth.
+    function bgKeyFor(it, placement) {
+      var m = it && it.design_bg_keys;
+      if (m && typeof m === 'object') return m[placement] || 'off';
+      if (!it || !it.design_remove_bg) return 'off';
+      return it.design_remove_bg_color || 'auto';
+    }
+
     // Total across BOTH the standard cells and any custom sizes (4XL, YM,
     // OSFA…) the customer added, which live in the same map.
     function spSizesTotal(sizes) {
@@ -5612,11 +5647,15 @@
             color_id: newColorId, placement: p,
             design_path: dsn.path, design_url: dsn.signed_url || null,
             box: box,
-            remove_bg: !!it.design_remove_bg,
+            // Per-placement key-out (2026-08-02). design_bg_keys is written by
+            // the catalog customizer and holds the mode for THIS print; the
+            // scalar pair is the pre-map fallback and can only describe one of
+            // them, which is what made a keyed front knock out the back too.
+            remove_bg: bgKeyFor(it, p) !== 'off',
             // Reuse the mode the customer approved. Without this, changing the
             // garment colour silently re-bakes with 'auto' and the mockup can
             // come back different from the one they signed off on.
-            remove_bg_color: it.design_remove_bg_color || null,
+            remove_bg_color: bgKeyFor(it, p) !== 'off' ? bgKeyFor(it, p) : null,
             session_id: sessionId
           })
         }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, j: j }; }); })
