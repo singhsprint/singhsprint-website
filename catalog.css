@@ -423,6 +423,16 @@
     .dmcz__file{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:#1a1a1a;background:#fff;border:1.5px solid #e0ddd2;border-radius:8px;padding:5px 9px;max-width:100%}
     .dmcz__file-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .dmcz__file-remove{background:none;border:none;color:#a00;cursor:pointer;font-size:.9rem;line-height:1;padding:0 2px;font-family:inherit}
+    /* Shared design - the artwork is not the recipient's to edit or remove. */
+    .dmcz__file--locked{background:#f7f6f0;border-style:solid;border-color:#e0ddd2;color:#5a5a52}
+    .dmcz__shared-note{font-size:.7rem;line-height:1.45;color:#6a6a5f;background:#faf9f4;border:1px solid #eceadf;border-radius:8px;padding:7px 10px;margin:0}
+    .dmcz__shared-exit{margin-top:12px;padding:12px 14px;background:#faf9f4;border:1.5px solid #e6e3d8;border-radius:12px}
+    .dmcz__shared-exit-lead{font-size:.74rem;font-weight:600;color:#4a4a44;line-height:1.4;margin-bottom:9px}
+    .dmcz__shared-exit-row{display:flex;gap:8px;flex-wrap:wrap}
+    .dmcz__shared-exit-btn{appearance:none;font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer;border-radius:50px;padding:8px 15px;background:#e8ff3c;color:#1a1a1a;border:1.5px solid #e8ff3c;transition:filter .15s ease,background .15s ease,color .15s ease}
+    .dmcz__shared-exit-btn:hover{filter:brightness(.96)}
+    .dmcz__shared-exit-btn--ghost{background:#fff;border-color:#d8d5cb;color:#1a1a1a}
+    .dmcz__shared-exit-btn--ghost:hover{background:#1a1a1a;border-color:#1a1a1a;color:#fff;filter:none}
     .dmcz__upload-status{font-size:.7rem;color:#888}
     .dmcz__upload-status--err{color:#a00}
     @media (max-width:640px){

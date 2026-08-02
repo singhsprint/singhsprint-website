@@ -481,6 +481,30 @@
 
   var _dmczState = { method: 'DTG', placements: [], uploads: {}, priceSeq: 0, boxes: {}, bgKeys: {}, activePreview: null };
 
+  // 2026-08-02 - a design opened from a /d/<token> share is FIXED.
+  //
+  // The recipient was sent a finished garment, not a starting point, and the
+  // edit controls were not merely inert on it - they were destructive.
+  //
+  // A shared design renders from `_dmczPreviewUrl[placement]`, the mockup the
+  // sharer already baked. When that exists, renderDmczPreview paints it as the
+  // WHOLE garment image and emits no #dmczArt overlay at all. But the size
+  // slider and the remove-background buttons both call
+  // dmczInvalidatePreview(), which deletes exactly that URL - and the only
+  // thing they could re-render from is `uploads[p].signed_url`, which a share
+  // deliberately never carries (the GET projection returns storage keys, not
+  // signed URLs, so a recipient cannot download someone else's artwork).
+  //
+  // Net effect: touch the slider or any of Off/White/Black/Auto and the design
+  // you were sent disappears, replaced by a blank garment, with no way back
+  // except reloading the link. That is what "the buttons do not work" actually
+  // was.
+  //
+  // So on a share we hide both controls and the remove-X on the artwork, and
+  // offer the two things a recipient genuinely wants instead: start their own
+  // design on this garment, or go pick a different one.
+  var _dmczSharedLock = false;
+
   // Initialize the customizer for the product the modal just opened on.
   // Reveal/hide the full customizer behind the yellow button. The modal opens
   // in a simple state (button collapsed); clicking expands method/placements/
@@ -525,6 +549,9 @@
       garmentView: 'front'  // which blank-garment photo to show (front/back/side)
     };
     _dmczNeckTagPerUnit = null;
+    // Opening any product is a fresh, unlocked session. spApplySharedDesign
+    // re-arms the lock ~700ms later when the modal was opened from a share.
+    _dmczSharedLock = false;
     // The customizer is always expanded now (no accordion) — just render the
     // method picker, placements, uploads, and the live preview.
     renderDmczMethods();
@@ -906,6 +933,74 @@
 
   // One upload zone per selected placement. Upload happens immediately on
   // file pick; the stored result feeds the cart item later.
+  /**
+   * The two ways out of a shared design.
+   *
+   * Rendered only while the lock is on, and deliberately phrased as choices
+   * about what to make next rather than as "clear" or "reset" - the design on
+   * screen is someone else's work, and the recipient is being offered their
+   * own, not asked to destroy it.
+   */
+  function spSharedLockActions() {
+    if (!_dmczSharedLock) return '';
+    return '<div class="dmcz__shared-exit">' +
+      '<div class="dmcz__shared-exit-lead">' +
+        esc(dmczT('cat.share.exitlead') || 'This design was sent to you. Want to make your own?') +
+      '</div>' +
+      '<div class="dmcz__shared-exit-row">' +
+        '<button type="button" class="dmcz__shared-exit-btn" data-sharedexit="new">' +
+          esc(dmczT('cat.share.startnew') || 'Start a new design') +
+        '</button>' +
+        '<button type="button" class="dmcz__shared-exit-btn dmcz__shared-exit-btn--ghost" data-sharedexit="browse">' +
+          esc(dmczT('cat.share.browse') || 'Pick another product') +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /**
+   * mode 'new'    - same garment, same colour, blank canvas. They clicked
+   *                 through to this product and stayed, so the garment is a
+   *                 signal; only the artwork goes.
+   * mode 'browse' - close the modal and hand them back the catalog.
+   *
+   * Both strip ?design= from the URL first, so a refresh (or the back button
+   * landing on this entry) does not silently re-apply the share they just
+   * chose to leave.
+   */
+  function spExitSharedDesign(mode) {
+    _dmczSharedLock = false;
+    try {
+      var u = new URL(location.href);
+      if (u.searchParams.has('design')) {
+        u.searchParams.delete('design');
+        history.replaceState(null, '', u.pathname + (u.search || '') + u.hash);
+      }
+    } catch (_) {}
+
+    var banner = document.getElementById('spSharedBanner');
+    if (banner && banner.parentNode) banner.parentNode.removeChild(banner);
+
+    if (mode === 'browse') {
+      try { closeProductDetail(); } catch (_) {}
+      if (window.spTrack) window.spTrack('share_exit_browse', {});
+      return;
+    }
+
+    // Clear every trace of the shared artwork, including the baked mockups -
+    // leaving those behind would put someone else's design back on screen the
+    // moment this customer picked a colour.
+    _dmczState.uploads = {};
+    _dmczState.boxes = {};
+    _dmczState.bgKeys = {};
+    _dmczState.activePreview = null;
+    try { dmczInvalidatePreview(); } catch (_) {}
+    try {
+      renderDmczPlacements(); renderDmczUploads(); renderDmczPreview(); refreshDmczPrice();
+    } catch (_) {}
+    if (window.spTrack) window.spTrack('share_exit_new_design', {});
+  }
+
   function renderDmczUploads() {
     var host = document.getElementById('dmczUploads');
     if (!host) return;
@@ -920,8 +1015,16 @@
       var up = _dmczState.uploads[pid];
       var inner;
       if (up && up.filename) {
-        inner = '<span class="dmcz__file"><span class="dmcz__file-name">' + up.filename + '</span>' +
-                '<button type="button" class="dmcz__file-remove" data-remove="' + pid + '" aria-label="Remove">✕</button></span>';
+        // Removing the artwork is the one thing a recipient must not be able
+        // to do: it strands them on a blank they never chose, with the link
+        // they were sent now showing nothing. Starting over is an explicit
+        // choice below, not a stray tap on an X.
+        inner = _dmczSharedLock
+          ? '<span class="dmcz__file dmcz__file--locked">' +
+              '<span class="dmcz__file-name">' + up.filename + '</span>' +
+            '</span>'
+          : '<span class="dmcz__file"><span class="dmcz__file-name">' + up.filename + '</span>' +
+            '<button type="button" class="dmcz__file-remove" data-remove="' + pid + '" aria-label="Remove">✕</button></span>';
       } else {
         inner = '<label class="dmcz__upload-btn">' +
                 (t('cat.detail.uploadbtn') || 'Upload artwork') +
@@ -931,9 +1034,14 @@
       return '<div class="dmcz__upload" data-zone="' + pid + '">' +
              '<div class="dmcz__upload-head"><span class="dmcz__upload-title">' + pre.label + '</span></div>' +
              '<div class="dmcz__upload-row">' + inner + '</div></div>';
-    }).join('');
+    }).join('') + spSharedLockActions();
     host.querySelectorAll('input[data-upload]').forEach(function(inp){
       inp.addEventListener('change', function(){ dmczHandleUpload(inp.getAttribute('data-upload'), inp); });
+    });
+    host.querySelectorAll('[data-sharedexit]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        spExitSharedDesign(btn.getAttribute('data-sharedexit'));
+      });
     });
     host.querySelectorAll('[data-remove]').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -1666,13 +1774,19 @@
       '<div class="detail-modal__preview-cap">' +
       (t('cat.detail.uploadtosee') || 'Upload artwork to see it here') + '</div>';
 
-    // Size slider + remove-bg toggle only apply when artwork is present.
-    var controls = hasArt ?
-      '<div class="dmcz__controls">' +
+    // Size slider + remove-bg toggle only apply when artwork is present -
+    // and never on a shared design. Both invalidate the baked mockup, which on
+    // a share is the ONLY thing rendering the artwork (see _dmczSharedLock),
+    // so using either wipes the design off the garment. Hidden rather than
+    // disabled: a greyed-out slider still says "this is yours to adjust", and
+    // it is not.
+    var sharedLock = hasArt && _dmczSharedLock;
+    var sizeRow = sharedLock ? '' :
         '<div class="dmcz__size-row">' +
           '<span data-i18n="cat.detail.designsize">' + (t('cat.detail.designsize') || 'Size') + '</span>' +
           '<input type="range" id="dmczSize" min="10" max="80" step="1" value="' + Math.round(box.w) + '">' +
-        '</div>' +
+        '</div>';
+    var bgBlock = sharedLock ? '' :
         '<div class="dmcz__bg">' +
           '<div class="dmcz__bg-label">' + esc(t('cat.detail.removebg') || 'Remove background colour') + '</div>' +
           '<div class="dmcz__bg-seg" role="group">' +
@@ -1684,7 +1798,17 @@
             }).join('') +
           '</div>' +
           '<p class="dmcz__bg-help">' + esc(dmczBgHelp()) + '</p>' +
-        '</div>' +
+        '</div>';
+    var controls = hasArt ?
+      '<div class="dmcz__controls">' +
+        sizeRow +
+        bgBlock +
+        (sharedLock
+          ? '<p class="dmcz__shared-note">' +
+              esc(dmczT('cat.share.fixednote') ||
+                  'The artwork is fixed as it was sent. Colour, placement and quantity are still yours to change.') +
+            '</p>'
+          : '') +
         // No "Preview on garment" button. The stage now applies the SAME
         // colour key the server will, so what the customer sees is already the
         // mockup — a button that re-renders it server-side was asking them to
@@ -4198,6 +4322,10 @@
   // and nothing to reposition.
   function spApplySharedDesign(share) {
     if (!share || !Array.isArray(share.designs)) return;
+    // From here the customizer is in shared mode: no resize, no key-out, no
+    // remove-X on the artwork. Cleared by initDmczCustomizer (another product)
+    // or by spExitSharedDesign (the recipient chose to start their own).
+    _dmczSharedLock = true;
     var label = spShareT('cat.share.shareddesign', 'Shared design');
     _dmczState.method = share.decoration_method || 'DTG';
     _dmczState.placements = (share.placements || []).slice();
