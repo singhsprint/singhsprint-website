@@ -48,6 +48,8 @@
     .pill--no{background:#f1f0ea;color:#78716c}
     .pill--green{background:#d1fae5;color:#065f46}
     .s-quote{margin-top:6px;font-size:.95rem}
+    .s-when{color:#8a8a8a;font-size:.78rem;margin-top:3px}
+    .s-stamp{color:#b0aca4}
     .shots{display:flex;flex-wrap:wrap;gap:11px;margin-top:13px}
     .shot{width:118px}
     .shot img{width:100%;border-radius:9px;border:1px solid #e9e7df;display:block;background:#f4f2eb}
@@ -112,6 +114,30 @@
       return h < 48 ? h + 'h ago' : Math.round(h / 24) + 'd ago';
     }
 
+    /** Full local date and time — what an invoice or a dispute needs. */
+    function stamp(iso) {
+      if (!iso) return '';
+      try {
+        return new Date(iso).toLocaleString(undefined, {
+          year: 'numeric', month: 'short', day: 'numeric',
+          hour: 'numeric', minute: '2-digit'
+        });
+      } catch (e) { return iso; }
+    }
+
+    /**
+     * "3h ago", with the exact timestamp underneath.
+     *
+     * Relative reads faster when he is triaging a queue, but "2d ago" is not
+     * something you can put on an invoice or point at in a disagreement about
+     * who claimed a spot first. Both, rather than choosing.
+     */
+    function when(iso, label) {
+      if (!iso) return '';
+      return '<span title="' + esc(stamp(iso)) + '">' + esc(label ? label + ' ' + rel(iso) : rel(iso)) +
+             ' <span class="s-stamp">' + esc(stamp(iso)) + '</span></span>';
+    }
+
     var PILL = {
       pending:  '<span class="pill pill--hold">Holding</span>',
       approved: '<span class="pill pill--ok">On the shirt</span>',
@@ -160,9 +186,17 @@
       var who = []
         .concat(s.contactName && s.company ? [esc(s.contactName)] : [])
         .concat(['<a href="mailto:' + esc(s.email) + '">' + esc(s.email) + '</a>'])
-        .concat(s.phone ? [esc(s.phone)] : [])
-        .concat([rel(s.createdAt)])
+        .concat(s.phone ? ['<a href="tel:' + esc(s.phone.replace(/[^\d+]/g, '')) + '">' + esc(s.phone) + '</a>'] : [])
         .join(' &middot; ');
+
+      // Claimed at, and — once he has ruled on it — decided at. The second one
+      // is the half he could never see: undoing a decision is allowed here, so
+      // "when did I approve this" is a real question with money behind it.
+      var times = '<div class="s-when">' + when(s.createdAt, 'Claimed') +
+        (decided && s.decidedAt
+          ? ' &middot; ' + when(s.decidedAt, s.status === 'approved' ? 'Approved' : 'Denied')
+          : '') +
+        '</div>';
 
       // What was quoted, and — separately — what the brand asserted about
       // itself. The green discount is already inside quotedTotal, so the badge
@@ -181,6 +215,7 @@
         '<div class="s-head"><div>' +
           '<div class="s-brand">' + esc(brand) + ' ' + (PILL[s.status] || '') + '</div>' +
           '<div class="s-meta">' + who + '</div>' +
+          times +
           quote +
         '</div><div class="s-acts">' + acts + '</div></div>' +
         (s.notes ? '<div class="s-notes">' + esc(s.notes) + '</div>' : '') +
