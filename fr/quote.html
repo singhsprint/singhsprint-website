@@ -101,6 +101,26 @@
             <input type="hidden" name="access_key" value="eec6c5a3-2b79-4fe3-8774-c890d0ea3776">
             <input type="hidden" name="subject" value="New Quote Request - Singhs Print">
             <input type="hidden" name="from_name" value="Singhs Print Website">
+            <!-- Honeypot (2026-07-25 on /quote.html; this page was missed —
+                 added 2026-08-09). Invisible to humans (offscreen, no tab
+                 stop, hidden from screen readers) but bots machine-fill every
+                 input they find. A non-empty value tells /api/inbound this is
+                 spam — it archives on arrival and skips the Lead pixel.
+                 Until now the French page shipped without it, so quote.js read
+                 fd.get('company_website') as null on every FR submission and
+                 the CRM's honeypot layer had nothing to judge: French traffic
+                 was passing through that check unexamined.
+                 NOT type=hidden on purpose: bots skip those. -->
+            <input type="text" name="company_website" value="" tabindex="-1" autocomplete="off"
+                   aria-hidden="true"
+                   style="position:absolute !important;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0;pointer-events:none;">
+            <!-- Web3Forms' OWN honeypot — guards the NO-JS path. A client that
+                 never runs our script POSTs natively to this form's `action`
+                 (Web3Forms), skipping /api/inbound and every spam layer behind
+                 it. `botcheck` is the field name Web3Forms itself filters on.
+                 See the matching comment in /quote.html. -->
+            <input type="checkbox" name="botcheck" class="hidden" tabindex="-1"
+                   aria-hidden="true" style="display:none !important;">
 
           <!-- ===== STEP 1: Product + Customizer ===== -->
           <div class="form-section active" data-step="1">

@@ -120,6 +120,20 @@
             <input type="text" name="company_website" value="" tabindex="-1" autocomplete="off"
                    aria-hidden="true"
                    style="position:absolute !important;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0;pointer-events:none;">
+            <!-- Web3Forms' OWN honeypot. The company_website field above is
+                 read by the CRM, which only ever sees a submission that came
+                 through the JS path (fetch → /api/inbound). Web3Forms knows
+                 nothing about it, and Web3Forms is what receives the NO-JS
+                 path: a client that never runs our script does a native
+                 multipart POST straight to this form's `action`, skipping
+                 /api/inbound and every spam layer behind it.
+                 That is exactly the traffic we saw on 2026-08-06 — ~15-20 hits
+                 in seconds from 5.90.123.125 with `product : ORDER BY 1-- -`
+                 and every human field blank. It reached the inbox because the
+                 fallback path is unguarded, not because the honeypot failed.
+                 `botcheck` is the field name Web3Forms itself filters on. -->
+            <input type="checkbox" name="botcheck" class="hidden" tabindex="-1"
+                   aria-hidden="true" style="display:none !important;">
 
           <!-- ===== STEP 1: Product + Customizer ===== -->
           <div class="form-section active" data-step="1">
