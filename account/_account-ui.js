@@ -98,6 +98,11 @@
       { href: BASE + '/account/referrals.html', en: 'Referrals', fr: 'Parrainages',     match: /referrals/ },
       { href: BASE + '/account/business.html', en: 'Business',   fr: 'Entreprise',      match: /business/ },
       { href: BASE + '/account/programs.html', en: 'Programs',   fr: 'Programmes',      match: /programs/ },
+      // Only a handful of customers run a sponsor campaign. The tab renders for
+      // everyone because the sub-nav is static markup, but the page itself
+      // resolves campaigns from the signed-in email — so anyone else who taps
+      // it gets a plain "nothing linked to this account" rather than an error.
+      { href: BASE + '/account/sponsorships.html', en: 'Sponsorships', fr: 'Commandites', match: /sponsorships/ },
       { href: BASE + '/account/settings.html', en: 'Settings',   fr: 'Paramètres',      match: /settings/ }
     ];
     var html = links.map(function (l, i) {

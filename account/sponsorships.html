@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="canonical" href="https://www.singhsprint.com/account/sponsorships">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponsorships · Singhs Print</title>
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.5;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1040px;margin:0 auto;padding:28px 24px 80px}
+    .hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2rem,4vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:6px}
+    .hero p{color:#666;font-size:.95rem;margin-bottom:22px;max-width:60ch}
+    .btn{padding:9px 14px;border-radius:10px;font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,background .15s}
+    .btn--primary{background:#1a1a1a;color:#e8ff3c}
+    .btn--ghost{background:#f4f2eb;color:#1a1a1a}
+    .btn--deny{background:#fff;color:#b42318;border:1px solid #f0c4c0}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .empty{text-align:center;color:#888;padding:34px 18px;font-size:.9rem;background:#fff;border:1px dashed #d8d5c7;border-radius:16px}
+    .loading{color:#999;font-size:.88rem;padding:10px 0}
+
+    .camp{margin-bottom:34px}
+    .camp__bar{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
+    .camp__name{font-size:1.15rem;font-weight:800}
+    .camp__sum{color:#888;font-size:.84rem;margin-bottom:16px}
+
+    .sec{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#999;font-weight:700;margin:22px 0 10px}
+    .s-card{background:#fff;border:1px solid #e9e7df;border-radius:16px;padding:16px 17px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+    .s-card--settled{opacity:.7}
+    .s-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-start}
+    .s-brand{font-weight:800;font-size:1rem}
+    .s-meta{color:#888;font-size:.8rem;margin-top:2px}
+    .s-meta a{text-decoration:underline;text-underline-offset:2px}
+    .s-notes{margin-top:11px;background:#f7f5ee;border-radius:10px;padding:10px 12px;font-size:.87rem;white-space:pre-wrap}
+    .s-acts{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+    .pill{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px;vertical-align:middle}
+    .pill--hold{background:#fef3c7;color:#92400e}
+    .pill--ok{background:#dcfce7;color:#166534}
+    .pill--no{background:#f1f0ea;color:#78716c}
+    .shots{display:flex;flex-wrap:wrap;gap:11px;margin-top:13px}
+    .shot{width:118px}
+    .shot img{width:100%;border-radius:9px;border:1px solid #e9e7df;display:block;background:#f4f2eb}
+    .shot__cap{font-size:.72rem;color:#888;margin-top:4px}
+    .shot__cap b{color:#444;font-weight:700}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(8px);background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:50px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .explain{font-size:.8rem;color:#888;background:#fff;border:1px solid #e9e7df;border-radius:12px;padding:11px 13px;margin-bottom:20px;line-height:1.6}
+    @media (max-width:560px){ .wrap{padding:20px 16px 70px} .shot{width:96px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="acct-subnav"></div>
+
+    <div class="hero">
+      <h1>Sponsorships</h1>
+      <p>Brands claiming a spot on your tee. Approving locks that area of the shirt to them; denying frees it up straight away for someone else.</p>
+    </div>
+
+    <div class="explain">
+      Each claim holds its area of the shirt until you decide &mdash; nothing expires on its own, so take the time you need.
+      Changed your mind? You can undo any decision and the shirt updates within seconds.
+    </div>
+
+    <div id="state" class="loading">Loading your sponsorships&hellip;</div>
+    <div id="list" hidden></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/components.js" defer></script>
+  <script src="/account/_account-ui.js" defer></script>
+  <script src="/account/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/lang.js" defer></script>
+  <script src="/account/auth.js"></script>
+  <script>
+  (function () {
+    const api     = window.SP_AUTH_API;
+    const listEl  = document.getElementById('list');
+    const stateEl = document.getElementById('state');
+    const toastEl = document.getElementById('toast');
+
+    let toastTimer = null;
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2400);
+    }
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function rel(iso) {
+      if (!iso) return '';
+      var ms = Date.now() - new Date(iso).getTime();
+      var h = Math.round(ms / 3600000);
+      if (h < 1) return Math.max(1, Math.round(ms / 60000)) + 'm ago';
+      return h < 48 ? h + 'h ago' : Math.round(h / 24) + 'd ago';
+    }
+
+    var PILL = {
+      pending:  '<span class="pill pill--hold">Holding</span>',
+      approved: '<span class="pill pill--ok">On the shirt</span>',
+      denied:   '<span class="pill pill--no">Denied</span>'
+    };
+
+    function shots(placements) {
+      if (!placements.length) return '';
+      return '<div class="shots">' + placements.map(function (p) {
+        var img = p.mockupUrl
+          ? '<img src="' + esc(p.mockupUrl) + '" alt="' + esc(p.viewLabel) + '" loading="lazy">'
+          : '<div style="aspect-ratio:1;border-radius:9px;border:1px dashed #ddd"></div>';
+        return '<div class="shot">' + img +
+          '<div class="shot__cap"><b>' + esc(p.viewLabel) + '</b>' +
+          (p.widthIn ? ' &middot; ' + p.widthIn + '"' : '') + '</div></div>';
+      }).join('') + '</div>';
+    }
+
+    function card(s) {
+      var brand = s.company || s.contactName || s.email;
+      var decided = s.status === 'approved' || s.status === 'denied';
+      var acts = decided
+        ? '<button class="btn btn--ghost" data-decide="pending" data-id="' + esc(s.id) + '">Undo</button>'
+        : '<button class="btn btn--primary" data-decide="approved" data-id="' + esc(s.id) + '">Approve</button>' +
+          '<button class="btn btn--deny" data-decide="denied" data-id="' + esc(s.id) + '">Deny</button>';
+
+      var who = []
+        .concat(s.contactName && s.company ? [esc(s.contactName)] : [])
+        .concat(['<a href="mailto:' + esc(s.email) + '">' + esc(s.email) + '</a>'])
+        .concat(s.phone ? [esc(s.phone)] : [])
+        .concat([rel(s.createdAt)])
+        .join(' &middot; ');
+
+      return '<div class="s-card' + (decided ? ' s-card--settled' : '') + '" data-card="' + esc(s.id) + '">' +
+        '<div class="s-head"><div>' +
+          '<div class="s-brand">' + esc(brand) + ' ' + (PILL[s.status] || '') + '</div>' +
+          '<div class="s-meta">' + who + '</div>' +
+        '</div><div class="s-acts">' + acts + '</div></div>' +
+        (s.notes ? '<div class="s-notes">' + esc(s.notes) + '</div>' : '') +
+        shots(s.placements) +
+      '</div>';
+    }
+
+    function section(title, items) {
+      if (!items.length) return '';
+      return '<div class="sec">' + esc(title) + '</div>' + items.map(card).join('');
+    }
+
+    function render(campaigns) {
+      if (!campaigns.length) {
+        stateEl.className = 'empty';
+        stateEl.innerHTML = 'No sponsorship campaign is linked to this account yet. If you think it should be, just reply to your last email from us.';
+        return;
+      }
+      listEl.innerHTML = campaigns.map(function (c) {
+        var subs = c.submissions || [];
+        var holding  = subs.filter(function (s) { return s.status === 'pending'; });
+        var approved = subs.filter(function (s) { return s.status === 'approved'; });
+        var settled  = subs.filter(function (s) { return s.status === 'denied'; });
+        var sum = approved.length + ' approved &middot; ' + holding.length + ' waiting on you &middot; ' +
+                  c.claimedAreas + ' area' + (c.claimedAreas === 1 ? '' : 's') + ' taken';
+        return '<div class="camp">' +
+          '<div class="camp__bar"><span class="camp__name">' + esc(c.name) + '</span></div>' +
+          '<div class="camp__sum">' + sum + '</div>' +
+          section('Waiting on you', holding) +
+          section('On the shirt', approved) +
+          section('Denied — these areas are open again', settled) +
+          (subs.length ? '' : '<div class="empty">No claims yet. They\'ll appear here the moment a brand locks one in.</div>') +
+        '</div>';
+      }).join('');
+      listEl.hidden = false;
+      stateEl.hidden = true;
+      bind();
+    }
+
+    function bind() {
+      listEl.querySelectorAll('[data-decide]').forEach(function (b) {
+        b.addEventListener('click', function () { decide(b); });
+      });
+    }
+
+    async function decide(btn) {
+      var id = btn.getAttribute('data-id');
+      var decision = btn.getAttribute('data-decide');
+      var siblings = btn.parentElement.querySelectorAll('button');
+      siblings.forEach(function (s) { s.disabled = true; });
+      try {
+        var r = await api.authedFetch('/api/account/sponsorships?action=decide', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id, decision: decision })
+        });
+        var j = await r.json().catch(function () { return {}; });
+        if (!r.ok) throw new Error(j.error || 'Could not save that.');
+        toast(decision === 'approved' ? 'Approved — that area is theirs.'
+            : decision === 'denied'   ? 'Denied — the area is open again.'
+            : 'Put back in your queue.');
+        await load(true);
+      } catch (e) {
+        toast(e.message || 'Something went wrong.');
+        siblings.forEach(function (s) { s.disabled = false; });
+      }
+    }
+
+    async function load(quiet) {
+      if (!quiet) { stateEl.hidden = false; stateEl.className = 'loading'; stateEl.textContent = 'Loading your sponsorships…'; }
+      var session = await api.getSession();
+      if (!session) {
+        location.replace('/account/signin.html?returnTo=' + encodeURIComponent(location.pathname));
+        return;
+      }
+      try {
+        var r = await api.authedFetch('/api/account/sponsorships');
+        var j = await r.json().catch(function () { return {}; });
+        if (!r.ok) { stateEl.className = 'loading'; stateEl.textContent = j.error || 'Could not load your sponsorships.'; return; }
+        render(Array.isArray(j.campaigns) ? j.campaigns : []);
+      } catch (e) {
+        stateEl.className = 'loading';
+        stateEl.textContent = 'Could not load your sponsorships.';
+      }
+    }
+
+    load();
+  })();
+  </script>
+</body>
+</html>
