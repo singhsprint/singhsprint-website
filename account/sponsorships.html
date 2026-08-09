@@ -46,6 +46,8 @@
     .pill--hold{background:#fef3c7;color:#92400e}
     .pill--ok{background:#dcfce7;color:#166534}
     .pill--no{background:#f1f0ea;color:#78716c}
+    .pill--green{background:#d1fae5;color:#065f46}
+    .s-quote{margin-top:6px;font-size:.95rem}
     .shots{display:flex;flex-wrap:wrap;gap:11px;margin-top:13px}
     .shot{width:118px}
     .shot img{width:100%;border-radius:9px;border:1px solid #e9e7df;display:block;background:#f4f2eb}
@@ -116,15 +118,34 @@
       denied:   '<span class="pill pill--no">Denied</span>'
     };
 
-    function shots(placements) {
+    function money(amount, currency) {
+      if (amount == null) return '';
+      try {
+        return new Intl.NumberFormat('en-CA', {
+          style: 'currency', currency: currency || 'CAD',
+          maximumFractionDigits: amount % 1 === 0 ? 0 : 2
+        }).format(amount);
+      } catch (e) { return '$' + amount; }
+    }
+
+    function shots(placements, currency) {
       if (!placements.length) return '';
       return '<div class="shots">' + placements.map(function (p) {
         var img = p.mockupUrl
           ? '<img src="' + esc(p.mockupUrl) + '" alt="' + esc(p.viewLabel) + '" loading="lazy">'
           : '<div style="aspect-ratio:1;border-radius:9px;border:1px dashed #ddd"></div>';
+        var size = p.slotIn || p.widthIn;
+        // The print-ready file, not the mockup. The link is signed and expires
+        // within the hour, so it is fetched fresh with the page rather than
+        // being something to bookmark.
+        var art = p.designUrl
+          ? '<div><a href="' + esc(p.designUrl) + '" target="_blank" rel="noopener" download>Artwork &darr;</a></div>'
+          : '';
         return '<div class="shot">' + img +
           '<div class="shot__cap"><b>' + esc(p.viewLabel) + '</b>' +
-          (p.widthIn ? ' &middot; ' + p.widthIn + '"' : '') + '</div></div>';
+          (size ? ' &middot; ' + size + '&Prime;' : '') +
+          (p.slotPrice != null ? ' &middot; ' + esc(money(p.slotPrice, currency)) : '') +
+          art + '</div></div>';
       }).join('') + '</div>';
     }
 
@@ -143,13 +164,27 @@
         .concat([rel(s.createdAt)])
         .join(' &middot; ');
 
+      // What was quoted, and — separately — what the brand asserted about
+      // itself. The green discount is already inside quotedTotal, so the badge
+      // is a reminder to check the claim before invoicing, not a second sum.
+      var quote = s.quotedTotal != null
+        ? '<div class="s-quote"><b>' + esc(money(s.quotedTotal, s.quotedCurrency)) + '</b>' +
+          (s.isGreen
+            ? ' <span class="pill pill--green">green claimed' +
+              (s.greenVerified === true ? ' &middot; verified' : s.greenVerified === false ? ' &middot; rejected' : ' &middot; unchecked') +
+              '</span>'
+            : '') +
+          '</div>'
+        : '';
+
       return '<div class="s-card' + (decided ? ' s-card--settled' : '') + '" data-card="' + esc(s.id) + '">' +
         '<div class="s-head"><div>' +
           '<div class="s-brand">' + esc(brand) + ' ' + (PILL[s.status] || '') + '</div>' +
           '<div class="s-meta">' + who + '</div>' +
+          quote +
         '</div><div class="s-acts">' + acts + '</div></div>' +
         (s.notes ? '<div class="s-notes">' + esc(s.notes) + '</div>' : '') +
-        shots(s.placements) +
+        shots(s.placements, s.quotedCurrency) +
       '</div>';
     }
 

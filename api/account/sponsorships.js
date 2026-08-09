@@ -57,15 +57,21 @@ async function campaignsFor(supabase, user) {
   });
 }
 
-function shapeSubmission(row) {
+function shapeSubmission(row, signedByPath) {
   const placements = (row.sponsor_placements || []).map(function (p) {
     return {
       id: p.id,
       view: p.view,
       viewLabel: VIEW_LABELS[p.view] || p.view,
       widthIn: p.width_in == null ? null : Number(p.width_in),
+      slotIn: p.slot_in == null ? null : Number(p.slot_in),
+      slotPrice: p.slot_price == null ? null : Number(p.slot_price),
       mockupUrl: p.mockup_url || null,
-      designUrl: p.design_url || null,
+      // The artwork that actually gets printed. It lives in a private bucket,
+      // so what goes over the wire is a short-lived signed link rather than a
+      // path the browser could not fetch anyway.
+      designUrl: p.design_url || signedByPath[p.design_path] || null,
+      designMime: p.design_mime || null,
     };
   });
   return {
@@ -77,10 +83,44 @@ function shapeSubmission(row) {
     notes: row.notes || null,
     status: row.status,
     statusNote: row.status_note || null,
+    // What the sponsor claimed versus what the client has actually granted.
+    // Two fields on purpose: the discount is not real until he says it is.
+    isGreen: row.is_green === true,
+    greenVerified: row.green_verified == null ? null : row.green_verified === true,
+    // Frozen at claim time. This is the number to invoice against, not a
+    // re-computation off today's ladder.
+    quotedTotal: row.quoted_total == null ? null : Number(row.quoted_total),
+    quotedCurrency: row.quoted_currency || null,
     decidedAt: row.decided_at || null,
     createdAt: row.created_at,
     placements: placements,
   };
+}
+
+/**
+ * Sign every artwork path in one batch.
+ *
+ * Only paths reachable from submissions this person owns are ever passed in,
+ * so there is no way to ask for someone else's file. One hour is deliberately
+ * short — long enough to review and download, not long enough for the link to
+ * outlive the page it was rendered into.
+ */
+async function signDesigns(supabase, rows) {
+  const paths = [];
+  (rows || []).forEach(function (row) {
+    (row.sponsor_placements || []).forEach(function (p) {
+      if (p.design_path && paths.indexOf(p.design_path) === -1) paths.push(p.design_path);
+    });
+  });
+  const byPath = {};
+  if (paths.length === 0) return byPath;
+
+  const { data, error } = await supabase.storage.from('designs').createSignedUrls(paths, 60 * 60);
+  if (error || !data) return byPath;
+  data.forEach(function (d, i) {
+    if (d && d.signedUrl) byPath[d.path || paths[i]] = d.signedUrl;
+  });
+  return byPath;
 }
 
 module.exports = async function handler(req, res) {
@@ -145,7 +185,8 @@ module.exports = async function handler(req, res) {
     .select(`
       id, campaign_id, contact_name, email, phone, company, notes,
       status, status_note, decided_at, created_at,
-      sponsor_placements ( id, view, width_in, mockup_url, design_url )
+      is_green, green_verified, quoted_total, quoted_currency,
+      sponsor_placements ( id, view, width_in, slot_in, slot_price, mockup_url, design_url, design_path, design_mime )
     `)
     .in('campaign_id', owned.map(function (c) { return c.id; }))
     .neq('status', 'spam')
@@ -153,9 +194,13 @@ module.exports = async function handler(req, res) {
     .limit(MAX_SUBMISSIONS);
   if (error) return res.status(500).json({ error: error.message });
 
+  let signedByPath = {};
+  try { signedByPath = await signDesigns(supabase, subs); }
+  catch (e) { signedByPath = {}; } // a signing hiccup must not blank the queue
+
   const byCampaign = {};
   (subs || []).forEach(function (row) {
-    (byCampaign[row.campaign_id] = byCampaign[row.campaign_id] || []).push(shapeSubmission(row));
+    (byCampaign[row.campaign_id] = byCampaign[row.campaign_id] || []).push(shapeSubmission(row, signedByPath));
   });
 
   const campaigns = owned.map(function (c) {
