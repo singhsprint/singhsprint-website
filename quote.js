@@ -7041,10 +7041,26 @@
         // bailout window, give up on the bonus path and submit anyway
         // — the Web3Forms email backup carries the attachment so the
         // rep still gets the design. We grow the budget with the file
-        // count because each upload is a separate round trip; 8s base
-        // + 4s per extra file is comfortable on a 3G phone and still
-        // well under the typical "user gets impatient" threshold.
-        var bailoutMs = 8000 + Math.max(0, fileCount - 1) * 4000;
+        // count because each upload is a separate round trip.
+        //
+        // 2026-08-10 — this was 8s + 4s per extra file, and it was too tight
+        // to be a safety net. Measured against a real abandoned submission:
+        // two files finished 80 SECONDS apart, against a 12s budget. The
+        // bailout fires, form.submit() navigates the page to Web3Forms, and
+        // every upload still in flight dies with the page — so the "backup"
+        // that was supposed to carry the design instead destroyed the
+        // submission. No request, no lead, no fallback email; the customer
+        // phoned the next day to ask what happened.
+        //
+        // A phone on LTE pushing a few MB through a signed PUT routinely
+        // needs 20-40s. The timer exists to rescue a genuinely hung request,
+        // not to race an upload that is working, so the budget is now sized
+        // for the slow-but-fine case: 45s base + 20s per extra file. Nothing
+        // is shown to the customer during this — the overlay says "Sending
+        // your request…" and the happy path still completes in a second or
+        // two, so the only behaviour that changes is how long we wait before
+        // giving up on someone whose connection is merely slow.
+        var bailoutMs = 45000 + Math.max(0, fileCount - 1) * 20000;
         var bailoutTimer = setTimeout(function(){
           if (form.dataset.spUploadCleared === '1') return;
           console.warn('[quote submit] upload took >' + bailoutMs + 'ms — falling back to email backup');
