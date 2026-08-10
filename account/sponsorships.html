@@ -32,6 +32,25 @@
     .camp__bar{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:4px}
     .camp__name{font-size:1.15rem;font-weight:800}
     .camp__sum{color:#888;font-size:.84rem;margin-bottom:16px}
+    .set{background:#fff;border:1px solid #e9e7df;border-radius:16px;margin-bottom:18px;overflow:hidden}
+    .set__top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;cursor:pointer;user-select:none}
+    .set__title{font-weight:700;font-size:.92rem}
+    .set__hint{color:#8a8a8a;font-size:.78rem;font-weight:400}
+    .set__body{padding:0 16px 16px;border-top:1px solid #f1efe8}
+    .set__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+    .set__row{display:flex;flex-direction:column;gap:4px}
+    .set__row label{font-size:.74rem;color:#8a8a8a;font-weight:600;letter-spacing:.02em}
+    .set__row input,.set__row textarea,.set__row select{
+      font-family:inherit;font-size:.88rem;padding:8px 10px;border:1px solid #ddd9cc;border-radius:9px;background:#fdfcf9;color:#1a1a1a;width:100%}
+    .set__row input:focus,.set__row textarea:focus,.set__row select:focus{outline:none;border-color:#1a1a1a}
+    .set__row input[type=color]{padding:2px;height:38px;cursor:pointer}
+    .set__sub{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#a8a49a;font-weight:700;margin:20px 0 2px}
+    .ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:10px;margin-top:10px}
+    .ladder__cell label{font-size:.74rem;color:#8a8a8a;font-weight:600}
+    .set__foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:18px}
+    .set__err{color:#b42318;font-size:.82rem;flex:1;min-width:200px}
+    .set__ok{color:#166534;font-size:.82rem;flex:1;min-width:200px}
+    .set[hidden]{display:none}
 
     .sec{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#999;font-weight:700;margin:22px 0 10px}
     .s-card{background:#fff;border:1px solid #e9e7df;border-radius:16px;padding:16px 17px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.03)}
@@ -222,6 +241,154 @@
       }).join('') + '</div>';
     }
 
+
+    /**
+     * The settings the client owns.
+     *
+     * Collapsed by default. He opens this page to triage claims, not to edit
+     * prices — the queue should be the first thing he sees, every time.
+     */
+    function settingsPanel(c) {
+      var t = c.theme && typeof c.theme === 'object' ? c.theme : {};
+      var st = c.settings || {};
+      var id = esc(c.id);
+      var f = function (label, name, value, type, extra) {
+        return '<div class="set__row"><label for="f-' + id + '-' + name + '">' + esc(label) + '</label>' +
+          (type === 'textarea'
+            ? '<textarea id="f-' + id + '-' + name + '" data-f="' + name + '" rows="2">' + esc(value == null ? '' : value) + '</textarea>'
+            : '<input id="f-' + id + '-' + name + '" data-f="' + name + '" type="' + (type || 'text') + '" value="' +
+              esc(value == null ? '' : value) + '"' + (extra || '') + '>') +
+          '</div>';
+      };
+
+      // datetime-local wants local wall-clock with no zone, so the value is
+      // converted out of UTC here and back again on save. Showing him UTC would
+      // have him typing 03:59 for a deadline he thinks of as 23:59.
+      var dl = '';
+      if (st.deadlineAt) {
+        var d = new Date(st.deadlineAt);
+        if (!isNaN(d.getTime())) {
+          dl = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        }
+      }
+
+      var ladder = (st.priceLadder || []).map(function (r) {
+        return '<div class="ladder__cell set__row"><label>' + esc(r.in) + '&Prime; slot</label>' +
+          '<input type="number" min="0" step="1" data-rung="' + esc(r.in) + '" value="' + esc(r.price) + '"></div>';
+      }).join('');
+
+      var colour = function (label, key, fallback) {
+        var v = hex(t[key], fallback);
+        return '<div class="set__row"><label>' + esc(label) + '</label>' +
+          '<input type="color" data-t="' + key + '" value="' + esc(v) + '"></div>';
+      };
+
+      return '<div class="set" data-settings="' + id + '">' +
+        '<div class="set__top" data-toggle="' + id + '">' +
+          '<span class="set__title">Campaign settings ' +
+            '<span class="set__hint">&mdash; prices, copy, deadline, colours</span></span>' +
+          '<button class="btn btn--ghost" type="button">Edit</button>' +
+        '</div>' +
+        '<div class="set__body" hidden>' +
+
+          '<div class="set__sub">Prices &mdash; ' + esc(st.currency || 'CAD') + '</div>' +
+          '<div class="ladder">' + ladder + '</div>' +
+          '<div class="set__grid">' +
+            f('Green-brand discount %', 'green_discount_pct', st.greenDiscountPct, 'number', ' min="0" max="100" step="1"') +
+            f('Smallest slot (inches)', 'min_slot_in', st.minSlotIn, 'number', ' min="0.5" max="60" step="0.5"') +
+            f('Largest slot (inches)', 'max_slot_in', st.maxSlotIn, 'number', ' min="0.5" max="60" step="0.5"') +
+          '</div>' +
+
+          '<div class="set__sub">Words the sponsor reads</div>' +
+          '<div class="set__grid">' +
+            f('Headline', 'headline', st.headline) +
+            f('Button label', 'cta_label', st.ctaLabel) +
+          '</div>' +
+          '<div class="set__grid">' +
+            f('Sub-heading', 'subhead', st.subhead, 'textarea') +
+            f('Confirmation message', 'success_message', st.successMessage, 'textarea') +
+          '</div>' +
+
+          '<div class="set__sub">Timing and notifications</div>' +
+          '<div class="set__grid">' +
+            f('Deadline (your local time)', 'deadline_at', dl, 'datetime-local') +
+            f('Email claims to', 'notify_emails', (st.notifyEmails || []).join(', ')) +
+            f('QR code destination', 'qr_url', st.qrUrl, 'url') +
+            '<div class="set__row"><label>Campaign</label><select data-f="status">' +
+              '<option value="live"' + (c.status === 'live' ? ' selected' : '') + '>Open &mdash; accepting sponsors</option>' +
+              '<option value="paused"' + (c.status === 'paused' ? ' selected' : '') + '>Paused &mdash; embed shows closed</option>' +
+            '</select></div>' +
+          '</div>' +
+
+          '<div class="set__sub">How the embed looks on your site</div>' +
+          '<div class="set__grid">' +
+            colour('Background', 'bg', '#000000') +
+            colour('Text', 'text', '#ffffff') +
+            colour('Buttons', 'accent', '#0D52A1') +
+            colour('Prices', 'highlight', '#FBDA0C') +
+          '</div>' +
+          '<div class="set__grid">' +
+            '<div class="set__row"><label>Heading font</label><input type="text" data-t="displayFont" value="' + esc(t.displayFont || '') + '"></div>' +
+            '<div class="set__row"><label>Body font</label><input type="text" data-t="bodyFont" value="' + esc(t.bodyFont || '') + '"></div>' +
+          '</div>' +
+
+          '<div class="set__foot">' +
+            '<button class="btn btn--primary" type="button" data-save="' + id + '">Save changes</button>' +
+            '<span class="set__msg"></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function readSettings(root) {
+      var out = { id: root.getAttribute('data-settings'), theme: {} };
+      root.querySelectorAll('[data-f]').forEach(function (el) {
+        out[el.getAttribute('data-f')] = el.value;
+      });
+      root.querySelectorAll('[data-t]').forEach(function (el) {
+        if (el.value !== '') out.theme[el.getAttribute('data-t')] = el.value;
+      });
+      // The embed derives its whole grey ramp from these two, so they travel
+      // together or not at all.
+      if (!out.theme.bg || !out.theme.text) delete out.theme;
+      else { out.theme.mode = 'dark'; out.theme.uppercaseHeadings = true; }
+
+      var rungs = [];
+      root.querySelectorAll('[data-rung]').forEach(function (el) {
+        rungs.push({ in: Number(el.getAttribute('data-rung')), price: Number(el.value) });
+      });
+      if (rungs.length) out.price_ladder = rungs;
+
+      // datetime-local hands back local wall-clock; the server stores UTC.
+      if (out.deadline_at) out.deadline_at = new Date(out.deadline_at).toISOString();
+      return out;
+    }
+
+    async function saveSettings(btn) {
+      var root = listEl.querySelector('[data-settings="' + btn.getAttribute('data-save') + '"]');
+      var msg = root.querySelector('.set__msg');
+      btn.disabled = true;
+      msg.className = 'set__msg';
+      msg.textContent = 'Saving…';
+      try {
+        var r = await api.authedFetch('/api/account/sponsorships?action=settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(readSettings(root))
+        });
+        var j = await r.json().catch(function () { return {}; });
+        if (!r.ok) throw new Error(j.error || 'Could not save that.');
+        msg.className = 'set__msg set__ok';
+        msg.textContent = 'Saved. The embed updates within 30 seconds.';
+        toast('Campaign updated.');
+      } catch (e) {
+        msg.className = 'set__msg set__err';
+        msg.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     function card(s) {
       var brand = s.company || s.contactName || s.email;
       var decided = s.status === 'approved' || s.status === 'denied';
@@ -295,6 +462,7 @@
         return '<div class="camp"' + brandStyle(c.theme) + '>' +
           (bar || '<div class="camp__bar"><span class="camp__name">' + esc(c.name) + '</span></div>') +
           '<div class="camp__sum">' + sum + '</div>' +
+          settingsPanel(c) +
           section('Waiting on you', holding) +
           section('On the shirt', approved) +
           section('Denied — these areas are open again', settled) +
@@ -309,6 +477,17 @@
     function bind() {
       listEl.querySelectorAll('[data-decide]').forEach(function (b) {
         b.addEventListener('click', function () { decide(b); });
+      });
+      listEl.querySelectorAll('[data-toggle]').forEach(function (h) {
+        h.addEventListener('click', function () {
+          var body = h.parentElement.querySelector('.set__body');
+          var btn = h.querySelector('button');
+          body.hidden = !body.hidden;
+          btn.textContent = body.hidden ? 'Edit' : 'Close';
+        });
+      });
+      listEl.querySelectorAll('[data-save]').forEach(function (b) {
+        b.addEventListener('click', function (e) { e.stopPropagation(); saveSettings(b); });
       });
     }
 
