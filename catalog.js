@@ -1486,7 +1486,11 @@
     fetch('https://singhsprint-crm.vercel.app/api/pricing?product_id=' + encodeURIComponent(p.product_id) +
           '&qty=' + next + '&decoration_method=' + encodeURIComponent(method) +
           (embPlac ? '&embroidery_placements=' + encodeURIComponent(embPlac) : '') +
-          '&print_sides=' + sides)
+          // `sides` — NOT `print_sides`. /api/pricing reads `sides`
+          // (route.ts:63); an unknown param silently defaults to 1, so this
+          // break hint quoted the ONE-SIDE price for a multi-location job:
+          // $14.95 instead of $21.95 on a 3-location tee at qty 25.
+          '&sides=' + sides)
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
         var u = j && (j.unit_price || j.price_per_unit || j.unit);

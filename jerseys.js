@@ -994,15 +994,15 @@
     // garment + lettering). cb({ unit, allin, logo_add }).
     // frontDeco describes the ONE front decoration (or null): the combined
     // logo / front-number / team-name print. { method, placement }. Pricing:
-    //   base  = blank + back name/number (full-back, 1 side) via /api/pricing —
+    //   base  = blank + back name/number (back-full, 1 side) via /api/pricing —
     //           exactly the figure the catalog "From" already reflects, so the
     //           back lettering is never double-charged.
     //   front = a single decoration-only add at the effective placement
     //           (center-chest for text, the logo's spot for a logo alone, or
     //           oversized when a logo is combined with front text).
     // opts (optional) overrides the decoration model for OWN-DESIGN jerseys:
-    // { sides: 1|2, placements: ['full-front','full-back'] }. Default is the
-    // names-mode model (1 side, full-back name/number).
+    // { sides: 1|2, placements: ['full-front','back-full'] }. Default is the
+    // names-mode model (1 side, back-full name/number).
     function computeJerseyUnitPrice(prod, qty, frontDeco, cb, opts){
       function decoOnly(method, placement){
         return fetch(DECO_API + '?qty=' + qty + '&method=' + method + '&placements=' + encodeURIComponent(placement))
@@ -1010,7 +1010,7 @@
       }
       var frontP = frontDeco ? decoOnly(frontDeco.method, frontDeco.placement) : Promise.resolve(0);
       var engSides = (opts && opts.sides) || 1;
-      var engPlacements = (opts && opts.placements && opts.placements.length) ? opts.placements : ['full-back'];
+      var engPlacements = (opts && opts.placements && opts.placements.length) ? opts.placements : ['back-full'];
       var engineUrl = PRICING_API + '?product_id=' + encodeURIComponent(prod.product_id) + '&qty=' + qty
                     + '&sides=' + engSides + '&decoration_method=dtf&embroidery_placements=' + encodeURIComponent(engPlacements.join(','));
       fetch(engineUrl).then(function(r){ return r.ok?r.json():null; })
@@ -1065,7 +1065,7 @@
       }
       var engPlacements = [];
       if (sd.front) engPlacements.push('full-front');
-      if (sd.back)  engPlacements.push('full-back');
+      if (sd.back)  engPlacements.push('back-full');
       var btn = document.getElementById('czAdd'), prevTxt = btn.textContent;
       btn.disabled = true; btn.textContent = t('jersey.cz.adding','Pricing…');
       function dref(d){ return d ? { url: d.url || null, path: d.path || null, filename: d.name || null } : null; }
