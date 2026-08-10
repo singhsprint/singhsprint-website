@@ -1445,7 +1445,12 @@
   // That is correct, but a customer typing a new number and seeing nothing
   // happen reads it as a dead control, so the band and the next break are now
   // stated under the price.
-  var DMCZ_BREAKS = [5, 10, 25, 50, 100, 200, 500];
+  // Must match pricing_configs.qty_tiers — the engine's ladder tops out at
+  // 200. This listed a 500 break that has never existed, so the hint promised
+  // "add N more for $X each" at a quantity where the price does not change:
+  // a savings promise the engine cannot keep. Mirrors QTY_TIER_FLOORS in the
+  // CRM domain registry (GET /api/v1/registry).
+  var DMCZ_BREAKS = [5, 10, 25, 50, 100, 200];
   var _dmczBreakPrice = {};   // cache key -> unit price at the next break
 
   function dmczNextBreak(qty) {
@@ -1957,12 +1962,43 @@
       priceEl.innerHTML = '<strong class="dmcz-price--blocked">' + msg + '</strong>';
     };
 
+    // Combined-order volume pricing: the cart pools lines of 5+ pieces into one
+    // tier, and /quote has always sent that pool as tier_qty. This modal did
+    // not, so opening a product while items sat in the cart quoted a HIGHER
+    // price than the same configuration in the cart — the customer saw the
+    // number go down when they added it, which reads as a pricing glitch.
+    //
+    // Pooling is scoped to matching decoration method: a DTF tee run and an
+    // embroidered cap run share no setup or press time, so they do not earn a
+    // combined break. dtg and dtf share a press and pool together, matching
+    // what the engine does when it collapses dtg -> dtf.
+    var tierQty = (function () {
+      try {
+        var poolKey = function (m) {
+          var v = String(m || 'dtf').toLowerCase();
+          return v === 'dtg' ? 'dtf' : v;
+        };
+        var mine = poolKey(method);
+        var sum = SinghsCart.read().items.reduce(function (acc, it) {
+          var q = Number(it.qty) || 0;
+          if (q < 5) return acc;
+          return poolKey(it.decoration_type || it.decoration_method) === mine ? acc + q : acc;
+        }, 0);
+        // Include the line being viewed, then only send it if it actually
+        // raises the tier — the engine ignores tier_qty <= qty anyway.
+        var q = Number(qty) || 0;
+        var pooled = sum + (q >= 5 ? q : 0);
+        return (q >= 5 && pooled > q) ? pooled : null;
+      } catch (e) { return null; }
+    })();
+
     var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
               encodeURIComponent(p.product_id) +
               '&qty=' + encodeURIComponent(qty) +
               '&sides=' + encodeURIComponent(sides) +
               '&decoration_method=' + encodeURIComponent(method) +
-              '&embroidery_placements=' + encodeURIComponent(embPlac) + addonParams;
+              '&embroidery_placements=' + encodeURIComponent(embPlac) + addonParams +
+              (tierQty ? '&tier_qty=' + encodeURIComponent(tierQty) : '');
 
     fetch(url, { cache: 'no-store' })
       .then(function(r){
