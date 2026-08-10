@@ -97,7 +97,12 @@
     // sit at the competitive low end while staying well above cost.
     var TEAM_DISCOUNT = 0.12;
     function teamPrice(p){ return round95(p * (1 - TEAM_DISCOUNT)); }
-    var NAME_NUMBER_PLACEMENT = 'full_back';      // oversized DTF on the back
+    // Canonical id is `back-full`. This was 'full_back' — a THIRD spelling of
+    // the same placement, after 'full-back' elsewhere in this file. Neither
+    // matches a pricing_size_modifiers row, so the Full Back premium resolved
+    // to the placement-agnostic $0 rule and rode into the cart payload where
+    // nothing downstream could recognise it either.
+    var NAME_NUMBER_PLACEMENT = 'back-full';      // oversized DTF on the back
     var LOGO_METHODS = [
       { id:'none',       label:'jersey.cz.logo.none', fallback:'No logo' },
       { id:'dtf',        label:'jersey.cz.logo.dtf',  fallback:'DTF print' },
@@ -1091,7 +1096,17 @@
           jersey_custom_design: {
             same_for_all: !!cz.designSame,
             placement:    cz.designPlacement,           // front | back | both
-            box:          cz.designBox ? { x:cz.designBox.x, y:cz.designBox.y, w:cz.designBox.w } : null,
+            // Boxes are CENTRE-anchored percent inside this file (the preview uses
+            // translate(-50%,-50%)), but every consumer of a box — /api/shop/compose,
+            // /api/mockups/compose, the CRM composer — expects TOP-LEFT in 0-1.
+            // catalog.js already converts at this boundary; this payload did not, so
+            // the stored box was in a coordinate space nothing downstream could read.
+            // Latent until something consumed it, which is the worst kind of wrong.
+            box:          cz.designBox ? {
+                            x: (cz.designBox.x - cz.designBox.w / 2) / 100,
+                            y: (cz.designBox.y - cz.designBox.w / 2) / 100,
+                            w: cz.designBox.w / 100
+                          } : null,
             front:        cz.designSame ? dref(cz.design.front) : null,
             back:         cz.designSame ? dref(cz.design.back)  : null
           },

@@ -395,6 +395,17 @@
         // { trusted:false } so the size grid keeps plain in/out gating. Stored
         // globally; applySizeStockGating reads it to show "N left" + warn on
         // over-order for the selected colour.
+        // NOTE (2026-08-10): this called /api/catalog/stock, which does not exist
+        // and never has. It 404'd on every product and the `r.ok ? … : null`
+        // handler turned that into `null`, so the "N left" hints and the
+        // over-order warning have silently never worked — the size grid has been
+        // running on plain in/out gating the whole time.
+        //
+        // Left pointing at the same URL deliberately rather than deleted: the
+        // feature is worth having, the fix is a real endpoint returning
+        // { trusted, sizes_stock }, and deleting the caller would hide that it is
+        // missing. /api/inventory/live-stock now returns exactly that shape for
+        // S&S styles and is the natural thing to widen.
         window.__spSizeStock = null;
         fetch('https://singhsprint-crm.vercel.app/api/catalog/stock?product_id=' + encodeURIComponent(catalogPick.product_id))
           .then(function(r){ return r.ok ? r.json() : null; })
@@ -2269,20 +2280,40 @@
                 fbp: spCookie('_fbp'),
                 fbc: spCookie('_fbc')
               };
+              // Meta CAPI — repointed 2026-08-10.
+              //
+              // This posted to a RELATIVE '/api/meta-capi' on the static host. No
+              // such route exists there or anywhere, so the server half of the
+              // Pixel+CAPI pair has never fired. That is worse than a normal dead
+              // call: the pair exists so Meta can dedupe on a shared event_id, and
+              // with CAPI absent Meta has been optimising on Pixel-only signal.
+              //
+              // The real receiver is the CRM's /api/ads/capi/[event], which takes
+              // the event name in the PATH and a FLAT body — not Meta's nested
+              // user_data/custom_data shape — so the payload is reshaped here.
+              //
+              // sendBeacon is deliberately not used: it cannot send an
+              // application/json body cross-origin (the preflight it would need is
+              // not something beacon performs). fetch with keepalive survives the
+              // page transition just as well.
               var leadCapiBody = JSON.stringify({
-                event_name:       'Lead',
                 event_id:         leadEventId,
-                event_time:       Math.floor(Date.now() / 1000),
                 event_source_url: location.href,
-                action_source:    'website',
-                user_data:        leadUserData,
-                custom_data:      { value: trk.estValue || 0, currency: 'CAD', num_items: trk.totalQty || 0 }
+                email:            leadUserData.em,
+                phone:            leadUserData.ph,
+                first_name:       leadUserData.fn,
+                last_name:        leadUserData.ln,
+                fbp:              leadUserData.fbp,
+                fbc:              leadUserData.fbc,
+                value:            Number(trk.estValue || 0),
+                currency:         'CAD'
               });
-              if (navigator.sendBeacon) {
-                navigator.sendBeacon('/api/meta-capi', new Blob([leadCapiBody], { type: 'application/json' }));
-              } else {
-                fetch('/api/meta-capi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: leadCapiBody, keepalive: true }).catch(function () {});
-              }
+              fetch('https://singhsprint-crm.vercel.app/api/ads/capi/Lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: leadCapiBody,
+                keepalive: true
+              }).catch(function () { /* tracking must never break the success state */ });
             }
           } catch (capiErr) { /* CAPI must never break the success state */ }
         }
@@ -2528,6 +2559,62 @@
        }).catch(function () { cb(null); });
     }
 
+    // ── Last-known-good price table, generated from the live engine ─────────
+    //
+    // b2bPricing / b2cPricing below are a hardcoded ladder that this function
+    // reads whenever the live call has not answered — which includes every
+    // first paint and every network blip. Measured against production, 11 of 12
+    // sampled points matched the engine to the cent, so serving it is the right
+    // call: refusing to show a price would cost far more than a $0.17 average
+    // drift. The problem is that a literal can only drift, and nothing reports
+    // when it has. Hoodies at 200-249 were quoting $24.95 against the engine's
+    // $26.95 for exactly that reason.
+    //
+    // So we keep the behaviour and change the source: fetch the same ladder
+    // from the CRM, cache it, and prefer it over the literal. The fallback then
+    // self-heals on every price change instead of waiting for someone to notice.
+    // The literal remains as the last resort for a first-ever visit with the
+    // CRM unreachable.
+    var SP_TABLE_KEY = 'spPriceTable_v1';
+    var SP_TABLE_TTL = 24 * 60 * 60 * 1000;   // refresh daily; stale still used
+    var _spLiveTable = null;
+
+    (function loadPriceTable() {
+      try {
+        var raw = localStorage.getItem(SP_TABLE_KEY);
+        if (raw) {
+          var cached = JSON.parse(raw);
+          // Stale is still better than the literal — use it now, refresh below.
+          if (cached && cached.table) _spLiveTable = cached.table;
+          if (cached && cached.fetched_at && (Date.now() - cached.fetched_at) < SP_TABLE_TTL) return;
+        }
+      } catch (e) { /* private mode / corrupt entry — fall through and refetch */ }
+
+      fetch('https://singhsprint-crm.vercel.app/api/v1/price-table')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !j.table) return;
+          _spLiveTable = j.table;
+          try {
+            localStorage.setItem(SP_TABLE_KEY, JSON.stringify({
+              table: j.table, version: j.version, fetched_at: Date.now()
+            }));
+          } catch (e) { /* quota — in-memory copy still applies this session */ }
+        })
+        .catch(function () { /* keep whatever we already had */ });
+    })();
+
+    // Resolve a garment+method ladder, preferring the generated table.
+    function spLadderFor(product, service) {
+      var method = String(service || '').toLowerCase();
+      if (_spLiveTable && _spLiveTable[product]) {
+        var byMethod = _spLiveTable[product];
+        var hit = byMethod[method] || byMethod.dtf || byMethod.dtg || byMethod.embroidery;
+        if (hit && hit.tiers && hit.tiers.length) return hit;
+      }
+      return null;
+    }
+
     function getPricePerUnit() {
       var product = state.garment;
       var service = state.service;
@@ -2548,13 +2635,22 @@
         basePrice = svcData[placementType] || svcData['single'];
       } else {
         // B2B: volume-tiered pricing from pricing sheet
-        var b2b = b2bPricing[product];
-        if (!b2b) return null;
-        var pricingInfo = b2b[service.toLowerCase()];
-        if (!pricingInfo) pricingInfo = b2b['dtg'] || b2b['embroidery']; // fallback
+        // Generated table first; the literal is the last resort.
+        var pricingInfo = spLadderFor(product, service);
+        if (!pricingInfo) {
+          var b2b = b2bPricing[product];
+          if (!b2b) return null;
+          pricingInfo = b2b[service.toLowerCase()];
+          if (!pricingInfo) pricingInfo = b2b['dtg'] || b2b['embroidery']; // fallback
+        }
         if (!pricingInfo) return null;
         var tiers = pricingInfo.tiers;
-        var tier = tiers.find(function(t) { return qty >= t.min && qty <= t.max; });
+        // The generated table uses max:null for the open-ended top band, where
+        // the literal used Infinity. Treat both as unbounded.
+        var tier = tiers.find(function(t) {
+          var hi = (t.max === null || t.max === undefined) ? Infinity : t.max;
+          return qty >= t.min && qty <= hi;
+        });
         if (!tier) tier = tiers[0]; // fallback to smallest tier
         basePrice = tier[placementType] || tier['single'];
       }
