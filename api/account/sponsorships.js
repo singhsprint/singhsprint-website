@@ -46,7 +46,7 @@ async function campaignsFor(supabase, user) {
   if (!email) return [];
   const { data, error } = await supabase
     .from('sponsor_campaigns')
-    .select('id, slug, name, status, views, clearance_in, owner_email')
+    .select('id, slug, name, status, views, clearance_in, owner_email, theme')
     .ilike('owner_email', email);
   if (error) throw new Error(error.message);
   // ilike without wildcards is an exact, case-insensitive match — but be
@@ -214,6 +214,10 @@ module.exports = async function handler(req, res) {
     return {
       id: c.id, slug: c.slug, name: c.name, status: c.status,
       views: c.views || [], claimedAreas: claimedAreas, submissions: list,
+      // The campaign's own palette, so his section of the page wears his brand
+      // rather than ours. Passed through as stored; the page validates before
+      // it touches a style, because this ends up in CSS.
+      theme: c.theme || null,
     };
   });
 

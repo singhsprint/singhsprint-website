@@ -50,6 +50,16 @@
     .s-quote{margin-top:6px;font-size:.95rem}
     .s-when{color:#8a8a8a;font-size:.78rem;margin-top:3px}
     .s-stamp{color:#b0aca4}
+    /* Campaign-scoped branding. --brand only exists inside a .camp whose
+       campaign carries a theme, so the fallback is the house style and an
+       unthemed campaign renders exactly as before. */
+    .camp__brand{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px;
+      border-radius:14px;padding:14px 16px;margin-bottom:14px;font-weight:800;letter-spacing:.02em;
+      text-transform:uppercase;font-size:.95rem}
+    .camp__brand span:last-child{font-size:.7rem;letter-spacing:.08em;opacity:.85}
+    .camp .btn--primary{background:var(--brand,#1a1a1a);color:var(--brand-ink,#e8ff3c)}
+    .camp .s-quote b{color:inherit}
+    .camp .pill--hold{background:color-mix(in srgb, var(--brand,#f59e0b) 14%, #fef3c7);}
     .shots{display:flex;flex-wrap:wrap;gap:11px;margin-top:13px}
     .shot{width:118px}
     .shot img{width:100%;border-radius:9px;border:1px solid #e9e7df;display:block;background:#f4f2eb}
@@ -136,6 +146,43 @@
       if (!iso) return '';
       return '<span title="' + esc(stamp(iso)) + '">' + esc(label ? label + ' ' + rel(iso) : rel(iso)) +
              ' <span class="s-stamp">' + esc(stamp(iso)) + '</span></span>';
+    }
+
+    /**
+     * The campaign's own colours, scoped to its own block.
+     *
+     * NOT a full re-skin of the page. This tab sits in a nav beside Orders and
+     * Settings; a black panel among cream ones reads as a rendering fault, not
+     * as branding. So the surrounding chrome stays ours and the campaign wears
+     * his — a brand strip across the top and his accent on the buttons inside
+     * it. He can tell at a glance whose shirt he is looking at, which is the
+     * part that actually matters once he runs more than one.
+     *
+     * Only hex is accepted. These values come from the database and are about
+     * to be interpolated into a style attribute, so anything that could carry a
+     * quote or a semicolon out of the value is dropped rather than escaped.
+     */
+    var HEX = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    function hex(v, fallback) {
+      return typeof v === 'string' && HEX.test(v.trim()) ? v.trim() : fallback;
+    }
+    function brandStyle(theme) {
+      if (!theme || typeof theme !== 'object') return '';
+      var accent = hex(theme.accent, null);
+      if (!accent) return '';
+      return ' style="--brand:' + accent +
+             ';--brand-ink:' + hex(theme.accentText, '#ffffff') +
+             ';--brand-loud:' + hex(theme.highlight, accent) + '"';
+    }
+    function brandBar(c) {
+      var t = c.theme;
+      if (!t || typeof t !== 'object') return '';
+      var accent = hex(t.accent, null);
+      if (!accent) return '';
+      return '<div class="camp__brand" style="background:' + hex(t.bg, '#000000') + '">' +
+        '<span style="color:' + accent + '">' + esc(c.name) + '</span>' +
+        '<span style="color:' + hex(t.highlight, accent) + '">' + esc(c.slug) + '</span>' +
+      '</div>';
     }
 
     var PILL = {
@@ -241,8 +288,12 @@
         var settled  = subs.filter(function (s) { return s.status === 'denied'; });
         var sum = approved.length + ' approved &middot; ' + holding.length + ' waiting on you &middot; ' +
                   c.claimedAreas + ' area' + (c.claimedAreas === 1 ? '' : 's') + ' taken';
-        return '<div class="camp">' +
-          '<div class="camp__bar"><span class="camp__name">' + esc(c.name) + '</span></div>' +
+        // The brand strip carries the campaign name, so the plain heading would
+        // be the same words twice in a row. Themed campaigns get the strip;
+        // unthemed ones keep the heading they have always had.
+        var bar = brandBar(c);
+        return '<div class="camp"' + brandStyle(c.theme) + '>' +
+          (bar || '<div class="camp__bar"><span class="camp__name">' + esc(c.name) + '</span></div>') +
           '<div class="camp__sum">' + sum + '</div>' +
           section('Waiting on you', holding) +
           section('On the shirt', approved) +
