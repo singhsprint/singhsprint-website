@@ -3012,6 +3012,110 @@
       }];
     }
 
+    // =====================================================================
+    // QUOTE PAYLOAD — cart_items
+    // ---------------------------------------------------------------------
+    // 2026-08-11. /quote has TWO flows and only one of them uses SinghsCart:
+    //
+    //   • cart mode   — catalog "add to cart", or a tier pick landing a
+    //                   blank as a cart row. Items live in sessionStorage.
+    //   • legacy mode — a product-type card picked on this page, a restored
+    //                   draft (spQuoteDraft_v1), or a ?product= deep link.
+    //                   The selection lives in state / catalogPick / the
+    //                   global size grid and NEVER touches the cart.
+    //
+    // The submit handler read SinghsCart.read().items in BOTH, so every
+    // legacy submission POSTed cart_items: [] while still carrying a real
+    // estimated_total (scraped from #livePriceTotal) and a real
+    // size_breakdown (the nine size_* inputs). The rep got a priced request
+    // with a blank "Asking for" column and no way to tell whether the
+    // customer had chosen anything at all. Sixteen of those reached the
+    // inbox between 2026-06-19 and 2026-08-10 before anyone noticed —
+    // including a paid-ad lead that sat untouched.
+    //
+    // This mirrors spBuildCheckoutItems() above — the PAID path, which has
+    // always derived its items from page state rather than the cart — but
+    // emits a CART-SHAPED item, because /api/inbound stores cart_items
+    // verbatim and resolves product_id / color_id / placement_preset off
+    // cart_items[0] (route.ts:213-217, 374-428).
+    function spBuildQuoteCartItems() {
+      try {
+        if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+          return SinghsCart.read().items;
+        }
+      } catch (e) { /* storage unreadable — fall through and derive */ }
+
+      // ---- legacy / single-product / restored-draft flow ----------------
+      var sizes = {};
+      ['xs','s','m','l','xl','2xl','3xl','4xl','5xl'].forEach(function(s) {
+        var inp = document.querySelector('input[name="size_' + s + '"]');
+        var v = inp ? (parseInt(inp.value, 10) || 0) : 0;
+        if (v > 0) sizes[s.toUpperCase()] = v;
+      });
+      var qty = Object.keys(sizes).reduce(function(a, k) { return a + sizes[k]; }, 0);
+      if (!qty) {
+        var tq = document.getElementById('totalQtyInput');
+        qty = tq ? (parseInt(tq.value, 10) || 0) : 0;
+      }
+      var placements = [];
+      try { placements = Object.values(presetByLocation || {}).filter(Boolean); } catch (e) {}
+
+      var pick = (typeof catalogPick !== 'undefined' && catalogPick) ? catalogPick : null;
+      var colorIdInp = document.getElementById('catalogColorId');
+      var nm = (pick && pick.name) || (typeof state !== 'undefined' && state.product) || null;
+
+      // Genuinely untouched form — return [] rather than inventing a line.
+      // Deliberately NOT gated on placements: presetByLocation boots with a
+      // default (center-chest), so an untouched form would otherwise emit a
+      // junk line with qty 0 and a null name. A real selection always sets
+      // a product name or a quantity.
+      if (!nm && !qty) return [];
+
+      return [{
+        product_id:      (pick && pick.product_id) || null,
+        variant_id:      null,
+        color_id:        (colorIdInp && colorIdInp.value) || null,
+        color_name:      (typeof state !== 'undefined' && state.colorName) || '',
+        brand:           (pick && pick.brand) || '',
+        style_number:    (pick && pick.style_number) || '',
+        name:            nm,
+        garment_type:    (pick && pick.garment_type)
+                           || (typeof state !== 'undefined' && state.garment) || null,
+        hero_url:        (pick && pick.hero_image_url) || '',
+        qty:             qty,
+        sides:           placements.length || 1,
+        placements:      placements,
+        sizes:           sizes,
+        decoration_type: ((typeof state !== 'undefined' && state.service) || '').toLowerCase(),
+        // Lets the CRM tell a reconstructed line apart from a real cart row.
+        derived_from:    'single_product_flow'
+      }];
+    }
+
+    // Keep cartItemFiles keys aligned with cart row indices after a removal.
+    // The map is keyed "<rowIdx>_<preset>" and is NOT part of the persisted
+    // cart, so removing a row used to strand its File objects: they were
+    // still collected at submit and POSTed as designs[] stamped
+    // cart_item_index pointing at a row that no longer existed. splice()
+    // also shifts every later row down one, so surviving keys must be
+    // renumbered or artwork silently reattaches to the wrong garment.
+    function spReindexCartItemFiles(removedIdx) {
+      if (typeof cartItemFiles !== 'object' || !cartItemFiles) return;
+      var moved = {};
+      Object.keys(cartItemFiles).forEach(function(key) {
+        var split = key.indexOf('_');
+        var idx = split > -1 ? parseInt(key.slice(0, split), 10) : NaN;
+        var preset = split > -1 ? key.slice(split + 1) : null;
+        // Unparseable key — leave it exactly where it is rather than guess.
+        if (!Number.isFinite(idx) || !preset) { moved[key] = cartItemFiles[key]; return; }
+        if (idx === removedIdx) return;                  // artwork for the deleted row
+        moved[(idx > removedIdx ? idx - 1 : idx) + '_' + preset] = cartItemFiles[key];
+      });
+      // Mutate in place — other closures hold this same object reference.
+      Object.keys(cartItemFiles).forEach(function(k) { delete cartItemFiles[k]; });
+      Object.keys(moved).forEach(function(k) { cartItemFiles[k] = moved[k]; });
+    }
+
     function handlePayment() {
       var nameEl    = document.getElementById('name');
       var emailEl   = document.getElementById('email');
@@ -4418,7 +4522,15 @@
       },
       write: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} renderCartList(); _queueCartSync(); if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate(); },
       writeSilent: function(c){ try { sessionStorage.setItem(this.key, JSON.stringify(c)); } catch(e){} _queueCartSync(); if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate(); },
-      remove: function(i){ var c = this.read(); c.items.splice(i,1); this.write(c); },
+      remove: function(i){
+        var c = this.read();
+        c.items.splice(i,1);
+        // Drop this row's in-memory artwork and renumber the rest. Without
+        // this the File survived the row and was still POSTed at submit,
+        // stamped cart_item_index: <deleted row>. (2026-08-11)
+        try { spReindexCartItemFiles(i); } catch (e) {}
+        this.write(c);
+      },
       update: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); if (Array.isArray(c.items[i].placements)) c.items[i].sides = c.items[i].placements.length; this.write(c); },
       updateSilent: function(i,p){ var c = this.read(); Object.assign(c.items[i], p); if (Array.isArray(c.items[i].placements)) c.items[i].sides = c.items[i].placements.length; this.writeSilent(c); },
       clear:  function(){ this.write({items:[]}); },
@@ -5311,9 +5423,15 @@
           // flow is 2 steps for every path now. The global size grid on
           // Step 1 is handled by refreshGlobalSizeSection below.)
         }
-        // Clear the right-panel cart total too
+        // Clear the right-panel cart total too. Hiding the strip is not
+        // enough: textContent stays readable on a display:none node, and
+        // the submit handler scrapes #livePriceTotal with no visibility
+        // check — so an emptied cart used to keep quoting its old total.
+        // (2026-08-11)
         var strip = document.getElementById('livePriceStrip');
         if (strip) strip.style.display = 'none';
+        var staleTotal = document.getElementById('livePriceTotal');
+        if (staleTotal) staleTotal.textContent = '$—';
         refreshGlobalSizeSection();
         // Cart emptied → hand back to the guided flow so the visitor
         // resumes the product → qty → tier sequence instead of landing on
@@ -6912,7 +7030,10 @@
           return;
         }
 
-        var items = SinghsCart.read().items;
+        // Was SinghsCart.read().items — which is empty in the legacy /
+        // single-product / restored-draft flow, so those submissions
+        // POSTed cart_items: [] alongside a real price. (2026-08-11)
+        var items = spBuildQuoteCartItems();
 
         // 1) Hidden fields for the Web3Forms email backup
         if (items.length > 0 && !form.querySelector('input[name="cart_items_json"]')) {
