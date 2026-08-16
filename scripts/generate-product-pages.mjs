@@ -52,10 +52,69 @@ const REVIEWS = [
   { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },
   { name: 'Ori Peer',    date: '2024-03-10', body: 'I love my shirt they supported my vision!!! Best spot in MTL!' }
 ];
-// Free Canada-wide shipping (cost is bundled into the per-unit quote). 3-5
-// day in-house production + 1-5 day Chit Chats / Canada Post transit. Adjust
-// if shop ever charges an explicit shipping line item.
-const SHIPPING = { country: 'CA', valueCAD: '0', handlingMin: 3, handlingMax: 5, transitMin: 1, transitMax: 5 };
+// Free Canada-wide shipping (cost is bundled into the per-unit quote). The
+// carrier leg — Chit Chats / Canada Post, once the box leaves the shop — is
+// 1-5 days and is the same whoever made the blank. Adjust if the shop ever
+// charges an explicit shipping line item.
+const SHIPPING = { country: 'CA', valueCAD: '0', transitMin: 1, transitMax: 5 };
+
+// ---------------------------------------------------------------------------
+// handlingTime is PER SUPPLIER, and it is not a style choice.
+//
+// It used to be a flat { 3, 5 } on all 6,917 pages, described as "in-house
+// production". That is the press window ALONE — it never included the days
+// spent waiting for the blank to arrive, which is most of the wait and is the
+// half that differs by supplier. Google was told every product in the
+// catalogue dispatches on the same clock.
+//
+// schema.org splits the wait where the box leaves the seller:
+//   handlingTime — order to dispatch. Supplier transit PLUS the press window,
+//                  because none of that is carrier time.
+//   transitTime  — dispatch to doorstep. The carrier leg above.
+//
+// THESE ARE THE SHOP'S PUBLISHED WINDOWS, NOT THE ENGINE'S (2026-08-16).
+// They are deliberately WIDER than what composeOrderPromise() computes,
+// because a published range has to cover paths the standard quote does not:
+//
+//   supplier        published here   engine standard   why they differ
+//   ss_activewear   3-10             5-10              low end is the rush path
+//   sanmar          3-10             5-10              low end is the rush path
+//   blanks_ca       7-14             7-12              high end carries the
+//                                                      slow tail the engine
+//                                                      does not model
+//
+// THE INVARIANT, and the only thing check-turnaround-drift.mjs enforces:
+//
+//     published.min <= engine.min   AND   published.max >= engine.max
+//
+// i.e. the published window must CONTAIN the engine's. Equality is not the
+// test and never should be — the shop is allowed to advertise a rush floor and
+// a conservative ceiling. What it must never do is publish a window that is
+// FASTER at the top than the engine can actually deliver, because that is the
+// exact defect the 2026-08-16 hero fix was for, one level up. If the CRM's
+// SUPPLIER_TRANSIT moves and this table stops containing it, the checker fails
+// — it reads the engine's live numbers from /api/production/promise-windows
+// rather than trusting this comment, which is the whole point.
+const PUBLISHED_HANDLING = {
+  ss_activewear: { min: 3, max: 10 },
+  sanmar:        { min: 3, max: 10 },
+  blanks_ca:     { min: 7, max: 14 }
+};
+// An unrecognised supplier assumes the SLOWEST, never the fastest. A guess
+// that runs fast produces a date the shop cannot hit, and that is the
+// expensive direction.
+const UNKNOWN_HANDLING = { min: 12, max: 15 };
+
+// Suppliers that do not get a page at all. Rue Sainte-Patrick is off the
+// public site by shop decision (2026-08-16) — it was the only supplier with
+// no transit observation, so every one of its pages was quoting the
+// unknown-supplier fallback to Google as though it were measured.
+const EXCLUDED_SUPPLIERS = new Set(['rue_sainte_patrick']);
+
+function handlingTimeFor(supplierCode) {
+  const code = String(supplierCode || '').trim().toLowerCase();
+  return PUBLISHED_HANDLING[code] || UNKNOWN_HANDLING;
+}
 // 14-day window covers reprints/replacements for print quality + garment
 // defects — matches the misprint guarantee in the homepage FAQ.
 const RETURNS  = { country: 'CA', windowDays: 14 };
@@ -78,15 +137,16 @@ function reviewNodes() {
     'reviewBody':    r.body
   }));
 }
-function shippingDetailsNode() {
+function shippingDetailsNode(supplierCode) {
+  const h = handlingTimeFor(supplierCode);
   return {
     '@type': 'OfferShippingDetails',
     'shippingRate': { '@type': 'MonetaryAmount', 'value': SHIPPING.valueCAD, 'currency': 'CAD' },
     'shippingDestination': { '@type': 'DefinedRegion', 'addressCountry': SHIPPING.country },
     'deliveryTime': {
       '@type': 'ShippingDeliveryTime',
-      'handlingTime': { '@type': 'QuantitativeValue', 'minValue': SHIPPING.handlingMin, 'maxValue': SHIPPING.handlingMax, 'unitCode': 'DAY' },
-      'transitTime':  { '@type': 'QuantitativeValue', 'minValue': SHIPPING.transitMin,  'maxValue': SHIPPING.transitMax,  'unitCode': 'DAY' }
+      'handlingTime': { '@type': 'QuantitativeValue', 'minValue': h.min, 'maxValue': h.max, 'unitCode': 'DAY' },
+      'transitTime':  { '@type': 'QuantitativeValue', 'minValue': SHIPPING.transitMin, 'maxValue': SHIPPING.transitMax, 'unitCode': 'DAY' }
     }
   };
 }
@@ -319,7 +379,7 @@ function buildPage(p, lang = 'en') {
     'offerCount': colors.length || 1,
     'availability': p.in_stock === false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
     'seller': { '@id': SITE + '/#business' },
-    'shippingDetails':         shippingDetailsNode(),
+    'shippingDetails':         shippingDetailsNode(p.supplier_code),
     'hasMerchantReturnPolicy': returnPolicyNode()
   };
 
@@ -520,7 +580,11 @@ async function main() {
   products.sort((a, b) => score(b) - score(a));
   // Filter first (must have a brand + style for a clean URL), then take TOP_N
   // so the cap doesn't accidentally include garbage rows.
-  const valid = products.filter(p => p.brand && p.style_number);
+  const excluded = products.filter(p => EXCLUDED_SUPPLIERS.has(String(p.supplier_code || '').trim().toLowerCase()));
+  if (excluded.length) console.log(`excluding ${excluded.length} product(s) from ${[...EXCLUDED_SUPPLIERS].join(', ')}`);
+  const valid = products.filter(p =>
+    p.brand && p.style_number &&
+    !EXCLUDED_SUPPLIERS.has(String(p.supplier_code || '').trim().toLowerCase()));
   const top = valid.slice(0, TOP_N);
 
   const FR_OUT_DIR = path.join(ROOT, 'fr', 'p');
