@@ -1475,7 +1475,12 @@
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     var next = dmczNextBreak(qty);
     if (!next) { host.textContent = ''; return; }
-    var key = [p.product_id, method, embPlac, sides, next].join('|');
+    // Same colour rule as the main price fetch below — and the colour has to
+    // be in the CACHE KEY as well as the query string. Keying without it
+    // would hand a Black break-price to a customer who has switched to the
+    // clearance colourway, which is the same substitution bug one layer up.
+    var breakColorId = ((_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {}).color_id;
+    var key = [p.product_id, breakColorId || '', method, embPlac, sides, next].join('|');
     var show = function (unit) {
       if (!unit) { host.textContent = ''; return; }
       // One idea, not two. "Same price to 99 · $11.95 each at 100+" was
@@ -1489,6 +1494,7 @@
     if (Object.prototype.hasOwnProperty.call(_dmczBreakPrice, key)) { show(_dmczBreakPrice[key]); return; }
     host.textContent = '';
     fetch('https://singhsprint-crm.vercel.app/api/pricing?product_id=' + encodeURIComponent(p.product_id) +
+          (breakColorId ? '&color_id=' + encodeURIComponent(breakColorId) : '') +
           '&qty=' + next + '&decoration_method=' + encodeURIComponent(method) +
           (embPlac ? '&embroidery_placements=' + encodeURIComponent(embPlac) : '') +
           // `sides` — NOT `print_sides`. /api/pricing reads `sides`
@@ -1992,8 +1998,18 @@
       } catch (e) { return null; }
     })();
 
+    // The COLOUR the customer is looking at. Colourways of one style differ at
+    // the supplier by real money — Athletic Knit A1845 spans $15.25 (a
+    // clearance colour) to $36.34 — so a price fetched without one is a price
+    // for some other garment. This modal never sent it: /api/pricing resolved
+    // product_id to the cheapest variant and quoted $27.95 at qty 50 against a
+    // $33.88 blank on 22 of 23 colourways. The cart path below has always sent
+    // color_id; only the pricing path did not.
+    var priceColorId = ((_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {}).color_id;
+
     var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
               encodeURIComponent(p.product_id) +
+              (priceColorId ? '&color_id=' + encodeURIComponent(priceColorId) : '') +
               '&qty=' + encodeURIComponent(qty) +
               '&sides=' + encodeURIComponent(sides) +
               '&decoration_method=' + encodeURIComponent(method) +
