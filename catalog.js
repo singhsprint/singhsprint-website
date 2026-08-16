@@ -3588,12 +3588,30 @@
       case 'brand_asc':  return arr.sort((a, b) => (a.brand || '').localeCompare(b.brand || '') || (a.style_number || '').localeCompare(b.style_number || ''));
       case 'bestseller':
       default:
-        // Heuristic: in-stock first, then by color_count desc (more options =
-        // popular SKU), then alphabetical.
+        // Heuristic, and it has never measured popularity — it ranks by how
+        // many colourways a style has, on the theory that more options means a
+        // more-ordered SKU. Worth knowing before trusting the label: the CRM
+        // holds real order history and a genuine popularity sort is available
+        // whenever someone wires it.
+        //
+        // S&S FIRST (shop decision, 2026-08-16). S&S is the only supplier that
+        // carries no per-order cost and the only one that can be rushed, so
+        // the default view should lead with what the shop can quote cheapest
+        // and promise fastest. This is a merchandising choice, not a claim
+        // about what sells — the tie-breakers below still do the ranking
+        // within each group.
+        //
+        // in_stock stays the first key. It is currently driven by a 999/0
+        // sentinel that means "enabled", not a quantity — measured wrong for
+        // 15 of 253 A1845 size rows, always in the optimistic direction — so
+        // this key gets sharper for free once the per-size stock sync lands.
         return arr.sort((a, b) => {
           const sa = a.in_stock === false ? 1 : 0;
           const sb = b.in_stock === false ? 1 : 0;
           if (sa !== sb) return sa - sb;
+          const na = a.supplier_code === 'ss_activewear' ? 0 : 1;
+          const nb = b.supplier_code === 'ss_activewear' ? 0 : 1;
+          if (na !== nb) return na - nb;
           const ca = a.color_count || 0, cb = b.color_count || 0;
           if (ca !== cb) return cb - ca;
           return (a.brand || '').localeCompare(b.brand || '');
