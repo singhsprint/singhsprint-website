@@ -1501,7 +1501,11 @@
           // (route.ts:63); an unknown param silently defaults to 1, so this
           // break hint quoted the ONE-SIDE price for a multi-location job:
           // $14.95 instead of $21.95 on a 3-location tee at qty 25.
-          '&sides=' + sides)
+          '&sides=' + sides
+          // No `supplier_units` here on purpose: the hint prices a DIFFERENT
+          // quantity, and the supplier fee amortises over units, so a count
+          // gathered for this qty would misprice the break.
+          )
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
         var u = j && (j.unit_price || j.price_per_unit || j.unit);
@@ -1998,6 +2002,33 @@
       } catch (e) { return null; }
     })();
 
+    // Units already in the cart from THIS product's supplier.
+    //
+    // The supplier's order fee is charged once per PO, not once per style:
+    // one Blanks.ca order costs the same whether it carries one style or
+    // four, and it is spread over every unit riding on it. So the fee this
+    // line owes depends on the whole ORDER — and this modal is looking at one
+    // product. We send the count and nothing more: the amortisation is the
+    // server's, in /api/pricing -> supplierFeeFor(), the same function the
+    // cart prices through. Computing it here would put a second copy of one
+    // pricing decision in a place that cannot see the cart, which is exactly
+    // how the modal and checkout came to disagree by $21/unit on 2026-08-16.
+    //
+    // Carts saved before supplier_code was added carry no supplier at all. A
+    // missing one counts as NOT this supplier — over-counting would spread
+    // the fee too thin and quote below what checkout bills.
+    var supplierUnits = (function () {
+      try {
+        var mine = String((p && p.supplier_code) || '').trim().toLowerCase();
+        if (!mine) return 0;
+        return SinghsCart.read().items.reduce(function (acc, it) {
+          var sc = String((it && it.supplier_code) || '').trim().toLowerCase();
+          if (!sc || sc !== mine) return acc;
+          return acc + (Number(it.qty) || 0);
+        }, 0);
+      } catch (e) { return 0; }
+    })();
+
     // The COLOUR the customer is looking at. Colourways of one style differ at
     // the supplier by real money — Athletic Knit A1845 spans $15.25 (a
     // clearance colour) to $36.34 — so a price fetched without one is a price
@@ -2014,7 +2045,8 @@
               '&sides=' + encodeURIComponent(sides) +
               '&decoration_method=' + encodeURIComponent(method) +
               '&embroidery_placements=' + encodeURIComponent(embPlac) + addonParams +
-              (tierQty ? '&tier_qty=' + encodeURIComponent(tierQty) : '');
+              (tierQty ? '&tier_qty=' + encodeURIComponent(tierQty) : '') +
+              (supplierUnits > 0 ? '&supplier_units=' + encodeURIComponent(supplierUnits) : '');
 
     fetch(url, { cache: 'no-store' })
       .then(function(r){
@@ -2617,6 +2649,11 @@
           style_number: p.style_number || '',
           name:         p.name || '',
           garment_type: p.garment_type || null,
+          // Whose PO this blank comes off. The supplier order fee is charged
+          // once per supplier per order, so the cart has to know which lines
+          // share a PO — the modal counts these units and sends them to
+          // /api/pricing as supplier_units.
+          supplier_code: p.supplier_code || null,
           hero_url:     imgUrl(c.mockup_front_url || p.hero_image_url, 480),
           qty:          n,
           // ---- Decoration carried up-front from the modal ----
@@ -2706,6 +2743,10 @@
       style_number: payload.style_number || '',
       name:         payload.name || '',
       garment_type: payload.garment_type || null,
+      // Carried so a later modal can count how many units the cart already
+      // holds from this supplier (the order fee is per PO, spread over all of
+      // them). Older cart entries predate this field and read as null.
+      supplier_code: payload.supplier_code || null,
       hero_url:     payload.hero_url || '',
       // Modal can override the page-slider qty per-item; fall back to the
       // catalog slider value (state.qty) for whole-card clicks.
