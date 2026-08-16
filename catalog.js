@@ -2085,6 +2085,10 @@
         // Say what the number is doing, so an unchanged price still reads as
         // a live control rather than a broken one.
         try { dmczRenderBreakHint(p, qty, method, embPlac, sides); } catch (_) {}
+        // The line above replaced #detailModalPrice's innerHTML, which took
+        // the promise node with it. Repaint it from the answer already held —
+        // this re-renders a stored server string and asks nothing new.
+        try { spAvailPaintPromise(); } catch (_) {}
       })
       .catch(function(){
         if (seq !== _dmczState.priceSeq) return;
@@ -2092,6 +2096,185 @@
         fallback();
       });
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SP-AVAIL-START — per-size availability, and the one promise sentence
+  // ═══════════════════════════════════════════════════════════════════════
+  //
+  // WHY THIS IS HERE. The size line under the swatches has always read
+  // "Sizes in stock: S, M, L, XL…", and it has never known. It is built from
+  // catalog_public.sizes_in_stock, which is `stock_qty > 0` — and for
+  // Blanks.ca stock_qty is a 999/0 "listed" sentinel written by the variant
+  // sync, not a count. Measured 2026-08-16 on Athletic Knit A1845:
+  //
+  //     253 size rows across 23 colourways
+  //     238 with stock
+  //      15 at zero  — every one of which this page called "in stock"
+  //
+  // Fifteen of 253 sounds survivable until you look at where they sit. They
+  // CONCENTRATE: red-royal-white alone is 8 of its 11 sizes at zero. That is
+  // not a stray size, it is an entire size run a customer orders and the shop
+  // cannot fill — and they find out after the deposit, because the only
+  // signal this page had was always optimistic.
+  //
+  // WHAT THIS FILE IS NOT ALLOWED TO DO. It does not decide anything. The
+  // server owns the whole question: GET /api/shop/availability runs the same
+  // transitRangeForLine() the CRM schedules against, and hands back a basis
+  // per size plus ONE ready-made sentence. No transit table lives here, no
+  // "5-10 business days" string lives here, and no quantity is ever sent to
+  // this browser — the shop's stock depth is not public. This code paints
+  // what it is given, and when it is given nothing it paints nothing.
+  //
+  // THE THREE RENDERING RULES, in the order they get broken:
+  //   1. `backorder` is MARKED and stays SELECTABLE. Shop policy 2026-08-16:
+  //      those sizes remain sellable, quoted at the real 22-day supplier
+  //      backorder rather than hidden. Hiding them loses the order; quoting
+  //      them at the in-stock window loses the customer.
+  //   2. `unknown` is NOT marked and NOT claimed. Most Blanks.ca variants
+  //      have never been measured, and a stale count is not evidence. It is
+  //      shown plainly, and the neutral "Sizes:" label replaces "Sizes in
+  //      stock:" the moment the server answers, because that old label was a
+  //      claim about all of them.
+  //   3. A FAILED FETCH RENDERS NOTHING NEW. No promise line, no markers, the
+  //      existing wording left exactly as it was. A network error must never
+  //      be able to produce a delivery promise — that is how a page ends up
+  //      quoting a date nobody agreed to.
+  var SP_AVAIL_API  = 'https://singhsprint-crm.vercel.app/api/shop/availability';
+  var _spAvail      = null;   // last server answer: { sizes:[…], promise:{…}|null }
+  var _spAvailKey   = '';     // 'product_id|color_id' that answer belongs to
+  var _spAvailSeq   = 0;      // race guard, same pattern as the price fetch
+
+  function spAvailT(key, fallback) {
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : null;
+    return (t && t(key)) || fallback;
+  }
+
+  /** The legacy size line, unchanged, from the catalogue payload alone. This
+   *  is what a customer sees before the server answers and after it fails. */
+  function renderDetailSizesLegacy() {
+    var el = document.getElementById('detailModalSelectedSizes');
+    if (!el) return;
+    var c = ((_detailProduct && _detailProduct.colors) || [])[_detailColorIdx] || {};
+    var sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
+    el.textContent = sizes.length
+      ? (spAvailT('cat.detail.sizes', 'Sizes in stock:')) + ' ' + sizes.join(', ')
+      : (spAvailT('cat.detail.sizes', 'Sizes in stock:')) + ' ' + (spAvailT('cat.detail.contactus', 'contact us'));
+  }
+
+  /** Wipe anything the server told us. Called on a failed or abandoned fetch,
+   *  and on every colour change before the new answer lands — a marker from
+   *  the previous colourway is worse than no marker, because the stock-outs
+   *  concentrate in ONE colourway and the customer would be reading another
+   *  colour's answer. */
+  function spAvailClear() {
+    _spAvail = null;
+    _spAvailKey = '';
+    var host = document.getElementById('detailModalPrice');
+    var node = host && host.querySelector ? host.querySelector('.detail-modal__promise') : null;
+    if (node && node.remove) node.remove();
+    renderDetailSizesLegacy();
+  }
+
+  /** Paint the server's sentence under the price. Idempotent, and re-callable
+   *  after the price block re-renders (it replaces its own innerHTML, which
+   *  takes this node with it — same reason dmczRenderBreakHint re-creates its
+   *  host every time). */
+  function spAvailPaintPromise() {
+    var host = document.getElementById('detailModalPrice');
+    if (!host || !host.querySelector) return;
+    var node = host.querySelector('.detail-modal__promise');
+    var promise = _spAvail && _spAvail.promise;
+    // No answer, or an answer with no sentence: render NOTHING. Never a
+    // placeholder, never a default window — the server returning null means
+    // the data could not answer, and this browser is not entitled to guess.
+    if (!promise || !promise.sentence) {
+      if (node && node.remove) node.remove();
+      return;
+    }
+    if (!node) {
+      node = document.createElement('div');
+      node.className = 'detail-modal__promise';
+      node.setAttribute('style', 'display:block;font-size:.68rem;color:#4a4a4a;font-weight:500;margin-top:3px;line-height:1.3');
+      host.appendChild(node);
+    }
+    // The sentence is the server's, verbatim. The caveat rides with it and is
+    // never dropped: `unknown` reads exactly like `in_stock` by design, and
+    // the caveat is the ONLY thing that distinguishes "we have these" from
+    // "we have not confirmed these".
+    node.innerHTML = esc(promise.sentence) +
+      (promise.caveat
+        ? '<span style="display:block;color:#8a6d1f;margin-top:2px">' + esc(promise.caveat) + '</span>'
+        : '');
+  }
+
+  /** Paint the size row from the server's per-size bases. */
+  function spAvailPaintSizes() {
+    var el = document.getElementById('detailModalSelectedSizes');
+    if (!el) return;
+    var sizes = (_spAvail && _spAvail.sizes) || [];
+    if (!sizes.length) { renderDetailSizesLegacy(); return; }
+    // Neutral label. "Sizes in stock:" was a claim covering every size in the
+    // list, and `unknown` sizes are in that list — they are shown, but they
+    // are not asserted.
+    var out = esc(spAvailT('cat.detail.sizeslabel', 'Sizes:')) + ' ';
+    out += sizes.map(function (s) {
+      var name = esc(s.size || '');
+      // Backorder: marked, and deliberately still offered. 22 business days
+      // at the supplier plus our press window is about a month, and that is
+      // what the marker says — the same number the server quotes, in words a
+      // customer can act on.
+      if (s.basis === 'backorder') {
+        return '<span style="white-space:nowrap">' + name +
+               '<span style="color:#8a6d1f;font-weight:600"> · ' +
+               esc(spAvailT('cat.detail.backorder', 'on backorder — about a month')) +
+               '</span></span>';
+      }
+      // in_stock and unknown look identical on purpose. Marking `unknown` as
+      // available would re-introduce exactly the optimistic error this
+      // replaced; marking it as a problem would bury 124,316 never-measured
+      // Blanks.ca variants under a warning nobody could act on. The order
+      // caveat above carries the honest version once.
+      return name;
+    }).join(', ');
+    el.innerHTML = out;
+  }
+
+  /** Ask the server about the product+colour the modal is showing. */
+  function spAvailRefresh() {
+    var p = _detailProduct;
+    var color = ((p && p.colors) || [])[_detailColorIdx] || {};
+    var pid = p && p.product_id;
+    var cid = color.color_id;
+    // The endpoint refuses a product without a colour, and rightly: stock-outs
+    // concentrate in one colourway, so an answer averaged over 23 of them
+    // would erase the signal. Nothing to ask, nothing to show.
+    if (!pid || !cid) { spAvailClear(); return; }
+    var key = pid + '|' + cid;
+    if (_spAvailKey === key && _spAvail) { spAvailPaintSizes(); spAvailPaintPromise(); return; }
+    spAvailClear();
+    var seq = ++_spAvailSeq;
+    fetch(SP_AVAIL_API + '?product_id=' + encodeURIComponent(pid) + '&color_id=' + encodeURIComponent(cid),
+          { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (seq !== _spAvailSeq) return;                 // customer moved on
+        if (!j || j.ok !== true || !Array.isArray(j.sizes)) { spAvailClear(); return; }
+        _spAvail = { sizes: j.sizes, promise: j.promise || null };
+        _spAvailKey = key;
+        spAvailPaintSizes();
+        spAvailPaintPromise();
+      })
+      .catch(function () {
+        if (seq !== _spAvailSeq) return;
+        // THE RULE. A failed fetch produces no promise and no markers — it
+        // restores the wording that was already on the page. There is no
+        // fallback claim here and there must never be one.
+        spAvailClear();
+      });
+  }
+  // ═══════════════════════════════════════════════════════════════════════
+  // SP-AVAIL-END
+  // ═══════════════════════════════════════════════════════════════════════
 
   function openProductDetail(p, initialColorIdx) {
     if (typeof spCloseSharePop === 'function') spCloseSharePop();
@@ -2127,6 +2310,11 @@
           // The live preview is the garment view now — refresh it so it picks
           // up the fuller mockup set (back/side URLs) from the fat payload.
           if (typeof renderDmczPreview === 'function') renderDmczPreview();
+          // The fat payload can renumber the colour array, so the colour the
+          // availability answer belongs to may no longer be the selected one.
+          // spAvailRefresh() keys on product+colour and repaints from cache
+          // when they match, so this costs nothing when they do.
+          try { spAvailRefresh(); } catch (_) {}
         })
         .catch(function(){ /* keep the slim view */ });
     }
@@ -2161,6 +2349,11 @@
     // color array + back/side mockups.
     renderDetailModalSwatches();
     paintDetailHero();
+    // Ask the server what it knows about this colourway's sizes, and what it
+    // is willing to say about timing. Nothing is computed here — see
+    // SP-AVAIL-START. If it never answers, the modal keeps the wording it
+    // already has.
+    try { spAvailRefresh(); } catch (_) {}
     // Boot the in-modal customizer: method=DTF, default placement, no
     // uploads, then render the method picker + placements + upload zones
     // and fetch the live all-in price.
@@ -2290,6 +2483,11 @@
         host.querySelectorAll('.detail-modal__swatch').forEach(x => x.setAttribute('aria-selected', 'false'));
         s.setAttribute('aria-selected', 'true');
         paintDetailHero();
+        // A new colourway is a new stock question. The stock-outs concentrate
+        // in one colour — red-royal-white is 8 of 11 sizes at zero while its
+        // 22 siblings are nearly full — so the previous colour's answer is
+        // not an approximation of this one, it is the wrong answer.
+        try { spAvailRefresh(); } catch (_) {}
         // The blank cache is keyed per colour, so every selected sleeve /
         // neck view just went cold. Start them all now, in the background,
         // rather than when the customer next switches tabs.
@@ -2355,10 +2553,13 @@
     }
 
     document.getElementById('detailModalSelectedColor').textContent = (_t('cat.detail.color') || 'Color:') + ' ' + ((c.color_name || '').replace(/_\d+$/, '') || '—');
-    const sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
-    document.getElementById('detailModalSelectedSizes').textContent = sizes.length
-      ? (_t('cat.detail.sizes') || 'Sizes in stock:') + ' ' + sizes.join(', ')
-      : (_t('cat.detail.sizes') || 'Sizes in stock:') + ' ' + (_t('cat.detail.contactus') || 'contact us');
+    // The size line has two possible sources and the SERVER's wins. Until it
+    // answers — and again if it fails — this stays the catalogue's own list,
+    // untouched. See SP-AVAIL-START for why that list is not evidence on its
+    // own: it is built from a 999/0 "listed" sentinel, and it called all 15
+    // of A1845's zero-stock size rows available.
+    if (_spAvail && _spAvail.sizes && _spAvail.sizes.length) spAvailPaintSizes();
+    else renderDetailSizesLegacy();
   }
 
   function closeProductDetail() {
