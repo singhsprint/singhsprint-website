@@ -838,7 +838,7 @@ var SP_LANG = (function() {
       fr: 'Parcourez <strong id="catCount">4 500+</strong> vêtements de S&amp;S Activewear, SanMar Canada et Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d\'une minute.'
     },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
-    'cat.hero.meta2': { en: '<strong>3–5 day</strong> typical turnaround', fr: 'Délai habituel de <strong>3 à 5 jours</strong>' },
+    'cat.hero.meta2': { en: '<strong>5–10 day</strong> typical turnaround', fr: 'Délai habituel de <strong>5 à 10 jours</strong>' },
     'cat.hero.meta3': { en: 'Montreal-designed blanks available', fr: 'Vêtements conçus à Montréal disponibles' },
 
     // ===== SPORTS JERSEYS HUB (jerseys.html) =====
