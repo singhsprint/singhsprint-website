@@ -2155,6 +2155,8 @@
     var el = document.getElementById('detailModalSelectedSizes');
     if (!el) return;
     var c = ((_detailProduct && _detailProduct.colors) || [])[_detailColorIdx] || {};
+    var stale = document.getElementById('spStockChip');
+    if (stale && stale.remove) stale.remove();
     var sizes = Array.isArray(c.sizes_in_stock) ? c.sizes_in_stock : [];
     el.textContent = sizes.length
       ? (spAvailT('cat.detail.sizes', 'Sizes in stock:')) + ' ' + sizes.join(', ')
@@ -2172,6 +2174,11 @@
     var host = document.getElementById('detailModalPrice');
     var node = host && host.querySelector ? host.querySelector('.detail-modal__promise') : null;
     if (node && node.remove) node.remove();
+    // The chip lives outside #detailModalPrice now, so clearing the price node
+    // no longer takes it with it. A stale "not confirmed" left over another
+    // colour's answer is exactly the wrong thing to leave on screen.
+    var chip = document.getElementById('spStockChip');
+    if (chip && chip.remove) chip.remove();
     renderDetailSizesLegacy();
   }
 
@@ -2201,10 +2208,43 @@
     // never dropped: `unknown` reads exactly like `in_stock` by design, and
     // the caveat is the ONLY thing that distinguishes "we have these" from
     // "we have not confirmed these".
-    node.innerHTML = esc(promise.sentence) +
-      (promise.caveat
-        ? '<span style="display:block;color:#8a6d1f;margin-top:2px">' + esc(promise.caveat) + '</span>'
-        : '');
+    // The header carries the SENTENCE only. The caveat moved to the size row
+    // on 2026-08-17: it is a statement about sizes, and it was sitting beside
+    // the price with the size list 700px away under the garment. On a long
+    // name ("Augusta Sportswear 710 - Unisex 50/50 Ringer T-Shirt") the title
+    // was squeezed into four lines while 90 characters of amber prose ran the
+    // full width beside it.
+    //
+    // It is MOVED, never dropped. `unknown` reads exactly like `in_stock` by
+    // design, so this is the only thing separating "we have these" from "we
+    // have not confirmed these" -- see spAvailPaintStockChip.
+    node.innerHTML = esc(promise.sentence);
+    spAvailPaintStockChip();
+  }
+
+  /** The stock caveat, as a chip under the size row.
+   *
+   *  Short label on screen, full sentence in the title attribute, and the
+   *  untouched sentence still rides onto the quote. Rendered next to the sizes
+   *  because that is what it qualifies -- and because the modal body collapses
+   *  to one column at 760px, that keeps them together on a phone too, where
+   *  the header has the least room to spare. */
+  function spAvailPaintStockChip() {
+    var host = document.getElementById('detailModalSelectedSizes');
+    if (!host || !host.parentNode) return;
+    var existing = document.getElementById('spStockChip');
+    var caveat = _spAvail && _spAvail.promise && _spAvail.promise.caveat;
+    if (!caveat) { if (existing && existing.remove) existing.remove(); return; }
+    var chip = existing;
+    if (!chip) {
+      chip = document.createElement('div');
+      chip.id = 'spStockChip';
+      chip.className = 'detail-modal__stockchip';
+      host.parentNode.insertBefore(chip, host.nextSibling);
+    }
+    chip.setAttribute('title', caveat);
+    chip.innerHTML = '<span class="detail-modal__stockchip-dot"></span>' +
+      esc(spAvailT('cat.detail.stockunconfirmed', 'Stock not yet confirmed on all sizes'));
   }
 
   /** Paint the size row from the server's per-size bases. */

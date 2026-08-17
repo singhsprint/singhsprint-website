@@ -1050,6 +1050,11 @@ var SP_LANG = (function() {
     'cat.detail.rendertip':  { en: 'This view is generated to show placement. The garment colour is matched to your pick; it is not a photograph of the printed item.', fr: 'Cette vue est générée pour illustrer le positionnement. La couleur du vêtement correspond à votre choix; ce n\u2019est pas une photo de l\u2019article imprimé.' },
     'cat.detail.sleevewarm': { en: 'Matching this sleeve view to your garment colour — about 15 seconds, and only the first time anyone picks this colour.', fr: 'Ajustement de la vue de manche à la couleur du vêtement — environ 15 secondes, et seulement la première fois.' },
     'cat.detail.sizeslabel': { en: 'Sizes:', fr: 'Tailles :' },
+    // The short form of cat.detail.backorder's sibling caveat, shown as a chip
+    // under the size row. The FULL sentence is still what reaches a quote and
+    // what sits in the chip's title attribute -- this is the on-screen label
+    // only, which is why it can be short without softening the claim.
+    'cat.detail.stockunconfirmed': { en: 'Stock not yet confirmed on all sizes', fr: 'Stock non confirmé pour toutes les tailles' },
     // Rendered as `sides + suffix`, so the French cannot lead with the verb
     // the way 'cat.card.oneside' does ("Impression 1 côté"). It reads
     // "2 côtés" beside the unit price, which is grammatical and clear in
