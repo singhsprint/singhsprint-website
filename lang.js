@@ -1028,6 +1028,51 @@ var SP_LANG = (function() {
     // -- there is no figure here for a translation to distort, which is why
     // cat.detail.backorder ("about a month") is still left to fall back.
     'cat.detail.lowstock': { en: 'only a few left', fr: 'plus que quelques-uns' },
+
+    // ── The artwork-upload flow (added 2026-08-17) ───────────────────────
+    //
+    // Audited with scripts/check-i18n-keys.mjs: 19 keys were USED by
+    // catalog.js/quote.js and DEFINED nowhere, so every one of them fell back
+    // to English. They are not scattered chrome -- together they are the whole
+    // customise-a-garment journey, which meant a French customer uploading
+    // artwork read English from the button to the error message.
+    'cat.detail.uploadbtn':  { en: 'Upload artwork', fr: 'Téléverser un visuel' },
+    'cat.detail.uploading':  { en: 'Uploading…', fr: 'Téléversement…' },
+    'cat.detail.uploadfail': { en: 'Upload failed — you can try again.', fr: 'Échec du téléversement — vous pouvez réessayer.' },
+    // "Mo", not "MB": the unit is written differently in French, and a size
+    // limit a customer misreads is a failed upload they blame on the site.
+    'cat.detail.toolarge':   { en: 'File too large (max 15MB).', fr: 'Fichier trop volumineux (max 15 Mo).' },
+    'cat.detail.noplacement':{ en: 'Pick a placement above to add artwork.', fr: 'Choisissez un emplacement ci-dessus pour ajouter un visuel.' },
+    'cat.detail.rendertag':  { en: 'Render — placement guide', fr: 'Rendu — guide de positionnement' },
+    // Load-bearing: it is the sentence that stops a generated preview being
+    // read as a photograph of the finished garment. Translated faithfully --
+    // it makes exactly the same disclaimer, no softer.
+    'cat.detail.rendertip':  { en: 'This view is generated to show placement. The garment colour is matched to your pick; it is not a photograph of the printed item.', fr: 'Cette vue est générée pour illustrer le positionnement. La couleur du vêtement correspond à votre choix; ce n\u2019est pas une photo de l\u2019article imprimé.' },
+    'cat.detail.sleevewarm': { en: 'Matching this sleeve view to your garment colour — about 15 seconds, and only the first time anyone picks this colour.', fr: 'Ajustement de la vue de manche à la couleur du vêtement — environ 15 secondes, et seulement la première fois.' },
+    'cat.detail.sizeslabel': { en: 'Sizes:', fr: 'Tailles :' },
+    // Rendered as `sides + suffix`, so the French cannot lead with the verb
+    // the way 'cat.card.oneside' does ("Impression 1 côté"). It reads
+    // "2 côtés" beside the unit price, which is grammatical and clear in
+    // place; matching the singular would mean changing catalog.js, not
+    // lang.js, and that was not worth a code change to the price line.
+    'cat.detail.sideprint':  { en: '-side print', fr: ' côtés' },
+    // Background removal. DMCZ_BG_KEYS = ['off','white','black','auto'] in
+    // catalog.js -- every member needs a key here or the button shows the raw
+    // capitalised English word.
+    'cat.detail.bg.off':     { en: 'Off', fr: 'Aucun' },
+    'cat.detail.bg.white':   { en: 'White', fr: 'Blanc' },
+    'cat.detail.bg.black':   { en: 'Black', fr: 'Noir' },
+    'cat.detail.bg.auto':    { en: 'Auto', fr: 'Auto' },
+    'cat.detail.bg.help.off':   { en: 'Artwork kept as-is.', fr: 'Visuel conservé tel quel.' },
+    'cat.detail.bg.help.white': { en: 'Knocks out white everywhere in the artwork.', fr: 'Élimine le blanc partout dans le visuel.' },
+    'cat.detail.bg.help.black': { en: 'Knocks out black everywhere in the artwork.', fr: 'Élimine le noir partout dans le visuel.' },
+    'cat.detail.bg.help.auto':  { en: 'Knocks out the colour sampled from the artwork corners.', fr: 'Élimine la couleur échantillonnée dans les coins du visuel.' },
+    'quote.cart.item.tierloading': { en: 'Loading tier pricing…', fr: 'Chargement des prix par palier…' },
+    // Kept faithful, INCLUDING the lead time. "about a month" is a delivery
+    // claim that predates this file and is shown in English today; translating
+    // it changes the language, not the promise. Whether the shop wants to make
+    // that claim at all is a separate question and a separate change.
+    'cat.detail.backorder':  { en: 'on backorder — about a month', fr: 'en rupture — environ un mois' },
     'cat.card.bestseller': { en: '★ Bestseller', fr: '★ Populaire' },
     'cat.card.canadian': { en: '🍁 Designed in Montreal', fr: '🍁 Conçu à Montréal' },
     'cat.card.csa': { en: 'CSA Hi-Vis', fr: 'CSA hi-vis' },
