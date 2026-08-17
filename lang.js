@@ -1022,6 +1022,12 @@ var SP_LANG = (function() {
     'cat.card.quote-on-request': { en: 'Quote on request', fr: 'Sur demande' },
     'cat.card.oos': { en: 'Out of stock', fr: 'En rupture' },
     'cat.card.low': { en: 'Low stock', fr: 'Stock faible' },
+    // Per-SIZE low stock in the detail modal, from real on-hand counts.
+    // Deliberately carries no number: the server sends a boolean, because the
+    // shop's stock depth is not public. Safe to translate for the same reason
+    // -- there is no figure here for a translation to distort, which is why
+    // cat.detail.backorder ("about a month") is still left to fall back.
+    'cat.detail.lowstock': { en: 'only a few left', fr: 'plus que quelques-uns' },
     'cat.card.bestseller': { en: '★ Bestseller', fr: '★ Populaire' },
     'cat.card.canadian': { en: '🍁 Designed in Montreal', fr: '🍁 Conçu à Montréal' },
     'cat.card.csa': { en: 'CSA Hi-Vis', fr: 'CSA hi-vis' },

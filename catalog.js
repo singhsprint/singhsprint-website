@@ -2229,6 +2229,19 @@
                esc(spAvailT('cat.detail.backorder', 'on backorder — about a month')) +
                '</span></span>';
       }
+      // Low stock: few left of THIS size. Ranks BELOW backorder above, because
+      // "on backorder" is the stronger and more actionable fact — a size that
+      // is both short and backorderable should read as backordered.
+      //
+      // The server sends a boolean, never a count. The shop's stock depth is
+      // not public and this endpoint is readable by anyone, so the browser is
+      // told THAT it is low and never HOW low.
+      if (s.low === true) {
+        return '<span style="white-space:nowrap">' + name +
+               '<span style="color:#8a6d1f;font-weight:600"> · ' +
+               esc(spAvailT('cat.detail.lowstock', 'only a few left')) +
+               '</span></span>';
+      }
       // in_stock and unknown look identical on purpose. Marking `unknown` as
       // available would re-introduce exactly the optimistic error this
       // replaced; marking it as a problem would bury 124,316 never-measured
@@ -3596,8 +3609,21 @@
 
     let badge = '';
     if (p.in_stock === false)                                            badge = `<div class="badge badge--oos" data-i18n="cat.card.oos">Out of stock</div>`;
-    else if (typeof p.color_count === 'number' && p.color_count > 0 && p.color_count <= 2)
-                                                                         badge = `<div class="badge badge--low" data-i18n="cat.card.low">Low stock</div>`;
+    // REMOVED 2026-08-17: a "Low stock" badge driven by `color_count <= 2`.
+    // It counted COLOURWAYS, not inventory -- a style offered in two colours
+    // with 5,000 units of each was badged low, while one in thirty colours
+    // with three units total was not. Measured before deleting: it was firing
+    // on 1,198 products, 18.2% of the catalogue, none of it about stock.
+    //
+    // It is the same mistake as "Most popular", which ranks by colour count
+    // and has never measured popularity. That one is a vanity sort; this one
+    // told a customer something false about availability, so it goes rather
+    // than getting a footnote.
+    //
+    // The honest signal is per SIZE and lives in the detail modal, where the
+    // availability endpoint reports it from real on-hand counts. The grid has
+    // no per-size data to work from -- /api/catalog would need to carry a
+    // low-stock aggregate before a card badge could tell the truth.
     else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller" data-i18n="cat.card.bestseller">★ Bestseller</div>`;
     else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian" data-i18n="cat.card.canadian">🇨🇦 Canadian</div>`;
     else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa" data-i18n="cat.card.csa">CSA Hi-Vis</div>`;
