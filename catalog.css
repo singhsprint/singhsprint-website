@@ -233,6 +233,29 @@
        only ever broke ABOVE the phone breakpoint -- the one width nobody had
        looked at with a fully-backordered colourway selected. */
     .detail-modal__promise{white-space:normal;max-width:min(52ch,34vw);margin-left:auto;text-align:right}
+
+    /* SIZE AVAILABILITY CHIPS.
+       The state belongs to the SIZE, so it is drawn on the size. Two earlier
+       attempts put it in the prose beside the list -- trailing the list, then
+       leading it -- and both depended on where the text happened to wrap in a
+       330px column. "Sizes: S, M, L, XL, 2XL," / "3XL - on backorder" was read
+       off the live site as "only 3XL", when all six were at zero.
+
+       SHAPE CARRIES THE MEANING TOO, NOT JUST COLOUR:
+         backorder  FILLED chip, filled legend dot
+         low stock  OUTLINED chip, ring legend dot
+       so the two states differ by more than shade. About 1 in 12 men cannot
+       reliably separate these ambers, and a quote printed in black and white
+       loses colour entirely -- in both cases fill-vs-outline still reads. */
+    .szrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center}
+    .szrow-lead{color:#6b6b6b;font-size:.82rem;margin-right:2px}
+    .szchip{padding:2px 9px;border-radius:999px;border:1px solid transparent;font-size:.9rem;line-height:1.5}
+    .szchip--back{color:#8a6d1f;background:#fdf3dd;border-color:#e6d3a3;font-weight:600}
+    .szchip--low{color:#8a6d1f;border-color:#e6d3a3;font-weight:600}
+    .szlegend{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:7px;
+              font-size:.82rem;font-weight:600;color:#8a6d1f}
+    .szlegend-dot{width:7px;height:7px;border-radius:50%;background:#8a6d1f;flex:0 0 7px}
+    .szlegend-dot--low{background:transparent;border:2px solid #8a6d1f;width:9px;height:9px;flex:0 0 9px}
     /* Gallery — main image + thumbnail strip */
     .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
     .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}

@@ -2305,48 +2305,56 @@
     //
     // One clause per state, on its own line, fixes both: the sizes in a clause
     // are exactly the sizes that clause describes, and the phrase appears once.
-    var plain = [], low = [], back = [];
-    sizes.forEach(function (s) {
+    // THE STATE IS DRAWN ON THE SIZE.
+    //
+    // Two earlier attempts put it in the prose beside the list -- trailing it,
+    // then leading it -- and both depended on where the text happened to wrap
+    // in a 330px column. Read off the live site 2026-08-18:
+    //
+    //     Sizes: S, M, L, XL, 2XL,
+    //     3XL · on backorder — about a month
+    //
+    // which says "only 3XL" to any reader, while all six sizes were at zero.
+    // A chip cannot come adrift from its size at any width, because it IS the
+    // size. Order no longer carries meaning, so the sizes stay in the server's
+    // order rather than being regrouped.
+    //
+    // Shape carries the state as well as colour -- filled for backorder,
+    // outlined for low -- so the two remain distinguishable to the ~1 in 12
+    // men who cannot separate these ambers, and in a black-and-white printout
+    // of a quote.
+    var backTxt = spAvailT('cat.detail.backorder', 'on backorder — about a month');
+    var lowTxt  = spAvailT('cat.detail.lowstock', 'only a few left');
+    var hasBack = false, hasLow = false;
+    var chips = sizes.map(function (s) {
       var name = esc(s.size || '');
-      if (!name) return;
-      // Backorder outranks low: a size that is both short AND backorderable
-      // should read as backordered, which is the stronger, more actionable
-      // fact. Same precedence as before, now expressed once.
-      if (s.basis === 'backorder') back.push(name);
-      // The server sends a boolean, never a count. Stock depth is not public
-      // and this endpoint is readable by anyone, so the browser is told THAT
-      // a size is low and never HOW low.
-      else if (s.low === true) low.push(name);
+      if (!name) return '';
+      // Same precedence as before: backorder outranks low, because it is the
+      // stronger and more actionable fact.
+      if (s.basis === 'backorder') {
+        hasBack = true;
+        return '<span class="szchip szchip--back" title="' + esc(name + ' — ' + backTxt) +
+               '" aria-label="' + esc(name + ', ' + backTxt) + '">' + name + '</span>';
+      }
+      if (s.low === true) {
+        hasLow = true;
+        return '<span class="szchip szchip--low" title="' + esc(name + ' — ' + lowTxt) +
+               '" aria-label="' + esc(name + ', ' + lowTxt) + '">' + name + '</span>';
+      }
       // in_stock and unknown look identical on purpose. Marking `unknown` as
       // available would re-introduce the optimistic error this replaced;
       // marking it as a problem would bury 124,316 never-measured Blanks.ca
       // variants under a warning nobody could act on. The order caveat above
       // carries the honest version once.
-      else plain.push(name);
-    });
-    // THE MARKER LEADS ITS SIZES. It used to trail them, and that could not
-    // survive a line wrap. The preview column is ~330px, so
-    //
-    //     Sizes: S, M, L, XL, 2XL,
-    //     3XL · on backorder — about a month
-    //
-    // wrapped immediately before the last size and read as "only 3XL is
-    // backordered" when in fact all six were -- SAFETY GREEN has zero units in
-    // every size. Reported from the storefront 2026-08-18, and it is the same
-    // ambiguity the grouping was meant to remove, reintroduced by the wrap.
-    //
-    // With the marker first, the sizes after it are the sizes it describes no
-    // matter where the line breaks. That is a property of the order, not of
-    // the available width, so it cannot regress on a narrower column.
-    var label = esc(spAvailT('cat.detail.sizeslabel', 'Sizes:')) + ' ';
-    var lead = function (t, names) {
-      return '<span style="color:#8a6d1f;font-weight:600">' + esc(t) + '</span> ' + names.join(', ');
-    };
-    var lines = [];
-    if (plain.length) lines.push(label + plain.join(', '));
-    if (low.length)   lines.push(lead(spAvailT('cat.detail.lowstocklead', 'Only a few left:'), low));
-    if (back.length)  lines.push(lead(spAvailT('cat.detail.backorderlead', 'On backorder — about a month:'), back));
-    el.innerHTML = lines.join('<br>');
+      return '<span class="szchip">' + name + '</span>';
+    }).join('');
+    var html = '<div class="szrow"><span class="szrow-lead">' +
+               esc(spAvailT('cat.detail.sizeslabel', 'Sizes:')) + '</span>' + chips + '</div>';
+    // Legend, and only for the states actually on screen. A key explaining a
+    // colour nothing is using is noise.
+    if (hasLow)  html += '<div class="szlegend"><span class="szlegend-dot szlegend-dot--low"></span>' + esc(lowTxt) + '</div>';
+    if (hasBack) html += '<div class="szlegend"><span class="szlegend-dot"></span>' + esc(backTxt) + '</div>';
+    el.innerHTML = html;
   }
 
   /** Ask the server about the product+colour the modal is showing. */

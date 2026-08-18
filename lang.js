@@ -1061,12 +1061,6 @@ var SP_LANG = (function() {
     // opposite of true, and it contradicted the backorder line right above it.
     // Seen on Jerzees 996 / SAFETY GREEN, 2026-08-18.
     'cat.detail.stockbackorder': { en: 'Some sizes are on backorder', fr: 'Certaines tailles sont en rupture' },
-    // LEADING forms. The trailing marker ("S, M, 3XL · on backorder") cannot
-    // survive a line wrap: the preview column is narrow, the list wrapped just
-    // before the last size, and six backordered sizes read as one. A marker
-    // that PRECEDES its sizes means no wrap can change what it governs.
-    'cat.detail.backorderlead': { en: 'On backorder — about a month:', fr: 'En rupture — environ un mois :' },
-    'cat.detail.lowstocklead':  { en: 'Only a few left:',             fr: 'Il n\u2019en reste que quelques-unes :' },
     // Rendered as `sides + suffix`, so the French cannot lead with the verb
     // the way 'cat.card.oneside' does ("Impression 1 côté"). It reads
     // "2 côtés" beside the unit price, which is grammatical and clear in
