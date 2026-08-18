@@ -2324,17 +2324,28 @@
       // carries the honest version once.
       else plain.push(name);
     });
+    // THE MARKER LEADS ITS SIZES. It used to trail them, and that could not
+    // survive a line wrap. The preview column is ~330px, so
+    //
+    //     Sizes: S, M, L, XL, 2XL,
+    //     3XL · on backorder — about a month
+    //
+    // wrapped immediately before the last size and read as "only 3XL is
+    // backordered" when in fact all six were -- SAFETY GREEN has zero units in
+    // every size. Reported from the storefront 2026-08-18, and it is the same
+    // ambiguity the grouping was meant to remove, reintroduced by the wrap.
+    //
+    // With the marker first, the sizes after it are the sizes it describes no
+    // matter where the line breaks. That is a property of the order, not of
+    // the available width, so it cannot regress on a narrower column.
     var label = esc(spAvailT('cat.detail.sizeslabel', 'Sizes:')) + ' ';
-    var mark = function (t) {
-      return '<span style="color:#8a6d1f;font-weight:600;white-space:nowrap"> · ' + esc(t) + '</span>';
+    var lead = function (t, names) {
+      return '<span style="color:#8a6d1f;font-weight:600">' + esc(t) + '</span> ' + names.join(', ');
     };
     var lines = [];
-    // The label leads whichever clause comes first, so a colourway with no
-    // plain sizes still reads "Sizes: ..." rather than starting mid-sentence.
-    var pushLine = function (html) { lines.push((lines.length ? '' : label) + html); };
-    if (plain.length) pushLine(plain.join(', '));
-    if (low.length)   pushLine(low.join(', ') + mark(spAvailT('cat.detail.lowstock', 'only a few left')));
-    if (back.length)  pushLine(back.join(', ') + mark(spAvailT('cat.detail.backorder', 'on backorder — about a month')));
+    if (plain.length) lines.push(label + plain.join(', '));
+    if (low.length)   lines.push(lead(spAvailT('cat.detail.lowstocklead', 'Only a few left:'), low));
+    if (back.length)  lines.push(lead(spAvailT('cat.detail.backorderlead', 'On backorder — about a month:'), back));
     el.innerHTML = lines.join('<br>');
   }
 
