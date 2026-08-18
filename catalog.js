@@ -2243,8 +2243,17 @@
       host.parentNode.insertBefore(chip, host.nextSibling);
     }
     chip.setAttribute('title', caveat);
-    chip.innerHTML = '<span class="detail-modal__stockchip-dot"></span>' +
-      esc(spAvailT('cat.detail.stockunconfirmed', 'Stock not yet confirmed on all sizes'));
+    // The chip carries the caveat's SHAPE, so it has to follow which caveat
+    // this is. The label was hardcoded to the unconfirmed wording while the
+    // title attribute got the real sentence, so a fully-backordered colourway
+    // -- every size confirmed empty and confirmed backorderable -- was
+    // labelled "not yet confirmed". That is the opposite of what we know, and
+    // it sat directly under a size list already saying "on backorder".
+    var basis = _spAvail && _spAvail.promise && _spAvail.promise.basis;
+    var label = basis === 'backorder'
+      ? spAvailT('cat.detail.stockbackorder', 'Some sizes are on backorder')
+      : spAvailT('cat.detail.stockunconfirmed', 'Stock not yet confirmed on all sizes');
+    chip.innerHTML = '<span class="detail-modal__stockchip-dot"></span>' + esc(label);
   }
 
   /** Paint the size row from the server's per-size bases. */

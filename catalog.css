@@ -215,6 +215,24 @@
     .detail-modal__price{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap;font-size:.82rem;font-weight:600;color:#666;line-height:1.25}
     .detail-modal__price strong{display:block;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;color:#1a1a1a;line-height:1.1}
     .detail-modal__price-sub{display:block;font-size:.72rem;color:#888;font-weight:500;margin-top:1px}
+    /* THE PROMISE SENTENCE IS PROSE, AND IT LIVES IN THE PRICE BLOCK.
+       .detail-modal__price is white-space:nowrap and flex:0 0 auto -- it does
+       not shrink -- so anything long inside it grows the block to that one
+       line's width. A short sentence was fine. This one is not:
+
+         "One of the sizes here is on backorder with our supplier, so the whole
+          order runs about 24 to 27 business days from artwork approval --
+          roughly a month."
+
+       150 characters on a single unbreakable line. The header pushed the title
+       into a one-word-per-line column and the sentence overran it. Seen on
+       Jerzees 996 / SAFETY GREEN, 2026-08-18: every size on backorder is the
+       longest sentence order-promise produces, so it is the worst case.
+
+       The 560px block below already sets white-space:normal, which is why this
+       only ever broke ABOVE the phone breakpoint -- the one width nobody had
+       looked at with a fully-backordered colourway selected. */
+    .detail-modal__promise{white-space:normal;max-width:min(52ch,34vw);margin-left:auto;text-align:right}
     /* Gallery — main image + thumbnail strip */
     .detail-modal__gallery{display:flex;flex-direction:column;gap:8px}
     .detail-modal__main{position:relative;width:100%;padding:0;border:none;background:transparent;cursor:zoom-in;border-radius:12px;overflow:hidden;line-height:0}

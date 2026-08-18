@@ -1055,6 +1055,12 @@ var SP_LANG = (function() {
     // what sits in the chip's title attribute -- this is the on-screen label
     // only, which is why it can be short without softening the claim.
     'cat.detail.stockunconfirmed': { en: 'Stock not yet confirmed on all sizes', fr: 'Stock non confirmé pour toutes les tailles' },
+    // The chip has TWO states and only ever showed one of them. When the
+    // promise basis is `backorder` we HAVE confirmed every size -- they are
+    // confirmed empty and backorderable -- so "not yet confirmed" was the
+    // opposite of true, and it contradicted the backorder line right above it.
+    // Seen on Jerzees 996 / SAFETY GREEN, 2026-08-18.
+    'cat.detail.stockbackorder': { en: 'Some sizes are on backorder', fr: 'Certaines tailles sont en rupture' },
     // Rendered as `sides + suffix`, so the French cannot lead with the verb
     // the way 'cat.card.oneside' does ("Impression 1 côté"). It reads
     // "2 côtés" beside the unit price, which is grammatical and clear in
