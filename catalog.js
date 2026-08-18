@@ -2256,6 +2256,28 @@
     chip.innerHTML = '<span class="detail-modal__stockchip-dot"></span>' + esc(label);
   }
 
+  /** The swatch image, or the garment photo when there is no real swatch.
+   *
+   *  `c.swatch_image_url || c.mockup_front_url` looked like it already did
+   *  this, and never once fired. Magento answers "no swatch configured" with
+   *  a URL rather than a null:
+   *
+   *      https://www.blanks.ca/media/catalog/product/no_selection
+   *
+   *  That string is truthy, so `||` took it every time and the <img> resolved
+   *  to nothing -- the swatch rendered IMAGE IS MISSING while the very same
+   *  colour's full-size photo loaded two inches to the left.
+   *
+   *  Counted in the database 2026-08-18: 3,387 of 29,194 active colourways
+   *  (11.6%) carry the placeholder, and every single one of them has a
+   *  mockup_front_url. The fallback that was already intended just needs to
+   *  recognise the placeholder as the absence it represents. */
+  function spSwatchUrl(c) {
+    var s = c && c.swatch_image_url;
+    if (typeof s === 'string' && s && !/\/no_selection\/?$/i.test(s)) return s;
+    return (c && c.mockup_front_url) || '';
+  }
+
   /** Paint the size row from the server's per-size bases. */
   function spAvailPaintSizes() {
     var el = document.getElementById('detailModalSelectedSizes');
@@ -2265,40 +2287,55 @@
     // Neutral label. "Sizes in stock:" was a claim covering every size in the
     // list, and `unknown` sizes are in that list — they are shown, but they
     // are not asserted.
-    var out = esc(spAvailT('cat.detail.sizeslabel', 'Sizes:')) + ' ';
-    out += sizes.map(function (s) {
+    // GROUPED BY MARKER, one clause each -- not a marker per size.
+    //
+    // Each size used to carry its own suffix and the whole lot was joined with
+    // commas, which failed in both directions:
+    //
+    //   "Sizes: S, M, 4XL · on backorder — about a month"
+    //        Is 4XL backordered, or all three? The marker trails a comma list,
+    //        so it reads as governing the list. A customer cannot tell whether
+    //        the S and M they want are a month out. Seen on Jerzees 996 /
+    //        Black Heather, 2026-08-18, where ONLY 4XL is backordered.
+    //
+    //   "Sizes: S · on backorder — about a month, M · on backorder — about a
+    //    month, L · on backorder — ..."
+    //        Every size backordered repeats the phrase six times. Seen on the
+    //        same product in SAFETY GREEN.
+    //
+    // One clause per state, on its own line, fixes both: the sizes in a clause
+    // are exactly the sizes that clause describes, and the phrase appears once.
+    var plain = [], low = [], back = [];
+    sizes.forEach(function (s) {
       var name = esc(s.size || '');
-      // Backorder: marked, and deliberately still offered. 22 business days
-      // at the supplier plus our press window is about a month, and that is
-      // what the marker says — the same number the server quotes, in words a
-      // customer can act on.
-      if (s.basis === 'backorder') {
-        return '<span style="white-space:nowrap">' + name +
-               '<span style="color:#8a6d1f;font-weight:600"> · ' +
-               esc(spAvailT('cat.detail.backorder', 'on backorder — about a month')) +
-               '</span></span>';
-      }
-      // Low stock: few left of THIS size. Ranks BELOW backorder above, because
-      // "on backorder" is the stronger and more actionable fact — a size that
-      // is both short and backorderable should read as backordered.
-      //
-      // The server sends a boolean, never a count. The shop's stock depth is
-      // not public and this endpoint is readable by anyone, so the browser is
-      // told THAT it is low and never HOW low.
-      if (s.low === true) {
-        return '<span style="white-space:nowrap">' + name +
-               '<span style="color:#8a6d1f;font-weight:600"> · ' +
-               esc(spAvailT('cat.detail.lowstock', 'only a few left')) +
-               '</span></span>';
-      }
+      if (!name) return;
+      // Backorder outranks low: a size that is both short AND backorderable
+      // should read as backordered, which is the stronger, more actionable
+      // fact. Same precedence as before, now expressed once.
+      if (s.basis === 'backorder') back.push(name);
+      // The server sends a boolean, never a count. Stock depth is not public
+      // and this endpoint is readable by anyone, so the browser is told THAT
+      // a size is low and never HOW low.
+      else if (s.low === true) low.push(name);
       // in_stock and unknown look identical on purpose. Marking `unknown` as
-      // available would re-introduce exactly the optimistic error this
-      // replaced; marking it as a problem would bury 124,316 never-measured
-      // Blanks.ca variants under a warning nobody could act on. The order
-      // caveat above carries the honest version once.
-      return name;
-    }).join(', ');
-    el.innerHTML = out;
+      // available would re-introduce the optimistic error this replaced;
+      // marking it as a problem would bury 124,316 never-measured Blanks.ca
+      // variants under a warning nobody could act on. The order caveat above
+      // carries the honest version once.
+      else plain.push(name);
+    });
+    var label = esc(spAvailT('cat.detail.sizeslabel', 'Sizes:')) + ' ';
+    var mark = function (t) {
+      return '<span style="color:#8a6d1f;font-weight:600;white-space:nowrap"> · ' + esc(t) + '</span>';
+    };
+    var lines = [];
+    // The label leads whichever clause comes first, so a colourway with no
+    // plain sizes still reads "Sizes: ..." rather than starting mid-sentence.
+    var pushLine = function (html) { lines.push((lines.length ? '' : label) + html); };
+    if (plain.length) pushLine(plain.join(', '));
+    if (low.length)   pushLine(low.join(', ') + mark(spAvailT('cat.detail.lowstock', 'only a few left')));
+    if (back.length)  pushLine(back.join(', ') + mark(spAvailT('cat.detail.backorder', 'on backorder — about a month')));
+    el.innerHTML = lines.join('<br>');
   }
 
   /** Ask the server about the product+colour the modal is showing. */
@@ -2527,7 +2564,7 @@
       // (Blanks.ca colors often have only the latter), then grey as a
       // last resort. Route via imgUrl() so S&S URLs go through proxy.
       const hex     = c.hex_code;
-      const swatch  = c.swatch_image_url || c.mockup_front_url;
+      const swatch  = spSwatchUrl(c);
       const bg      = (!hex && swatch) ? `url(${imgUrl(swatch, 64)}) center/cover #f3f1ea` : (hex || '#ccc');
       const hasStock = Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length > 0;
       const cleanName = (c.color_name || '').replace(/_\d+$/, '');
@@ -3696,7 +3733,7 @@
         // Falling back to that keeps the chip looking like the actual
         // colorway instead of a generic grey #ccc placeholder.
         const hex     = c.hex_code;
-        const swatch  = c.swatch_image_url || c.mockup_front_url;
+        const swatch  = spSwatchUrl(c);
         const useImg  = !hex && swatch;
         const light   = hex ? isLight(hex) : false;
         const bg      = useImg ? `url(${imgUrl(swatch, 64)}) center/cover #f3f1ea` : (hex || '#ccc');
@@ -4511,7 +4548,9 @@
       title:     [(p.brand || '') + ' ' + (p.style_number || ''), p.name || ''].join(' · ').replace(/\s+/g, ' ').trim(),
       colorName: colorName,
       qty:       qty || SP_SHARE_DEFAULT_QTY,
-      image:     (color && (color.mockup_front_url || color.swatch_image_url)) || p.hero_image_url || '',
+      // spSwatchUrl, not the raw column: a no_selection placeholder here
+      // would ride onto the quote as the line's image.
+      image:     (color && (color.mockup_front_url || spSwatchUrl(color))) || p.hero_image_url || '',
       productId: p.product_id,
       priceFrom: (typeof p.price_from === 'number' && p.price_from > 0) ? p.price_from : null
     };
