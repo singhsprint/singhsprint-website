@@ -3532,9 +3532,8 @@
   }
 
   function render() {
-    const grid = document.getElementById('catGrid');
+    const grid  = document.getElementById('catGrid');
     const empty = document.getElementById('catEmpty');
-    grid.innerHTML = '';
 
     // Chip strip always re-renders so toggle state reflects current
     // filters even when the result set is empty. Previously this lived
@@ -3546,7 +3545,15 @@
       ? state._algoliaTotal
       : state.products.length).toLocaleString();
 
-    if (state.products.length === 0) { empty.style.display = 'block'; return; }
+    // Every render supersedes the one before it. The token is read by the
+    // chunked tail below, which is the only asynchronous part of drawing.
+    const gen = (state._renderGen = (state._renderGen || 0) + 1);
+
+    if (state.products.length === 0) {
+      reconcileGrid(grid, [], renderOpts(gen));
+      empty.style.display = 'block';
+      return;
+    }
     empty.style.display = 'none';
 
     let visible = state.filters.inStockOnly
@@ -3555,52 +3562,186 @@
     visible = sortProducts(visible, state.sort);
     emitCatalogJsonLd(visible);
 
-    // First chunk: synchronous. The first 6 images get fetchpriority=high
-    // so the browser starts pulling them before the rest of the JS runs.
-    const head = visible.slice(0, INITIAL_RENDER);
-    head.forEach((p, i) => grid.appendChild(productCard(p, { eager: i < 6 })));
-
-    // "Bring your own" card sits at the end; append now if all products fit
-    // in the head chunk, otherwise wait until lazy render finishes.
-    if (visible.length <= INITIAL_RENDER) {
-      grid.appendChild(byoCard());
-    }
-
-    // resultCount + chips were already painted at the top of render() so
-    // they reflect state on the empty-state path too — no duplicate call.
-    if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
-    maybeTranslateCatalog();
-
-    // Lazy-render the remainder in idle chunks so the first paint stays
-    // snappy. Each chunk yields to the main thread, keeping scroll
-    // smooth even on slower devices.
-    if (visible.length > INITIAL_RENDER) {
-      lazyRenderRemainder(grid, visible.slice(INITIAL_RENDER));
-    }
+    reconcileGrid(grid, visible, renderOpts(gen));
   }
 
-  function lazyRenderRemainder(grid, rest) {
-    let i = 0;
+  /** The DOM-shaped half of a render, kept separate so reconcileGrid below
+   *  stays free of this file's closures and can be exercised by
+   *  scripts/check-catalog-reconcile.mjs against a fake grid. */
+  function renderOpts(gen) {
     const ric = window.requestIdleCallback || function (cb) { return setTimeout(cb, 16); };
-    function pump() {
-      ric(function () {
-        const end = Math.min(i + CHUNK_SIZE, rest.length);
-        for (; i < end; i++) {
-          grid.appendChild(productCard(rest[i], { eager: false }));
-        }
-        if (i < rest.length) {
-          pump();
-        } else {
-          // Append the "Bring your own" card once the full grid is in place.
-          grid.appendChild(byoCard());
-          // Re-apply lang + AI translate to the freshly-rendered cards.
-          if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
-          maybeTranslateCatalog();
-        }
-      });
-    }
-    pump();
+    return {
+      keyOf:        function (node) { return node.getAttribute('data-product-id'); },
+      keyOfProduct: function (p) { return p.product_id; },
+      mountedCards: function (grid) { return Array.prototype.slice.call(grid.querySelectorAll('[data-product-id]')); },
+      makeCard:     function (p, i) { return productCard(p, { eager: i < 6 }); },
+      makeTailCard: function () { return byoCard(); },
+      isTailCard:   function (node) { return node.classList && node.classList.contains('card-byo'); },
+      initialCount: INITIAL_RENDER,
+      chunkSize:    CHUNK_SIZE,
+      schedule:     ric,
+      isCurrent:    function () { return state._renderGen === gen; },
+      onSettled:    function () {
+        if (typeof SP_LANG !== 'undefined' && SP_LANG.applyLang) SP_LANG.applyLang();
+        maybeTranslateCatalog();
+      },
+    };
   }
+
+  // ===== SP_RECONCILE_START =========================================
+  /**
+   * Draw `visible` into `grid` by MOVING what is already there, never by
+   * clearing it.
+   *
+   * ---------------------------------------------------------------------
+   * WHY THIS IS NOT `grid.innerHTML = ''`
+   * ---------------------------------------------------------------------
+   * It used to be. Infinite scroll appends a page and then re-renders, and a
+   * re-render that starts by emptying the grid destroys every card on the
+   * page in order to add thirty. Measured on the live catalogue, at the
+   * moment the 5th page landed:
+   *
+   *     cards removed      61
+   *     document height    14,284px  ->  6,319px
+   *     scroll position    13,506    ->  5,541   (the new maximum)
+   *
+   * The document lost 7,965px in one frame, so the browser clamped the
+   * scroll to the new bottom and the customer was thrown into the footer.
+   * The chunked re-append then grew the page back underneath them and left
+   * them stranded mid-list, looking at products they had already scrolled
+   * past. That bounce is the whole bug, and it is not a scrolling bug — the
+   * fetching was always correct.
+   *
+   * Two more symptoms had the same root. lazyRenderRemainder() held its own
+   * `rest` array and `i`, and nothing cancelled it, so a page arriving
+   * mid-pump left two pumps appending into one grid: 152 cards, 120 unique,
+   * thirty products drawn twice in a contiguous run starting at exactly
+   * INITIAL_RENDER. And scrolling fast enough could strand the grid at 24
+   * cards, header still reading "4,287 products", "Loading more..." showing
+   * forever, with no "bring your own" card because that only ever appended
+   * when a pump ran to completion.
+   *
+   * ---------------------------------------------------------------------
+   * WHAT IT DOES INSTEAD
+   * ---------------------------------------------------------------------
+   * A keyed reconcile, the same shape a virtual DOM uses. Walk `visible` in
+   * order against the nodes already mounted:
+   *
+   *   - already mounted and already in the right place -> touch nothing
+   *   - already mounted, wrong place                   -> move it
+   *   - not mounted                                    -> build it
+   *
+   * An append is therefore the cheap case by construction: the first N nodes
+   * are already where they belong, so the loop walks past them without a
+   * single DOM write, and only the new cards are inserted. Nothing is
+   * removed, so the document can only grow, so the scroll cannot be clamped.
+   * A sort change still works — those nodes move rather than being rebuilt —
+   * and that is why this is a reconcile and not an `appendOnly()` special
+   * case that would be wrong the moment the ordering changed.
+   *
+   * Cards that have left the result set are detached at the END OF THE
+   * SYNCHRONOUS PASS, not when the chunked tail finishes. A filter that
+   * narrows the list has to look narrowed immediately; waiting would leave
+   * stale products on screen for as long as the tail takes.
+   *
+   * Only the creation of cards beyond `initialCount` is deferred, and every
+   * deferred chunk re-checks `isCurrent()` first. A superseded render stops
+   * writing on its next tick, which is what makes the duplicates impossible
+   * rather than merely unlikely.
+   *
+   * Everything it needs from the page arrives through `opts`, so
+   * scripts/check-catalog-reconcile.mjs can run it against a fake grid and
+   * assert the properties above numerically.
+   */
+  function reconcileGrid(grid, visible, opts) {
+    var keyOf        = opts.keyOf;
+    var keyOfProduct = opts.keyOfProduct;
+    var initialCount = opts.initialCount;
+    var chunkSize    = opts.chunkSize;
+
+    // Everything currently drawn, by key. Entries are deleted as they are
+    // claimed, so what remains at the end of the sync pass is "mounted but
+    // not asked for".
+    var mounted = new Map();
+    var cards = opts.mountedCards(grid);
+    for (var m = 0; m < cards.length; m++) mounted.set(keyOf(cards[m]), cards[m]);
+
+    var wanted = new Set();
+    for (var w = 0; w < visible.length; w++) wanted.add(keyOfProduct(visible[w]));
+
+    // The cursor is the node we expect to find next. When the DOM already
+    // agrees with `visible` it simply walks forward and no write happens.
+    var cursor = grid.firstChild;
+
+    function place(product, index) {
+      var key  = keyOfProduct(product);
+      var node = mounted.get(key);
+      if (node) mounted.delete(key);
+      else node = opts.makeCard(product, index);
+      if (node === cursor) cursor = cursor.nextSibling;
+      else grid.insertBefore(node, cursor);
+    }
+
+    // ---- Synchronous pass -------------------------------------------------
+    // Reusing a node is free, so an append walks the whole existing grid here
+    // and only `initialCount` NEW cards are built before yielding.
+    //
+    // Two rules decide when to stop. The budget counts only cards that must
+    // be BUILT, because moving one that already exists is nearly free and
+    // charging it would make a 600-card grid defer 570 reused nodes on every
+    // append. And the pass refuses to yield with less than a chunk left:
+    // scheduling an idle callback to build six cards costs more than the six
+    // cards, and it leaves an asynchronous pump in flight for a race to land
+    // in. So appending one 30-product page always finishes synchronously,
+    // and only a genuinely large first paint is deferred.
+    var i = 0, built = 0;
+    for (; i < visible.length; i++) {
+      var isNew = !mounted.has(keyOfProduct(visible[i]));
+      if (isNew && built >= initialCount && (visible.length - i) > chunkSize) break;
+      if (isNew) built++;
+      place(visible[i], i);
+    }
+
+    // Detach what the result set no longer contains — now, not at settle.
+    // Nodes still needed by the deferred tail are in `wanted` and survive.
+    mounted.forEach(function (node, key) {
+      if (!wanted.has(key)) { node.remove(); mounted.delete(key); }
+    });
+
+    if (i >= visible.length) { settle(); return; }
+
+    // ---- Deferred tail ----------------------------------------------------
+    (function pump() {
+      opts.schedule(function () {
+        if (!opts.isCurrent()) return;   // a newer render owns the grid now
+        var end = Math.min(i + chunkSize, visible.length);
+        for (; i < end; i++) place(visible[i], i);
+        if (i < visible.length) pump();
+        else settle();
+      });
+    })();
+
+    function settle() {
+      // No generation check here, deliberately. settle() is reachable two
+      // ways: synchronously, when the whole list fit in the sync pass and the
+      // render is current by construction; or from the last chunk, which
+      // already returned early if it was superseded. A guard was written here
+      // and then removed when no mutation of it could be made to fail — an
+      // unreachable guard reads like protection and is not.
+      //
+      // The "bring your own blank" card is a permanent fixture that must end
+      // up last. Move the existing one rather than rebuilding it, so it does
+      // not flicker on every append.
+      var tail = null;
+      for (var c = grid.firstChild; c; c = c.nextSibling) {
+        if (opts.isTailCard(c)) { tail = c; break; }
+      }
+      if (visible.length === 0) { if (tail) tail.remove(); }
+      else grid.appendChild(tail || opts.makeTailCard());
+      if (opts.onSettled) opts.onSettled();
+    }
+  }
+  // ===== SP_RECONCILE_END ===========================================
 
   // ===== AI translate overlay for dynamic catalog content =====
   // Translates product names + color names on cards (and inside the
