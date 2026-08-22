@@ -3572,6 +3572,7 @@
     const ric = window.requestIdleCallback || function (cb) { return setTimeout(cb, 16); };
     return {
       keyOf:        function (node) { return node.getAttribute('data-product-id'); },
+      isCard:       function (node) { return node.nodeType === 1 && node.hasAttribute && node.hasAttribute('data-product-id'); },
       keyOfProduct: function (p) { return p.product_id; },
       mountedCards: function (grid) { return Array.prototype.slice.call(grid.querySelectorAll('[data-product-id]')); },
       makeCard:     function (p, i) { return productCard(p, { eager: i < 6 }); },
@@ -3658,6 +3659,23 @@
     var keyOfProduct = opts.keyOfProduct;
     var initialCount = opts.initialCount;
     var chunkSize    = opts.chunkSize;
+
+    // The grid does not start empty. catalog.html ships twelve `.skel`
+    // placeholder cards and the inline <script> that built them, so the page
+    // has something to show for the ~1.4s the catalogue API takes -- and its
+    // comment says "JS replaces these the moment products arrive", which was
+    // only ever true because innerHTML = '' swept them away as a side effect.
+    // A reconciler has to do it on purpose. Skipping this shipped twelve grey
+    // placeholders parked after the last product, forever.
+    //
+    // Whitespace text nodes go too: `cursor` is compared by identity against
+    // the node we expect next, and a text node sitting between two cards
+    // never matches, so every card would be re-inserted rather than walked
+    // past -- the churn this function exists to avoid.
+    for (var scan = grid.firstChild, nextScan; scan; scan = nextScan) {
+      nextScan = scan.nextSibling;
+      if (!opts.isCard(scan) && !opts.isTailCard(scan)) scan.remove();
+    }
 
     // Everything currently drawn, by key. Entries are deleted as they are
     // claimed, so what remains at the end of the sync pass is "mounted but

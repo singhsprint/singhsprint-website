@@ -127,6 +127,7 @@ function makeOpts(grid, ops, node, scheduler, currentRef, gen) {
     mountedCards: g => g._kids.filter(n => n.kind === 'card'),
     makeCard:     (p) => { ops.built++; return node(p.id, 'card') },
     makeTailCard: ()  => { ops.built++; return node('__byo__', 'byo') },
+    isCard:       n   => n.kind === 'card',
     isTailCard:   n   => n.kind === 'byo',
     initialCount: 24,
     chunkSize:    12,
@@ -334,6 +335,37 @@ function main() {
     // The identity assertion again, in the case that actually threatens it.
     eq('…all 60 originals are still the same objects',
        after.slice(30).every(n => byKey.get(n.key) === n), true)
+  }
+
+  // ── The grid does not start empty ───────────────────────────────────────
+  // catalog.html ships 12 `.skel` placeholders and the <script> that made
+  // them, plus the whitespace between them. innerHTML = '' used to sweep all
+  // of that away as a side effect. Forgetting to do it on purpose parked
+  // twelve grey placeholders after the last product, permanently — which is
+  // exactly what shipped, and what the live page showed mid-scroll.
+  {
+    const ctx = freshCtx()
+    // Seed the grid the way the server does: a script node, 12 skeletons,
+    // and whitespace between them. None of them carry a product key.
+    ctx.grid.appendChild(ctx.node(null, 'script'))
+    for (let i = 0; i < 12; i++) {
+      ctx.grid.appendChild(ctx.node(null, 'skel'))
+      ctx.grid.appendChild(ctx.node(null, 'text'))
+    }
+    eq('the grid starts with scaffolding', ctx.grid._kids.length, 25)
+
+    drawFully(reconcile, ctx, P(30), 1)
+    const kinds = [...new Set(ctx.grid._kids.map(n => n.kind))].sort()
+    eq('…which is gone after the first draw', kinds, ['byo', 'card'])
+    eq('…leaving 30 products + the tail card', ctx.grid._kids.length, 31)
+    eq('…with the tail card last', ctx.grid._kids[30].kind, 'byo')
+
+    // And the sweep must not become a per-render teardown of real cards.
+    ctx.ops.remove = 0
+    const builtBefore = ctx.ops.built
+    drawFully(reconcile, ctx, P(60), 2)
+    eq('…and the next append still removes nothing', ctx.ops.remove, 0)
+    eq('…and still builds only the new cards', ctx.ops.built - builtBefore, 30)
   }
 
   // ── Emptying the grid ───────────────────────────────────────────────────
