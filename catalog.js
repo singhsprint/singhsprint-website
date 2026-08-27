@@ -3817,12 +3817,50 @@
    * (the legacy /api/catalog fallback doesn't carry prices_by_qty) or when it
    * would only repeat the headline.
    */
-  function priceLockup(p) {
+  // ===== SP_PRICE_LOCKUP_START ======================================
+  /**
+   * The price on a catalogue card.
+   *
+   * -----------------------------------------------------------------------
+   * WHY EVERY NUMBER HERE SAYS "FROM"
+   * -----------------------------------------------------------------------
+   * Colourways of one style are not the same price -- Q-Tees Q800 Black is
+   * $17.95 at 50 while Natural is $16.95, because the blanks cost $3.48 and
+   * $2.38 -- and 738 of 4,515 priced products (16.3%) have a spread like it.
+   *
+   * The card cannot know which one it is showing. /api/catalog prices each
+   * colour ONLY on the single-product fetch; the LIST fetch that fills this
+   * grid returns colors[].price_from = null for every colour and one
+   * product-level number, which is the CHEAPEST colourway. The route's own
+   * comment explains the reason -- pricing every colour of every product on
+   * the list is ~46,000 engine calls -- and that is still true.
+   *
+   * So the card used to print the cheapest colour's price directly under the
+   * name of whichever colour you had clicked. Pick Black, read $16.95, open
+   * the card, and the modal -- which DOES fetch per-colour prices -- says
+   * $17.95. Nothing was miscalculated; the card was answering a question it
+   * had not been asked.
+   *
+   * "From" is what this number has always meant. sync-algolia.mjs says so at
+   * the point it builds the field ("the 'From $X /unit' lockup customers see
+   * at first paint") and lang.js has carried a translated `cat.card.from`
+   * this whole time. The word was simply never rendered.
+   *
+   * It is applied unconditionally rather than only where colours differ,
+   * because the list has no way to tell those cases apart -- and a floor
+   * labelled as a floor is honest on a single-price product too, where it
+   * merely happens to be the only price.
+   *
+   * `qty` is a parameter rather than a read of state.qty so
+   * scripts/check-price-lockup.mjs can exercise every branch.
+   */
+  function priceLockup(p, qty) {
     if (!(typeof p.price_from === 'number' && p.price_from > 0)) {
       return `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`;
     }
-    const few  = state.qty < 5;
-    const main = `<strong>$${p.price_from.toFixed(2)}</strong>` +
+    const few  = qty < 5;
+    const from = `<span class="price-from" data-i18n="cat.card.from">From</span> `;
+    const main = from + `<strong>$${p.price_from.toFixed(2)}</strong>` +
       (few ? `<span data-i18n="cat.card.pereach">/each</span>`
            : `<span data-i18n="cat.card.perunit">/unit</span>`);
 
@@ -3833,12 +3871,15 @@
     if (few) {
       sub = `<span data-i18n="cat.card.flat-no-min">Flat price · no minimum</span>`;
     } else if (typeof single === 'number' && single > 0 && single !== p.price_from) {
-      sub = `<span data-i18n="cat.card.justone">Just one</span> <b>$${single.toFixed(2)}</b>`;
+      // Same floor, same caveat: prices_by_qty[1] is the cheapest colourway's
+      // single-unit price, so it gets the same word rather than a bare figure.
+      sub = `<span data-i18n="cat.card.justone-from">Just one from</span> <b>$${single.toFixed(2)}</b>`;
     } else {
       sub = `<span data-i18n="cat.card.oneside">1-side print</span>`;
     }
     return `${main}<span class="price-sub">${sub}</span>`;
   }
+  // ===== SP_PRICE_LOCKUP_END ========================================
 
   function productCard(p, opts) {
     // Card is now a clickable surface (not an anchor). Whole-card click =
@@ -3948,7 +3989,7 @@
         <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${priceLockup(p)}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="price">${priceLockup(p, state.qty)}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
           <span class="card-cta__sub">${state.qty < 5

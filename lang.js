@@ -1015,6 +1015,7 @@ var SP_LANG = (function() {
     'cat.card.perunit': { en: '/unit', fr: '/unité' },
     'cat.card.pereach': { en: '/each', fr: '/chacun' },
     'cat.card.justone': { en: 'Just one', fr: 'À l\u2019unité' },
+    'cat.card.justone-from': { en: 'Just one from', fr: 'À l\u2019unité à partir de' },
     'cat.card.flat-no-min': { en: 'Flat price · no minimum', fr: 'Prix fixe · aucun minimum' },
     'cat.detail.embmin': { en: 'Needs {min}+ · add {n} more', fr: 'Minimum {min} · ajoutez-en {n}' },
     'cat.detail.embminprice': { en: 'Embroidery needs {min}+ · add {n} more', fr: 'Broderie : minimum {min} · ajoutez-en {n}' },
