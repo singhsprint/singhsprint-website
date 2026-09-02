@@ -3576,6 +3576,7 @@
       keyOfProduct: function (p) { return p.product_id; },
       mountedCards: function (grid) { return Array.prototype.slice.call(grid.querySelectorAll('[data-product-id]')); },
       makeCard:     function (p, i) { return productCard(p, { eager: i < 6 }); },
+      updateCard:   function (node, p) { repriceCard(node, p, state.qty); },
       makeTailCard: function () { return byoCard(); },
       isTailCard:   function (node) { return node.classList && node.classList.contains('card-byo'); },
       initialCount: INITIAL_RENDER,
@@ -3694,8 +3695,17 @@
     function place(product, index) {
       var key  = keyOfProduct(product);
       var node = mounted.get(key);
-      if (node) mounted.delete(key);
-      else node = opts.makeCard(product, index);
+      if (node) {
+        mounted.delete(key);
+        // A reused node carries whatever it was built with. Anything that can
+        // change WITHOUT changing the product id — the catalogue quantity is
+        // the one that bit us — leaves it stale, so every reuse is refreshed.
+        // Called unconditionally, not `if (opts.updateCard)`: reusing a node
+        // and not refreshing it is not a mode this function offers.
+        opts.updateCard(node, product, index);
+      } else {
+        node = opts.makeCard(product, index);
+      }
       if (node === cursor) cursor = cursor.nextSibling;
       else grid.insertBefore(node, cursor);
     }
@@ -3879,6 +3889,53 @@
     }
     return `${main}<span class="price-sub">${sub}</span>`;
   }
+
+  /**
+   * The whole contents of a card's `.price` cell.
+   *
+   * Extracted 2026-08-27 so there is ONE definition of that markup. It used
+   * to be spelled out inline in productCard(), which was fine while the only
+   * way a card could get a new price was to be rebuilt from scratch — and
+   * stopped being fine the moment reconcileGrid started reusing nodes.
+   */
+  function priceCellHtml(p, qty) {
+    return priceLockup(p, qty) +
+      (p.weight_oz ? ' \u00b7 <span class="price-meta">' + p.weight_oz + ' oz</span>' : '');
+  }
+
+  /**
+   * Bring an ALREADY MOUNTED card's price up to date.
+   *
+   * -----------------------------------------------------------------------
+   * WHY THIS EXISTS
+   * -----------------------------------------------------------------------
+   * setQty() dims every `.price` to opacity .4 and refetches. The dimming is
+   * undone by the card being REBUILT — which is what happened back when
+   * render() was `grid.innerHTML = ''`. reconcileGrid reuses a node whenever
+   * the product id is unchanged, and a quantity change never changes a
+   * product id, so after the switch to reconcile every card in the grid kept
+   * its old markup: the previous quantity's price, still dimmed.
+   *
+   * Measured on production at the 50 -> 100 switch, three cards deep:
+   *   node identity unchanged, price text unchanged, style.opacity "0.4"
+   *   shown:  From $19.95 / $13.95 / $19.95   (the qty-50 numbers)
+   *   truth:  From $17.95 / $11.95 / $17.95   (a fresh load at ?qty=100)
+   * So it was not merely "stuck loading". It quoted two dollars a unit over
+   * the engine's price, greyed out, indefinitely.
+   *
+   * Reusing a node is only sound if the node is then made to say what a
+   * freshly built one would. reconcileGrid calls this on EVERY reuse.
+   */
+  function repriceCard(node, p, qty) {
+    var cell = node.querySelector && node.querySelector('.price');
+    if (!cell) return;
+    cell.innerHTML = priceCellHtml(p, qty);
+    // setQty() painted this on to say "a new number is coming". The number
+    // has arrived, so the dimming comes off here — never on a timer, which
+    // would clear it whether or not the price actually updated.
+    cell.style.opacity = '';
+  }
+
   // ===== SP_PRICE_LOCKUP_END ========================================
 
   function productCard(p, opts) {
@@ -3989,7 +4046,7 @@
         <div class="name">${esc(p.name)}</div>
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${priceLockup(p, state.qty)}${p.weight_oz ? ' · <span class="price-meta">' + p.weight_oz + ' oz</span>' : ''}</div>
+        <div class="price">${priceCellHtml(p, state.qty)}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
           <span class="card-cta__sub">${state.qty < 5

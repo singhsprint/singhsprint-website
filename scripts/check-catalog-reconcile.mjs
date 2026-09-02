@@ -125,7 +125,10 @@ function makeOpts(grid, ops, node, scheduler, currentRef, gen) {
     keyOf:        n => n.key,
     keyOfProduct: p => p.id,
     mountedCards: g => g._kids.filter(n => n.kind === 'card'),
-    makeCard:     (p) => { ops.built++; return node(p.id, 'card') },
+    makeCard:     (p) => { ops.built++; const n = node(p.id, 'card'); n.drawn = p.price; return n },
+    // A reused node has to be told what changed. The fake writes the same
+    // field makeCard does, so a stale node is visible as drawn !== price.
+    updateCard:   (n, p) => { ops.updated = (ops.updated || 0) + 1; n.drawn = p.price },
     makeTailCard: ()  => { ops.built++; return node('__byo__', 'byo') },
     isCard:       n   => n.kind === 'card',
     isTailCard:   n   => n.kind === 'byo',
@@ -137,7 +140,7 @@ function makeOpts(grid, ops, node, scheduler, currentRef, gen) {
   }
 }
 
-const P = (n, from = 0) => Array.from({ length: n }, (_, i) => ({ id: 'p' + (i + from) }))
+const P = (n, from = 0, price = 19.95) => Array.from({ length: n }, (_, i) => ({ id: 'p' + (i + from), price }))
 
 /** Run a render to completion, draining the deferred chunks. */
 function drawFully(reconcile, ctx, visible, gen) {
@@ -388,6 +391,41 @@ function main() {
     eq('re-rendering the same list inserts nothing', ctx.ops.insert, 0)
     eq('…removes nothing', ctx.ops.remove, 0)
     eq('…and builds nothing', ctx.ops.built - builtBefore, 0)
+  }
+
+  // ── A reused node must not serve the previous quantity's price ──────────
+  // This is the failure the reuse rewrite shipped. Every card keeps its id
+  // across a quantity change, so every card is reused, so every card kept the
+  // markup it was built with: the old price, still dimmed by setQty(). The
+  // numbers below are the ones measured on production at the 50 -> 100 switch.
+  {
+    const ctx = freshCtx()
+    drawFully(reconcile, ctx, P(60, 0, 19.95), 1)
+    const nodesBefore = ctx.grid._kids.filter(n => n.kind === 'card')
+    const builtBefore = ctx.ops.built
+    ctx.ops.updated = 0
+
+    drawFully(reconcile, ctx, P(60, 0, 17.95), 2)
+
+    const cards = ctx.grid._kids.filter(n => n.kind === 'card')
+    eq('a quantity change reuses every node', ctx.ops.built - builtBefore, 0)
+    eq('…the same node objects', cards.every((n, i) => n === nodesBefore[i]), true)
+    eq('…and refreshes every one of them', ctx.ops.updated, 60)
+    eq('…so not one card is left showing the old price',
+      cards.filter(n => n.drawn !== 17.95).length, 0)
+    eq('…and the price shown is the new one', cards[0].drawn, 17.95)
+  }
+
+  // A card that had to be BUILT is already current; refreshing it too would
+  // mean the update path is doing work the build path already did.
+  {
+    const ctx = freshCtx()
+    drawFully(reconcile, ctx, P(30, 0, 19.95), 1)
+    ctx.ops.updated = 0
+    drawFully(reconcile, ctx, P(60, 0, 19.95), 2)
+    eq('an append refreshes only the 30 nodes it reused', ctx.ops.updated, 30)
+    eq('…and the 30 new ones are drawn at the current price',
+      ctx.grid._kids.filter(n => n.kind === 'card' && n.drawn === 19.95).length, 60)
   }
 
   if (problems.length) {
