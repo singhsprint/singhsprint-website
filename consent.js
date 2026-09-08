@@ -47,7 +47,8 @@
     'padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px)) !important;',
     'font-size:.82rem !important;line-height:1.45 !important;',
     'box-shadow:0 -8px 28px rgba(0,0,0,.18) !important;}',
-    '#sp-consent-banner .sp-consent-msg{margin-bottom:10px !important}',
+    '#sp-consent-banner .sp-consent-inner{flex-direction:column;align-items:stretch;gap:0 !important}',
+    '#sp-consent-banner .sp-consent-msg{margin-bottom:10px !important;flex:0 0 auto !important}',
     '#sp-consent-banner .sp-consent-title{display:none !important}',
     '#sp-consent-banner .sp-consent-long{display:none !important}',
     '#sp-consent-banner .sp-consent-short{display:inline !important}',
@@ -97,9 +98,30 @@
     metaConsent(granted);
   }
 
+  // The bar is position:fixed, so without this the last slice of the page sits
+  // permanently underneath it — on /quote that is the Next / submit button.
+  function padForBanner(el) {
+    try {
+      var h = el.getBoundingClientRect().height;
+      if (!h) return;
+      document.body.dataset.spConsentPad = document.body.style.paddingBottom || '';
+      document.body.style.paddingBottom = Math.ceil(h) + 'px';
+    } catch (e) { /* padding is a nicety; never let it break the banner */ }
+  }
+
+  function unpadForBanner() {
+    try {
+      if (document.body.dataset.spConsentPad !== undefined) {
+        document.body.style.paddingBottom = document.body.dataset.spConsentPad;
+        delete document.body.dataset.spConsentPad;
+      }
+    } catch (e) { /* no-op */ }
+  }
+
   function removeBanner() {
     var el = document.getElementById('sp-consent-banner');
     if (el && el.parentNode) el.parentNode.removeChild(el);
+    unpadForBanner();
   }
 
   function choose(choice) {
@@ -117,17 +139,30 @@
     wrap.setAttribute('role', 'dialog');
     wrap.setAttribute('aria-live', 'polite');
     wrap.setAttribute('aria-label', T.title);
+    // Full-bleed bar pinned to the bottom EDGE rather than a floating card
+    // inset 16px from it. The card version sat on top of the quote builder —
+    // the one thing an ad visitor lands on /quote to use — so the fastest way
+    // past it was whichever button was nearest, and "Decline" makes that
+    // visitor invisible to Meta for the rest of the session. Same choices,
+    // same gating; it just no longer covers the form. Page content gets
+    // matching bottom padding below so nothing is hidden underneath.
     wrap.style.cssText = [
-      'position:fixed', 'left:16px', 'right:16px', 'bottom:16px', 'z-index:2147483000',
-      'max-width:760px', 'margin:0 auto', 'background:#fff', 'color:#1a1a1a',
-      'border:1px solid rgba(0,0,0,.12)', 'border-radius:14px',
-      'box-shadow:0 12px 40px rgba(0,0,0,.18)', 'padding:18px 20px',
-      'font-family:Inter,-apple-system,system-ui,sans-serif', 'font-size:.9rem', 'line-height:1.55',
+      'position:fixed', 'left:0', 'right:0', 'bottom:0', 'z-index:2147483000',
+      'background:#fff', 'color:#1a1a1a',
+      'border-top:1px solid rgba(0,0,0,.12)', 'border-radius:0',
+      'box-shadow:0 -6px 24px rgba(0,0,0,.10)', 'padding:14px 20px',
+      'font-family:Inter,-apple-system,system-ui,sans-serif', 'font-size:.88rem', 'line-height:1.5',
     ].join(';');
+
+    // Inner rail keeps the text and buttons on one line and stops the copy
+    // running the full width of a desktop monitor.
+    var inner = document.createElement('div');
+    inner.className = 'sp-consent-inner';
+    inner.style.cssText = 'max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap';
 
     var msg = document.createElement('div');
     msg.className = 'sp-consent-msg';
-    msg.style.cssText = 'margin-bottom:14px';
+    msg.style.cssText = 'flex:1 1 320px;min-width:0';
     var strong = document.createElement('strong');
     strong.className = 'sp-consent-title';
     strong.textContent = T.title;
@@ -152,11 +187,11 @@
     link.style.cssText = 'color:#1a1a1a;text-decoration:underline;font-weight:600';
     msg.appendChild(link);
     msg.appendChild(document.createTextNode('.'));
-    wrap.appendChild(msg);
+    inner.appendChild(msg);
 
     var row = document.createElement('div');
     row.className = 'sp-consent-row';
-    row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end';
+    row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;flex:0 0 auto';
 
     var reject = document.createElement('button');
     reject.type = 'button';
@@ -183,9 +218,11 @@
 
     row.appendChild(reject);
     row.appendChild(accept);
-    wrap.appendChild(row);
+    inner.appendChild(row);
+    wrap.appendChild(inner);
 
     (document.body || document.documentElement).appendChild(wrap);
+    padForBanner(wrap);
   }
 
   // Public API: reopen the banner from the footer "Cookie preferences" link.

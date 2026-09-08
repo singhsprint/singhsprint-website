@@ -6491,6 +6491,25 @@
         .catch(function() { return null; });       // CRM down → legacy flow untouched
     }
 
+    // ---- Cold-start warm-up (2026-09-08) ---------------------------------
+    // /api/pricing/tier-blanks is parameterless and already carries a long
+    // s-maxage, but caching cannot help the FIRST request after the Vercel
+    // function has gone idle — that one pays the cold boot. Measured warm it
+    // answers in ~1.3s; cold, the tier cards sat on "Loading tier pricing…"
+    // for about ten seconds. That first request of a quiet period is exactly
+    // the paid ad click.
+    //
+    // Firing it at idle on page load moves the boot into the window where the
+    // visitor is reading the page and choosing a garment, instead of making
+    // them watch a spinner afterwards. spFetchTierBlanks memoises, so the real
+    // call later is a no-op, and it swallows its own errors — a failed warm-up
+    // leaves the lazy path exactly as it was.
+    (function warmTierBlanks() {
+      var go = function () { try { spFetchTierBlanks(); } catch (e) { /* never break page load */ } };
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 2000 });
+      else setTimeout(go, 600);
+    })();
+
     function spTierT(key, fallback) {
       var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
       return v || fallback;
