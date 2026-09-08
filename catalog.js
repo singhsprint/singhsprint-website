@@ -1990,6 +1990,14 @@
         };
         var mine = poolKey(method);
         var sum = SinghsCart.read().items.reduce(function (acc, it) {
+          // Customer-supplied garments never pool (2026-09-08). They carry a
+          // decoration_type so their own decoration prices correctly, which is
+          // exactly what made them pool here by accident: 60 BYO hoodies at dtf
+          // dragged a 50-piece tee line into the 100+ tier and this modal
+          // quoted $11.95 instead of $13.95. Pooling is meant to reflect a
+          // bigger blank purchase, and we buy nothing on a BYO line.
+          // quote.js/spCartPoolQty makes the same exclusion for the cart total.
+          if (it.is_byo) return acc;
           var q = Number(it.qty) || 0;
           if (q < 5) return acc;
           return poolKey(it.decoration_type || it.decoration_method) === mine ? acc + q : acc;
