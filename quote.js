@@ -136,7 +136,162 @@
       // too — the new type gets a fresh blank-or-BYO decision.
       if (typeof spDeactivateByo === 'function') spDeactivateByo();
       if (typeof spClearTierPick === 'function') spClearTierPick();
+
+      // "Bring Your Own" is not a garment we sell, so the quantity bands and
+      // the Standard/Plus/Premium tier cards have nothing to price - there is
+      // no blank. It gets its own line builder instead, and returns before the
+      // tier machinery runs. (2026-09-08)
+      if (el.dataset.garment === 'byo') { spShowByoLineBuilder(); return; }
+      spHideByoLineBuilder();
+
       if (typeof spRenderTierCards === 'function') spRenderTierCards(state.garment, state.product);
+    }
+
+    // =====================================================================
+    // BYO LINE BUILDER (2026-09-08)
+    // ---------------------------------------------------------------------
+    // Produces cart rows for garments the CUSTOMER supplies. They land in the
+    // same SinghsCart as catalog picks - that is deliberate, and it is what
+    // lets one quote hold "20 of my hoodies" alongside "50 of your tees".
+    // renderCartList branches on is_byo the same way it already branches on
+    // is_jersey, so nothing else in the cart pipeline needed to learn a new
+    // shape.
+    //
+    // Priced off /api/pricing/decoration-only (blank cost removed), NOT the
+    // live matrix - the customer is not buying a blank from us.
+    // =====================================================================
+    var spByoMethod = 'dtg';
+    var spByoLineSeq = 0;
+
+    function spShowByoLineBuilder() {
+      var sec = document.getElementById('byoLineSection');
+      var qtyHost = document.getElementById('qtyBandSection');
+      var tierHost = document.getElementById('tierBlanksSection');
+      if (qtyHost) { qtyHost.style.display = 'none'; qtyHost.innerHTML = ''; }
+      if (tierHost) { tierHost.style.display = 'none'; tierHost.innerHTML = ''; }
+      if (sec) sec.style.display = '';
+      spByoLineRefreshPrice();
+    }
+
+    function spHideByoLineBuilder() {
+      var sec = document.getElementById('byoLineSection');
+      if (sec) sec.style.display = 'none';
+    }
+
+    function spByoSelectMethod(el) {
+      el.parentElement.querySelectorAll('.svc-btn').forEach(function (o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      spByoMethod = el.dataset.method || '';
+      spByoLineRefreshPrice();
+    }
+
+    function spByoLineDirty() { spByoLineRefreshPrice(); }
+
+    // Debounced so typing in the qty box doesn't fire a request per keystroke.
+    var _spByoDebounce = null;
+    function spByoLineRefreshPrice() {
+      clearTimeout(_spByoDebounce);
+      _spByoDebounce = setTimeout(spByoLineFetchPrice, 260);
+    }
+
+    function spByoLineFetchPrice() {
+      var unitEl  = document.getElementById('byoLineUnit');
+      var totalEl = document.getElementById('byoLineTotal');
+      if (!unitEl || !totalEl) return;
+      var qty = parseInt((document.getElementById('byoLineQty') || {}).value || '0', 10) || 0;
+
+      // "Not sure" has no priceable method. Say so rather than showing a DTG
+      // number the customer would anchor on and we might not honour.
+      if (!spByoMethod) {
+        unitEl.textContent = '$—'; totalEl.textContent = '$—';
+        return;
+      }
+      if (qty < 1) { unitEl.textContent = '$—'; totalEl.textContent = '$—'; return; }
+
+      var seq = ++spByoLineSeq;
+      unitEl.textContent = '…'; totalEl.textContent = '…';
+      var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only'
+              + '?qty=' + qty + '&method=' + encodeURIComponent(spByoMethod) + '&sides=1';
+      fetch(url)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (seq !== spByoLineSeq) return;        // a newer request superseded this one
+          if (!d || typeof d.unit_price !== 'number') {
+            unitEl.textContent = '$—'; totalEl.textContent = '$—';
+            return;
+          }
+          unitEl.textContent  = '$' + d.unit_price.toFixed(2);
+          totalEl.textContent = '$' + (d.total != null ? d.total : d.unit_price * qty).toFixed(2);
+        })
+        .catch(function () {
+          if (seq !== spByoLineSeq) return;
+          unitEl.textContent = '$—'; totalEl.textContent = '$—';
+        });
+    }
+
+    function spByoLineAdd() {
+      var err  = document.getElementById('byoAddErr');
+      var desc = ((document.getElementById('byoDesc') || {}).value || '').trim();
+      var mat  = ((document.getElementById('byoMaterial') || {}).value || '').trim();
+      var qty  = parseInt((document.getElementById('byoLineQty') || {}).value || '0', 10) || 0;
+
+      function fail(msg) { if (err) { err.textContent = msg; err.style.display = 'block'; } }
+      if (err) err.style.display = 'none';
+
+      // Description is the whole point of a BYO line - without it the rep has
+      // nothing to quote against. Everything else can be sorted out on the call.
+      if (!desc) { fail(spByoT('quote.byoline.err.desc', 'Tell us what the garments are so we can price the decoration.')); return; }
+      if (qty < 1) { fail(spByoT('quote.byoline.err.qty', 'How many garments are you sending?')); return; }
+
+      var cart = SinghsCart.read();
+      cart.items.push({
+        is_byo:          true,
+        byo_description: desc,
+        byo_material:    mat,
+        product_id:      null,
+        color_id:        null,
+        color_name:      '',
+        brand:           '',
+        style_number:    '',
+        name:            desc,
+        garment_type:    null,
+        hero_url:        '',
+        qty:             qty,
+        sides:           1,
+        sizes:           {},
+        placements:      [],
+        decoration_type: spByoMethod === 'embroidery' ? 'embroidery' : (spByoMethod ? 'dtf' : ''),
+      });
+      SinghsCart.write(cart);   // renders the row and flips the page into cart mode
+
+      // Reset the builder so a second, different garment can be added without
+      // the previous one's text sitting in the fields.
+      var d = document.getElementById('byoDesc');     if (d) d.value = '';
+      var m = document.getElementById('byoMaterial'); if (m) m.value = '';
+      var q = document.getElementById('byoLineQty');  if (q) q.value = '25';
+      spByoLineRefreshPrice();
+      if (window.spTrack) window.spTrack('byo_line_added', { qty: qty, method: spByoMethod || 'unsure' });
+    }
+
+    // Customer-supplied garments have no product_id, so they would otherwise
+    // reach the CRM as a bare qty. Spell them out in the notes: the rep needs
+    // to know a box is arriving, and what is in it, before quoting.
+    function spByoNotesSummary() {
+      try {
+        var byo = SinghsCart.read().items.filter(function (it) { return it.is_byo; });
+        if (!byo.length) return '';
+        return ' | CUSTOMER-SUPPLIED GARMENTS: ' + byo.map(function (it) {
+          var bits = [(it.qty || 0) + '× ' + (it.byo_description || 'unspecified')];
+          if (it.byo_material) bits.push(it.byo_material);
+          bits.push(it.decoration_type === 'embroidery' ? 'embroidery' : (it.decoration_type ? 'DTG/DTF' : 'method TBD'));
+          return bits.join(', ');
+        }).join(' | ');
+      } catch (e) { return ''; }
+    }
+
+    function spByoT(key, fallback) {
+      var v = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+      return v || fallback;
     }
 
     // ===== COLOR =====
@@ -2078,6 +2233,22 @@
       var btn = document.getElementById('quoteInsteadBtn');
       if (btn) btn.style.display = micro ? 'none' : '';
 
+      // A cart holding customer-supplied garments is quote-only (see the
+      // checkout guard). Hide the pay CTA rather than letting someone press it
+      // and meet an alert — a dead-end button reads as a broken page.
+      var hasByo = false;
+      try { hasByo = SinghsCart.read().items.some(function (it) { return it.is_byo; }); } catch (e) {}
+      var payWrap = document.getElementById('orderPayBtn');
+      var divWrap = document.getElementById('quoteCtaDivider');
+      if (hasByo) {
+        if (payWrap) payWrap.style.display = 'none';
+        if (divWrap) divWrap.style.display = 'none';
+        var lead = document.getElementById('quoteLeadNote');
+        if (lead) lead.style.display = '';
+        return;
+      }
+      if (payWrap) payWrap.style.display = '';
+
       // CTA hierarchy (2026-07-26). "Get my free quote" is normally the primary
       // accent button — it is the action the lead ads promise and the only one
       // that fires the Meta `Lead` event. A micro-run (1-4 pieces) hides it, so
@@ -2175,7 +2346,7 @@
         source: 'website',
         status: 'new',
         estimated_value: estValue,
-        notes: 'Quote request: ' + product + ' / ' + service + ' / Qty: ' + totalQty + ' / ' + (document.getElementById('details').value || '') + utmSummary
+        notes: 'Quote request: ' + product + ' / ' + service + ' / Qty: ' + totalQty + ' / ' + (document.getElementById('details').value || '') + spByoNotesSummary() + utmSummary
       });
 
       // Funnel-tracker submit event — richer than the auto-fired
@@ -3148,10 +3319,25 @@
       // more (see spApplyTierPick / applyCatalogProduct / paintProductColors),
       // so ask for it here instead of shipping whatever the catalog listed
       // first. Jersey lines are excluded: they're fully specified upstream.
+      // ── BYO garments cannot be paid for up front ────────────────────────
+      // 2026-09-08 — a decoration-only line prices work on garments we have
+      // not seen, counted or inspected. Taking card payment before the box
+      // arrives is how you end up refunding a customer whose blanks turned up
+      // short, mis-sized or unprintable. These lines go down the quote path,
+      // where a human confirms the count and the garment before money moves.
+      try {
+        if (typeof SinghsCart !== 'undefined' && SinghsCart.read().items.some(function (it) { return it.is_byo; })) {
+          alert(spByoT('quote.byoline.nocheckout',
+            "Orders with your own garments are quoted, not checked out — we confirm the count and the blanks when they arrive. Tap “Get my free quote” and we'll come back within the hour."));
+          try { if (typeof goToStep === 'function') goToStep(2); } catch (e) {}
+          return;
+        }
+      } catch (e) { /* never let the guard itself block a normal checkout */ }
+
       var missingColour = 0;
       if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
         missingColour = SinghsCart.read().items.filter(function(it) {
-          return !it.is_jersey && (parseInt(it.qty, 10) || 0) > 0 && !it.color_id;
+          return !it.is_jersey && !it.is_byo && (parseInt(it.qty, 10) || 0) > 0 && !it.color_id;
         }).length;
       } else if (catalogPick && catalogPick.product_id) {
         var cidCheck = document.getElementById('catalogColorId');
@@ -5323,6 +5509,47 @@
     // line item — not through the generic placement/method/upload editor,
     // which would re-prompt for art and double-charge decoration.
     function jEsc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    // BYO cart row (2026-09-08). Deliberately spare next to a catalog row:
+    // there is no blank to show, so no hero image, no colour swatches, no
+    // size grid and no Customize button - all of those describe a garment WE
+    // supply. What the rep actually needs is what it is, what it is made of,
+    // how many, and how it gets decorated.
+    function byoCartItemHtml(it, idx) {
+      var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function () { return ''; };
+      var lblQty    = _t('quote.cart.item.qty')    || 'Qty';
+      var lblRemove = _t('quote.cart.item.remove') || 'Remove';
+      var qty = Number(it.qty) || 0;
+      var methodLabel = it.decoration_type === 'embroidery'
+        ? (_t('quote.byoline.emb.l') || 'Embroidery')
+        : (it.decoration_type ? (_t('quote.byoline.dtg.l') || 'DTG / DTF')
+                              : (_t('quote.byoline.unsure.l') || 'Not sure'));
+      var priceHtml = (typeof it.byo_unit_price === 'number')
+        ? '<strong style="color:#1a1a1a">$' + it.byo_unit_price.toFixed(2) + '</strong> /garment · '
+          + (_t('quote.cart.jersey.subtotal') || 'subtotal')
+          + ' <strong style="color:#1a1a1a">$' + (it.byo_unit_price * qty).toFixed(2) + '</strong>'
+        : (_t('quote.byoline.pending') || 'Decoration priced with your quote');
+
+      return '' +
+        '<div class="cart-item cart-item--byo" data-idx="' + idx + '" style="display:flex;gap:14px;padding:14px;border:1.5px solid #e8e6df;border-radius:14px;background:#fff;align-items:flex-start;flex-wrap:wrap;max-width:100%;box-sizing:border-box">' +
+        '  <div style="width:72px;height:72px;flex-shrink:0;border-radius:10px;background:#f0eee5;display:flex;align-items:center;justify-content:center">' +
+        '    <svg viewBox="0 0 48 48" width="34" height="34" fill="none" stroke="#8a8778" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 L24 7 L42 16 L42 34 L24 43 L6 34 Z"/><path d="M6 16 L24 25 L42 16"/><line x1="24" y1="25" x2="24" y2="43"/></svg>' +
+        '  </div>' +
+        '  <div style="flex:1;min-width:200px">' +
+        '    <div style="font-size:.66rem;color:#8a7a2a;background:#fbf6d9;display:inline-block;padding:2px 8px;border-radius:50px;font-weight:700;letter-spacing:.05em;text-transform:uppercase">' + (_t('quote.byoline.badge') || 'Your garments') + '</div>' +
+        '    <div style="font-size:.95rem;font-weight:600;line-height:1.3;margin-top:5px">' + jEsc(it.byo_description || '') + '</div>' +
+        (it.byo_material ? '    <div style="font-size:.78rem;color:#666;margin-top:3px">' + jEsc(it.byo_material) + '</div>' : '') +
+        '    <div style="font-size:.78rem;color:#666;margin-top:4px">' + jEsc(methodLabel) + '</div>' +
+        '    <div class="cart-item-price" id="ci-price-' + idx + '" style="font-size:.82rem;color:#666;margin-top:6px">' + priceHtml + '</div>' +
+        '  </div>' +
+        '  <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">' +
+        '    <label style="display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">' + lblQty +
+        '      <input type="number" inputmode="numeric" min="1" max="10000" value="' + qty + '" onchange="onCartItemChange(' + idx + ', {qty: parseInt(this.value)||1})" style="width:80px;padding:6px 8px;margin-top:3px;border:1.5px solid #e8e6df;border-radius:8px;font-weight:600;font-family:inherit;text-align:right"/>' +
+        '    </label>' +
+        '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
+        '  </div>' +
+        '</div>';
+    }
+
     function jerseyCartItemHtml(it, idx){
       var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
       var label = (it.color_name || '').replace(/_\d+$/, '');
@@ -5484,6 +5711,7 @@
       }
       host.innerHTML = comboStrip + items.map(function(it, idx) {
         if (it.is_jersey) return jerseyCartItemHtml(it, idx);
+        if (it.is_byo)    return byoCartItemHtml(it, idx);
         var label = (it.color_name || '').replace(/_\d+$/, '');
         var placementsHtml = renderCartPlacementWidget(idx, it.placements || [], it.garment_type);
         // The inside-neck tag is an ADD-ON, not a print side, so it is
@@ -5550,6 +5778,10 @@
         // roster — skip the generic swatch/live-price/tier-matrix fetches
         // (they would overwrite the jersey price and re-prompt decoration).
         if (it.is_jersey) { updateCartTotal(); return; }
+        // BYO rows have no product_id and no blank to price, so every
+        // catalog fetch below would run with product_id=null. They are
+        // priced decoration-only instead. (2026-09-08)
+        if (it.is_byo)    { spPaintByoRowPrice(idx, it); return; }
         // Fetch the product's full colour list once so the customer can
         // switch colours per cart row without going back to the catalog.
         fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
@@ -5595,6 +5827,52 @@
     // the matrix only changes when the CRM pricing config does (≤ once an
     // hour in practice). Highlights the row matching the item's current qty.
     var _liveMatrixCache = {};
+    // Price one BYO row off /api/pricing/decoration-only and cache the unit
+    // price ON THE ITEM. Catalog rows keep their prices in _priceCache keyed by
+    // product_id; a BYO row has no product_id to key on, so the item carries
+    // its own. updateCartTotal reads it back from there.
+    var _spByoRowSeq = {};
+    function spPaintByoRowPrice(idx, it) {
+      var el = document.getElementById('ci-price-' + idx);
+      var qty = Number(it.qty) || 0;
+      var method = it.decoration_type === 'embroidery' ? 'embroidery' : (it.decoration_type ? 'dtf' : '');
+
+      // "Not sure" is a legitimate answer - it just isn't a priceable one.
+      if (!method || qty < 1) {
+        it.byo_unit_price = null;
+        updateCartTotal();
+        return;
+      }
+      var seq = (_spByoRowSeq[idx] = (_spByoRowSeq[idx] || 0) + 1);
+      var sides = Math.max(1, Number(it.sides) || 1);
+      var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only'
+              + '?qty=' + qty + '&method=' + encodeURIComponent(method) + '&sides=' + sides;
+      fetch(url)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (seq !== _spByoRowSeq[idx]) return;
+          if (!d || typeof d.unit_price !== 'number') { it.byo_unit_price = null; updateCartTotal(); return; }
+          it.byo_unit_price = d.unit_price;
+          // Persist so a reload doesn't lose the number. writeSilent avoids
+          // the re-render that would restart this fetch in a loop.
+          try {
+            var c = SinghsCart.read();
+            if (c.items[idx] && c.items[idx].is_byo) {
+              c.items[idx].byo_unit_price = d.unit_price;
+              SinghsCart.writeSilent(c);
+            }
+          } catch (e) { /* price display still works without persistence */ }
+          if (el) {
+            var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function () { return ''; };
+            el.innerHTML = '<strong style="color:#1a1a1a">$' + d.unit_price.toFixed(2) + '</strong> /garment · '
+              + (_t('quote.cart.jersey.subtotal') || 'subtotal')
+              + ' <strong style="color:#1a1a1a">$' + ((d.total != null ? d.total : d.unit_price * qty)).toFixed(2) + '</strong>';
+          }
+          updateCartTotal();
+        })
+        .catch(function () { updateCartTotal(); });
+    }
+
     function paintCartItemLiveMatrix(idx, it) {
       var host = document.getElementById('ci-livematrix-' + idx);
       if (!host || !it.product_id) return;
@@ -5992,6 +6270,17 @@
         var method = rawM === 'embroidery' ? 'embroidery' : (rawM ? 'dtf' : currentDecorationMethod());
         // Same combined-tier suffix liveUnitPrice used when it cached this
         // row's price — pooled lines live under the _t<pool> key.
+        // BYO lines are priced decoration-only and cache their unit price on
+        // the item, not in _priceCache (no product_id to key on).
+        if (it.is_byo) {
+          if (typeof it.byo_unit_price === 'number') {
+            cartUnitSum   += it.byo_unit_price;
+            cartLineTotal += it.byo_unit_price * qty;
+          } else {
+            knownAll = false;   // "Not sure" / still loading — don't quote a total yet
+          }
+          return;
+        }
         var _ctq  = spItemTierQty(qty, _cartPool);
         var p     = _priceCache[spPriceCacheKey(it.product_id, qty, sides, method, pk, _ctq, !!it.neck_tag)];
         if (typeof p === 'number') {

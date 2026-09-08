@@ -264,6 +264,18 @@
                   <span class="name">Other</span>
                   <span class="from">Aprons, joggers, etc.</span>
                 </div>
+                <!-- Bring Your Own (2026-09-08). BYO already existed, but only
+                     as a "Garment source" toggle BELOW product type + quantity
+                     band - so a customer who owns their garments had to first
+                     pick a garment they were not buying. Surfacing it as a
+                     peer of the other product types makes it a first-class
+                     answer to "what are we printing on?". -->
+                <div class="product-option product-option--byo" data-value="Bring Your Own" data-garment="byo" onclick="selectProduct(this)">
+                  <span class="check">&#10003;</span>
+                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 L24 7 L42 16 L42 34 L24 43 L6 34 Z"/><path d="M6 16 L24 25 L42 16"/><line x1="24" y1="25" x2="24" y2="43"/><path d="M15 11.5 L33 20.5" opacity="0.35"/></svg></span>
+                  <span class="name" data-i18n="quote.product.byo">Bring Your Own</span>
+                  <span class="from" data-i18n="quote.product.byo.sub">You ship the garments</span>
+                </div>
               </div>
               <input type="hidden" name="product" id="productInput" required>
             </div>
@@ -279,6 +291,54 @@
                  Picking a tier locks in a real catalog blank (colours,
                  live price, checkout) without opening /catalog. -->
             <div class="form-group" id="tierBlanksSection" style="display:none"></div>
+
+            <!-- BYO line builder (2026-09-08). Shown instead of the quantity
+                 bands + Standard/Plus/Premium tier cards when the visitor
+                 picks "Bring Your Own": there is no blank to choose, so those
+                 sections have nothing to say. Each completed line is pushed
+                 into the SAME SinghsCart the catalog flow uses, which is what
+                 lets a quote mix "20 of my hoodies" with "50 of your tees" -
+                 renderCartList just renders BYO rows differently. -->
+            <div class="form-group" id="byoLineSection" style="display:none">
+              <label data-i18n="quote.byoline.title">Tell us about your garments</label>
+              <div style="font-size:.82rem;color:#666;margin:-4px 0 14px;line-height:1.5" data-i18n="quote.byoline.sub">You ship them to us, we decorate them. Describe what you're sending and we'll price the decoration.</div>
+
+              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+                <label style="flex:1 1 260px;display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">
+                  <span data-i18n="quote.byoline.desc">Garment type</span>
+                  <input id="byoDesc" type="text" maxlength="120" placeholder="e.g. Gildan 18500 pullover hoodies, black" oninput="spByoLineDirty()" style="margin-top:4px;padding:11px 12px;border:1.5px solid #e8e6df;border-radius:10px;font-family:inherit;font-size:.92rem;font-weight:500;text-transform:none;letter-spacing:normal;color:#1a1a1a"/>
+                </label>
+                <label style="flex:1 1 200px;display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">
+                  <span data-i18n="quote.byoline.material">Material</span>
+                  <input id="byoMaterial" type="text" maxlength="80" placeholder="e.g. 80/20 cotton-poly" oninput="spByoLineDirty()" style="margin-top:4px;padding:11px 12px;border:1.5px solid #e8e6df;border-radius:10px;font-family:inherit;font-size:.92rem;font-weight:500;text-transform:none;letter-spacing:normal;color:#1a1a1a"/>
+                </label>
+                <label style="flex:0 0 110px;display:flex;flex-direction:column;font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase">
+                  <span data-i18n="quote.byoline.qty">How many</span>
+                  <input id="byoLineQty" type="number" inputmode="numeric" min="1" max="10000" value="25" oninput="spByoLineDirty()" style="margin-top:4px;padding:11px 12px;border:1.5px solid #e8e6df;border-radius:10px;font-family:inherit;font-size:.92rem;font-weight:600;text-align:right"/>
+                </label>
+              </div>
+
+              <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px" data-i18n="quote.byoline.method">Decoration method</div>
+              <div class="service-row" id="byoMethodRow" style="margin-bottom:14px">
+                <div class="svc-btn selected" data-method="dtg" onclick="spByoSelectMethod(this)"><strong data-i18n="quote.byoline.dtg.l">DTG / DTF</strong><span data-i18n="quote.byoline.dtg.s">Printed</span></div>
+                <div class="svc-btn" data-method="embroidery" onclick="spByoSelectMethod(this)"><strong data-i18n="quote.byoline.emb.l">Embroidery</strong><span data-i18n="quote.byoline.emb.s">Stitched</span></div>
+                <div class="svc-btn" data-method="" onclick="spByoSelectMethod(this)"><strong data-i18n="quote.byoline.unsure.l">Not sure</strong><span data-i18n="quote.byoline.unsure.s">We'll advise</span></div>
+              </div>
+
+              <div id="byoLineEstimate" style="background:#1a1a1a;color:#fff;border-radius:12px;padding:13px 16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;flex-basis:100%" data-i18n="quote.byoline.est">Decoration only &middot; estimate</div>
+                <div style="font-size:1.35rem;font-weight:700;line-height:1.1"><span id="byoLineUnit">$&mdash;</span><span style="font-size:.76rem;font-weight:500;color:#aaa" data-i18n="quote.byo.per">/garment</span></div>
+                <div style="flex:1;text-align:right">
+                  <div style="font-size:.64rem;color:#aaa;text-transform:uppercase;letter-spacing:.04em" data-i18n="quote.byoline.linetotal">Line total</div>
+                  <div style="font-size:1.15rem;font-weight:700"><span id="byoLineTotal">$&mdash;</span></div>
+                </div>
+                <div id="byoLineNote" style="flex-basis:100%;font-size:.72rem;color:#888;line-height:1.5" data-i18n="quote.byoline.note">Final number depends on artwork complexity, print size and deadline. Blanks are yours, so this covers decoration only.</div>
+              </div>
+
+              <button type="button" id="byoAddBtn" onclick="spByoLineAdd()" style="width:100%;padding:14px 20px;border-radius:50px;border:none;background:#1a1a1a;color:#e8ff3c;font-weight:700;font-size:.95rem;font-family:inherit;cursor:pointer" data-i18n="quote.byoline.add">Add these garments to my quote</button>
+              <div id="byoAddErr" role="alert" style="display:none;font-size:.8rem;color:#a01a1a;font-weight:600;margin-top:8px"></div>
+              <div style="font-size:.76rem;color:#888;margin-top:10px;text-align:center;line-height:1.5" data-i18n="quote.byoline.multi">Add as many different garments as you need &mdash; and you can still add blanks from our catalog to the same quote.</div>
+            </div>
 
             <!-- Color picker -->
             <div class="color-section">
