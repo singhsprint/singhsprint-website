@@ -170,12 +170,34 @@
       if (qtyHost) { qtyHost.style.display = 'none'; qtyHost.innerHTML = ''; }
       if (tierHost) { tierHost.style.display = 'none'; tierHost.innerHTML = ''; }
       if (sec) sec.style.display = '';
+      spByoBlankFields(true);
       spByoLineRefreshPrice();
     }
 
     function spHideByoLineBuilder() {
       var sec = document.getElementById('byoLineSection');
       if (sec) sec.style.display = 'none';
+      spByoBlankFields(false);
+    }
+
+    // Every field below describes a blank WE supply. Left visible under the
+    // BYO panel they actively contradict it - the worst being the garment-
+    // source row, which sat under "Tell us about your garments" reading
+    // "GARMENT SOURCE: We Supply". Same id list renderCartList uses when cart
+    // mode takes over the page.
+    function spByoBlankFields(hide) {
+      var disp = hide ? 'none' : '';
+      ['blankBrandSection', 'canadianBlanksSection'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = disp;
+      });
+      try {
+        document.querySelectorAll('.form-group, .color-section').forEach(function (g) {
+          var lbl = g.querySelector('label');
+          var k = lbl ? (lbl.getAttribute('data-i18n') || '') : '';
+          if (k === 'quote.garmentsource' || k === 'quote.garmentcolor') g.style.display = disp;
+        });
+      } catch (e) { /* cosmetic only - never block the builder */ }
     }
 
     function spByoSelectMethod(el) {
@@ -2243,11 +2265,18 @@
       if (hasByo) {
         if (payWrap) payWrap.style.display = 'none';
         if (divWrap) divWrap.style.display = 'none';
+        // #quoteOrderNote is the pay button's own sub-line ("Pay securely by
+        // card or Affirm and skip the back-and-forth"). Hiding the button but
+        // leaving its caption reads as a button that failed to render.
+        var payNote = document.getElementById('quoteOrderNote');
+        if (payNote) payNote.style.display = 'none';
         var lead = document.getElementById('quoteLeadNote');
         if (lead) lead.style.display = '';
         return;
       }
       if (payWrap) payWrap.style.display = '';
+      var payNoteOn = document.getElementById('quoteOrderNote');
+      if (payNoteOn) payNoteOn.style.display = '';
 
       // CTA hierarchy (2026-07-26). "Get my free quote" is normally the primary
       // accent button — it is the action the lead ads promise and the only one
