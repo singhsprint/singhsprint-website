@@ -5452,9 +5452,20 @@
     // (10 hats + 15 shirts → both at the 25-pc rate). Sub-5 lines keep
     // their own qty. The server's checkout pricer applies the identical
     // rule, so the charge always matches what the cart showed.
+    // Pooled quantity behind the combined-order volume tier. BYO lines are
+    // EXCLUDED (2026-09-08): pooling exists because a bigger run of OUR blanks
+    // earns a better blank price, and a garment the customer supplies buys us
+    // no such leverage. Counting them would discount the blanks we sell on the
+    // strength of goods we never purchased — 40 of their hoodies would drag 50
+    // of our tees into the 90-piece tier for free.
+    //
+    // Their decoration is still priced by its own qty through
+    // /api/pricing/decoration-only, so a large BYO run keeps its own volume
+    // break. It just does not subsidise the catalog lines beside it.
     function spCartPoolQty(items) {
       var pool = 0;
       (items || []).forEach(function (it) {
+        if (it.is_byo) return;
         var q = Number(it.qty) || ((it.roster && it.roster.length) || 0);
         if (q >= 5) pool += q;
       });
@@ -5729,6 +5740,7 @@
       // so plainly — it's a real discount and the reason to add more items.
       var comboPool = spCartPoolQty(items);
       var comboLines = items.filter(function (it) {
+        if (it.is_byo) return false;   // excluded from the pool, so not counted here either
         return (Number(it.qty) || ((it.roster && it.roster.length) || 0)) >= 5;
       }).length;
       var comboStrip = '';
