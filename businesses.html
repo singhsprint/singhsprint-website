@@ -805,6 +805,17 @@
         keepalive: true
       }).catch(function() {});
 
+
+      // Email the sheet as well as downloading it. The address is the whole
+      // point of the gate — a PDF that only lands in ~/Downloads gives the
+      // buyer nothing to reply to, forward, or find again next week.
+      // Fire-and-forget: the download below happens either way.
+      fetch('https://singhsprint-crm.vercel.app/api/pricing-sheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, lang: 'en' }),
+        keepalive: true
+      }).catch(function() {});
       // Fire Pixel Lead event for retargeting audiences
       try {
         if (typeof fbq === 'function') {

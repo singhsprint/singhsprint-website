@@ -549,16 +549,16 @@
       <!-- Pricing PDF download — gated email-capture for procurement leads -->
       <div id="pricingPdfCard" class="pricing-pdf-card" style="max-width:900px;margin:40px auto 0;background:#1a1a1a;color:#fff;border-radius:16px;padding:36px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center">
         <div>
-          <div style="font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#e8ff3c;margin-bottom:10px">Take this with you</div>
-          <h3 style="font-size:1.4rem;color:#fff;margin-bottom:8px">Download our 2026 bulk pricing sheet</h3>
-          <p style="color:#aaa;font-size:.94rem;line-height:1.6;margin-bottom:0">Full tier pricing for T-shirts, hoodies, caps, long-sleeves, polos, crewnecks, joggers, and totes &mdash; on one PDF you can attach to an internal procurement comparison. We&rsquo;ll email it to you and follow up only if you ask.</p>
+          <div style="font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#e8ff3c;margin-bottom:10px">À emporter</div>
+          <h3 style="font-size:1.4rem;color:#fff;margin-bottom:8px">Téléchargez notre grille de prix 2026</h3>
+          <p style="color:#aaa;font-size:.94rem;line-height:1.6;margin-bottom:0">Tous les paliers de prix pour t-shirts, hoodies, casquettes, manches longues, polos, crewnecks, joggers et sacs fourre-tout &mdash; dans un seul PDF que vous pouvez joindre à une comparaison d&rsquo;achat interne. On vous l&rsquo;envoie par courriel et on fait un suivi seulement si vous le demandez.</p>
         </div>
         <form id="pricingPdfForm" style="display:flex;flex-direction:column;gap:10px">
           <input type="email" id="pricingPdfEmail" required placeholder="you@company.com" style="padding:13px 14px;border:1.5px solid #333;background:#0a0a0a;color:#fff;border-radius:10px;font-size:.95rem;font-family:inherit">
-          <button type="submit" class="btn btn-accent" style="padding:13px 22px;font-size:.95rem">Email me the PDF &rarr;</button>
-          <p style="font-size:.72rem;color:#666;line-height:1.5;margin:0">No spam. We don&rsquo;t share or sell your address.</p>
+          <button type="submit" class="btn btn-accent" style="padding:13px 22px;font-size:.95rem">Envoyez-moi le PDF &rarr;</button>
+          <p style="font-size:.72rem;color:#666;line-height:1.5;margin:0">Pas de spam. On ne partage ni ne vend votre adresse.</p>
         </form>
-        <div id="pricingPdfSuccess" style="display:none;grid-column:1/-1;text-align:center;padding:18px 0;color:#e8ff3c;font-weight:600">&#10003; Sent &mdash; check your inbox in a minute.</div>
+        <div id="pricingPdfSuccess" style="display:none;grid-column:1/-1;text-align:center;padding:18px 0;color:#e8ff3c;font-weight:600">&#10003; Envoyé &mdash; vérifiez votre boîte de réception dans une minute.</div>
       </div>
     </div>
   </section>
@@ -806,6 +806,17 @@
         keepalive: true
       }).catch(function() {});
 
+
+      // Email the sheet as well as downloading it. The address is the whole
+      // point of the gate — a PDF that only lands in ~/Downloads gives the
+      // buyer nothing to reply to, forward, or find again next week.
+      // Fire-and-forget: the download below happens either way.
+      fetch('https://singhsprint-crm.vercel.app/api/pricing-sheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, lang: 'fr' }),
+        keepalive: true
+      }).catch(function() {});
       // Fire Pixel Lead event for retargeting audiences
       try {
         if (typeof fbq === 'function') {

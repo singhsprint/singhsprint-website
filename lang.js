@@ -219,14 +219,14 @@ var SP_LANG = (function() {
     'home.faq.seeall': { en: 'See all questions →', fr: 'Voir toutes les questions →' },
     // Lead capture popup
     'home.popup.h3':     { en: 'Get a free tee on orders of 15+', fr: 'Obtenez un t-shirt gratuit dès 15 articles' },
-    'home.popup.p':      { en: 'Drop your email and we carry your free tee straight into the quote builder. No spam, no code, nothing to retype.', fr: "Laissez votre courriel et on transfère votre t-shirt gratuit directement dans la soumission. Pas de spam, pas de code, rien à retaper." },
-    'home.popup.cta':    { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
+    'home.popup.p':      { en: 'Drop your email and we lock it to your quote \u2014 orders of 15+, same design. No spam, no code, nothing to retype.', fr: "Laissez votre courriel et on le réserve à votre soumission \u2014 dès 15 articles, même design. Pas de spam, pas de code, rien à retaper." },
+    'home.popup.cta':    { en: 'Claim my free tee →', fr: 'Réclamer mon t-shirt gratuit →' },
     'home.popup.skip':   { en: 'Maybe later', fr: 'Plus tard' },
     // Unused after slice "popup → quote builder", kept so older cached pages
     // don't blank out the placeholder text if they reference these keys.
     'home.popup.name':   { en: 'Your name', fr: 'Votre nom' },
     'home.popup.email':  { en: 'Your email', fr: 'Votre courriel' },
-    'home.popup.submit': { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
+    'home.popup.submit': { en: 'Claim my free tee →', fr: 'Réclamer mon t-shirt gratuit →' },
     // Sticky mobile CTA
     'home.sticky.label': { en: 'Free tee on orders of 15+', fr: 'T-shirt gratuit dès 15 articles' },
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },
