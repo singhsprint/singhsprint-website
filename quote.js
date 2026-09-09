@@ -1303,8 +1303,13 @@
         if (promoSlug) {
           // Cache for the rest of the session so navigation can't strip it.
           try { sessionStorage.setItem('sp_promo_slug', promoSlug); } catch(_) {}
+          // Arm it; spPaintFreeTee decides whether it actually shows, based
+          // on the live cart quantity rather than on how the visitor arrived.
           var banner = document.getElementById('promoApplied');
-          if (banner) banner.style.display = 'flex';
+          if (banner) {
+            banner.setAttribute('data-promo-armed', '1');
+            banner.style.display = 'none';
+          }
           // Stamp the lead so the sales rep sees which offer drove this quote.
           var form = document.getElementById('quoteForm');
           if (form && !form.querySelector('input[name="promo_slug"]')) {
@@ -5475,6 +5480,80 @@
       return (q >= 5 && pool > q) ? pool : 0;
     }
 
+    // ---- Free-tee promo (2026-09-09) -----------------------------------
+    // "Order 15+ and the 16th tee is on us." The threshold is the whole
+    // mechanic: the median cart is 10 units, so the nudge from 10 -> 15 is
+    // what the offer is actually for. Counting has to be live or it does
+    // nothing, so spPaintFreeTee runs out of updateCartTotal on every change.
+    //
+    // BYO is excluded, deliberately and for the same reason it is excluded
+    // from volume pooling: we are not giving away a tee on top of garments
+    // we did not sell. Keep SP_FREE_TEE_MIN in sync with promos.min_units
+    // and FREE_TEE_MIN_UNITS in the CRM's inbound draft builder.
+    var SP_FREE_TEE_MIN = 15;
+
+    function spFreeTeeQty(items) {
+      var n = 0;
+      (items || []).forEach(function (it) {
+        if (it.is_byo) return;
+        n += Number(it.qty) || ((it.roster && it.roster.length) || 0);
+      });
+      return n;
+    }
+
+    function spFreeTeeQualifies(items) {
+      return spFreeTeeQty(items) >= SP_FREE_TEE_MIN;
+    }
+
+    function spFtT(key, fallback) {
+      try {
+        if (window.SP_LANG && typeof window.SP_LANG.t === 'function') {
+          var v = window.SP_LANG.t(key);
+          if (v && v !== key) return v;
+        }
+      } catch (_) {}
+      return fallback;
+    }
+    function spFtEsc(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Paints the row inside the live-estimate strip and gates the green
+    // arrival banner. Never throws into the pricing path.
+    function spPaintFreeTee(items) {
+      try {
+        var row = document.getElementById('freeTeeRow');
+        var qty = spFreeTeeQty(items);
+        var hit = qty >= SP_FREE_TEE_MIN;
+        if (row) {
+          if (qty <= 0) {
+            row.style.display = 'none';
+          } else {
+            row.style.display = 'block';
+            if (hit) {
+              row.innerHTML = '<span style="color:#e8ff3c;font-weight:700">&#10003; </span>'
+                + spFtEsc(spFtT('quote.freetee.included',
+                    'Free tee included \u2014 same design. We\'ll confirm your size.'));
+            } else {
+              var left = SP_FREE_TEE_MIN - qty;
+              row.innerHTML = spFtEsc(
+                spFtT('quote.freetee.nudge', 'Add {n} more and the 16th tee is on us.')
+                  .replace('{n}', String(left))
+              );
+            }
+          }
+        }
+        // The arrival banner used to show for anyone who came in via the
+        // popup, at any cart size -- so a 3-piece cart was told a 15-piece
+        // offer was "locked to this quote". Gate it on the real number.
+        var banner = document.getElementById('promoApplied');
+        if (banner && banner.getAttribute('data-promo-armed') === '1') {
+          banner.style.display = hit ? 'flex' : 'none';
+        }
+      } catch (e) { /* never block pricing for a promo row */ }
+    }
+
     // Single source of truth for the _priceCache key. liveUnitPrice WRITES
     // under it and updateCartTotal READS under it; they used to build the
     // string independently, so any new pricing axis had to be added in two
@@ -5811,7 +5890,14 @@
           // clip + scroll on mobile instead of forcing the row wider.
           '<div id="ci-livematrix-' + idx + '" class="ci-livematrix" style="flex-basis:100%;min-width:0;max-width:100%;width:100%;margin-top:8px;box-sizing:border-box"></div>' +
           '</div>';
-      }).join('');
+      }).join('') + (spFreeTeeQualifies(items)
+        ? '<div id="freeTeeCartRow" style="display:flex;align-items:center;justify-content:space-between;'
+          + 'gap:12px;padding:12px 14px;border:1px dashed #1b6a44;border-radius:12px;'
+          + 'background:#0f3a25;color:#d4f5e3">'
+          + '<span style="font-size:.9rem"><span style="color:#e8ff3c;font-weight:700">&#10003; </span>'
+          + spFtEsc(spFtT('quote.freetee.cartline', 'Free tee \u2014 same design, on us'))
+          + '</span><span style="font-weight:700;color:#e8ff3c">$0.00</span></div>'
+        : '');
 
       // Inject per-row swatches + fetch live unit prices.
       items.forEach(function(it, idx) {
@@ -6281,6 +6367,7 @@
     //   unit price at the real qty so the price tier is accurate.
     function updateCartTotal() {
       var items = SinghsCart.read().items;
+      spPaintFreeTee(items);
       if (items.length === 0) return;
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
