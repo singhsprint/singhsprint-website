@@ -38,8 +38,8 @@ var SP_LANG = (function() {
   var translations = {
     // ===== NAV / PROMO =====
     'promo': {
-      en: '$20 OFF your first order of $100+. No code needed.',
-      fr: '20 $ DE RABAIS sur votre première commande de 100 $ et plus. Aucun code requis.'
+      en: 'FREE TEE on orders of 15+. Same design, no code needed.',
+      fr: 'T-SHIRT GRATUIT dès 15 articles. Même design, aucun code requis.'
     },
     'promo.link': { en: 'Get your quote', fr: 'Obtenir votre soumission' },
     'nav.products': { en: 'Products', fr: 'Produits' },
@@ -98,7 +98,7 @@ var SP_LANG = (function() {
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
       en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and a mockup you approve before we print.",
-      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et une maquette que vous approuvez avant l'impression. 20 $ de rabais sur votre première commande de 100 $ et plus."
+      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et une maquette que vous approuvez avant l'impression. T-shirt gratuit dès 15 articles."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
@@ -150,8 +150,8 @@ var SP_LANG = (function() {
     },
     'home.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'home.cta.p': {
-      en: 'Get a quote in hours, not days. $20 off your first order of $100+.',
-      fr: 'Obtenez une soumission en heures, pas en jours. 20 $ de rabais sur votre première commande de 100 $ et plus.'
+      en: 'Get a quote in hours, not days. Free tee on orders of 15+.',
+      fr: 'Obtenez une soumission en heures, pas en jours. T-shirt gratuit dès 15 articles.'
     },
     'home.cta.btn': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.cta.call': { en: 'Call 438-544-3800', fr: 'Appelez le 438-544-3800' },
@@ -213,13 +213,13 @@ var SP_LANG = (function() {
     'home.faq.q7': { en: 'Do you guarantee against misprints?', fr: 'Offrez-vous une garantie contre les erreurs d\'impression ?' },
     'home.faq.a7': { en: 'Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.', fr: 'Oui. S\'il y a un problème de qualité d\'impression ou un défaut de vêtement, on réimprime ou on remplace l\'article sans frais.' },
     'home.faq.q8': { en: 'Do you offer a first-order discount?', fr: 'Offrez-vous un rabais sur la première commande ?' },
-    'home.faq.a8': { en: 'Yes — your first order of $100 or more is $20 off, applied automatically when you request your quote. No code needed.', fr: 'Oui — votre première commande de 100 $ ou plus bénéficie de 20 $ de rabais, appliqué automatiquement lors de la soumission. Aucun code requis.' },
+    'home.faq.a8': { en: 'Yes — order 15 or more and we add a free tee in the same design, applied automatically when you request your quote. No code needed.', fr: 'Oui — commandez 15 articles ou plus et on ajoute un t-shirt gratuit avec le même design, appliqué automatiquement lors de la soumission. Aucun code requis.' },
     'home.faq.q9': { en: 'What areas do you serve?', fr: 'Quels secteurs desservez-vous ?' },
     'home.faq.a9': { en: "We decorate in Sainte-Anne-de-Bellevue and deliver across Montreal's West Island (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), greater Montreal, Laval, and the South Shore. Canada-wide shipping available for larger orders.", fr: "On décore à Sainte-Anne-de-Bellevue et livre dans tout l'Ouest-de-l'Île de Montréal (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), le grand Montréal, Laval et la Rive-Sud. Expédition partout au Canada pour les commandes plus importantes." },
     'home.faq.seeall': { en: 'See all questions →', fr: 'Voir toutes les questions →' },
     // Lead capture popup
-    'home.popup.h3':     { en: 'Get $20 off your first order of $100+', fr: 'Obtenez 20 $ de rabais sur votre première commande de 100 $ et plus' },
-    'home.popup.p':      { en: 'Drop your email and we carry your $20 off straight into the quote builder. No spam, no code, nothing to retype.', fr: "Laissez votre courriel et on transfère votre rabais de 20 $ directement dans la soumission. Pas de spam, pas de code, rien à retaper." },
+    'home.popup.h3':     { en: 'Get a free tee on orders of 15+', fr: 'Obtenez un t-shirt gratuit dès 15 articles' },
+    'home.popup.p':      { en: 'Drop your email and we carry your free tee straight into the quote builder. No spam, no code, nothing to retype.', fr: "Laissez votre courriel et on transfère votre t-shirt gratuit directement dans la soumission. Pas de spam, pas de code, rien à retaper." },
     'home.popup.cta':    { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
     'home.popup.skip':   { en: 'Maybe later', fr: 'Plus tard' },
     // Unused after slice "popup → quote builder", kept so older cached pages
@@ -228,7 +228,7 @@ var SP_LANG = (function() {
     'home.popup.email':  { en: 'Your email', fr: 'Votre courriel' },
     'home.popup.submit': { en: 'Start my quote →', fr: 'Démarrer ma soumission →' },
     // Sticky mobile CTA
-    'home.sticky.label': { en: '$20 off first order ($100+)', fr: '20 $ de rabais (1ʳᵉ commande, 100 $+)' },
+    'home.sticky.label': { en: 'Free tee on orders of 15+', fr: 'T-shirt gratuit dès 15 articles' },
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },
     // Sitewide sticky CTA (injected by components.js on every page except /quote and /order)
     'sticky.label': { en: 'Ready when you are', fr: 'On est prêts' },
@@ -314,7 +314,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r6.us': { en: '<strong>Print issue or defect? We reprint or replace it. Period.</strong> No form, no fight.', fr: '<strong>Défaut d\'impression ? On réimprime ou on remplace. Point.</strong> Pas de formulaire, pas de chicane.' },
     'whyus.risk.h2': { en: "Here's the worst that can happen.", fr: 'Voici le pire qui puisse arriver.' },
     'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;6pm, Monday to Saturday. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 18 h, du lundi au samedi. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
-    'whyus.risk.p2': { en: 'If you do order: $20 off your first order of $100+, an optional printed sample for the cost of a blank, and a fix-it-free promise on any misprint.', fr: 'Si vous commandez : 20 $ de rabais sur votre première commande de 100 $+, un échantillon imprimé en option pour le prix d\'un vêtement, et une promesse de correction gratuite en cas d\'erreur d\'impression.' },
+    'whyus.risk.p2': { en: 'If you do order: a free tee on orders of 15+, an optional printed sample for the cost of a blank, and a fix-it-free promise on any misprint.', fr: 'Si vous commandez : un t-shirt gratuit dès 15 articles, un échantillon imprimé en option pour le prix d\'un vêtement, et une promesse de correction gratuite en cas d\'erreur d\'impression.' },
     'whyus.risk.kicker': { en: "The risk lives on our side of the table. That's on purpose.", fr: 'Le risque est de notre côté de la table. C\'est voulu.' },
     'whyus.proof.rating': { en: '(23 reviews) on Google', fr: '(23 avis) sur Google' },
     'whyus.proof.orders': { en: 'orders delivered', fr: 'commandes livrées' },
@@ -1271,7 +1271,7 @@ var SP_LANG = (function() {
     'quote.contact.rushlabel': { en: 'Rush?', fr: 'Urgent ?' },
     'quote.contact.rush': { en: 'This is a rush order — please prioritize', fr: 'Commande urgente — veuillez prioriser' },
     'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG and embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG et broderie librement.' },
-    'quote.promoApplied.body': { en: 'Applied to this quote. Visible on your final price after we confirm specs — no code needed.', fr: 'Appliqué à cette soumission. Visible sur votre prix final après confirmation des détails — aucun code requis.' },
+    'quote.promoApplied.body': { en: 'Locked to this quote. Your free tee is added once we confirm 15+ units — no code needed.', fr: 'Réservé à cette soumission. Votre t-shirt gratuit est ajouté dès la confirmation de 15 unités ou plus — aucun code requis.' },
     'quote.contact.hear': { en: 'How did you hear about us?', fr: 'Comment avez-vous entendu parler de nous ?' },
     'quote.contact.hear.opt1': { en: 'Google search', fr: 'Recherche Google' },
     'quote.contact.hear.opt2': { en: 'Instagram', fr: 'Instagram' },
@@ -1303,8 +1303,8 @@ var SP_LANG = (function() {
     'quote.sidebar.next.p2': { en: 'You approve a mockup before we print. Want a printed sample first? Add one at checkout for the cost of a blank.', fr: 'Vous approuvez une maquette avant l\'impression. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
     'quote.sidebar.talk.hours': { en: 'Open Mon–Sat, 9AM – 6PM', fr: 'Ouvert du lundi au samedi, 9 h à 18 h' },
-    'quote.sidebar.promo.h': { en: '$20 off your first order of $100+', fr: '20 $ de rabais sur votre première commande de 100 $ et plus' },
-    'quote.sidebar.promo.p': { en: 'Automatically applied to all new customers. No code needed.', fr: 'Appliqué automatiquement à tous les nouveaux clients. Aucun code requis.' },
+    'quote.sidebar.promo.h': { en: 'Free tee on orders of 15+', fr: 'T-shirt gratuit dès 15 articles' },
+    'quote.sidebar.promo.p': { en: 'Added automatically once your order reaches 15 units. Same design, no code needed.', fr: 'Ajouté automatiquement dès que votre commande atteint 15 unités. Même design, aucun code requis.' },
     'quote.alert.product': { en: 'Please select a product from the catalog.', fr: 'Veuillez sélectionner un produit du catalogue.' },
     'quote.alert.method': { en: 'Please select a printing method.', fr: 'Veuillez sélectionner une méthode d\'impression.' },
     'quote.alert.upload.imageonly':   { en: 'Please upload an image file (PNG, JPG, SVG)', fr: 'Veuillez téléverser un fichier image (PNG, JPG, SVG).' },

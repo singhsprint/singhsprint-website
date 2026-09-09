@@ -66,7 +66,7 @@ def render_page(products, lang):
     sub = (
         "All 1,000+ blanks we carry, organized alphabetically by brand. Click any "
         "product to see live pricing, color options, and request a quote. Every item "
-        "ships with $20 off your first order of $100+."
+        "ships with Free tee on orders of 15+."
         if lang == 'en' else
         "Plus de 1 000 modèles que nous décorons, classés par marque. Cliquez sur un "
         "produit pour voir les prix, les couleurs et demander une soumission. 20 $ de "
@@ -84,11 +84,11 @@ def render_page(products, lang):
     meta = (
         "Browse our complete catalog of 1,000+ apparel blanks for custom printing and "
         "embroidery. T-shirts, hoodies, polos, caps, totes from Gildan, Bella+Canvas, "
-        "Champion, Comfort Colors and more. $20 off your first order of $100+."
+        "Champion, Comfort Colors and more. Free tee on orders of 15+."
         if lang == 'en' else
         "Parcourez notre catalogue de plus de 1 000 vêtements à personnaliser. T-shirts, "
         "hoodies, polos, casquettes, sacs fourre-tout — Gildan, Bella+Canvas, Champion, "
-        "Comfort Colors et plus. 20 $ de rabais sur votre première commande de 100 $ et plus."
+        "Comfort Colors et plus. T-shirt gratuit dès 15 articles."
     )
     home_link = "/" if lang == 'en' else "/fr/"
     catalog_link = "/catalog" if lang == 'en' else "/fr/catalog"

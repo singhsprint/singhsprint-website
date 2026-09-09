@@ -435,13 +435,13 @@ function loadNav() {
         + '</div>';
     } else {
       promoHTML = '<div class="promo-bar">'
-        + '<span data-i18n="promo" data-promo="short">$20 OFF your first order of $100+. No code needed.</span> '
+        + '<span data-i18n="promo" data-promo="short">FREE TEE on orders of 15+. Same design, no code needed.</span> '
         + '<a href="' + BASE + '/quote" data-i18n="promo.link">Get your quote</a>'
         + '</div>';
     }
   } catch (err) {
     promoHTML = '<div class="promo-bar">'
-      + '<span data-i18n="promo" data-promo="short">$20 OFF your first order of $100+. No code needed.</span> '
+      + '<span data-i18n="promo" data-promo="short">FREE TEE on orders of 15+. Same design, no code needed.</span> '
       + '<a href="' + BASE + '/quote" data-i18n="promo.link">Get your quote</a>'
       + '</div>';
   }

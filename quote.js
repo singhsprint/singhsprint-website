@@ -7634,8 +7634,8 @@
                 } catch (e) { return []; }
               })(),
               // Promo handoff from the homepage offer popup — surfaces on
-              // the CRM inbox as a "$20 off (first order)" pill so the rep
-              // remembers to apply the discount on the formal quote.
+              // the CRM inbox as a "Free tee on 15+" pill so the rep
+              // remembers to add the free tee on the formal quote.
               promo_slug:     promoSlug || null,
               // 2026-05-24 — customer-supplied urgency. needed_by is a
               // YYYY-MM-DD string (or null when blank); is_rush is true

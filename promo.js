@@ -2,12 +2,12 @@
 // rewrite any [data-promo] element on the page with the right localized copy.
 //
 // Wiring:
-//   <span data-promo="short">$20 OFF your first order of $100+. No code needed.</span>
-//   <span data-promo="sticky">$20 off first order ($100+)</span>
-//   <h3   data-promo="popup-h3">Get $20 off your first order of $100+</h3>
-//   <h4   data-promo="sidebar-h">$20 off your first order of $100+</h4>
-//   <p    data-promo="sidebar-p">Automatically applied to all new customers. No code needed.</p>
-//   <span data-promo="hero-tail">$20 off your first order of $100+.</span>
+//   <span data-promo="short">FREE TEE on orders of 15+. Same design, no code needed.</span>
+//   <span data-promo="sticky">Free tee on orders of 15+</span>
+//   <h3   data-promo="popup-h3">Get a free tee on orders of 15+</h3>
+//   <h4   data-promo="sidebar-h">Free tee on orders of 15+</h4>
+//   <p    data-promo="sidebar-p">Added automatically once your order reaches 15 units. Same design, no code needed.</p>
+//   <span data-promo="hero-tail">Free tee on orders of 15+.</span>
 //
 // The hardcoded text in those elements is the fallback. If the CRM is down,
 // the network is blocked, or the script fails to load, visitors still see a

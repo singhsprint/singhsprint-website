@@ -176,7 +176,7 @@ const META_DESC_FR = {
 const META_OG_FR = {
   'index.html': {
     title: 'Singhs Print — Impression de vêtements personnalisés à Montréal',
-    desc:  'DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l\'Ouest-de-l\'Île. Petits minimums, délai de 3 à 5 jours avec options urgentes. 20 $ de rabais sur votre première commande de 100 $+.'
+    desc:  'DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l\'Ouest-de-l\'Île. Petits minimums, délai de 3 à 5 jours avec options urgentes. T-shirt gratuit dès 15 articles.'
   },
   'quote.html': {
     title: 'Soumission gratuite — Singhs Print',
