@@ -331,6 +331,13 @@ function loadNav() {
       '.sp-account .sp-account-label{display:none}',
       '.sp-phone{font-size:.88rem;color:#1a1a1a;font-weight:600;text-decoration:none;padding:6px 8px;border-radius:50px;transition:background .15s;display:inline-flex;align-items:center;gap:6px;flex-shrink:0}',
       '.sp-phone:hover{background:#f4f2eb}',
+      '.sp-email{font-size:.88rem;color:#1a1a1a;font-weight:600;text-decoration:none;padding:6px 8px;border-radius:50px;transition:background .15s;display:inline-flex;align-items:center;gap:6px;flex-shrink:0}',
+      '.sp-email:hover{background:#f4f2eb}',
+      '.sp-email svg{width:18px;height:18px}',
+      '@media(max-width:1180px){',
+        '.sp-email{padding:6px;border-radius:50%;width:38px;height:38px;justify-content:center;border:1px solid #e6e3d8}',
+        '.sp-email span{display:none}',
+      '}',
       '.sp-phone svg{display:none;width:18px;height:18px}',
       '#langToggle{padding:8px 14px;border-radius:50px;border:1.5px solid #ddd;background:#fff;font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.06em;flex-shrink:0;color:#1a1a1a;transition:all .15s}',
       '#langToggle:hover{border-color:#1a1a1a}',
@@ -363,6 +370,7 @@ function loadNav() {
         '.sp-phone{padding:6px;border-radius:50%;width:38px;height:38px;justify-content:center;border:1px solid #e6e3d8}',
         '.sp-phone svg{display:block}',
         '.sp-phone span{display:none}',
+        '.sp-email{display:none}',
         '#langToggle{display:none}',
         '.sp-cta{display:none}',
         '.sp-burger{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;color:#1a1a1a;border:1px solid #e6e3d8;background:#fff;border-radius:50%;cursor:pointer;flex-shrink:0}',
@@ -652,6 +660,7 @@ function loadNav() {
   var ICON = {
     search:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
     bag:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l-1.5 13a2 2 0 0 1-2 1.8h-5a2 2 0 0 1-2-1.8L6 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
+    mail:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
     burger:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
     close:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg>',
     chevD:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>',
@@ -779,6 +788,7 @@ function loadNav() {
     + '      <span class="sp-account-label" id="sp-account-label">' + t('Business', 'Entreprise') + '</span>'
     + '    </a>'
     + '    <a href="tel:4385443800" class="sp-phone" aria-label="Call us at 438-544-3800">' + ICON.phone + '<span>438-544-3800</span></a>'
+    + '    <a href="mailto:sales@singhsprint.com" class="sp-email" aria-label="Email sales@singhsprint.com">' + ICON.mail + '<span>sales@singhsprint.com</span></a>'
     + '    <button id="langToggle" onclick="SP_LANG && SP_LANG.toggleLang && SP_LANG.toggleLang()">' + (IS_FR ? 'EN' : 'FR') + '</button>'
     + '    <a href="' + BASE + '/quote" class="sp-cta" data-i18n="nav.quote">' + t('Get a Quote', 'Soumission') + '</a>'
     + '    <a href="' + BASE + '/quote" class="sp-mobile-quote" data-i18n="nav.quote.short">' + t('Quote', 'Devis') + '</a>'
@@ -811,8 +821,8 @@ function loadNav() {
     + '    <div class="sp-drawer-section">' + t('Shop', 'Magasinez') + '</div>' + drawerCats
     + '    <div class="sp-drawer-section">' + t('More', 'Plus') + '</div>' + drawerEdit
     + '    <div class="sp-drawer-foot">'
-    + '      <div style="font-size:.92rem;font-weight:600">438-544-3800</div>'
-    + '      <div style="font-size:.84rem;color:#666;margin-top:3px">sales@singhsprint.com</div>'
+    + '      <a href="tel:4385443800" style="display:block;font-size:.92rem;font-weight:600;color:#1a1a1a;text-decoration:none">438-544-3800</a>'
+    + '      <a href="mailto:sales@singhsprint.com" style="display:block;font-size:.86rem;color:#1a1a1a;margin-top:4px;text-decoration:none;word-break:break-all">sales@singhsprint.com</a>'
     + '      <div class="row">'
     + '        <button onclick="SP_LANG && SP_LANG.toggleLang && SP_LANG.toggleLang()" id="langToggle">' + (IS_FR ? 'EN' : 'FR') + '</button>'
     + '        <a href="' + BASE + '/quote" class="sp-cta" data-i18n="nav.quote">' + t('Get a Quote', 'Soumission') + '</a>'
