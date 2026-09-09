@@ -92,8 +92,8 @@ def render_page(products, lang):
     )
     home_link = "/" if lang == 'en' else "/fr/"
     catalog_link = "/catalog" if lang == 'en' else "/fr/catalog"
-    quote_link = ("/quote?promo=first-order-20-off-100" if lang == 'en'
-                  else "/fr/quote?promo=first-order-20-off-100")
+    quote_link = ("/quote?promo=free-tee-15-units" if lang == 'en'
+                  else "/fr/quote?promo=free-tee-15-units")
     nav_quote = "Get a Free Quote" if lang == 'en' else "Soumission gratuite"
     p_prefix = "/p/" if lang == 'en' else "/fr/p/"
 
