@@ -4469,6 +4469,49 @@
     var PRICING_API_FOR_QUOTE        = 'https://singhsprint-crm.vercel.app/api/pricing';
     var LIVE_MATRIX_API_FOR_QUOTE    = 'https://singhsprint-crm.vercel.app/api/pricing/live-matrix';
     var IMAGE_PROXY_FOR_QUOTE        = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+    // ===== SP_EMB_MIN_START ===========================================
+    var REGISTRY_API_FOR_QUOTE       = 'https://singhsprint-crm.vercel.app/api/v1/registry';
+
+    /**
+     * The embroidery minimum, as the PRICING ENGINE reports it.
+     *
+     * This page used to carry the number as a literal `10`, twice, under a
+     * comment explaining that the pricing config could not express a
+     * per-method minimum. That stopped being true when embroidery got its own
+     * ladder, and on 2026-09-13 the ladder gained a 5-9 rung: the engine began
+     * quoting five pieces while this page went on refusing them in copy.
+     *
+     * Fetched once on boot. Until it lands — and if it never lands — the
+     * getter returns the same 10 the CRM falls back to, because advertising a
+     * minimum that is too HIGH only costs a conversation, while advertising
+     * one too LOW promises a price the engine will refuse at checkout.
+     */
+    var _spEmbMin = null;
+    function SP_EMB_MIN() { return _spEmbMin == null ? 10 : _spEmbMin; }
+    (function loadEmbMin() {
+      try {
+        fetch(REGISTRY_API_FOR_QUOTE)
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            // Only a positive whole NUMBER is a minimum. Not a numeric
+            // string: the engine sends JSON numbers, so a string means the
+            // payload is not the one we think we are reading, and coercing it
+            // would hide that. Anything else leaves the fallback standing,
+            // which errs high — advertising too many pieces costs a
+            // conversation, too few promises a price checkout will refuse.
+            var n = d ? d.embroidery_min_qty : null;
+            // Number.isInteger is the whole guard: it is false for a string
+            // ('5'), for a fraction, for NaN and for Infinity, so one check
+            // covers every malformed shape without a second that shadows it.
+            // A four-clause version stood here briefly and a mutation showed
+            // two of the clauses could not fail independently.
+            if (Number.isInteger(n) && n > 0) _spEmbMin = n;
+          })
+          .catch(function () { /* fallback stands */ });
+      } catch (e) { /* fallback stands */ }
+    })();
+    // ===== SP_EMB_MIN_END =============================================
+
     // S&S Activewear 403's external hotlinks — route their images through
     // our server-side proxy. Mirrors imgUrl() in catalog.html.
     function imgUrl(raw) {
@@ -5037,11 +5080,23 @@
                '>' + o.label + '</button>';
       }).join('');
 
-      // 2026-07-31 — embroidery has a 10-piece minimum. It can't live in
-      // the pricing config (qty_tiers is shared with print), so the funnel
-      // has to say it. Warn rather than hard-block: every quote is reviewed
-      // by a rep before it goes out, and blocking mid-funnel loses the lead.
-      var EMB_MIN = 10;
+      // 2026-09-13 — the premise of the old comment here expired.
+      //
+      // It read: "embroidery has a 10-piece minimum. It can't live in the
+      // pricing config (qty_tiers is shared with print), so the funnel has to
+      // say it." That was true when it was written. Slice 81 then gave
+      // embroidery its OWN ladder — embroidery_qty_tiers — and the minimum
+      // became exactly "the lowest rung on it", per garment. The sentence
+      // stayed, the literal stayed, and when the ladder gained a 5-9 rung this
+      // funnel went on telling customers 10 while the engine quoted 5.
+      //
+      // A stale written-down claim reads exactly like a live one, so this now
+      // asks. SP_EMB_MIN() serves the CRM's live figure and falls back to 10
+      // only if the fetch has not landed — never a number of its own.
+      //
+      // Still a warning rather than a hard block: every quote is reviewed by a
+      // rep before it goes out, and blocking mid-funnel loses the lead.
+      var EMB_MIN = SP_EMB_MIN();
       var qtyNum  = Number(qty) || 0;
       var embShort = (current === 'embroidery' && qtyNum > 0 && qtyNum < EMB_MIN);
 
@@ -6020,16 +6075,18 @@
           if (!cell || cell.price == null) return '—';
           return '$' + Number(cell.price).toFixed(2);
         };
-        // 2026-07-31 — embroidery has a 10-piece minimum (our contract
-        // embroiderer prices in dozens; below 12 the per-unit cost jumps
-        // ~35%). qty_tiers is shared between print and embroidery so the
-        // pricing config can't express a per-method minimum — the engine
-        // will happily quote 5-9. Blank those cells so we never advertise
-        // a price we won't sell, matching how the 1-4 row already renders.
-        var EMB_MIN_QTY = 10;
-        var fmtEmb = function(cell, r) {
-          return (r.qty_min < EMB_MIN_QTY) ? '—' : fmt(cell);
-        };
+        // 2026-09-13 — was a hardcoded 10 blanking every row below it, on
+        // the same expired premise as the funnel hint above ("the pricing
+        // config can't express a per-method minimum — the engine will happily
+        // quote 5-9"). It can, and it doesn't: embroideryPrice() returns null
+        // below the lowest embroidery rung, so a refused cell already arrives
+        // with price == null and fmt() already renders it as '—'.
+        //
+        // The constant was therefore doing nothing except OVER-blanking once
+        // the minimum dropped: a 5-piece row the engine now quotes at $37.95
+        // would have shown a dash. Asking the cell is live, per garment, and
+        // cannot drift from what we will actually charge.
+        var fmtEmb = function(cell) { return fmt(cell); };
         // 2026-07-31 (slice 81) — the engine now IGNORES `sides` for
         // embroidery and prices the sum of placement multipliers instead, so
         // the Nth column of the embroidery table is N stitched LOCATIONS,
@@ -6075,7 +6132,7 @@
             '</tr>';
           }).join('');
           var minNote = (accessor === 'embroidery')
-            ? '<div style="padding:5px 10px;font-size:.66rem;color:#8a6d3b;background:#fffdf6;border-top:1px solid #f0eee5">Embroidery has a ' + EMB_MIN_QTY + '-piece minimum.</div>'
+            ? '<div style="padding:5px 10px;font-size:.66rem;color:#8a6d3b;background:#fffdf6;border-top:1px solid #f0eee5">Embroidery has a ' + SP_EMB_MIN() + '-piece minimum.</div>'
             : '';
           return '<div style="margin-top:8px;border:1px solid #e8e6df;border-radius:10px;background:#fff;overflow:hidden">' +
             '<div style="background:' + bg + ';font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#666;padding:6px 10px">' + label + '</div>' +
@@ -6130,7 +6187,7 @@
           }).join('');
           inner = '<div style="overflow-x:auto;margin-top:6px;border:1px solid #e8e6df;border-radius:10px;background:#fff">' +
             '<table style="width:100%;border-collapse:collapse;font-size:.78rem">' + head + '<tbody>' + body + '</tbody></table>' +
-            (showEmb ? '<div style="padding:5px 10px;font-size:.68rem;color:#8a6d3b;background:#fffdf6;border-top:1px solid #f0eee5">Embroidery has a ' + EMB_MIN_QTY + '-piece minimum.</div>' : '') +
+            (showEmb ? '<div style="padding:5px 10px;font-size:.68rem;color:#8a6d3b;background:#fffdf6;border-top:1px solid #f0eee5">Embroidery has a ' + SP_EMB_MIN() + '-piece minimum.</div>' : '') +
           '</div>';
         }
 
