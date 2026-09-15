@@ -257,7 +257,6 @@ var SP_LANG = (function() {
     'home.products.browsecatalog': { en: 'Browse the full catalog — 4,500+ blanks across S&amp;S, SanMar & more →', fr: 'Parcourez le catalogue complet — 4 500+ vêtements vierges chez S&amp;S, SanMar et plus →' },
     // Brand strip
     'home.brands.label': { en: 'We print on premium blanks from top suppliers', fr: 'On imprime sur des vêtements de qualité des meilleurs fournisseurs' },
-    'home.brands.note':  { en: 'Sourced from S&amp;S Activewear, SanMar & Rue Saint-Patrick. Bring your own garments too.', fr: 'Approvisionné chez S&amp;S Activewear, SanMar et Rue Saint-Patrick. Apportez vos propres vêtements aussi.' },
     // Services
     'home.svc.dtg.h': { en: 'DTG Printing',   fr: 'Impression DTG' },
     'home.svc.dtg.p': { en: 'Photo-quality, full-color prints directly on garments. Perfect for detailed artwork, gradients, and unlimited colors on cotton and blends.', fr: 'Impressions photo, pleine couleur, directement sur les vêtements. Parfait pour les visuels détaillés, les dégradés et les couleurs illimitées sur coton et mélanges.' },
