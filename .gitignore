@@ -18,3 +18,10 @@ Thumbs.db
 ForBusinessesTab/
 site-env.txt
 settings.html.bak
+
+# Scratch. tmp/ already held two ad-hoc message drafts from August and a
+# one-off icon preview; none of it belongs in the repo, and leaving it
+# untracked meant `git status` listed noise beside real uncommitted work —
+# which is how five finished guide pages sat unnoticed for a week.
+tmp/
+.commit-msg-tmp
