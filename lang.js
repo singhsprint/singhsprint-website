@@ -205,7 +205,7 @@ var SP_LANG = (function() {
     'home.faq.q3': { en: 'How fast can you complete an order?', fr: 'En combien de temps pouvez-vous compléter une commande ?' },
     'home.faq.a3': { en: "Standard 3-5 day turnaround from approved artwork. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage.", fr: "Délai standard de 3 à 5 jours après approbation du visuel. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission." },
     'home.faq.q4': { en: 'Can you supply the blank apparel?', fr: 'Pouvez-vous fournir les vêtements vierges ?' },
-    'home.faq.a4': { en: "Yes! We source from S&amp;S Activewear, SanMar, and Rue Saint-Patrick, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On s\'approvisionne chez S&amp;S Activewear, SanMar et Rue Saint-Patrick — accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
+    'home.faq.a4': { en: "Yes! We source from S&amp;S Activewear and SanMar, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On s\'approvisionne chez S&amp;S Activewear et SanMar — accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
     'home.faq.a5': { en: "PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Don't have print-ready art? We offer free design help.", fr: 'PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l\'impression ? Notre studio de design vous aide gratuitement.' },
     'home.faq.q6': { en: 'Can I see a sample first?', fr: 'Puis-je voir un échantillon d\'abord ?' },
@@ -359,8 +359,8 @@ var SP_LANG = (function() {
       fr: 'Avoir toutes les méthodes sur place nous permet de recommander la bonne pour votre projet plutôt que de tout forcer à travers une seule machine. T-shirts en coton ? DTG. Athleisure en polyester et mélanges foncés ? DTF. Broderie de logos sur casquettes, polos et vestes ? Cousue sur place. Tirages sérigraphiques mono-couleur en gros volume ? Même bâtiment.'
     },
     'about.what.p2': {
-      en: 'We carry 4,500+ blank styles from S&S Activewear, SanMar, AlphaBroder and Rue Saint-Patrick. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
-      fr: 'Nous offrons plus de 1 100 styles vierges chez S&S Activewear, SanMar, AlphaBroder et Rue Saint-Patrick. Toutes les grandes marques, de Gildan et Bella+Canvas à Comfort Colors, Champion, Next Level, Independent et American Apparel. Apportez vos propres vêtements si vous préférez, et nous décorerons les vôtres au même tarif par pièce.'
+      en: 'We carry 4,500+ blank styles from S&S Activewear, SanMar and AlphaBroder. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
+      fr: 'Nous offrons plus de 1 100 styles vierges chez S&S Activewear, SanMar et AlphaBroder. Toutes les grandes marques, de Gildan et Bella+Canvas à Comfort Colors, Champion, Next Level, Independent et American Apparel. Apportez vos propres vêtements si vous préférez, et nous décorerons les vôtres au même tarif par pièce.'
     },
 
     'about.clients.label': { en: 'Who we work with', fr: 'Avec qui on travaille' },
@@ -611,7 +611,6 @@ var SP_LANG = (function() {
       en: 'Prices shown are based on Gildan-quality blanks and include printing. Premium blanks (Bella+Canvas, Comfort Colors, American Apparel, etc.) may vary, and final cost depends on the size of the print. Select a product to see the full breakdown by quantity and print sides.',
       fr: 'Les prix affiches sont bases sur des vêtements de qualité Gildan et incluent l\'impression. Les marques premium (Bella+Canvas, Comfort Colors, American Apparel, etc.) peuvent varier, et le coût final dépend de la taille de l\'impression. Sélectionnez un produit pour voir la ventilation par quantite et cotes d\'impression.'
     },
-    'biz.pricing.canadian': { en: '+$2 each for Montreal-designed blanks (Rue Saint-Patrick)', fr: '+2$ chacun pour les vêtements conçus à Montréal (Rue Saint-Patrick)' },
     'biz.pricing.qty': { en: 'Quantity', fr: 'Quantité' },
     'biz.hiw.label': { en: 'How It Works', fr: 'Comment ça marche' },
     'biz.hiw.h2': { en: 'From first contact to delivery', fr: 'Du premier contact à la livraison' },
@@ -1085,7 +1084,6 @@ var SP_LANG = (function() {
     // that claim at all is a separate question and a separate change.
     'cat.detail.backorder':  { en: 'on backorder — about a month', fr: 'en rupture — environ un mois' },
     'cat.card.bestseller': { en: '★ Bestseller', fr: '★ Populaire' },
-    'cat.card.canadian': { en: '🍁 Designed in Montreal', fr: '🍁 Conçu à Montréal' },
     'cat.card.csa': { en: 'CSA Hi-Vis', fr: 'CSA hi-vis' },
     'cat.detail.color': { en: 'Color:', fr: 'Couleur :' },
     'cat.detail.sizes': { en: 'Sizes in stock:', fr: 'Tailles disponibles :' },
@@ -1234,7 +1232,6 @@ var SP_LANG = (function() {
     },
     'quote.canadian.label': { en: 'Montreal-designed blanks', fr: 'Vêtements conçus à Montréal' },
     'quote.canadian.surcharge': { en: '+$2/unit', fr: '+2 $/unité' },
-    'quote.canadian.sub': { en: 'Canadian brand, designed in Montreal (Rue Saint-Patrick). Optional upgrade from the standard blanks.', fr: 'Marque canadienne, conçue à Montréal (Rue Saint-Patrick). Mise à niveau facultative par rapport aux vêtements standards.' },
     'quote.bulk.label': { en: 'See bulk pricing for', fr: 'Voir les prix en gros pour' },
     'quote.bulk.product': { en: 'your product', fr: 'votre produit' },
     'quote.bulk.expand': { en: 'tap to expand ⌄', fr: 'cliquez pour développer ⌄' },

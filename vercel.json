@@ -80,6 +80,46 @@
   ],
   "redirects": [
     {
+      "source": "/p/rue-saint-patrick-:slug",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/p/rue-saint-patrick-:slug/",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/fr/p/rue-saint-patrick-:slug",
+      "destination": "/fr/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/fr/p/rue-saint-patrick-:slug/",
+      "destination": "/fr/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/designed-in-montreal",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/designed-in-montreal.html",
+      "destination": "/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/fr/designed-in-montreal",
+      "destination": "/fr/catalog",
+      "permanent": true
+    },
+    {
+      "source": "/fr/designed-in-montreal.html",
+      "destination": "/fr/catalog",
+      "permanent": true
+    },
+    {
       "source": "/index.html",
       "destination": "/",
       "permanent": true

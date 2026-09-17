@@ -3116,10 +3116,10 @@
     filters: {                       // active filter state — drives Algolia query
       type: getQueryParam('type') || null,
       brand: [],
-      // Hydrate from `?canadian=1` so deep links from the nav's Canadian-Made
-      // dropdown and the /designed-in-montreal page land on the catalog
-      // pre-filtered to Rue Saint-Patrick / Canadian-made blanks.
-      canadian: getQueryParam('canadian') === '1',
+      // 2026-09-17 — `canadian` lived here, hydrated from ?canadian=1. It was
+      // supplier-scoped to rue_sainte_patrick, which was the only supplier
+      // carrying is_canadian_made (18 of 18 flagged products, measured), so
+      // with that line dropped the filter could only ever return nothing.
       // Hydrate from `?csa=1` so the nav's "Hi-vis & CSA" deep link actually
       // filters. Was hardcoded false, which silently ignored the param and
       // dumped the whole catalog onto the Workwear landing. 2026-07-22.
@@ -3286,8 +3286,6 @@
   // Fetch
   // =========================================================================
   async function fetchPage() {
-    var _rspB = document.getElementById('rspBanner');
-    if (_rspB) _rspB.style.display = state.filters.canadian ? 'block' : 'none';
     if (state.loading || state.done) return;
     state.loading = true;
     document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
@@ -3306,7 +3304,6 @@
         const r = await window.SPCatalog.search({
           type:           state.filters.type,
           brands:         state.filters.brand,
-          canadian:       state.filters.canadian,
           csa:            state.filters.csa,
           inStockOnly:    state.filters.inStockOnly,
           q:              state.filters.q,
@@ -3351,7 +3348,6 @@
     const params = new URLSearchParams();
     if (state.filters.type)        params.set('type', state.filters.type);
     if (state.filters.q)           params.set('q', state.filters.q);
-    if (state.filters.canadian)    params.set('canadian', '1');
     if (state.filters.csa)         params.set('csa', '1');
     state.filters.brand.forEach(b => params.append('brand', b));
     const FIRST_PAGE = 120;
@@ -3995,7 +3991,6 @@
     // no per-size data to work from -- /api/catalog would need to carry a
     // low-stock aggregate before a card badge could tell the truth.
     else if (p.bestseller)                                               badge = `<div class="badge badge--bestseller" data-i18n="cat.card.bestseller">★ Bestseller</div>`;
-    else if (p.is_canadian_made)                                         badge = `<div class="badge badge--canadian" data-i18n="cat.card.canadian">🇨🇦 Canadian</div>`;
     else if (p.has_csa_cert)                                             badge = `<div class="badge badge--csa" data-i18n="cat.card.csa">CSA Hi-Vis</div>`;
 
     // Catalog cards display up to 24 swatches in a 2-row wrap (16px × 2 rows
@@ -4358,10 +4353,6 @@
             <input type="checkbox" ${state.filters.inStockOnly ? 'checked' : ''} onchange="state.filters.inStockOnly = this.checked; resetAndFetch()" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>In stock only</span>
           </label>
-          <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0eee7">
-            <input type="checkbox" ${state.filters.canadian ? 'checked' : ''} onchange="state.filters.canadian = this.checked; commitFilters()" style="accent-color:var(--ink);width:15px;height:15px"/>
-            <span>🇨🇦 Canadian-made blanks</span>
-          </label>
           <label style="display:flex;align-items:center;gap:10px;font-size:.9rem;cursor:pointer;padding:8px 0">
             <input type="checkbox" ${state.filters.csa ? 'checked' : ''} onchange="state.filters.csa = this.checked; commitFilters()" style="accent-color:var(--ink);width:15px;height:15px"/>
             <span>CSA / Hi-vis certified</span>
@@ -4563,10 +4554,7 @@
       resetAndFetch();
     }));
 
-    // Qualifier toggles — Canadian / Hi-Vis
-    row.appendChild(makeChip('🇨🇦 Canadian', state.filters.canadian ? 'active' : 'passive', () => {
-      state.filters.canadian = !state.filters.canadian; resetAndFetch();
-    }));
+    // Qualifier toggle — Hi-Vis
     row.appendChild(makeChip('Hi-Vis / CSA', state.filters.csa ? 'active' : 'passive', () => {
       state.filters.csa = !state.filters.csa; resetAndFetch();
     }));
@@ -4602,7 +4590,6 @@
     // "Clear filters" link on the right — only when something's active.
     const anyActive =
       state.filters.type ||
-      state.filters.canadian ||
       state.filters.csa ||
       state.filters.brand.length > 0 ||
       state.filters.q;
@@ -4636,7 +4623,7 @@
   function closeFilterPanel() { document.getElementById('filterPanel').classList.remove('open'); document.getElementById('filterOverlay').classList.remove('open'); }
   function clearAllFilters()  {
     state.filters = {
-      type: null, brand: [], canadian: false, csa: false, q: '', inStockOnly: true,
+      type: null, brand: [], csa: false, q: '', inStockOnly: true,
       colorFamilies: [], genders: [], fabricFamilies: [], weightClasses: [], sizes: [],
       priceMin: null, priceMax: null,
     };
@@ -4648,7 +4635,6 @@
     const activeCount =
       (state.filters.type ? 1 : 0) +
       state.filters.brand.length +
-      (state.filters.canadian ? 1 : 0) +
       (state.filters.csa ? 1 : 0) +
       state.filters.colorFamilies.length +
       state.filters.genders.length +

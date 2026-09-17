@@ -410,12 +410,13 @@
                  useful value 95% of the time. Hidden input + an empty
                  #blankBrandSection wrapper kept around so the existing
                  show/hide-based-on-mode JS (renderCartList, prefill paths)
-                 doesn't NPE looking them up. Same trick for the legacy
-                 All-Canadian checkbox. -->
+                 doesn't NPE looking them up. The legacy All-Canadian
+                 checkbox that sat beside it is gone entirely as of
+                 2026-09-17 -- we no longer carry Rue Saint-Patrick, which
+                 was the only supplier its +$2 upgrade applied to. -->
             <div id="blankBrandSection" style="display:none">
               <select name="blank_brand" id="blankBrand" style="display:none"><option value=""></option></select>
             </div>
-            <input type="hidden" id="canadianBlanksCheckbox" name="canadian_blanks" value="">
 
             <!-- Print locations — preset-driven picker (replaces drag-on-canvas).
                  The 3 .placement-group blocks below are the SHIRT layout (initial

@@ -9,23 +9,13 @@
       placement: 'front',
       service: 'DTG',
       view: 'front',
-      designSrc: null,
-      canadianBlanks: false
+      designSrc: null
     };
 
-    // ===== ALL-CANADIAN BLANKS TOGGLE =====
-    function toggleCanadianBlanks(label) {
-      var cb = document.getElementById('canadianBlanksCheckbox');
-      cb.checked = !cb.checked;
-      state.canadianBlanks = cb.checked;
-      if (cb.checked) {
-        label.classList.add('checked');
-      } else {
-        label.classList.remove('checked');
-      }
-      if (typeof calculatePrice === 'function') calculatePrice();
-    }
-
+    // 2026-09-17 — the all-Canadian blanks toggle lived here: a `canadianBlanks`
+    // state flag, a toggleCanadianBlanks() nothing had called since the visible
+    // checkbox was retired, and a +$2/unit branch in the price function. We no
+    // longer carry Rue Saint-Patrick, which was the only supplier it applied to.
     var colorNames = {
       '#111111': 'Black',
       '#FFFFFF': 'White',
@@ -40,15 +30,13 @@
     };
 
     // ===== PRODUCT =====
-    // Blank brand options by garment type (4 picks + Rue Saint-Patrick)
-    var stpat = {v:'Rue Saint-Patrick', t:'Rue Saint-Patrick - Canadian-made, premium quality'};
+    // Blank brand options by garment type.
     var blankOptions = {
       tshirt: [
         {v:'Gildan Softstyle', t:'Gildan Softstyle - Soft, lightweight, great value'},
         {v:'Bella+Canvas 3001', t:'Bella+Canvas 3001 - Premium retail feel, fitted'},
         {v:'American Apparel 1301', t:'American Apparel 1301 - Heavyweight cotton, made in USA'},
-        {v:'Comfort Colors 1717', t:'Comfort Colors 1717 - Garment-dyed, vintage look'},
-        stpat
+        {v:'Comfort Colors 1717', t:'Comfort Colors 1717 - Garment-dyed, vintage look'}
       ],
       hoodie: [
         {v:'Gildan 18500', t:'Gildan 18500 - Budget-friendly heavyweight'},
@@ -68,8 +56,7 @@
         {v:'Gildan 8800', t:'Gildan 8800 - DryBlend jersey polo'},
         {v:'Port Authority K500', t:'Port Authority K500 - Silk Touch, professional'},
         {v:'Nike NKDC1963', t:'Nike Dri-FIT - Performance, moisture-wicking'},
-        {v:'Adidas A230', t:'Adidas Performance - Sport, breathable'},
-        stpat
+        {v:'Adidas A230', t:'Adidas Performance - Sport, breathable'}
       ],
       hat: [
         {v:'Yupoong 6089', t:'Yupoong 6089 - Classic snapback'},
@@ -187,7 +174,7 @@
     // mode takes over the page.
     function spByoBlankFields(hide) {
       var disp = hide ? 'none' : '';
-      ['blankBrandSection', 'canadianBlanksSection'].forEach(function (id) {
+      ['blankBrandSection'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.style.display = disp;
       });
@@ -2858,11 +2845,6 @@
         });
         if (!tier) tier = tiers[0]; // fallback to smallest tier
         basePrice = tier[placementType] || tier['single'];
-      }
-
-      // All-Canadian made blanks upgrade: +$2/unit (T-shirts only — extend later if other products go All-Canadian)
-      if (basePrice && state.canadianBlanks && (product === 'tshirt' || product === 'longsleeve')) {
-        basePrice = basePrice + 2;
       }
 
       return basePrice;
@@ -5809,7 +5791,7 @@
           if (singlePick) singlePick.style.display = 'none';
           // Un-hide the legacy product grid + fields that cart mode hides
           // so the visitor still has a fallback path to fill out the quote.
-          ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
+          ['legacyProductGroup','blankBrandSection','globalPrintMethodGroup']
             .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = ''; });
           document.querySelectorAll('.form-group, .color-section').forEach(function(g){
             var lbl = g.querySelector('label'); var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
@@ -5849,7 +5831,7 @@
       // single-product prefill). 2026-05-24 — globalPrintMethodGroup
       // joins this list: per-item method pickers in each cart row mean
       // the global DTG/DTF/Embroidery selector is duplicate work.
-      ['legacyProductGroup','blankBrandSection','canadianBlanksSection','globalPrintMethodGroup']
+      ['legacyProductGroup','blankBrandSection','globalPrintMethodGroup']
         .forEach(function(id){ var el = document.getElementById(id); if (el) el.style.display = 'none'; });
       document.querySelectorAll('.form-group, .color-section').forEach(function(g){
         var lbl = g.querySelector('label'); var k = lbl ? (lbl.getAttribute('data-i18n')||'') : '';
@@ -6870,8 +6852,8 @@
           // just create noise. We drive them programmatically from the pick.
           document.getElementById('catalogPick').style.display = 'flex';
           (opts.keepGrid
-            ? ['blankBrandSection','canadianBlanksSection']
-            : ['legacyProductGroup','blankBrandSection','canadianBlanksSection'])
+            ? ['blankBrandSection']
+            : ['legacyProductGroup','blankBrandSection'])
             .forEach(function(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; });
           // Garment Source + Garment Color both live in form-group siblings —
           // walk the catalog-pick parent to find and hide them by label text.
@@ -7305,7 +7287,7 @@
       catalogPick = null;
       var pickCard = document.getElementById('catalogPick');
       if (pickCard) pickCard.style.display = 'none';
-      ['blankBrandSection', 'canadianBlanksSection'].forEach(function(id) {
+      ['blankBrandSection'].forEach(function(id) {
         var el = document.getElementById(id); if (el) el.style.display = '';
       });
       document.querySelectorAll('.form-group, .color-section').forEach(function(g) {
@@ -7754,7 +7736,6 @@
             meta: {
               purpose:        fd.get('purpose') || null,
               blank_brand:    fd.get('blank_brand') || null,
-              canadian_addon: !!fd.get('canadian_blanks'),
               xxl_surcharge_total: sur.surchargeTotal || 0,
               // Selected placement preset IDs. Pulled from presetByLocation
               // (the active map) and the cart items as a fallback. We used

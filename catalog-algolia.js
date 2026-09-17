@@ -20,7 +20,7 @@
  *   <script src="/catalog-algolia.js"></script>
  *
  * Exposes window.SPCatalog with a single async method:
- *   search({ type, brands, canadian, csa, q, page, hitsPerPage }) →
+ *   search({ type, brands, csa, q, page, hitsPerPage }) →
  *     { products, total, totalPages, facets }
  *
  * The `products` array matches the legacy /api/catalog response shape so
@@ -148,7 +148,6 @@
       if (CATEGORY_GROUPS[opts.type]) f.push(CATEGORY_GROUPS[opts.type].slice());
       else                            f.push('category_effective:' + opts.type);
     }
-    if (opts.canadian)   f.push('is_canadian_made:true');
     if (opts.csa)        f.push('is_hivis_or_csa:true');
     if (opts.inStockOnly) f.push('in_stock:true');
     // Brand filter: array-of-arrays = OR within brands, AND with other filters.

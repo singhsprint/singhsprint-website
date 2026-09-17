@@ -577,21 +577,11 @@ function loadNav() {
         { en: 'Football',   fr: 'Football',   i18n: 'nav.jerseys.football',   href: BASE + '/jerseys?sport=football' },
         { en: 'Volleyball', fr: 'Volleyball', i18n: 'nav.jerseys.volleyball', href: BASE + '/jerseys?sport=volleyball' }
       ]
-    },
-    {
-      // Rue Saint-Patrick — Montreal-designed, Canadian-made blanks. Own hub at
-      // /designed-in-montreal (brand story + the Canadian collection grid). Subs
-      // deep-link the catalog's existing ?canadian=1 filter (supplier-scoped to
-      // rue_sainte_patrick). en/fr inline so no lang.js key is required.
-      en: 'Canadian', fr: 'Canadien',
-      // Points straight at the catalog with the Canadian filter applied — it's
-      // the live catalog (same cards, pricing slider, detail view), not a
-      // separate hard-coded grid. The only sub-link is the RSP brand story.
-      href: BASE + '/catalog?canadian=1',
-      subs: [
-        { en: 'The Rue Saint-Patrick story', fr: 'L\'histoire Rue Saint-Patrick', href: BASE + '/designed-in-montreal' }
-      ]
     }
+    // 2026-09-17 — the "Canadian / Canadien" item lived here. It pointed at
+    // /catalog?canadian=1 (supplier-scoped to rue_sainte_patrick) with the Rue
+    // Saint-Patrick brand story as its only sub-link. Both the filter and the
+    // story page are gone; we no longer carry the line.
   ];
 
   // EDITORIAL, right-rail nav items.
