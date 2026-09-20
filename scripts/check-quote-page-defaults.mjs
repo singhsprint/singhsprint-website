@@ -92,5 +92,44 @@ ok('4e "+ Add placement" is hidden while the picker is open',
 ok('4f the picker still offers a way to dismiss it',
    /ci-picker__close[^>]*>Done</.test(js))
 
+// ── 2. blanks before quantity ──────────────────────────────────────────
+console.log('2. blanks are chosen before quantity')
+for (const page of ['quote.html', 'fr/quote.html']) {
+  const html = read(page)
+  const tier = html.indexOf('id="tierBlanksSection"')
+  const qty  = html.indexOf('id="qtyBandSection"')
+  ok(`2a ${page}: both sections present`, tier > -1 && qty > -1)
+  ok(`2b ${page}: tier cards come BEFORE the quantity bands`, tier > -1 && qty > -1 && tier < qty,
+     `tier@${tier} qty@${qty}`)
+}
+// The gate that used to hide every card until a band was picked.
+ok('2c tier cards no longer bail out when no band is chosen',
+   !/if \(!spQtyBand\) \{ host\.style\.display = 'none'; host\.innerHTML = ''; return; \}/.test(js))
+ok('2d bandQty tolerates a missing band',
+   /var bandQty = spQtyBand \? spQtyBand\.qty : null/.test(js))
+// Without a band the card must keep its "From $X" floor.
+ok('2e the From-price string is still built',
+   /spTierT\('quote\.tiers\.from', 'From'\)/.test(js))
+ok('2f repricing is gated on an actual band',
+   /if \(bandQty\) \{/.test(js))
+// Every spQtyBand read inside the renderer must be null-safe now.
+const body = js.slice(js.indexOf('function spRenderTierCards'), js.indexOf('function spApplyTierPick'))
+// Line-aware: a property read is fine when the SAME line carries the guard.
+// Matching the bare access caught `spQtyBand ? spQtyBand.qty : null`, which is
+// exactly the safe form — the assertion, not the code, was wrong.
+const unsafe = body.split('\n')
+  .filter(l => /spQtyBand\.[a-zA-Z]/.test(l))
+  .filter(l => !/spQtyBand\s*\?/.test(l) && !/spQtyBand\s*&&/.test(l))
+  .map(l => l.trim())
+ok('2g every spQtyBand dereference in the renderer is guarded', unsafe.length === 0,
+   `unguarded: ${JSON.stringify(unsafe)}`)
+ok('2h the under-5 note is null-guarded',
+   /if \(spQtyBand && spQtyBand\.id === 'u5'\)/.test(js))
+// The reveal walk must follow the new DOM order or it scrolls past the cards.
+ok('2i the scroll walk goes to the tier cards first',
+   /spScrollTo\(tierChoicePending\(\) \? secEl\('tier'\)/.test(js))
+ok('2j …and only then to the quantity chips',
+   /tierChoicePending\(\) \? secEl\('tier'\)\s*\n\s*: \(qtyChoicePending\(\) \? secEl\('qtyband'\)/.test(js))
+
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }

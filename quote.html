@@ -292,17 +292,21 @@
               </div>
             </div>
 
-            <!-- Rough quantity bands — painted by spRenderTierCards() after a
-                 product-type pick. Chips mirror the pricing tiers, so every
-                 tier-card price below is computed at the customer's real
-                 quantity instead of a bulk "from" floor. -->
-            <div class="form-group" id="qtyBandSection" style="display:none"></div>
-
             <!-- Tier blanks (Standard / Plus / Premium) — painted by
                  spRenderTierCards() in quote.js after a product-type pick.
                  Picking a tier locks in a real catalog blank (colours,
-                 live price, checkout) without opening /catalog. -->
+                 live price, checkout) without opening /catalog.
+                 First of the two questions as of 2026-09-20. -->
             <div class="form-group" id="tierBlanksSection" style="display:none"></div>
+
+            <!-- Rough quantity bands — painted by spRenderTierCards().
+                 2026-09-20: this now sits BELOW the tier cards. It used to come
+                 first, and spRenderTierCards() refused to paint a single card
+                 until a band was chosen, so the page asked "how many?" before
+                 it had shown what the customer was buying. The cards lead with
+                 their "From $X" floor; picking a band reprices them in place at
+                 that band's real quantity. -->
+            <div class="form-group" id="qtyBandSection" style="display:none"></div>
 
             <!-- BYO line builder (2026-09-08). Shown instead of the quantity
                  bands + Standard/Plus/Premium tier cards when the visitor

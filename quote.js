@@ -7155,11 +7155,18 @@
       spFetchTierBlanks().then(function(map) {
         var tiers = map && map[garmentKey];
         if (!tiers || !tiers.length) { hideBoth(); return; }
-        // Quantity first: chips always render; the tier cards wait until a
-        // band is chosen so their prices can be honest from the first paint.
+        // 2026-09-20 — BLANKS FIRST. This used to render the quantity chips and
+        // then bail (`if (!spQtyBand) return`) until a band was picked, so the
+        // page asked "how many?" before it had shown a single garment. The
+        // reasoning was that a band-specific price is honester than a floor —
+        // true, but it bought that by hiding what the customer came to choose.
+        //
+        // The cards now paint straight away carrying their "From $X" floor, and
+        // picking a band reprices them in place at that band's real quantity
+        // (the liveUnitPrice pass at the bottom of this function). The floor is
+        // labelled "From", so it never reads as the price they will pay.
         spRenderQtyBands(garmentKey, productLabel, tiers);
-        if (!spQtyBand) { host.style.display = 'none'; host.innerHTML = ''; return; }
-        var bandQty = spQtyBand.qty;   // null for "not sure" → from-prices
+        var bandQty = spQtyBand ? spQtyBand.qty : null;   // null → keep from-prices
         var tierNames = {
           standard: spTierT('quote.tiers.standard', 'Standard'),
           plus:     spTierT('quote.tiers.plus', 'Plus'),
@@ -7168,7 +7175,7 @@
         var html = '<label style="display:block">' + spTierT('quote.tiers.h', 'Blank quality') + '</label>' +
           '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
           spTierT('quote.tiers.sub', 'Pick a quality tier — we handle the blank. Price updates live; you can order right away.') + '</p>';
-        if (spQtyBand.id === 'u5') {
+        if (spQtyBand && spQtyBand.id === 'u5') {
           html += '<div style="font-size:.82rem;background:#fafaf6;border:1px dashed #ccc;border-radius:10px;padding:10px 14px;margin:0 0 10px">' +
             spTierT('quote.qty.under5note', 'Under 5 pieces is checkout-only — order in a couple of clicks. Quote requests start at 5.') + '</div>';
         }
@@ -8544,8 +8551,11 @@
           syncReveal();
           // Walk to the actual next question: quantity chips if they're
           // waiting, else tier cards, else colour (no-tier products).
-          spScrollTo(qtyChoicePending() ? secEl('qtyband')
-            : (tierChoicePending() ? secEl('tier') : secEl('color')));
+          // Blanks first (2026-09-20): the tier cards are now the first
+          // question on the page, so the walk has to follow the DOM or it
+          // scrolls the customer PAST the choice it just revealed.
+          spScrollTo(tierChoicePending() ? secEl('tier')
+            : (qtyChoicePending() ? secEl('qtyband') : secEl('color')));
         }, 200);
         setTimeout(syncReveal, 600);
         collapse('product', state.product);
