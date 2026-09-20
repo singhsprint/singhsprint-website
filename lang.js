@@ -140,8 +140,8 @@ var SP_LANG = (function() {
     },
     'home.hiw.step3.h': { en: 'Approve your mockup', fr: 'Approuvez votre maquette' },
     'home.hiw.step3.p': {
-      en: 'You sign off on a photoreal mockup before we print. Want a printed sample first? Add one at checkout for the cost of a blank.',
-      fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.'
+      en: 'You sign off on a photoreal mockup before we print.',
+      fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime.'
     },
     'home.hiw.step4.h': { en: 'Pick up or get it shipped', fr: 'Ramassage ou expédition' },
     'home.hiw.step4.p': {
@@ -167,7 +167,7 @@ var SP_LANG = (function() {
     'home.why.guarantee.h':   { en: 'Misprint guarantee', fr: 'Garantie contre les erreurs d\'impression' },
     'home.why.guarantee.p':   { en: "If there's a print issue or defect, we reprint or replace it. Period.", fr: "S'il y a un problème d'impression ou un défaut, on réimprime ou on remplace. Point final." },
     'home.why.sample.h':      { en: 'Mockup before production', fr: 'Maquette avant production' },
-    'home.why.sample.p':      { en: 'You approve a mockup before production. Want a printed sample in hand? Add one at checkout for the cost of a blank.', fr: 'Vous approuvez une maquette avant la production. Un échantillon imprimé en main ? Ajoutez-le au paiement, pour le prix d\'un vêtement.' },
+    'home.why.sample.p':      { en: 'You approve a mockup before production.', fr: 'Vous approuvez une maquette avant la production.' },
     'home.why.turnaround.h':  { en: '2-4 day turnaround', fr: 'Délai de 2 à 4 jours' },
     'home.why.turnaround.p':  { en: 'Most orders done in days. Rush options with same-day Montreal pickup.', fr: 'La plupart des commandes en quelques jours. Options urgentes avec ramassage le jour même à Montréal.' },
     'home.why.design.h':      { en: 'Free design help', fr: 'Aide au design gratuite' },
@@ -185,7 +185,7 @@ var SP_LANG = (function() {
     'home.diff.r2.them': { en: '24-piece minimums', fr: 'Minimums de 24 pièces' },
     'home.diff.r2.us': { en: "No minimums. We'll print one.", fr: 'Aucun minimum. On en imprime un seul.' },
     'home.diff.r3.them': { en: 'First look at pickup, fingers crossed', fr: 'Premier aperçu au ramassage, on croise les doigts' },
-    'home.diff.r3.us': { en: 'Mockup in ~1 hour you approve before the run (printed sample optional)', fr: 'Maquette en ~1 heure que vous approuvez avant la production (échantillon imprimé en option)' },
+    'home.diff.r3.us': { en: 'Mockup in ~1 hour you approve before the run', fr: 'Maquette en ~1 heure que vous approuvez avant la production' },
     'home.diff.r4.them': { en: 'Setup fees discovered on the invoice', fr: 'Frais de montage découverts sur la facture' },
     'home.diff.r4.us': { en: 'The quote price is the price you pay', fr: 'Le prix de la soumission est le prix que vous payez' },
     'home.diff.r5.them': { en: 'Outsourced to who-knows-where', fr: 'Sous-traité on ne sait où' },
@@ -209,7 +209,7 @@ var SP_LANG = (function() {
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
     'home.faq.a5': { en: "PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Don't have print-ready art? We offer free design help.", fr: 'PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l\'impression ? Notre studio de design vous aide gratuitement.' },
     'home.faq.q6': { en: 'Can I see a sample first?', fr: 'Puis-je voir un échantillon d\'abord ?' },
-    'home.faq.a6': { en: 'You approve a photoreal mockup before we print anything — colors, placement, sizing. Want a physical proof in hand first? Add a printed sample at checkout for the cost of one blank.', fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement, taille. Une preuve physique en main d\'abord ? Ajoutez un échantillon imprimé au paiement, pour le prix d\'un vêtement.' },
+    'home.faq.a6': { en: 'You approve a photoreal mockup before we print anything — colors, placement, sizing.', fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement, taille.' },
     'home.faq.q7': { en: 'Do you guarantee against misprints?', fr: 'Offrez-vous une garantie contre les erreurs d\'impression ?' },
     'home.faq.a7': { en: 'Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.', fr: 'Oui. S\'il y a un problème de qualité d\'impression ou un défaut de vêtement, on réimprime ou on remplace l\'article sans frais.' },
     'home.faq.q8': { en: 'Do you offer a first-order discount?', fr: 'Offrez-vous un rabais sur la première commande ?' },
@@ -304,7 +304,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r2.them': { en: "24-piece minimum before they'll even open your file.", fr: 'Minimum de 24 pièces avant même d\'ouvrir votre fichier.' },
     'whyus.cmp.r2.us': { en: "<strong>No minimums.</strong> We'll print one shirt with the same care as a thousand.", fr: '<strong>Aucun minimum.</strong> On imprime un seul chandail avec le même soin que mille.' },
     'whyus.cmp.r3.them': { en: 'The first time you see your shirt is at pickup. Fingers crossed.', fr: 'La première fois que vous voyez votre chandail, c\'est au ramassage. On croise les doigts.' },
-    'whyus.cmp.r3.us': { en: '<strong>Photoreal mockup in about an hour</strong> that you approve before we print. Printed sample optional, for the cost of a blank.', fr: '<strong>Maquette photoréaliste en environ une heure</strong> que vous approuvez avant l\'impression. Échantillon imprimé en option, pour le prix d\'un vêtement.' },
+    'whyus.cmp.r3.us': { en: '<strong>Photoreal mockup in about an hour</strong> that you approve before we print.', fr: '<strong>Maquette photoréaliste en environ une heure</strong> que vous approuvez avant l\'impression.' },
     'whyus.cmp.r4.them': { en: 'Setup fee. Art fee. Rush fee. All discovered on the invoice.', fr: 'Frais de montage. Frais de graphisme. Frais d\'urgence. Tous découverts sur la facture.' },
     'whyus.cmp.r4.us': { en: '<strong>The price on the quote is the price you pay.</strong> Taxes and shipping shown at checkout, not after.', fr: '<strong>Le prix de la soumission est le prix que vous payez.</strong> Taxes et livraison affichées au paiement, pas après.' },
     'whyus.cmp.r5.them': { en: "Production outsourced to a shop you'll never see, on a timeline nobody controls.", fr: 'Production sous-traitée à un atelier que vous ne verrez jamais, sur un échéancier que personne ne contrôle.' },
@@ -313,7 +313,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r6.us': { en: '<strong>Print issue or defect? We reprint or replace it. Period.</strong> No form, no fight.', fr: '<strong>Défaut d\'impression ? On réimprime ou on remplace. Point.</strong> Pas de formulaire, pas de chicane.' },
     'whyus.risk.h2': { en: "Here's the worst that can happen.", fr: 'Voici le pire qui puisse arriver.' },
     'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;6pm, Monday to Saturday. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 18 h, du lundi au samedi. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
-    'whyus.risk.p2': { en: 'If you do order: a free tee on orders of 15+, an optional printed sample for the cost of a blank, and a fix-it-free promise on any misprint.', fr: 'Si vous commandez : un t-shirt gratuit dès 15 articles, un échantillon imprimé en option pour le prix d\'un vêtement, et une promesse de correction gratuite en cas d\'erreur d\'impression.' },
+    'whyus.risk.p2': { en: 'If you do order: a free tee on orders of 15+, and a fix-it-free promise on any misprint.', fr: 'Si vous commandez : un t-shirt gratuit dès 15 articles, et une promesse de correction gratuite en cas d\'erreur d\'impression.' },
     'whyus.risk.kicker': { en: "The risk lives on our side of the table. That's on purpose.", fr: 'Le risque est de notre côté de la table. C\'est voulu.' },
     'whyus.proof.rating': { en: '(23 reviews) on Google', fr: '(23 avis) sur Google' },
     'whyus.proof.orders': { en: 'orders delivered', fr: 'commandes livrées' },
@@ -386,8 +386,8 @@ var SP_LANG = (function() {
     },
     'about.values.sample.h': { en: 'Mockup-first approach', fr: 'Approche maquette d\'abord' },
     'about.values.sample.p': {
-      en: 'You approve a photoreal mockup before we print anything — colors, placement and sizing. Want a physical proof in hand first? Add a printed sample at checkout for the cost of a blank.',
-      fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement et taille. Une preuve physique en main d\'abord ? Ajoutez un échantillon imprimé au paiement, pour le prix d\'un vêtement.'
+      en: 'You approve a photoreal mockup before we print anything — colors, placement and sizing.',
+      fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement et taille.'
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
@@ -580,8 +580,8 @@ var SP_LANG = (function() {
     },
     'biz.why.sample.h': { en: 'Mockup Before Production', fr: 'Maquette avant production' },
     'biz.why.sample.p': {
-      en: 'You approve a photoreal mockup before we print the full run. Want a printed sample first? Add one at checkout for the cost of a blank.',
-      fr: 'Vous approuvez une maquette photoréaliste avant la production complète. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.'
+      en: 'You approve a photoreal mockup before we print the full run.',
+      fr: 'Vous approuvez une maquette photoréaliste avant la production complète.'
     },
     'biz.why.turnaround.h': { en: '2-4 Day Turnaround', fr: 'Délai de 2 à 4 jours' },
     'biz.why.turnaround.p': {
@@ -626,8 +626,8 @@ var SP_LANG = (function() {
     },
     'biz.hiw.step3.h': { en: 'Approve a mockup', fr: 'Approuvez une maquette' },
     'biz.hiw.step3.p': {
-      en: 'You approve a photoreal mockup — colors, placement, and sizing — before full production. Want a printed sample first? Add one at checkout for the cost of a blank.',
-      fr: 'Vous approuvez une maquette photoréaliste — couleurs, placement et taille — avant la production complète. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.'
+      en: 'You approve a photoreal mockup — colors, placement, and sizing — before full production.',
+      fr: 'Vous approuvez une maquette photoréaliste — couleurs, placement et taille — avant la production complète.'
     },
     'biz.hiw.step4.h': { en: 'We deliver', fr: 'On livre' },
     'biz.hiw.step4.p': {
@@ -1297,7 +1297,7 @@ var SP_LANG = (function() {
     'quote.sidebar.pickup.note': { en: 'We\u2019ll text or email you when your order is ready for pickup.', fr: 'Nous vous écrirons ou vous appellerons quand votre commande sera prête.' },
     'quote.sidebar.next.h': { en: 'What happens next?', fr: 'Et la suite ?' },
     'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–6pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h).' },
-    'quote.sidebar.next.p2': { en: 'You approve a mockup before we print. Want a printed sample first? Add one at checkout for the cost of a blank.', fr: 'Vous approuvez une maquette avant l\'impression. Un échantillon imprimé d\'abord ? Ajoutez-le au paiement, pour le prix d\'un vêtement.' },
+    'quote.sidebar.next.p2': { en: 'You approve a mockup before we print.', fr: 'Vous approuvez une maquette avant l\'impression.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
     'quote.sidebar.talk.hours': { en: 'Open Mon–Sat, 9AM – 6PM', fr: 'Ouvert du lundi au samedi, 9 h à 18 h' },
     'quote.freetee.nudge':    { en: 'Add {n} more and the 16th tee is on us.', fr: 'Encore {n} et le 16e t-shirt est offert.' },
@@ -1406,7 +1406,7 @@ var SP_LANG = (function() {
     'rfp.success.p': { en: 'We\'ll be in touch with quoted pricing, a mockup timeline, and proposed payment terms — usually within the hour during business hours, otherwise first thing next business day.', fr: 'On vous reviendra avec les prix, un échéancier de maquette et les modalités de paiement proposées — habituellement en moins d\'une heure pendant les heures d\'ouverture, sinon dès le prochain jour ouvrable.' },
     'rfp.rail.next.h': { en: 'What happens after you submit', fr: 'Et la suite après votre envoi' },
     'rfp.rail.next.li1': { en: 'We reply within the hour during business hours with quoted bulk pricing.', fr: 'On répond en moins d\'une heure pendant les heures d\'ouverture avec des prix de gros.' },
-    'rfp.rail.next.li2': { en: 'You approve a photoreal mockup before any production run. A printed sample is optional, for the cost of a blank.', fr: 'Vous approuvez une maquette photoréaliste avant toute production. Un échantillon imprimé est en option, pour le prix d\'un vêtement.' },
+    'rfp.rail.next.li2': { en: 'You approve a photoreal mockup before any production run.', fr: 'Vous approuvez une maquette photoréaliste avant toute production.' },
     'rfp.rail.next.li3': { en: 'An approved mockup kicks off production. Standard turnaround is 7–14 business days.', fr: 'Une maquette approuvée lance la production. Délai standard de 7 à 14 jours ouvrables.' },
     'rfp.rail.next.li4': { en: 'Reorders for new hires or program refreshes go through your dedicated account manager.', fr: 'Les recommandes pour nouveaux employés ou renouvellements passent par votre gestionnaire de compte attitré.' },
     'rfp.rail.terms.h': { en: 'Standard terms', fr: 'Modalités standards' },
