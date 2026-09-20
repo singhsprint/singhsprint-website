@@ -7121,6 +7121,25 @@
       SP_QTY_BANDS = spQtyBandsFor(garmentKey, (state && state.service) || '');
       var std = null;
       (tiers || []).forEach(function (t) { if (t.tier === 'standard' || !std) std = std || t; });
+      // 2026-09-20 — price the ladder against the blank the customer actually
+      // PICKED, not always the Standard one.
+      //
+      // This block used to read std.product_id unconditionally. That was fine
+      // while quantity was asked FIRST: no blank existed yet, so the cheapest
+      // tier was a fair stand-in. With blanks chosen first, selecting
+      // BELLA + CANVAS 3001 left these chips still quoting Gildan 64000 —
+      // $9.95 at 200+ against the Bella's real $15.95 floor. The customer
+      // picked one shirt and read another shirt's ladder.
+      //
+      // tierPickApplied holds the chosen product whether the pick converted or
+      // is still held waiting for a band (see spApplyTierPick), so this covers
+      // both. Falls back to the Standard blank before anything is chosen,
+      // which is the honest representative at that point.
+      var priced = null;
+      if (tierPickApplied) {
+        (tiers || []).forEach(function (t) { if (t.product_id === tierPickApplied) priced = t; });
+      }
+      if (!priced) priced = std;
       var html = '<label style="display:block">' + spTierT('quote.qty.h', 'How many do you need?') + '</label>' +
         '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
         spTierT('quote.qty.sub', 'A rough count is fine — you’ll fine-tune exact sizes later. Quantity drives your per-unit price.') + '</p>' +
@@ -7159,7 +7178,7 @@
       // Fill the ladder: Standard-blank per-unit price at each band, then
       // savings vs. the 5–9 run once its baseline price is known. All
       // hits go through liveUnitPrice's cache — repeat renders are free.
-      if (std && std.product_id) {
+      if (priced && priced.product_id) {
         var prices = {};
         var numeric = SP_QTY_BANDS.filter(function (b) { return b.qty && b.id !== 'u5'; });
         // "Save X%" is measured against the cheapest real band, whichever it
@@ -7168,7 +7187,7 @@
         // every savings line rather than failing.
         var baselineId = numeric.length ? numeric[0].id : null;
         numeric.forEach(function (b) {
-          liveUnitPrice(std.product_id, b.qty, 1, [], function (p) {
+          liveUnitPrice(priced.product_id, b.qty, 1, [], function (p) {
             if (typeof p !== 'number' || p <= 0) return;
             prices[b.id] = p;
             var el = document.getElementById('sp-qb-' + b.id);

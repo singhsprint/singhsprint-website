@@ -212,5 +212,30 @@ ok('7h changing product drops a held pick from the old product',
 ok('7i the 50-piece prefill is still only a last resort',
    /qty:\s*\(spQtyBand && spQtyBand\.qty\) \|\| 50/.test(js))
 
+// ── 8. the qty ladder prices the blank that was picked ─────────────────
+console.log('8. band prices follow the chosen blank')
+ok('8a the ladder resolves a "priced" blank, not always Standard',
+   /var priced = null;[\s\S]{0,300}?if \(tierPickApplied\)/.test(js))
+ok('8b it matches the picked tier by product_id',
+   /t\.product_id === tierPickApplied\) priced = t/.test(js))
+ok('8c it falls back to Standard before anything is picked',
+   /if \(!priced\) priced = std;/.test(js))
+ok('8d the live price call uses the picked blank',
+   /liveUnitPrice\(priced\.product_id, b\.qty/.test(js) &&
+   !/liveUnitPrice\(std\.product_id/.test(js))
+ok('8e the guard uses the picked blank too',
+   /if \(priced && priced\.product_id\) \{/.test(js) &&
+   !/if \(std && std\.product_id\) \{/.test(js))
+// The chips only reprice if the pick re-renders them. spApplyTierPick's held
+// branch must set tierPickApplied BEFORE it repaints, or the repaint reads a
+// stale pick and the ladder stays on the previous blank.
+const _held = js.slice(js.indexOf('function spApplyTierPick'))
+const _h = _held.slice(0, _held.indexOf('spPendingTier = null;\n      fetch('))
+ok('8f the held branch sets the pick before repainting',
+   _h.indexOf('tierPickApplied = productId') > -1 &&
+   _h.indexOf('tierPickApplied = productId') < _h.indexOf('spRenderTierCards('))
+ok('8g repainting the cards also repaints the chips',
+   /function spRenderTierCards[\s\S]{0,2000}?spRenderQtyBands\(garmentKey/.test(js))
+
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }
