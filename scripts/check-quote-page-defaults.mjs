@@ -179,5 +179,38 @@ ok('6h the savings baseline is the cheapest real band, not a named one',
 ok('6i a draft saved under an old band id still restores',
    /if \(!band && \/\^b\\d\+\$\/\.test\(String\(bandId/.test(js))
 
+// ── 7. picking a blank must not eat the quantity question ──────────────
+console.log('7. a blank pick waits for the quantity band')
+// spApplyTierPick writes to SinghsCart (which flips to cart mode) and then
+// calls spOnTierApplied, which HIDES qtyBandSection and nulls spQtyBand. With
+// blanks now first, doing that on the pick meant the quantity question
+// vanished and qty silently defaulted to 50.
+ok('7a spOnTierApplied still hides the qty section (the hazard is real)',
+   /spOnTierApplied[\s\S]{0,600}?qtyBandSection[\s\S]{0,120}?display = 'none'/.test(js))
+// Measured, not guessed: slice the guard block out and assert on it, so the
+// assertion cannot fail merely because the block grew.
+const _apt = js.slice(js.indexOf('function spApplyTierPick'))
+const _guardStart = _apt.indexOf('if (!spQtyBand) {')
+const _guard = _guardStart > -1 ? _apt.slice(_guardStart, _apt.indexOf('spPendingTier = null;', _guardStart)) : ''
+ok('7b a pick with no band is HELD, not converted',
+   _guardStart > -1 && /return;/.test(_guard) && !/SinghsCart/.test(_guard),
+   `guard block ${_guard.length} chars`)
+ok('7c the held pick is remembered',
+   /spPendingTier = \{ productId: productId, garmentKey: garmentKey \}/.test(js))
+ok('7d the card still shows as selected while held',
+   /if \(!spQtyBand\) \{[\s\S]{0,200}?tierPickApplied = productId/.test(js))
+ok('7e nothing reaches the cart before a band exists',
+   /if \(!spQtyBand\) \{[\s\S]{0,600}?return;/.test(js) &&
+   !/if \(!spQtyBand\) \{[\s\S]{0,600}?SinghsCart\.write/.test(js))
+ok('7f choosing a band completes the held pick',
+   /if \(spPendingTier\) \{[\s\S]{0,260}?spApplyTierPick\(held\.productId/.test(js))
+ok('7g the band is set BEFORE the held pick runs, or it would hold again',
+   js.indexOf('spQtyBand = band;') > -1 &&
+   js.indexOf('spQtyBand = band;') < js.indexOf('if (spPendingTier) {'))
+ok('7h changing product drops a held pick from the old product',
+   /spPendingTier = null;\s*\n\s*if \(typeof spDeactivateByo/.test(js))
+ok('7i the 50-piece prefill is still only a last resort',
+   /qty:\s*\(spQtyBand && spQtyBand\.qty\) \|\| 50/.test(js))
+
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }

@@ -121,6 +121,9 @@
       // tier blank (its pricing belongs to the old garment) and renders
       // the Standard/Plus/Premium cards for the new one. BYO mode resets
       // too — the new type gets a fresh blank-or-BYO decision.
+      // A held tier pick belongs to the OLD product — drop it, or picking a
+      // quantity later would convert a blank the customer moved away from.
+      spPendingTier = null;
       if (typeof spDeactivateByo === 'function') spDeactivateByo();
       if (typeof spClearTierPick === 'function') spClearTierPick();
 
@@ -7243,6 +7246,15 @@
       }
       if (!band) return;
       spQtyBand = band;
+      // A blank chosen before the quantity was held back rather than converted
+      // (see spApplyTierPick). The band now exists, so finish that pick — with
+      // the real quantity instead of the 50 the prefill would have invented.
+      if (spPendingTier) {
+        var held = spPendingTier;
+        spPendingTier = null;
+        spApplyTierPick(held.productId, held.garmentKey || garmentKey);
+        return;
+      }
       // spRenderTierCards re-renders the chips too (it owns the tiers
       // payload the price ladder needs), then paints the tier cards.
       spRenderTierCards(garmentKey, productLabel);
@@ -7353,7 +7365,35 @@
       });
     }
 
+    // A tier pick that is waiting on a quantity band. See spApplyTierPick.
+    var spPendingTier = null;
+
     function spApplyTierPick(productId, garmentKey) {
+      // 2026-09-20 — blanks are chosen BEFORE quantity now, and converting to
+      // a cart row here would end the guided flow on the spot: this function
+      // writes to SinghsCart (which flips the page into cart mode) and then
+      // calls spOnTierApplied(), which HIDES qtyBandSection outright and nulls
+      // spQtyBand. The customer picked a shirt and the quantity question
+      // vanished — with qty silently defaulted to 50 by the prefill below,
+      // because that prefill was written when the band was always already
+      // answered.
+      //
+      // So hold the pick: mark the card selected, remember it, and walk them
+      // to the quantity question. spSetQtyBandById applies it for real once a
+      // band exists. Nothing is written to the cart until then.
+      if (!spQtyBand) {
+        tierPickApplied = productId;
+        spPendingTier = { productId: productId, garmentKey: garmentKey };
+        try { spRenderTierCards(garmentKey, (typeof state !== 'undefined' && state.product) || ''); } catch (e) {}
+        setTimeout(function () {
+          var qtyHost = document.getElementById('qtyBandSection');
+          if (qtyHost && qtyHost.scrollIntoView) {
+            try { qtyHost.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+          }
+        }, 120);
+        return;
+      }
+      spPendingTier = null;
       fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(productId))
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
