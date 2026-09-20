@@ -7050,16 +7050,53 @@
     // that follows is computed at the customer's real quantity. Bands mirror
     // the pricing engine's tiers; `qty` is the representative count used for
     // tier-card pricing and the cart-row prefill.
-    var SP_QTY_BANDS = [
+    // Last-resort bands, used only until the live price table lands. These are
+    // a WRITTEN-DOWN COPY of the engine's breakpoints and they were wrong:
+    // "100–249" and "250+" against an engine that breaks at 200. Someone
+    // ordering 220 picked a chip labelled 100–249 quoting $11.95 while the
+    // engine charges $9.95. The same literal had already drifted on the
+    // homepage slider (fixed 2026-09-20 in the CRM) — third copy of one rule.
+    //
+    // spQtyBandsFor() below derives the real bands from /api/v1/price-table,
+    // which the page already fetches and caches. This array only shows in the
+    // gap before that resolves.
+    var SP_QTY_BANDS_FALLBACK = [
       { id: 'u5',   label: 'Under 5',  qty: 3 },
-      { id: 'b5',   label: '5–9',      qty: 6 },
-      { id: 'b10',  label: '10–24',    qty: 15 },
-      { id: 'b25',  label: '25–49',    qty: 30 },
+      { id: 'b5',   label: '5–9',      qty: 5 },
+      { id: 'b10',  label: '10–24',    qty: 10 },
+      { id: 'b25',  label: '25–49',    qty: 25 },
       { id: 'b50',  label: '50–99',    qty: 50 },
-      { id: 'b100', label: '100–249',  qty: 120 },
-      { id: 'b250', label: '250+',     qty: 250 },
+      { id: 'b100', label: '100–199',  qty: 100 },
+      { id: 'b200', label: '200+',     qty: 200 },
       { id: 'ns',   label: 'Not sure yet', qty: null },
     ];
+    var SP_QTY_BANDS = SP_QTY_BANDS_FALLBACK.slice();
+
+    // Build the chips from the engine's own tiers for THIS garment + method.
+    // Each band is probed at its own minimum, which is exact: the per-unit
+    // price is constant inside a band, so the minimum is as true as any other
+    // quantity in it — and unlike the old mid-band probes (qty 120 for
+    // "100–249") it cannot land in a different band than its label claims.
+    function spQtyBandsFor(garmentKey, method) {
+      var ladder = null;
+      try { ladder = spLadderFor(garmentKey, method || (state && state.service) || 'dtf'); } catch (e) {}
+      var tiers = ladder && ladder.tiers;
+      if (!Array.isArray(tiers) || !tiers.length) return SP_QTY_BANDS_FALLBACK.slice();
+      var asc = tiers.slice().filter(function (t) { return t && isFinite(t.min); })
+                     .sort(function (a, b) { return a.min - b.min; });
+      if (!asc.length) return SP_QTY_BANDS_FALLBACK.slice();
+      var out = [{ id: 'u5', label: spTierT('quote.qty.under5', 'Under 5'), qty: 3 }];
+      asc.forEach(function (t) {
+        var open = (t.max == null || !isFinite(t.max));
+        out.push({
+          id:    'b' + t.min,
+          label: open ? (t.min + '+') : (t.min + '–' + t.max),
+          qty:   t.min,
+        });
+      });
+      out.push({ id: 'ns', label: spTierT('quote.qty.notsure', 'Not sure yet'), qty: null });
+      return out;
+    }
     var spQtyBand = null;   // selected band object | null while unanswered
 
     function spQtyBandLabel(b) {
@@ -7076,6 +7113,9 @@
     function spRenderQtyBands(garmentKey, productLabel, tiers) {
       var host = document.getElementById('qtyBandSection');
       if (!host) return;
+      // Re-derive every render: the live table can land after the first paint,
+      // and the ladder is per garment AND per method, both of which change.
+      SP_QTY_BANDS = spQtyBandsFor(garmentKey, (state && state.service) || '');
       var std = null;
       (tiers || []).forEach(function (t) { if (t.tier === 'standard' || !std) std = std || t; });
       var html = '<label style="display:block">' + spTierT('quote.qty.h', 'How many do you need?') + '</label>' +
@@ -7085,15 +7125,15 @@
       SP_QTY_BANDS.forEach(function (b) {
         if (b.id === 'u5' || b.id === 'ns') return;   // secondary row below
         var on = spQtyBand && spQtyBand.id === b.id;
-        var popular = b.id === 'b25';
-        html += '<button type="button" class="qty-band" data-band="' + b.id + '"' +
-          ' style="position:relative;text-align:center;border:2px solid ' + (on ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;color:#1a1a1a;' +
-          'padding:' + (popular ? '18px 8px 12px' : '14px 8px 12px') + ';background:' + (on ? '#fafaf2' : '#fff') + ';cursor:pointer">' +
-          (popular ? '<span style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#e8ff3c;' +
-            'border-radius:50px;padding:2px 10px;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap">' +
-            spTierT('quote.qty.popular', 'Most popular') + '</span>' : '') +
-          '<div style="font-size:.95rem;font-weight:700">' + b.label + (on ? ' ✓' : '') + '</div>' +
-          '<div id="sp-qb-' + b.id + '" style="font-size:.76rem;color:#777;min-height:2.1em;margin-top:3px">…</div>' +
+        // Pinned by VALUE, not by a literal id: band ids are derived from the
+        // engine's minimums now, so a hardcoded 'b25' would quietly stop
+        // matching the day a tier boundary moves.
+        var popular = b.qty === 25;
+        html += '<button type="button" class="qty-band' + (popular ? ' qty-band--popular' : '') +
+          (on ? ' is-selected' : '') + '" aria-pressed="' + (on ? 'true' : 'false') + '" data-band="' + b.id + '">' +
+          (popular ? '<span class="qty-band__badge">' + spTierT('quote.qty.popular', 'Most popular') + '</span>' : '') +
+          '<div class="qty-band__label">' + b.label + (on ? ' ✓' : '') + '</div>' +
+          '<div id="sp-qb-' + b.id + '" class="qty-band__price">…</div>' +
           '</button>';
       });
       html += '</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
@@ -7101,9 +7141,8 @@
         var b = null;
         SP_QTY_BANDS.forEach(function (x) { if (x.id === id) b = x; });
         var on = spQtyBand && spQtyBand.id === id;
-        html += '<button type="button" class="qty-band" data-band="' + id + '"' +
-          ' style="border:2px solid ' + (on ? '#1a1a1a' : '#eee') + ';border-radius:50px;padding:8px 16px;' +
-          'background:' + (on ? '#fafaf2' : 'transparent') + ';font-size:.8rem;font-weight:600;color:#555;cursor:pointer">' +
+        html += '<button type="button" class="qty-band qty-band--pill' + (on ? ' is-selected' : '') +
+          '" aria-pressed="' + (on ? 'true' : 'false') + '" data-band="' + id + '">' +
           spQtyBandLabel(b) + (on ? ' ✓' : '') + '</button>';
       });
       html += '</div>';
@@ -7120,6 +7159,11 @@
       if (std && std.product_id) {
         var prices = {};
         var numeric = SP_QTY_BANDS.filter(function (b) { return b.qty && b.id !== 'u5'; });
+        // "Save X%" is measured against the cheapest real band, whichever it
+        // is. It used to be the literal 'b5'; with derived ids that name is no
+        // longer guaranteed to exist, and a missing baseline silently removed
+        // every savings line rather than failing.
+        var baselineId = numeric.length ? numeric[0].id : null;
         numeric.forEach(function (b) {
           liveUnitPrice(std.product_id, b.qty, 1, [], function (p) {
             if (typeof p !== 'number' || p <= 0) return;
@@ -7127,8 +7171,8 @@
             var el = document.getElementById('sp-qb-' + b.id);
             if (el) {
               var save = '';
-              if (prices.b5 && b.id !== 'b5') {
-                var pct = Math.round((1 - p / prices.b5) * 100);
+              if (baselineId && prices[baselineId] && b.id !== baselineId) {
+                var pct = Math.round((1 - p / prices[baselineId]) * 100);
                 if (pct >= 5) save = '<br><span style="color:#3b6d11;font-weight:600">' +
                   spTierT('quote.qty.save', 'Save') + ' ' + pct + '%</span>';
               }
@@ -7136,7 +7180,7 @@
                 spTierT('quote.qty.each', '/ea') + save;
             }
             // Baseline arrived late → refresh the other bands' savings.
-            if (b.id === 'b5') {
+            if (b.id === baselineId) {
               numeric.forEach(function (o) {
                 if (o.id !== 'b5' && prices[o.id]) {
                   var el2 = document.getElementById('sp-qb-' + o.id);
@@ -7181,6 +7225,22 @@
     function spSetQtyBandById(bandId, garmentKey, productLabel) {
       var band = null;
       for (var i = 0; i < SP_QTY_BANDS.length; i++) { if (SP_QTY_BANDS[i].id === bandId) { band = SP_QTY_BANDS[i]; break; } }
+      // Saved drafts persist the band ID (spDraft → qtyBand). Band ids are now
+      // derived from the engine's minimums, so an id saved under the old
+      // hardcoded list can name a band that no longer exists — 'b250' is
+      // exactly that, since the engine breaks at 200. Without this the draft
+      // restored with NO quantity and said nothing about it.
+      // Recover by the number in the id: land it in whichever band now covers
+      // that quantity.
+      if (!band && /^b\d+$/.test(String(bandId || ''))) {
+        var q = parseInt(String(bandId).slice(1), 10);
+        var numeric = SP_QTY_BANDS.filter(function (b) { return typeof b.qty === 'number' && b.qty > 0 && b.id !== 'u5'; })
+                                  .sort(function (a, b) { return a.qty - b.qty; });
+        for (var j = numeric.length - 1; j >= 0; j--) {
+          if (q >= numeric[j].qty) { band = numeric[j]; break; }
+        }
+        if (!band && numeric.length) band = numeric[0];
+      }
       if (!band) return;
       spQtyBand = band;
       // spRenderTierCards re-renders the chips too (it owns the tiers
@@ -7236,21 +7296,26 @@
           // protection, same as every other product image on the page.
           var heroSrc = t.hero_image_url ? imgUrl(t.hero_image_url) : '';
           var hero = heroSrc
-            ? '<img src="' + heroSrc + '" alt="" loading="lazy"' +
-              ' style="width:100%;height:92px;object-fit:contain;border-radius:10px;background:#f7f7f3;margin-bottom:8px"' +
+            ? '<img class="tier-card__img" src="' + heroSrc + '" alt="" loading="lazy"' +
               ' onerror="this.style.display=\'none\'">'
             : '';
-          html += '<button type="button" class="tier-card" data-tier-product="' + t.product_id + '"' +
-            ' style="text-align:left;border:2px solid ' + (tierPickApplied === t.product_id ? '#1a1a1a' : '#e4e4e4') + ';border-radius:14px;padding:14px 16px;background:' + (tierPickApplied === t.product_id ? '#fafaf2' : '#fff') + ';cursor:pointer">' +
+          // Selection is a CLASS, not an inline border/background. Inline
+          // styles outrank the stylesheet, so while these were written inline
+          // no :hover, :active or :focus-visible rule could ever apply — the
+          // card had no interactive feedback of any kind.
+          var picked = tierPickApplied === t.product_id;
+          html += '<button type="button" class="tier-card' + (picked ? ' is-selected' : '') + '"' +
+            ' aria-pressed="' + (picked ? 'true' : 'false') + '"' +
+            ' data-tier-product="' + t.product_id + '">' +
             hero +
-            '<div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">' + (tierNames[t.tier] || t.tier) + (tierPickApplied === t.product_id ? ' ✓' : '') + '</div>' +
-            '<div style="font-size:.85rem;font-weight:600">' + (t.brand || '') + ' ' + (t.style_number || '') + '</div>' +
-            '<div style="font-size:.76rem;color:#777;line-height:1.35;margin:2px 0 2px">' + (t.name || '') + '</div>' +
-            '<div style="font-size:.72rem;color:#556b2f;margin:0 0 6px">' + spTierT('quote.tiers.tag.' + t.tier, '') + '</div>' +
-            '<div style="font-size:.82rem" id="sp-tierprice-' + t.product_id + '">' +
+            '<div class="tier-card__tier">' + (tierNames[t.tier] || t.tier) + (picked ? ' ✓' : '') + '</div>' +
+            '<div class="tier-card__style">' + (t.brand || '') + ' ' + (t.style_number || '') + '</div>' +
+            '<div class="tier-card__name">' + (t.name || '') + '</div>' +
+            '<div class="tier-card__tag">' + spTierT('quote.tiers.tag.' + t.tier, '') + '</div>' +
+            '<div class="tier-card__price" id="sp-tierprice-' + t.product_id + '">' +
               (from ? '<strong>' + spTierT('quote.tiers.from', 'From') + ' ' + from + '</strong>' + spTierT('quote.tiers.perunit', '/unit') : '') +
             '</div>' +
-            (t.color_count ? '<div style="font-size:.72rem;color:#999">' + t.color_count + ' ' + spTierT('quote.tiers.colors', 'colours') + '</div>' : '') +
+            (t.color_count ? '<div class="tier-card__colours">' + t.color_count + ' ' + spTierT('quote.tiers.colors', 'colours') + '</div>' : '') +
             '</button>';
         });
         html += '</div>';

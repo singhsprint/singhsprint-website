@@ -131,5 +131,53 @@ ok('2i the scroll walk goes to the tier cards first',
 ok('2j …and only then to the quantity chips',
    /tierChoicePending\(\) \? secEl\('tier'\)\s*\n\s*: \(qtyChoicePending\(\) \? secEl\('qtyband'\)/.test(js))
 
+// ── 5. the tier cards and qty chips are actually interactive ───────────
+console.log('5. interaction lives in CSS, not inline styles')
+const css = read('quote.css')
+// Inline styles outrank the stylesheet, so state written inline makes :hover
+// unreachable. That is why these two controls felt dead.
+ok('5a tier cards carry no inline style attribute',
+   !/class="tier-card[^"]*"[^>]*style=/.test(js) &&
+   !/'<button type="button" class="tier-card[\s\S]{0,80}?style="/.test(js))
+ok('5b qty chips carry no inline style attribute',
+   !/'<button type="button" class="qty-band[\s\S]{0,120}?style="/.test(js))
+ok('5c selection is a class, not an inline border',
+   /is-selected/.test(js) && /\.tier-card\.is-selected\{/.test(css) && /\.qty-band\.is-selected\{/.test(css))
+for (const [sel, label] of [['.tier-card', 'tier card'], ['.qty-band', 'qty chip']]) {
+  ok(`5d ${label} has a hover state`, new RegExp(sel.replace('.', '\\.') + ':hover\\{').test(css))
+  ok(`5e ${label} has a pressed state`, new RegExp(sel.replace('.', '\\.') + ':active\\{').test(css))
+  ok(`5f ${label} has a keyboard focus ring`, new RegExp(sel.replace('.', '\\.') + ':focus-visible\\{').test(css))
+  ok(`5g ${label} animates`, new RegExp(sel.replace('.', '\\.') + '\\{[^}]*transition:').test(css))
+}
+ok('5h movement is dropped under prefers-reduced-motion',
+   /@media \(prefers-reduced-motion: reduce\)/.test(css) &&
+   /prefers-reduced-motion[\s\S]{0,400}?transform:none/.test(css))
+ok('5i selection is exposed to assistive tech', /aria-pressed="/.test(js))
+
+// ── 6. quantity bands come from the engine ─────────────────────────────
+console.log('6. quantity bands are the engine\'s, not a literal')
+ok('6a bands are derived per garment and method',
+   /function spQtyBandsFor\(garmentKey, method\)/.test(js) &&
+   /spLadderFor\(garmentKey/.test(js))
+ok('6b they are re-derived on every render',
+   /SP_QTY_BANDS = spQtyBandsFor\(garmentKey/.test(js))
+ok('6c each band probes at its own minimum',
+   /qty:\s*t\.min/.test(js))
+// The literal survives only as a pre-load fallback, and must itself be right.
+ok('6d the surviving literal is named a fallback',
+   /SP_QTY_BANDS_FALLBACK/.test(js) && !/var SP_QTY_BANDS = \[/.test(js))
+ok('6e the fallback no longer carries the 250 boundary',
+   !/label: '100–249'/.test(js) && !/label: '250\+'/.test(js))
+ok('6f the fallback matches the engine: 100–199 then 200+',
+   /label: '100–199'/.test(js) && /label: '200\+'/.test(js))
+// Ids are derived now, so anything that pinned a literal id had to move.
+ok('6g "most popular" is pinned by quantity, not by a literal id',
+   /var popular = b\.qty === 25/.test(js))
+ok('6h the savings baseline is the cheapest real band, not a named one',
+   /var baselineId = numeric\.length \? numeric\[0\]\.id : null/.test(js))
+// A saved draft stores the band id; old ids must still land somewhere.
+ok('6i a draft saved under an old band id still restores',
+   /if \(!band && \/\^b\\d\+\$\/\.test\(String\(bandId/.test(js))
+
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }
