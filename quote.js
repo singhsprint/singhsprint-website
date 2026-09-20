@@ -3839,7 +3839,18 @@
         return init.removeBg ? 'auto' : 'off';
       })();
       function bgOn() { return bgKey !== 'off'; }
-      var active = 0;
+      // Which tab the editor opens on. Defaults to the first placement, but a
+      // caller can name one — the per-design "Customize" button on a cart row's
+      // upload card opens the editor already on THAT design's tab, instead of
+      // dropping the customer on the first tab to find it themselves.
+      // Falls back to 0 when the named placement isn't in this line or has no
+      // art, so a stale id can never open an empty tab.
+      var active = (function () {
+        var want = opts.startPlacement;
+        if (!want) return 0;
+        var i = placements.indexOf(want);
+        return (i >= 0 && hasArt(want)) ? i : 0;
+      })();
       var objURLs = {};
       function artURL(p) {
         var f = fileByP[p];
@@ -4113,6 +4124,10 @@
         window.removeEventListener('pointerup', endDrag);
         window.removeEventListener('pointercancel', endDrag);
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        // Hand control back to whoever opened us. window.scrollTo above restores
+        // the pre-open scroll position, so anything that wants to move the page
+        // has to run AFTER it — hence a hook here rather than at the call site.
+        if (typeof opts.onClose === 'function') { try { opts.onClose(); } catch (_) {} }
       }
       overlay.querySelector('.sp-cz-x').onclick = close;
       overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
@@ -4296,7 +4311,10 @@
     }
 
     // ---- Cart-mode wiring -------------------------------------------------
-    function spLaunchCartCustomizer(idx) {
+    // `startPlacement` (optional) opens the editor on that placement's tab.
+    // Passed by the per-design Customize button; omitted by the row-level one,
+    // which has no particular design in mind.
+    function spLaunchCartCustomizer(idx, startPlacement) {
       var items = SinghsCart.read().items;
       var it = items[idx];
       if (!it) return;
@@ -4315,6 +4333,18 @@
           var colors = (d && d.products && d.products[0] && d.products[0].colors) || [];
           for (var i = 0; i < colors.length; i++) { if (colors[i].color_id === it.color_id) { c = colors[i]; break; } }
           spOpenCustomizer({
+            startPlacement: startPlacement || null,
+            // Put the customer back on the garment they were editing. The cart
+            // row is the anchor, not the upload card, because the card is
+            // re-rendered on close and the old node would be detached.
+            onClose: function () {
+              setTimeout(function () {
+                var row = document.querySelector('.cart-item[data-idx="' + idx + '"]');
+                if (row && row.scrollIntoView) {
+                  try { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+                }
+              }, 60);
+            },
             colorId: it.color_id,
             garment: { front: c.mockup_front_url || it.hero_url, back: c.mockup_back_url, side: c.mockup_side_url },
             colorHex: c.hex_code,
@@ -4967,6 +4997,10 @@
                '    <strong>' + (has?'Design for ':'Upload design for ') + escapeAttr(_placementLabel(p)) + '</strong>' +
                '    <span>' + escapeAttr(sub) + '</span>' +
                '  </div>' +
+               // The card is a <label for=…>, so any control inside it opens the
+               // file picker unless the click is stopped first — same guard the
+               // Remove button has always needed.
+               (has ? '<button type="button" class="ci-upload__customize" onclick="event.preventDefault();event.stopPropagation();cartCustomizePlacement(' + idx + ',\'' + p + '\')">Customize</button>' : '') +
                (has ? '<button type="button" class="ci-upload__remove" onclick="event.preventDefault();event.stopPropagation();' + removeFn + '">Remove</button>' : '') +
                '  <input type="file" id="' + fileInputId + '" name="' + fileInputId + '"' +
                '    accept=".png,.jpg,.jpeg,.pdf,.ai,.psd,.svg" style="display:none"' +
@@ -4975,6 +5009,22 @@
       }).join('');
       return '<div class="ci-uploads">' + inner + '</div>';
     }
+    // Open the mockup editor on ONE design. Reached from the Customize button
+    // on a cart row's upload card, so the customer edits the artwork they are
+    // looking at rather than opening the editor and hunting for its tab.
+    // A colour is required before any mockup can be composed, and the message
+    // says which item needs one — the row-level button's alert does not.
+    function cartCustomizePlacement(idx, placementId) {
+      var it = (SinghsCart.read().items || [])[idx];
+      if (!it) return;
+      if (!it.color_id) {
+        alert('Pick a colour for ' + (it.name || 'this item') + ' first — the mockup is composed on the garment colour.');
+        return;
+      }
+      spLaunchCartCustomizer(idx, placementId);
+    }
+    window.cartCustomizePlacement = cartCustomizePlacement;
+
     // Remove a design that was uploaded up-front in the catalog modal (lives
     // on the persisted cart item, not in the in-memory file map). Also clears
     // the item's primary design_path/url when nothing is left attached.

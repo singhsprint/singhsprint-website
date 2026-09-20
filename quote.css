@@ -276,7 +276,21 @@
     .ci-upload__copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
     .ci-upload__copy strong{font-size:.8rem;color:#1a1a1a;font-weight:600}
     .ci-upload__copy span{font-size:.7rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .ci-upload__remove{background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.72rem;padding:4px 6px}
+    /* Customize sits beside Remove on a card that HAS art. It is the positive
+       action of the pair, so it carries the weight and Remove stays a quiet
+       text link — a destructive action should never be the eye-catching one.
+       margin-left:auto pushes the pair to the right edge; Remove then sits
+       flush against it. */
+    .ci-upload__customize{margin-left:auto;background:#1a1a1a;color:#e8ff3c;border:none;border-radius:50px;
+      cursor:pointer;font-size:.72rem;font-weight:700;padding:5px 12px;white-space:nowrap;flex-shrink:0}
+    .ci-upload__customize:hover{background:#333}
+    .ci-upload__remove{background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.72rem;padding:4px 6px;flex-shrink:0}
+    /* Without a Customize button the card still needs Remove pushed right. */
+    .ci-upload__customize + .ci-upload__remove{margin-left:0}
+    .ci-upload__remove:first-of-type{margin-left:auto}
+    @media (max-width:480px){
+      .ci-upload__customize{padding:5px 10px;font-size:.68rem}
+    }
 
     /* Per-cart-item shared section label — small uppercase header used
        above the method picker and sizes grid inside each cart row. */
