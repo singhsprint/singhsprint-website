@@ -306,6 +306,16 @@
       return v || fallback;
     }
 
+    // 2026-09-20 — a quote with no phone number is a quote nobody can chase.
+    // Counts DIGITS rather than pattern-matching a format, so "(514) 555-0134",
+    // "514.555.0134" and "+1 514 555 0134" all pass while "call me" does not.
+    // Ten is the North-American minimum; a leading 1 or a country code only
+    // adds to the count.
+    function spPhoneDigits(v) {
+      return String(v == null ? '' : v).replace(/\D+/g, '').length;
+    }
+    function spPhoneOk(v) { return spPhoneDigits(v) >= 10; }
+
     // ===== COLOR =====
     function selectColor(el) {
       document.querySelectorAll('.color-swatch').forEach(function(s) { s.classList.remove('selected'); });
@@ -2351,6 +2361,23 @@
       spShowMinQtyWarn();
     });
 
+    // 2026-09-20 — phone is required on a quote request. The `required`
+    // attribute on #phone stops an EMPTY field natively (with the browser's
+    // own localised bubble); this catches a filled-in non-number, which the
+    // attribute cannot. Registered ahead of the FORM SUBMIT listener below so
+    // stopImmediatePropagation() keeps an unreachable lead out of the CRM.
+    document.getElementById('quoteForm').addEventListener('submit', function (e) {
+      if (this.dataset.spUploadCleared === '1') return; // native fallback pass
+      var phEl = document.getElementById('phone');
+      if (!phEl || spPhoneOk(phEl.value)) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      alert(spByoT('quote.contact.phone.invalid',
+        'Please add a phone number we can reach you on — it’s the fastest way to confirm sizes and artwork.'));
+      try { if (typeof goToStep === 'function') goToStep(3); } catch (e2) {}
+      try { phEl.focus(); phEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e2) {}
+    });
+
     // ===== FORM SUBMIT =====
     document.getElementById('quoteForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -3333,6 +3360,13 @@
       if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
         alert('Please enter a valid email — that’s where your receipt and order updates go.');
         focusContact(emailEl); return;
+      }
+      // Checkout is a button click, not a form submit, so the `required`
+      // attribute on #phone never fires here. Same bar as the quote path.
+      if (!spPhoneOk(phoneEl && phoneEl.value)) {
+        alert(spByoT('quote.contact.phone.invalid',
+          'Please add a phone number we can reach you on — it’s the fastest way to confirm sizes and artwork.'));
+        focusContact(phoneEl); return;
       }
 
       var items = spBuildCheckoutItems();
@@ -7079,7 +7113,6 @@
       { id: 'b50',  label: '50–99',    qty: 50 },
       { id: 'b100', label: '100–199',  qty: 100 },
       { id: 'b200', label: '200+',     qty: 200 },
-      { id: 'ns',   label: 'Not sure yet', qty: null },
     ];
     var SP_QTY_BANDS = SP_QTY_BANDS_FALLBACK.slice();
 
@@ -7105,7 +7138,6 @@
           qty:   t.min,
         });
       });
-      out.push({ id: 'ns', label: spTierT('quote.qty.notsure', 'Not sure yet'), qty: null });
       return out;
     }
     var spQtyBand = null;   // selected band object | null while unanswered
@@ -7116,15 +7148,14 @@
 
     function spQtyBandLabel(b) {
       if (b.id === 'u5') return spTierT('quote.qty.under5', 'Under 5');
-      if (b.id === 'ns') return spTierT('quote.qty.notsure', 'Not sure yet');
       return b.label;
     }
 
     // The selector doubles as a pricing ladder ("order more, pay less per
     // piece" SHOWN, not told): each numeric band is a card carrying the
     // live per-unit price of the garment's Standard blank at that qty,
-    // plus savings vs. the smallest run. Under-5 / Not-sure step back
-    // into quiet secondary pills — they're routing, not pricing.
+    // plus savings vs. the smallest run. Under-5 steps back into a quiet
+    // secondary pill — it's routing, not pricing.
     function spRenderQtyBands(garmentKey, productLabel, tiers) {
       var host = document.getElementById('qtyBandSection');
       if (!host) return;
@@ -7157,7 +7188,7 @@
         spTierT('quote.qty.sub', 'A rough count is fine — you’ll fine-tune exact sizes later. Quantity drives your per-unit price.') + '</p>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin-bottom:10px">';
       SP_QTY_BANDS.forEach(function (b) {
-        if (b.id === 'u5' || b.id === 'ns') return;   // secondary row below
+        if (b.id === 'u5') return;   // secondary row below
         var on = spQtyBand && spQtyBand.id === b.id;
         // Pinned by VALUE, not by a literal id: band ids are derived from the
         // engine's minimums now, so a hardcoded 'b25' would quietly stop
@@ -7171,7 +7202,7 @@
           '</button>';
       });
       html += '</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
-      ['u5', 'ns'].forEach(function (id) {
+      ['u5'].forEach(function (id) {
         var b = null;
         SP_QTY_BANDS.forEach(function (x) { if (x.id === id) b = x; });
         var on = spQtyBand && spQtyBand.id === id;
@@ -7295,6 +7326,12 @@
         }
         if (!band && numeric.length) band = numeric[0];
       }
+      // 2026-09-20 — the "Not sure yet" pill is gone (it produced qty:null,
+      // which the cart prefill silently turned into 50). A draft saved before
+      // that names band 'ns'. Leaving the quantity unanswered is the honest
+      // restore: the chips stay on screen, unselected, and the reveal gate
+      // keeps the downstream sections shut until a real band is picked.
+      if (!band && String(bandId || '') === 'ns') return;
       if (!band) return;
       spQtyBand = band;
       // A blank chosen before the quantity was held back rather than converted
@@ -7339,7 +7376,7 @@
         // (the liveUnitPrice pass at the bottom of this function). The floor is
         // labelled "From", so it never reads as the price they will pay.
         spRenderQtyBands(garmentKey, productLabel, tiers);
-        var bandQty = spQtyBand ? spQtyBand.qty : null;   // null → keep from-prices
+        var bandQty = spQtyBand ? spQtyBand.qty : null;   // no band yet → keep from-prices
         var tierNames = {
           standard: spTierT('quote.tiers.standard', 'Standard'),
           plus:     spTierT('quote.tiers.plus', 'Plus'),
@@ -7401,7 +7438,8 @@
         if (typeof window.spOnTierCardsPainted === 'function') window.spOnTierCardsPainted();
         // Reprice each card at the chosen band's representative qty — the
         // cached engine price the customer will actually pay at that tier,
-        // not the 200-unit "from" floor. "Not sure" keeps the from-price.
+        // not the 200-unit "from" floor. Before a band is picked, the
+        // from-price stands.
         if (bandQty) {
           tiers.forEach(function(t) {
             liveUnitPrice(t.product_id, bandQty, 1, [], function (p) {

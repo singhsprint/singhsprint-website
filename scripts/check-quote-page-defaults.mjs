@@ -295,5 +295,98 @@ ok('10d every matrix=1 caller sends a method',
    _matrixCalls > 0 && _withMethod >= _matrixCalls,
    `${_matrixCalls} matrix calls, ${_withMethod} carry a method`)
 
+
+// ── 11. the quantity selector has no "Not sure yet" escape hatch ───────
+// 2026-09-20 — it produced a band with qty:null, which the cart prefill
+// (`(spQtyBand && spQtyBand.qty) || 50`) silently turned into an order for 50.
+console.log('11. no "Not sure yet" quantity band')
+// Keyed on the band ID in CODE positions, never on the words "Not sure",
+// which appear legitimately elsewhere on this page (the service tile, the
+// BYO line) and would also match this file's own comments.
+ok('11a no band object is built with id ns',
+   !/\{\s*id:\s*'ns'/.test(js))
+ok('11b the fallback array has no ns entry',
+   !/id:\s*'ns'[\s\S]{0,60}qty:\s*null/.test(js))
+ok('11c the secondary pill row renders under-5 only',
+   /\['u5'\]\.forEach\(function \(id\) \{/.test(js) && !/\['u5',\s*'ns'\]/.test(js))
+ok('11d the main grid skips only under-5',
+   /if \(b\.id === 'u5'\) return;/.test(js) && !/b\.id === 'u5' \|\| b\.id === 'ns'/.test(js))
+ok('11e spQtyBandLabel has no ns branch',
+   !/if \(b\.id === 'ns'\) return/.test(js))
+ok('11f the translation key is gone with it',
+   !/quote\.qty\.notsure/.test(js) && !/quote\.qty\.notsure/.test(read('lang.js')))
+// Every band the selector can now produce carries a real quantity, so the
+// `|| 50` prefill can no longer fire. That is the whole point of the removal.
+ok('11g every derived band carries a numeric qty',
+   /out\.push\(\{\s*\n?\s*id:\s*'b' \+ t\.min,[\s\S]{0,200}qty:\s+t\.min,/.test(js))
+// A draft saved before the removal names a band that no longer exists.
+ok('11h a legacy ns draft restores as unanswered, not as a wrong quantity',
+   /String\(bandId \|\| ''\) === 'ns'\) return;/.test(js))
+
+// ── 12. phone number is required ───────────────────────────────────────
+console.log('12. phone is a required field')
+for (const page of ['quote.html', 'fr/quote.html']) {
+  const html = read(page)
+  const inp = html.match(/<input type="tel" id="phone"[^>]*>/)
+  ok(`12a ${page}: the phone input exists`, !!inp)
+  if (!inp) continue
+  ok(`12b ${page}: it carries the required attribute`, / required>/.test(inp[0]))
+  // The * is how this form already marks name and email. A required field
+  // with no marker reads as optional until the browser blocks the submit.
+  const lbl = html.match(/<label for="phone"[^>]*>([^<]*)<\/label>/)
+  ok(`12c ${page}: the label is marked with *`, !!lbl && lbl[1].trim().endsWith('*'),
+     lbl ? lbl[1] : 'no label')
+}
+ok('12d both languages mark the label', / \*'/.test(
+   read('lang.js').match(/'quote\.contact\.phonelabel':[^\n]*/)?.[0] || ''))
+// The attribute stops an EMPTY field. These stop a filled-in non-number.
+ok('12e a digit-count helper exists', /function spPhoneDigits\(v\) \{/.test(js))
+ok('12f it counts digits rather than matching one format',
+   /replace\(\/\\D\+\/g, ''\)\.length/.test(js))
+ok('12g ten digits is the bar', /spPhoneDigits\(v\) >= 10/.test(js))
+// Regexes above prove the SHAPE. This RUNS the real functions lifted out of
+// quote.js and asserts on what they return, so a helper that matches every
+// pattern here but still says yes to "call me" cannot survive.
+{
+  const src = (js.match(/function spPhoneDigits\(v\) \{[\s\S]*?\n {4}\}/) || [])[0]
+  const src2 = (js.match(/function spPhoneOk\(v\) \{[^\n]*\}/) || [])[0]
+  ok('12n both helpers lift out cleanly', !!src && !!src2)
+  if (src && src2) {
+    const spPhoneOk = new Function(src + '\n' + src2 + '\nreturn spPhoneOk')()
+    const accept = ['5145550134', '514-555-0134', '(514) 555-0134', '514.555.0134',
+                    '+1 514 555 0134', '438 544 3800 ext 12']
+    const reject = ['', '   ', 'call me', 'n/a', '514', '555-0134', 'x'.repeat(20),
+                    '123456789']
+    const wrongA = accept.filter(v => spPhoneOk(v) !== true)
+    const wrongR = reject.filter(v => spPhoneOk(v) !== false)
+    ok('12o real numbers in every common format are accepted',
+       wrongA.length === 0, `rejected ${JSON.stringify(wrongA)}`)
+    ok('12p non-numbers and short numbers are refused',
+       wrongR.length === 0, `accepted ${JSON.stringify(wrongR)}`)
+    // The exact boundary, numerically: 9 digits out, 10 digits in.
+    ok('12q the boundary sits between 9 and 10 digits',
+       spPhoneOk('1'.repeat(9)) === false && spPhoneOk('1'.repeat(10)) === true)
+  }
+}
+// The quote path: must abort BEFORE the CRM push, or an unreachable lead lands.
+// indexOf returns -1 when the anchor is GONE, and -1 slices/compares in ways
+// that quietly pass. Both indices are asserted found before they are used.
+const _pgAt   = js.indexOf("var phEl = document.getElementById('phone')")
+const _fsAt   = js.indexOf('// ===== FORM SUBMIT =====')
+const _crmAt  = js.indexOf('pushLeadToCRM({')
+const _okAt   = js.indexOf('spPhoneOk(phEl.value)')
+ok('12h the quote submit guard exists', _pgAt > 0 && _fsAt > _pgAt)
+const _pg = _pgAt > 0 ? js.slice(_pgAt, _fsAt) : ''
+ok('12i it blocks the submit', /e\.preventDefault\(\);\s*\n\s*e\.stopImmediatePropagation\(\);/.test(_pg))
+ok('12j it runs before the CRM push',
+   _okAt > 0 && _crmAt > 0 && _okAt < _crmAt,
+   `guard@${_okAt} crm@${_crmAt}`)
+// The checkout path is a button click — `required` never fires there.
+const _hp = js.slice(js.indexOf('function handlePayment() {'),
+                     js.indexOf('var items = spBuildCheckoutItems()'))
+ok('12k checkout checks the phone too', /spPhoneOk\(phoneEl && phoneEl\.value\)/.test(_hp))
+ok('12l checkout sends them back to the contact step', /focusContact\(phoneEl\); return;/.test(_hp))
+ok('12m the message is translated', /'quote\.contact\.phone\.invalid': \{ en: .*fr: /.test(read('lang.js')))
+
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }
