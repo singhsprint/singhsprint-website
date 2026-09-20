@@ -724,6 +724,7 @@ var SP_LANG = (function() {
     'quote.method.embroidery': { en: 'Embroidery', fr: 'Broderie' },
     'quote.method.notsure': { en: 'Not sure (we\'ll recommend)', fr: 'Pas certain (on vous conseille)' },
     'quote.garmentsource': { en: 'Garment Source', fr: 'Source du vêtement' },
+    'quote.byo.section': { en: 'Already have garments?', fr: 'Vous avez déjà les vêtements ?' },
     'quote.garmentsource.wesupply': { en: 'We Supply', fr: 'On fournit' },
     'quote.garmentsource.bringyourown': { en: 'Bring Your Own', fr: 'Apportez le vôtre' },
     'quote.blankbrand': { en: 'Blank Brand', fr: 'Marque du vêtement' },

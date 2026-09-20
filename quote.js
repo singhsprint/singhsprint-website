@@ -4793,7 +4793,17 @@
     // stores selections in item.placements (string[]). Sides count auto-
     // syncs to placements.length so existing pricing API stays unchanged.
     // =====================================================================
-    var _cartPickerOpenIdx = null;  // which row's picker is currently expanded
+    // 2026-09-20 — the placement picker is OPEN by default and the customer
+    // closes it, which is the inverse of how this started. It used to track a
+    // single open row (_cartPickerOpenIdx, default null = every row collapsed),
+    // so choosing placements always cost a click on "+ Pick a placement" first
+    // — on the one control the whole quote depends on. Now we track the rows
+    // that have been CLOSED; anything not in the set renders open.
+    //
+    // A Set rather than a single index because the old model could only ever
+    // have one row expanded; with open as the default that would have meant
+    // opening one row silently collapsing another.
+    var _cartPickerClosedIdx = new Set();
 
     // Cart-item upload state. Keyed by `<itemIdx>_<presetId>` so the file
     // map survives placement toggles + re-renders. The form-submit path
@@ -4809,7 +4819,7 @@
     // and totes don't see "Back Top".
     function renderCartPlacementWidget(idx, placements, garmentType) {
       var picked = placements || [];
-      var pickerOpen = (_cartPickerOpenIdx === idx);
+      var pickerOpen = !_cartPickerClosedIdx.has(idx);
       // Per-item method (for surcharge labeling on selected chips). Same
       // resolution rule as the picker: per-item wins, else global.
       var perItemMethod = '';
@@ -4831,7 +4841,13 @@
                '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button></span>';
       }).join('');
       var addLabel = picked.length === 0 ? '+ Pick a placement' : '+ Add placement';
-      var addBtn = '<button type="button" class="ci-chip ci-chip--add" onclick="cartTogglePicker(' + idx + ')">' + addLabel + '</button>';
+      // Only offered while the picker is CLOSED. cartTogglePicker toggles, so
+      // with the picker open by default this button would read "+ Add
+      // placement" and close the panel it invites you into. The open picker
+      // already lists every placement and carries its own Done.
+      var addBtn = pickerOpen
+        ? ''
+        : '<button type="button" class="ci-chip ci-chip--add" onclick="cartTogglePicker(' + idx + ')">' + addLabel + '</button>';
       var picker = pickerOpen ? renderCartPlacementPicker(idx, picked, garmentType) : '';
       return '<div class="ci-placements">' +
              '  <span class="ci-placements__label">Placements</span>' +
@@ -5309,7 +5325,8 @@
 
     // ----- Mutations ------------------------------------------------------
     function cartTogglePicker(idx) {
-      _cartPickerOpenIdx = (_cartPickerOpenIdx === idx) ? null : idx;
+      if (_cartPickerClosedIdx.has(idx)) _cartPickerClosedIdx.delete(idx);
+      else _cartPickerClosedIdx.add(idx);
       renderCartList();
     }
     // ─────────────────────────────────────────────────────────────────────
@@ -6174,7 +6191,14 @@
         }
 
         host.innerHTML =
-          '<details style="margin-top:4px" ' + (isMobile ? '' : 'open') + '>' +
+          // 2026-09-20 — defaults CLOSED on every viewport. It used to open on
+          // desktop only, via a viewport check, which put a 7-row x 9-column
+          // price grid between the item and everything below it before the
+          // customer asked for it. The summary line still says what it is, so
+          // anyone who wants the ladder can open it; <details> remembers
+          // nothing between renders, which is why this is a default and not a
+          // stored preference.
+          '<details style="margin-top:4px">' +
             '<summary style="cursor:pointer;font-size:.72rem;font-weight:600;color:#666;letter-spacing:.04em;text-transform:uppercase;padding:6px 0;list-style:none">' +
               '▾ Tier pricing for this item' +
               '<span style="color:#999;font-weight:500;margin-left:6px;text-transform:none;letter-spacing:0">— current row highlighted, change qty to reprice</span>' +

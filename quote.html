@@ -223,26 +223,7 @@
                   <span class="name">Crewneck</span>
                   <span class="from">From $24.95</span>
                 </div>
-                <!-- Bring Your Own (2026-09-08, moved to position 4 on 2026-09-08). BYO already existed, but only
-                     as a "Garment source" toggle BELOW product type + quantity
-                     band - so a customer who owns their garments had to first
-                     pick a garment they were not buying. Surfacing it as a
-                     peer of the other product types makes it a first-class
-                     answer to "what are we printing on?".
-
-                     Position matters as much as presence. Appended after
-                     "Other" it was tile 11 of 11 — two rows below the fold,
-                     behind Tote Bag, Long Sleeve and Hi-Vis Vest. Someone who
-                     already owns their garments is high-intent and should not
-                     have to scroll past nine blanks they are not buying, so it
-                     opens row 2 of the 3-up grid. -->
-                <div class="product-option product-option--byo" data-value="Bring Your Own" data-garment="byo" onclick="selectProduct(this)">
-                  <span class="check">&#10003;</span>
-                  <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 L24 7 L42 16 L42 34 L24 43 L6 34 Z"/><path d="M6 16 L24 25 L42 16"/><line x1="24" y1="25" x2="24" y2="43"/><path d="M15 11.5 L33 20.5" opacity="0.35"/></svg></span>
-                  <span class="name" data-i18n="quote.product.byo">Bring Your Own</span>
-                  <span class="from" data-i18n="quote.product.byo.sub">You ship the garments</span>
-                </div>
-                <div class="product-option" data-value="Polo" data-garment="polo" onclick="selectProduct(this)">
+<div class="product-option" data-value="Polo" data-garment="polo" onclick="selectProduct(this)">
                   <span class="check">&#10003;</span>
                   <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10 L10 12 L4 20 L10 24 L14 17 L14 40 L34 40 L34 17 L38 24 L44 20 L38 12 L33 10"/><path d="M15 10 L19 6 L24 10 L29 6 L33 10"/><line x1="24" y1="10" x2="24" y2="20" stroke-width="1.4"/><circle cx="24" cy="14" r="0.8" fill="#1a1a1a" stroke="none"/><circle cx="24" cy="18" r="0.8" fill="#1a1a1a" stroke="none"/></svg></span>
                   <span class="name">Polo Shirt</span>
@@ -286,6 +267,29 @@
                 </div>
               </div>
               <input type="hidden" name="product" id="productInput" required>
+            </div>
+
+            <!-- Bring Your Own — its own question, not a product type.
+                 It was tile 4 of 11 in the Product type grid. It is not a
+                 product we sell: picking it sets state.garment='byo' and
+                 selectProduct() returns early before the tier machinery,
+                 because there is no blank to price. Sitting among ten
+                 garments made "what are we printing on?" and "who supplies
+                 it?" read as the same question.
+
+                 The markup is deliberately UNCHANGED — same classes, same
+                 data-garment, same onclick — so selectProduct()'s
+                 querySelectorAll('.product-option') still deselects it and
+                 .selected still styles it. Only its position in the DOM
+                 moved. No JavaScript changed. -->
+            <div class="form-group byo-standalone">
+              <label data-i18n="quote.byo.section">Already have garments?</label>
+              <div class="product-option product-option--byo" data-value="Bring Your Own" data-garment="byo" onclick="selectProduct(this)">
+                <span class="check">&#10003;</span>
+                <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 L24 7 L42 16 L42 34 L24 43 L6 34 Z"/><path d="M6 16 L24 25 L42 16"/><line x1="24" y1="25" x2="24" y2="43"/><path d="M15 11.5 L33 20.5" opacity="0.35"/></svg></span>
+                <span class="name" data-i18n="quote.product.byo">Bring Your Own</span>
+                <span class="from" data-i18n="quote.product.byo.sub">You ship the garments</span>
+              </div>
             </div>
 
             <!-- Rough quantity bands — painted by spRenderTierCards() after a
