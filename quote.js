@@ -585,7 +585,15 @@
           })
           .catch(function(){ window.__spSizeStock = null; });
         host.innerHTML = '<p style="font-size:.85rem;color:#999;margin:0">Loading tier prices…</p>';
-        fetch(PRICING_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(catalogPick.product_id) + '&matrix=1')
+        // decoration_method added 2026-09-20. This table is the one aimed at
+        // cold paid-ad traffic ("confirm the per-unit price BEFORE filling out
+        // the form"), and it asked for a ladder without saying which method —
+        // so it showed PRINT prices to customers who had chosen embroidery,
+        // $2-4/pc under what they would be charged. selectService() already
+        // re-runs renderBulkPricingTable(), so switching method repaints it.
+        var bulkMeth = String((state && state.service) || '').toLowerCase();
+        fetch(PRICING_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(catalogPick.product_id)
+              + '&matrix=1&decoration_method=' + encodeURIComponent(bulkMeth === 'embroidery' ? 'embroidery' : 'dtf'))
           .then(function(r){ return r.ok ? r.json() : null; })
           .then(function(d){
             if (!d || !Array.isArray(d.bulk_matrix) || !d.bulk_matrix.length) {
@@ -7101,6 +7109,10 @@
       return out;
     }
     var spQtyBand = null;   // selected band object | null while unanswered
+    // Discards an in-flight ladder response when a newer render has started
+    // (switching tier or garment). Without it the older, slower answer lands
+    // last and repaints the previous blank's prices.
+    var spQtyPriceSeq = 0;
 
     function spQtyBandLabel(b) {
       if (b.id === 'u5') return spTierT('quote.qty.under5', 'Under 5');
@@ -7179,42 +7191,62 @@
       // savings vs. the 5–9 run once its baseline price is known. All
       // hits go through liveUnitPrice's cache — repeat renders are free.
       if (priced && priced.product_id) {
-        var prices = {};
         var numeric = SP_QTY_BANDS.filter(function (b) { return b.qty && b.id !== 'u5'; });
-        // "Save X%" is measured against the cheapest real band, whichever it
-        // is. It used to be the literal 'b5'; with derived ids that name is no
-        // longer guaranteed to exist, and a missing baseline silently removed
-        // every savings line rather than failing.
+        // "Save X%" is measured against the cheapest real band, whichever it is.
         var baselineId = numeric.length ? numeric[0].id : null;
-        numeric.forEach(function (b) {
-          liveUnitPrice(priced.product_id, b.qty, 1, [], function (p) {
-            if (typeof p !== 'number' || p <= 0) return;
-            prices[b.id] = p;
-            var el = document.getElementById('sp-qb-' + b.id);
-            if (el) {
+        var seq = ++spQtyPriceSeq;
+
+        // 2026-09-20 — ONE request for the whole ladder, not one per band.
+        //
+        // This fired one price call per band: six or seven concurrent calls to
+        // /api/pricing for six numbers. Measured in the browser on an uncached
+        // garment, each took ~3.9s — because they were concurrent. Seven
+        // simultaneous requests cold-start seven lambdas that then contend, so
+        // the page was making itself slow. The same endpoint answers a single
+        // request in ~0.65s.
+        //
+        // matrix=1 returns every band in one response, priced for THIS product
+        // and (since the CRM fix that ships with this) for the chosen method.
+        // Six chips, one round trip, ~4s -> ~0.65s.
+        var qs = 'product_id=' + encodeURIComponent(priced.product_id) + '&matrix=1';
+        var meth = String((state && state.service) || '').toLowerCase();
+        if (meth) qs += '&decoration_method=' + encodeURIComponent(meth === 'embroidery' ? 'embroidery' : 'dtf');
+
+        fetch(PRICING_API_FOR_QUOTE + '?' + qs)
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (seq !== spQtyPriceSeq) return;          // a newer render won
+            var rows = d && Array.isArray(d.bulk_matrix) ? d.bulk_matrix : null;
+            if (!rows || !rows.length) return;          // leave the placeholders
+            // Band -> price by matching the band's own minimum to the ladder
+            // row that covers it. Matching on qty_min alone would break the
+            // moment a band list and a ladder disagree, which is exactly the
+            // drift this page has already had twice.
+            var priceFor = function (qty) {
+              var best = null;
+              rows.forEach(function (r) {
+                if (qty >= r.qty_min && (best === null || r.qty_min > best.qty_min)) best = r;
+              });
+              return best && typeof best.sides_1 === 'number' ? best.sides_1 : null;
+            };
+            var prices = {};
+            numeric.forEach(function (b) { var v = priceFor(b.qty); if (v) prices[b.id] = v; });
+            var base = baselineId ? prices[baselineId] : null;
+            numeric.forEach(function (b) {
+              var p = prices[b.id];
+              var el = document.getElementById('sp-qb-' + b.id);
+              if (!el || !p) return;
               var save = '';
-              if (baselineId && prices[baselineId] && b.id !== baselineId) {
-                var pct = Math.round((1 - p / prices[baselineId]) * 100);
+              if (base && b.id !== baselineId) {
+                var pct = Math.round((1 - p / base) * 100);
                 if (pct >= 5) save = '<br><span style="color:#3b6d11;font-weight:600">' +
                   spTierT('quote.qty.save', 'Save') + ' ' + pct + '%</span>';
               }
               el.innerHTML = '<strong style="color:#1a1a1a">$' + p.toFixed(2) + '</strong>' +
                 spTierT('quote.qty.each', '/ea') + save;
-            }
-            // Baseline arrived late → refresh the other bands' savings.
-            if (b.id === baselineId) {
-              numeric.forEach(function (o) {
-                if (o.id !== 'b5' && prices[o.id]) {
-                  var el2 = document.getElementById('sp-qb-' + o.id);
-                  var pct2 = Math.round((1 - prices[o.id] / p) * 100);
-                  if (el2 && pct2 >= 5) el2.innerHTML = '<strong style="color:#1a1a1a">$' + prices[o.id].toFixed(2) + '</strong>' +
-                    spTierT('quote.qty.each', '/ea') + '<br><span style="color:#3b6d11;font-weight:600">' +
-                    spTierT('quote.qty.save', 'Save') + ' ' + pct2 + '%</span>';
-                }
-              });
-            }
-          });
-        });
+            });
+          })
+          .catch(function () { /* chips keep their placeholder */ });
       }
     }
 

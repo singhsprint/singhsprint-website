@@ -220,8 +220,10 @@ ok('8b it matches the picked tier by product_id',
    /t\.product_id === tierPickApplied\) priced = t/.test(js))
 ok('8c it falls back to Standard before anything is picked',
    /if \(!priced\) priced = std;/.test(js))
-ok('8d the live price call uses the picked blank',
-   /liveUnitPrice\(priced\.product_id, b\.qty/.test(js) &&
+// The mechanism changed (one ladder call, not one per band) — the RULE did
+// not: whatever is fetched must be fetched for the blank that was picked.
+ok('8d the ladder is fetched for the picked blank',
+   /product_id=' \+ encodeURIComponent\(priced\.product_id\)/.test(js) &&
    !/liveUnitPrice\(std\.product_id/.test(js))
 ok('8e the guard uses the picked blank too',
    /if \(priced && priced\.product_id\) \{/.test(js) &&
@@ -236,6 +238,62 @@ ok('8f the held branch sets the pick before repainting',
    _h.indexOf('tierPickApplied = productId') < _h.indexOf('spRenderTierCards('))
 ok('8g repainting the cards also repaints the chips',
    /function spRenderTierCards[\s\S]{0,2000}?spRenderQtyBands\(garmentKey/.test(js))
+
+// ── 9. the qty ladder is ONE request, not one per band ─────────────────
+console.log('9. one request for the whole ladder')
+// Scoped to spRenderQtyBands ONLY. Ending at spActivateByo swallowed
+// spSetQtyBandById and spRenderTierCards, and the tier-card repricing in
+// the latter legitimately calls liveUnitPrice — so a per-band count over
+// the wider slice was never zero, and the assertion could not fail.
+const _qb = js.slice(js.indexOf('function spRenderQtyBands'), js.indexOf('function spSetQtyBandById'))
+ok('9a the per-band liveUnitPrice loop is gone',
+   !/liveUnitPrice\(priced\.product_id/.test(_qb) && !/liveUnitPrice\(std\.product_id/.test(_qb))
+// Asserted on the QUERY STRING being built, not a loose substring: a bare
+// /matrix=1/ also matches the comment above it explaining what matrix=1 does,
+// so dropping the real parameter left the assertion passing.
+ok('9b it asks for the whole ladder in one call',
+   /qs = 'product_id=' \+ encodeURIComponent\(priced\.product_id\) \+ '&matrix=1'/.test(_qb) &&
+   /d\.bulk_matrix/.test(_qb))
+ok('9c exactly one fetch in the band renderer',
+   (_qb.match(/fetch\(/g) || []).length === 1,
+   `${(_qb.match(/fetch\(/g) || []).length} fetch calls`)
+// The thing that actually made it slow was N calls, so count them directly.
+// A regex for one spelling of liveUnitPrice would miss any other way of
+// firing a request per band.
+ok('9c2 the band renderer makes NO per-band price calls',
+   (_qb.match(/liveUnitPrice\(/g) || []).length === 0,
+   `${(_qb.match(/liveUnitPrice\(/g) || []).length} per-band calls`)
+ok('9c3 nothing in the renderer loops a request over the bands',
+   !/numeric\.forEach\([^)]*\)\s*\{[^}]*(fetch\(|liveUnitPrice\()/.test(_qb))
+ok('9d it sends the decoration method (the ladder is method-specific)',
+   /decoration_method=/.test(_qb))
+ok('9e the method is normalised to what the engine accepts',
+   /=== 'embroidery' \? 'embroidery' : 'dtf'/.test(_qb))
+// Band -> row by covering range, not by an exact qty_min match: a band list
+// and a ladder that disagree is exactly the drift this page has had twice.
+ok('9f bands map to the ladder row that COVERS them',
+   /qty >= r\.qty_min && \(best === null \|\| r\.qty_min > best\.qty_min\)/.test(_qb))
+// A slow response from a previous render must not repaint the new one.
+ok('9g a stale response is discarded',
+   /var seq = \+\+spQtyPriceSeq/.test(_qb) && /if \(seq !== spQtyPriceSeq\) return/.test(_qb))
+ok('9h the sequence counter exists', /var spQtyPriceSeq = 0;/.test(js))
+ok('9i a failed ladder leaves the placeholders rather than blanking them',
+   /\.catch\(function \(\) \{ \/\* chips keep their placeholder \*\/ \}\)/.test(_qb))
+
+// ── 10. the OTHER matrix caller: the bulk pricing table ────────────────
+console.log('10. bulk pricing table asks for its method too')
+ok('10a it sends decoration_method with matrix=1',
+   /catalogPick\.product_id\)\s*\n\s*\+ '&matrix=1&decoration_method=' \+ encodeURIComponent\(/.test(js))
+ok('10b normalised to what the engine accepts',
+   /bulkMeth === 'embroidery' \? 'embroidery' : 'dtf'/.test(js))
+ok('10c it repaints when the method changes',
+   /state\.service = el\.dataset\.value;[\s\S]{0,400}?renderBulkPricingTable\(\)/.test(js))
+// Both matrix callers must ask, or one of them silently shows print prices.
+const _matrixCalls = (js.match(/&matrix=1/g) || []).length
+const _withMethod  = (js.match(/&matrix=1[^']*decoration_method=|matrix=1'[\s\S]{0,120}?decoration_method=/g) || []).length
+ok('10d every matrix=1 caller sends a method',
+   _matrixCalls > 0 && _withMethod >= _matrixCalls,
+   `${_matrixCalls} matrix calls, ${_withMethod} carry a method`)
 
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }
