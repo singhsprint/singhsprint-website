@@ -60,8 +60,8 @@ var SP_LANG = (function() {
 
     // ===== FOOTER =====
     'footer.brand': {
-      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open Mon–Sat, 9AM\u20136PM.",
-      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert du lundi au samedi, 9h à 18h."
+      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open 7 days, 9AM\u20136PM.",
+      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert 7 jours sur 7, 9 h à 18 h."
     },
     'footer.pages': { en: 'Pages', fr: 'Pages' },
     'footer.home': { en: 'Home', fr: 'Accueil' },
@@ -87,7 +87,7 @@ var SP_LANG = (function() {
     'footer.cookieprefs': { en: 'Cookie preferences', fr: 'Préférences de témoins' },
 
     // ===== INDEX / HOME =====
-    'home.badge': { en: 'Mon–Sat 9–6 | West Island, Montreal', fr: 'Lun–Sam 9h–18h | Ouest-de-l\'Île, Montréal' },
+    'home.badge': { en: '7 days 9–6 | West Island, Montreal', fr: 'Lun–Sam 9h–18h | Ouest-de-l\'Île, Montréal' },
     'home.hero.h1': {
       en: 'Custom T-Shirt &amp; Hoodie<br>Printing + Embroidery<br>in <span class="accent">Montreal</span>',
       fr: 'Impression de t-shirts<br>et hoodies + broderie<br>à <span class="accent">Montréal</span>'
@@ -312,7 +312,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r6.them': { en: "Print came out wrong? &ldquo;That's how the file was.&rdquo;", fr: 'Impression ratée ? « C\'est le fichier qui était comme ça. »' },
     'whyus.cmp.r6.us': { en: '<strong>Print issue or defect? We reprint or replace it. Period.</strong> No form, no fight.', fr: '<strong>Défaut d\'impression ? On réimprime ou on remplace. Point.</strong> Pas de formulaire, pas de chicane.' },
     'whyus.risk.h2': { en: "Here's the worst that can happen.", fr: 'Voici le pire qui puisse arriver.' },
-    'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;6pm, Monday to Saturday. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 18 h, du lundi au samedi. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
+    'whyus.risk.p1': { en: "You request a quote. A real human answers within the hour, 9am&ndash;6pm, 7 days a week. You get a photoreal mockup of your actual design on your actual garment, and a real number. If you don't like it, you walk away having spent nothing, knowing exactly what this should cost anywhere.", fr: 'Vous demandez une soumission. Un vrai humain répond en moins d\'une heure, de 9 h à 18 h, 7 jours sur 7. Vous recevez une maquette photoréaliste de votre design sur votre vêtement, et un vrai prix. Si ça ne vous convient pas, vous repartez sans avoir dépensé un sou, en sachant exactement combien ça devrait coûter, partout.' },
     'whyus.risk.p2': { en: 'If you do order: a free tee on orders of 15+, and a fix-it-free promise on any misprint.', fr: 'Si vous commandez : un t-shirt gratuit dès 15 articles, et une promesse de correction gratuite en cas d\'erreur d\'impression.' },
     'whyus.risk.kicker': { en: "The risk lives on our side of the table. That's on purpose.", fr: 'Le risque est de notre côté de la table. C\'est voulu.' },
     'whyus.proof.rating': { en: '(23 reviews) on Google', fr: '(23 avis) sur Google' },
@@ -443,8 +443,8 @@ var SP_LANG = (function() {
 
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open Mon–Sat, 9AM to 6PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
-      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert du lundi au samedi, de 9h à 18h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
+      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 6PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
+      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 9 h à 18 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
@@ -1299,7 +1299,7 @@ var SP_LANG = (function() {
     'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–6pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h).' },
     'quote.sidebar.next.p2': { en: 'You approve a mockup before we print.', fr: 'Vous approuvez une maquette avant l\'impression.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
-    'quote.sidebar.talk.hours': { en: 'Open Mon–Sat, 9AM – 6PM', fr: 'Ouvert du lundi au samedi, 9 h à 18 h' },
+    'quote.sidebar.talk.hours': { en: 'Open 7 days, 9AM – 6PM', fr: 'Ouvert 7 jours sur 7, 9 h à 18 h' },
     'quote.freetee.nudge':    { en: 'Add {n} more and the 16th tee is on us.', fr: 'Encore {n} et le 16e t-shirt est offert.' },
     'quote.freetee.included': { en: 'Free tee included \u2014 same design. We\'ll confirm your size.', fr: 'T-shirt gratuit inclus \u2014 m\u00eame design. On confirmera votre taille.' },
     'quote.freetee.cartline': { en: 'Free tee \u2014 same design, on us', fr: 'T-shirt gratuit \u2014 m\u00eame design, offert' },

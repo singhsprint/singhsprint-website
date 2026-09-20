@@ -1166,7 +1166,7 @@ function loadSchema() {
         "geo": { "@type": "GeoCoordinates", "latitude": "45.4042", "longitude": "-73.9485" },
         "openingHoursSpecification": [{
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
           "opens": "09:00",
           "closes": "18:00"
         }],
