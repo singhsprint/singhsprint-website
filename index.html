@@ -209,20 +209,29 @@
     .trust-clients__lead li{font-weight:700;font-size:1.02rem;color:#2a2a2a;white-space:nowrap;letter-spacing:-.01em}
     .trust-clients__rest{gap:6px 20px}
     .trust-clients__rest li{font-weight:600;font-size:.8rem;color:#767676;white-space:nowrap}
+    /* THE RATIO BETWEEN TIERS IS THE POINT, AT EVERY WIDTH.
+       Measured in headless Chromium at 390px before this block was fixed:
+       hero 16.32px against lead 14.72px — 1.11x apart, which on the screen
+       is not a hierarchy, it is fourteen bold names in a column. The desktop
+       rule is 1.42x and reads correctly; the phone rule had been written for
+       fit alone and quietly threw away the whole reason for three tiers.
+       Shrink all three together and the ratios survive. */
     @media (max-width:760px){
       .trust-clients__hero{gap:6px 26px}
-      .trust-clients__hero li{font-size:1.2rem}
+      .trust-clients__hero li{font-size:1.28rem}
+      .trust-clients__lead li{font-size:.96rem}
+      .trust-clients__rest li{font-size:.78rem}
     }
     @media (max-width:540px){
-      /* Long names stop being allowed to force a horizontal scrollbar —
-         "Lamborghini Montréal" alone is wider than a 360px viewport at the
-         hero size, and nowrap on a flex item does not shrink. */
+      /* white-space:normal here, not for looks: a flex item set to nowrap
+         does not shrink, so "Lamborghini Montréal" at the hero size would
+         force a horizontal scrollbar on a narrow phone rather than wrap. */
       .trust-clients__hero{gap:4px 18px}
-      .trust-clients__hero li{font-size:1.02rem;white-space:normal;text-align:center}
+      .trust-clients__hero li{font-size:1.18rem;white-space:normal;text-align:center}
       .trust-clients__lead{gap:8px 18px}
-      .trust-clients__lead li{font-size:.92rem;white-space:normal}
+      .trust-clients__lead li{font-size:.88rem;white-space:normal}
       .trust-clients__rest{gap:5px 14px}
-      .trust-clients__rest li{font-size:.74rem;white-space:normal}
+      .trust-clients__rest li{font-size:.72rem;white-space:normal}
     }
 
     /* ===== PRODUCT BROWSE ===== */

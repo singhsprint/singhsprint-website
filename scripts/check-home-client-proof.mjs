@@ -160,18 +160,43 @@ console.log('2. readable — ratios computed, not assumed');
   }
 }
 
-console.log('2f the tiers are actually a hierarchy');
+console.log('2f the tiers stay a hierarchy at every width');
 {
-  const sizeOf = (sel) => {
-    const m = EN.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{[^}]*?font-size:\\s*([\\d.]+)rem'));
-    return m ? Number(m[1]) : null;
-  };
-  const [h, l, r] = ['.trust-clients__hero li', '.trust-clients__lead li', '.trust-clients__rest li'].map(sizeOf);
-  // Three tiers that render at the same size are three tiers in the markup
-  // and one flat list on the screen — which is the thing this replaced.
-  ok('2f hero > lead > rest, by type size',
-    h !== null && l !== null && r !== null && h > l && l > r,
-    `hero ${h}rem, lead ${l}rem, rest ${r}rem`);
+  // AT EVERY WIDTH is the whole assertion. The first version of this test
+  // read only the base rule, passed, and shipped a phone layout measured in
+  // headless Chromium at hero 16.32px against lead 14.72px — 1.11x, which
+  // reads as one list of fourteen bold names. A ratio that survives on the
+  // desktop and collapses on the phone is not a hierarchy, and most of this
+  // page's traffic is the phone.
+  const blocks = [];
+  const base = EN.slice(EN.indexOf('.trust-clients__hero{'), EN.indexOf('@media (max-width:760px)'));
+  blocks.push(['base', base]);
+  for (const w of [760, 540]) {
+    const at = EN.indexOf(`@media (max-width:${w}px)`);
+    if (at < 0) continue;
+    blocks.push([`<=${w}px`, EN.slice(at, EN.indexOf('}\n    }', at) + 7)]);
+  }
+  // Inheritance: a breakpoint that restates only some tiers keeps the rest
+  // from the rule above it, so each block is resolved against what precedes.
+  const resolved = { hero: null, lead: null, rest: null };
+  let worstHL = Infinity, worstLR = Infinity, detail = [];
+  for (const [label, css] of blocks) {
+    for (const t of ['hero', 'lead', 'rest']) {
+      const m = css.match(new RegExp('__' + t + ' li\\{[^}]*?font-size:([\\d.]+)rem'));
+      if (m) resolved[t] = Number(m[1]);
+    }
+    const { hero, lead, rest } = resolved;
+    if (hero === null || lead === null || rest === null) continue;
+    worstHL = Math.min(worstHL, hero / lead);
+    worstLR = Math.min(worstLR, lead / rest);
+    detail.push(`${label} ${(hero / lead).toFixed(2)}x/${(lead / rest).toFixed(2)}x`);
+  }
+  ok('2f the hero tier stays clearly larger than the lead tier at every width',
+    worstHL >= 1.25, `worst ${worstHL.toFixed(2)}x — ${detail.join(', ')}`);
+  ok('2g the lead tier stays clearly larger than the small row at every width',
+    worstLR >= 1.15, `worst ${worstLR.toFixed(2)}x — ${detail.join(', ')}`);
+  ok('2h more than one breakpoint was actually examined',
+    blocks.length >= 3, `${blocks.length} blocks parsed`);
 }
 
 console.log('3. nothing moves');
