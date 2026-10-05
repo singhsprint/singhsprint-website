@@ -177,22 +177,27 @@
 
        So: six names, and no number at all.
 
-       WHICH TEN, AND IN WHICH ROW.
-       Row one is the names a stranger recognises without being told:
+       WHICH FIVE. Only the names a stranger recognises without being told:
        Lamborghini Montréal, ALDO, McGill University, Silk Laundry, C4 Energy.
-       Row two is the local businesses with the repeat work behind them —
-       Artwood Construction ($4,568 over two orders, the largest account in
-       the CRM), Cafe GotSoul ($2,723/2), Place Tevere ($2,139/3, with more
-       still open), Evershield RV Roofs ($2,149/2) and Petinos ($547/1).
+       A second row of local businesses with heavier order histories — Artwood
+       Construction at $4,568, Cafe GotSoul, Place Tevere, Evershield RV
+       Roofs, Petinos — was here briefly and was cut: they are not as well
+       known, and a recognisable name beside an unrecognisable one averages
+       down rather than adding up. They stay in portfolio_clients directly
+       below the cut, so any of them is one sort_index change from the page.
 
-       A note for whoever reorders these. Four of row one carry no order in
-       the CRM: ALDO, Cardinal Brewery and Île Perrot Yacht Club have no
-       record at all, and Lamborghini Montréal's only row came from a
-       prospecting import, created in a batch with Aston Martin Montréal,
-       Audi Anjou, BMW Canbec, BMW Laval and Bentley Montréal. The owner has
-       confirmed all of them as genuine clients whose work predates or
-       bypassed the CRM. Do not "clean this up" by re-deriving the list from
-       the orders table.
+       A NOTE FOR WHOEVER REORDERS THESE. Four of the five carry no order
+       record in the CRM. ALDO has nothing at all, nor do Cardinal Brewery or
+       Île Perrot Yacht Club; there is no McGill institutional row, only
+       Animal Science at $1,571 and the clubs; and Lamborghini Montréal's
+       only row came from a prospecting import, created in a batch with Aston
+       Martin Montréal, Audi Anjou, BMW Canbec, BMW Laval and Bentley
+       Montréal, with two people's names in one field and no contact details.
+       Silk Laundry ($1,178, one order) is the only one the database can
+       vouch for. The owner has confirmed all five as genuine clients whose
+       work predates or bypassed the CRM. Do not "clean this up" by
+       re-deriving the list from the orders table — you would be left with
+       one name.
 
        NO COUNT, DELIBERATELY. A draft of this carried "a few of the 45+
        businesses we print for". It was true and measured, and it was still
@@ -216,17 +221,10 @@
        1200 with 24px gutters, so this still sits inside it. */
     .trust-clients{max-width:1100px;margin:0 auto}
     .trust-clients__hero{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 0}
-    /* TWO ROWS OF FIVE, AND THE BREAK IS FORCED, NOT HOPED FOR.
-       Ten names cannot sit on one line, so the only question is where they
-       split. Left to flex-wrap it depends on the longest name of the day and
-       can strand one on its own — which happened once already, with Petinos.
-       A zero-height flex item at 100% basis ends the row deterministically
-       after the fifth name, so the split is 5/5 whatever the names are.
-       Measured in headless Chromium at this size: row one 941px, row two
-       1031px, in a 1100px box. */
+    /* FIVE NAMES, ONE LINE. Measured in headless Chromium at this size:
+       941px in a 1100px box. The forced 5/5 row break that used to live here
+       is gone with the second row — there is nothing left to split. */
     .trust-clients__hero li{font-weight:700;font-size:1.5rem;line-height:1.3;color:#1a1a1a;white-space:nowrap;letter-spacing:-.025em;padding:0 20px;position:relative}
-    .trust-clients__brk{flex-basis:100%;height:0;padding:0 !important;margin:0}
-    .trust-clients__brk::after{display:none}
     /* The dot is a pseudo-element, not a character in the markup, so a screen
        reader reads six names and not six names and five bullets.
        :last-child drops the final one — which is correct ONLY while the row
@@ -236,12 +234,7 @@
        dots are removed there entirely and the gap separates them instead. */
     .trust-clients__hero li::after{content:'';position:absolute;right:-5px;top:50%;
       width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#e8ff3c}
-    /* No dot after the fifth name either: it would hang off the end of the
-       first row, which is the same defect the wrap used to cause. The break
-       element is the 6th child, so the last name of row one is nth-child(5)
-       and the last of row two is :last-child. */
-    .trust-clients__hero li:last-child::after,
-    .trust-clients__hero li:nth-child(5)::after{display:none}
+    .trust-clients__hero li:last-child::after{display:none}
     .trust-clients__more{text-align:center;margin:28px 0 0;line-height:1.6}
     .trust-clients__more a{display:inline-block;font-size:.84rem;color:#2a2a2a;font-weight:700;
       letter-spacing:.02em;text-decoration:none;border-bottom:2px solid #e8ff3c;
@@ -250,15 +243,7 @@
     @media (max-width:760px){
       /* Wrapping starts here, so the dots go: a separator that only
          sometimes lands between two names is worse than no separator. The
-         accent still carries the link underline below.
-
-         The forced 5/5 break goes too. On a phone five names already wrap to
-         three lines, so keeping the break produced two groups of five that
-         each stranded their last name — C4 Energy and Petinos alone on a
-         line, 372px of strip. Letting all ten flow as one list wraps them
-         evenly. The break earns its place on a wide screen and costs on a
-         narrow one. */
-      .trust-clients__brk{display:none}
+         accent still carries the link underline below. */
       .trust-clients__hero{gap:8px 26px}
       .trust-clients__hero li{font-size:1.2rem;padding:0}
       .trust-clients__hero li::after{display:none}
@@ -695,12 +680,6 @@
           <li>McGill University</li>
           <li>Silk Laundry</li>
           <li>C4 Energy</li>
-          <li class="trust-clients__brk" aria-hidden="true"></li>
-          <li>Artwood Construction</li>
-          <li>Cafe GotSoul</li>
-          <li>Place Tevere</li>
-          <li>Evershield RV Roofs</li>
-          <li>Petinos</li>
         </ul>
         <p class="trust-clients__more">
           <a href="portfolio"  data-i18n="home.trust.seework">Voir nos réalisations →</a>
@@ -1407,8 +1386,7 @@
     // fact about the shop, not about how many rows happen to be published —
     // deriving it from cs.length would make it drift to whatever the CMS
     // holds and would start understating the moment the table was tidied.
-    var SHOWN_COUNT = 10;
-    var ROW_ONE = 5;   // where the forced 5/5 break goes
+    var SHOWN_COUNT = 5;
     fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
@@ -1416,13 +1394,8 @@
         if (!Array.isArray(cs) || !cs.length) return; // keep hardcoded fallback
         var row = document.querySelector('.trust-clients__hero');
         if (!row) return;                             // keep hardcoded fallback
-        // The row break is re-inserted here too, or a CRM-driven list would
-        // wrap wherever it happened to fit and could strand a single name on
-        // the second row — the committed markup's 5/5 split would be the only
-        // version that looked right.
-        row.innerHTML = cs.slice(0, SHOWN_COUNT).map(function (c, i) {
-          return (i === ROW_ONE ? '<li class="trust-clients__brk" aria-hidden="true"></li>' : '')
-            + '<li>' + esc(c.name) + '</li>';
+        row.innerHTML = cs.slice(0, SHOWN_COUNT).map(function (c) {
+          return '<li>' + esc(c.name) + '</li>';
         }).join('');
       })
       .catch(function () { /* keep hardcoded fallback */ });

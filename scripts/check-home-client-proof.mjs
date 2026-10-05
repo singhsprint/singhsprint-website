@@ -48,30 +48,28 @@ const LANG = read('lang.js');
 // is not a client (the client was PLACE TEVERE — 3 orders, $2,138.54), and
 // "Lamborghini Montreal" is "Lamborghini Montréal".
 //
-// Row two is evidenced in the CRM, measured 2026-10-05: Artwood $4,568/2
-// (the largest account there is), Cafe GotSoul $2,723/2, Evershield
-// $2,149/2, Place Tevere $2,139/3 with more still open, Petinos $547/1.
-// Silk Laundry in row one has $1,178/1.
-//
-// FOUR OF ROW ONE CARRY NO ORDER RECORD, and that is a decision, not an
+// FOUR OF THESE FIVE CARRY NO ORDER RECORD, and that is a decision, not an
 // oversight. ALDO has nothing in the CRM at all; neither do Cardinal Brewery
 // or Île Perrot Yacht Club. There is no McGill institutional row, only
 // Animal Science at $1,571 and the clubs. Lamborghini Montréal's only row
 // came from a prospecting import, created in a batch with Aston Martin
 // Montréal, Audi Anjou, BMW Canbec, BMW Laval and Bentley Montréal — two
 // people's names in one field, no email, no phone, no message history.
+// Silk Laundry ($1,178, one order) is the only one the database can vouch
+// for.
 //
-// The owner has confirmed all four as genuine clients whose work predates or
+// The owner has confirmed all five as genuine clients whose work predates or
 // bypassed the CRM. Written down here because a future reader will otherwise
-// re-derive this list from the orders table and quietly drop half of row one.
+// re-derive this list from the orders table and be left with one name.
+//
+// The clients that ARE evidenced — Artwood Construction $4,568/2, Cafe
+// GotSoul $2,723/2, Evershield RV Roofs $2,149/2, Place Tevere $2,139/3,
+// Petinos $547/1 — were on the strip as a second row for one commit and were
+// cut as less recognisable. They sit directly below the cut in
+// portfolio_clients, one sort_index change from the page.
 const SHOWN = [
-  // row one — recognised without being told
   'Lamborghini Montréal', 'ALDO', 'McGill University', 'Silk Laundry', 'C4 Energy',
-  // row two — the local businesses with the repeat work behind them
-  'Artwood Construction', 'Cafe GotSoul', 'Place Tevere', 'Evershield RV Roofs', 'Petinos',
 ];
-/** Where the forced 5/5 row break sits. */
-const ROW_ONE = 5;
 
 /** Inner HTML of one <ul class="..."> by class, or '' if absent. */
 function ulBody(html, cls) {
@@ -99,13 +97,12 @@ console.log('1. six names, and nothing that reads as a complete list');
   ok('1a all six clients are on the strip', missing.length === 0, missing.join(', '));
   ok('1b the strip holds those ten and nothing else',
     shown.length === SHOWN.length, `${shown.length} names`);
-  // The 5/5 split is forced with a zero-height flex item, not left to
-  // flex-wrap — which strands a name whenever the longest one changes.
-  const row = ulBody(EN, 'trust-clients__hero');
-  const items = [...row.matchAll(/<li( class="trust-clients__brk"[^>]*)?>/g)];
-  ok('1b2 a forced row break sits after the fifth name',
-    items.length === SHOWN.length + 1 && items[ROW_ONE][1] !== undefined,
-    `${items.length} items, break at ${items.findIndex((m) => m[1] !== undefined)}`);
+  // The forced row break went with the second row. Its leftovers would be
+  // invisible — a zero-height flex item renders as nothing — so assert it is
+  // actually gone rather than trusting the eye.
+  ok('1b2 no leftover row-break element or styling',
+    !/trust-clients__brk/.test(EN) && !/ROW_ONE/.test(EN),
+    'the forced row break survives the second row it existed for');
 
   // The long list is the thing being removed, not restyled. A list of 31
   // reads as THE list — it caps the impression at whatever is printed, when
@@ -230,18 +227,7 @@ console.log('2e the brand yellow is decoration, never text');
     if (/li::after\{display:none\}/.test(css) && dotOffFrom === null) dotOffFrom = w;
     else if (dotOffFrom !== null && /li::after\{(?!display:none)/.test(css)) dotBackOn = w;
   }
-  // The forced 5/5 break is a wide-screen device. On a phone five names
-  // already wrap to three lines, so keeping it produced two groups that each
-  // stranded their last name. It must be off wherever the names wrap.
-  const brkOff = [760, 540].some((w) => {
-    const at = stripCss.indexOf(`@media (max-width:${w}px)`);
-    if (at < 0) return false;
-    return /__brk\{display:none\}/.test(stripCss.slice(at, stripCss.indexOf('}\n    }', at) + 7));
-  });
-  ok('2h the forced row break is off where the names wrap anyway', brkOff,
-    'the 5/5 break survives onto phones and strands a name in each half');
-
-  ok('2i the separator dot is off from the first wrapping breakpoint on',
+  ok('2h the separator dot is off from the first wrapping breakpoint on',
     dotOffFrom !== null && dotBackOn === null,
     dotOffFrom === null ? 'never turned off' : `turned back on at ${dotBackOn}px`);
 }
@@ -288,13 +274,7 @@ console.log('5. the CRM can repoint the six, and the claim stays put');
     && /\brow\.innerHTML\s*=/.test(script));
   ok('5b the slice comes off SHOWN_COUNT, not an inline number',
     /cs\.slice\(0, SHOWN_COUNT\)/.test(script));
-  // A CRM-driven list has to carry the break too, or it wraps wherever it
-  // fits and the committed markup is the only version that looks right.
-  ok('5b2 the rebuild re-inserts the row break at the same place',
-    /var ROW_ONE = (\d+);/.test(script)
-    && /i === ROW_ONE \? '<li class="trust-clients__brk"/.test(script)
-    && Number((script.match(/var ROW_ONE = (\d+);/) || [])[1]) === ROW_ONE,
-    'the rebuild drops or misplaces the row break');
+
   ok('5c the committed fallback and the script agree on how many show',
     shownCount === SHOWN.length,
     `SHOWN_COUNT=${shownCount}, markup has ${SHOWN.length}`);
