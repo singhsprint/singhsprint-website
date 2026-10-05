@@ -101,7 +101,95 @@
   try { granted = localStorage.getItem('sp_consent') === 'granted'; } catch (e) {}
   try { window.fbq('consent', granted ? 'grant' : 'revoke'); } catch (e) {}
   window.fbq('init', PIXEL_ID);
-  window.fbq('track', 'PageView');
+  // PageView carries an eventID so the server-side copy below dedupes
+  // against it once the visitor has accepted cookies.
+  var pvId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('sp-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  window.fbq('track', 'PageView', {}, { eventID: pvId });
+  window.SP_META_PV_ID = pvId;
+})();
+
+// ---------------------------------------------------------------------
+// Meta server-side events (CAPI) — ALWAYS on, cookie-free before consent.
+// (Added 2026-10-04 after the click diagnosis.)
+//
+// Why: the Law 25 banner revokes the browser Pixel until "Accept" is
+// tapped, and ~90% of ad visitors never tap it. Events Manager was
+// receiving ~80 PageViews/day against ~150+ ad clicks/day, PageView match
+// quality 0.0/10, and Ads Manager showed 10–13% link-click → landing-page
+// -view on EVERY ad. The Leads-objective ad sets were optimising on a
+// sliver of real behaviour.
+//
+// What this does: every PageView / Contact (and the Lead in quote.js)
+// is mirrored to our own /api/meta-capi with the SAME event_id the
+// browser Pixel uses, so Meta dedupes to one event when both arrive.
+//
+// What leaves the browser BEFORE consent: event name, page URL, the
+// fbclid Meta itself put on the ad click URL (sent as `fbc`), and the
+// request's IP + user-agent (added server-side). NO cookies are set and
+// NO _fbp/_fbc cookies are read until sp_consent === 'granted'; no
+// email/phone/name ever goes without consent (see quote.js Lead).
+// The fbclid is kept in sessionStorage for the tab's life only so a
+// visitor who lands on / and then opens /quote still attributes.
+// ---------------------------------------------------------------------
+(function initMetaServerEvents() {
+  var CAPI_ENDPOINT = '/api/meta-capi';
+
+  function consented() {
+    try { return localStorage.getItem('sp_consent') === 'granted'; } catch (e) { return false; }
+  }
+  function cookie(n) {
+    var m = document.cookie.match('(?:^|; )' + n + '=([^;]+)');
+    return m ? decodeURIComponent(m[1]) : undefined;
+  }
+  function newEventId() {
+    return (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : ('sp-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  }
+
+  // fbc: Meta's click id. Prefer the _fbc cookie (only after consent),
+  // else build it from ?fbclid= per Meta's spec: fb.1.<ms timestamp>.<fbclid>
+  function fbcValue() {
+    if (consented()) { var c = cookie('_fbc'); if (c) return c; }
+    var fbclid = null;
+    try { fbclid = new URLSearchParams(location.search).get('fbclid'); } catch (e) {}
+    try {
+      if (fbclid) sessionStorage.setItem('sp_fbc', 'fb.1.' + Date.now() + '.' + fbclid);
+      return sessionStorage.getItem('sp_fbc') || undefined;
+    } catch (e) {
+      return fbclid ? ('fb.1.' + Date.now() + '.' + fbclid) : undefined;
+    }
+  }
+
+  function send(eventName, eventId, customData, userData) {
+    try {
+      var ud = Object.assign({}, userData || {});
+      var fbc = fbcValue(); if (fbc) ud.fbc = fbc;
+      if (consented()) { var fbp = cookie('_fbp'); if (fbp) ud.fbp = fbp; }
+      var body = JSON.stringify({
+        event_name:       eventName,
+        event_id:         eventId,
+        event_time:       Math.floor(Date.now() / 1000),
+        event_source_url: location.href,
+        action_source:    'website',
+        user_data:        ud,
+        custom_data:      customData || {}
+      });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(CAPI_ENDPOINT, new Blob([body], { type: 'application/json' }));
+      } else {
+        fetch(CAPI_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true })
+          .catch(function () {});
+      }
+    } catch (e) { /* tracking must never break the page */ }
+  }
+
+  window.SP_META = { newEventId: newEventId, send: send, consented: consented, fbc: fbcValue };
+
+  // Server-side PageView, same event_id as the browser Pixel's PageView.
+  var pvId = window.SP_META_PV_ID || newEventId();
+  window.SP_META_PV_ID = pvId;
+  send('PageView', pvId);
 })();
 
 // ---------------------------------------------------------------------
@@ -192,35 +280,12 @@
       }
     } catch (err) { /* tracking must never break the handoff */ }
 
-    // 2) Server CAPI — same event_id, consent-gated. sendBeacon so it
-    //    survives the navigation to the dialer / composer.
+    // 2) Server CAPI — same event_id. Always sent (cookie-free before
+    //    consent, see initMetaServerEvents). The tapped number / address is
+    //    the SHOP's, not the visitor's, so it is deliberately NOT passed as
+    //    ph/em — that was hashing our own phone as the user's identity.
     try {
-      if (localStorage.getItem('sp_consent') === 'granted') {
-        var body = JSON.stringify({
-          event_name:       'Contact',
-          event_id:         eventId,
-          event_time:       Math.floor(Date.now() / 1000),
-          event_source_url: location.href,
-          action_source:    'website',
-          user_data: {
-            ph:  method === 'phone' ? target : undefined,
-            em:  method === 'email' ? target : undefined,
-            fbp: spCookie('_fbp'),
-            fbc: spCookie('_fbc')
-          },
-          custom_data: customData
-        });
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(CAPI_ENDPOINT, new Blob([body], { type: 'application/json' }));
-        } else {
-          fetch(CAPI_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: body,
-            keepalive: true
-          }).catch(function () {});
-        }
-      }
+      if (window.SP_META) window.SP_META.send('Contact', eventId, customData);
     } catch (err) { /* CAPI failures must never break the handoff */ }
 
     // 3) GA4 mirror — plain engagement event, no Google Ads conversion label.

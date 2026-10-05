@@ -842,7 +842,8 @@
   try { fbq('consent', (localStorage.getItem('sp_consent') === 'granted') ? 'grant' : 'revoke'); }
   catch (e) { fbq('consent', 'revoke'); }
   fbq('init', '1198620955711122');
-  fbq('track', 'PageView');
+  window.SP_META_PV_ID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('sp-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  fbq('track', 'PageView', {}, { eventID: window.SP_META_PV_ID });
   </script>
 </body>
 </html>

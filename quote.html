@@ -22,7 +22,8 @@
   try { fbq('consent', (localStorage.getItem('sp_consent') === 'granted') ? 'grant' : 'revoke'); }
   catch (e) { fbq('consent', 'revoke'); }
   fbq('init', '1198620955711122');
-  fbq('track', 'PageView');
+  window.SP_META_PV_ID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('sp-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  fbq('track', 'PageView', {}, { eventID: window.SP_META_PV_ID });
   // Quote-page arrival marker (2026-07-26). /quote previously fired no
   // event of its own, so the only computable "conversion rate" was
   // site-wide PageViews divided by Leads — not a quote-page rate at all.

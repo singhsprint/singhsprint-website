@@ -52,11 +52,15 @@
     '#sp-consent-banner .sp-consent-title{display:none !important}',
     '#sp-consent-banner .sp-consent-long{display:none !important}',
     '#sp-consent-banner .sp-consent-short{display:inline !important}',
-    '#sp-consent-banner .sp-consent-row{flex-wrap:nowrap !important;gap:8px !important}',
-    '#sp-consent-banner .sp-consent-row button{',
-    'flex:1 1 0;min-width:0;min-height:44px;padding:10px 12px !important;',
-    'font-size:.86rem !important;}',
-    '#sp-consent-banner .sp-consent-reject{flex:0 0 40% !important}',
+    /* Accept is the one-tap primary (full width, 50px); Decline stays
+       available as a plain text link under it. Same two choices, same
+       gating — only the visual weight changes. (2026-10-04: ~10% of ad
+       visitors were accepting, so Meta saw none of the rest.) */
+    '#sp-consent-banner .sp-consent-row{flex-direction:column !important;gap:6px !important;align-items:stretch !important}',
+    '#sp-consent-banner .sp-consent-accept{order:1;width:100%;min-height:50px;padding:12px 16px !important;font-size:1rem !important}',
+    '#sp-consent-banner .sp-consent-reject{order:2;flex:0 0 auto !important;width:100%;min-height:40px;',
+    'border:0 !important;background:transparent !important;text-decoration:underline;',
+    'font-weight:500 !important;font-size:.82rem !important;color:#555 !important;padding:8px !important}',
     '#sp-consent-banner .sp-c-full{display:none !important}',
     '#sp-consent-banner .sp-c-abbr{display:inline !important}',
     '}',
@@ -197,7 +201,7 @@
     reject.type = 'button';
     reject.className = 'sp-consent-reject';
     reject.setAttribute('aria-label', T.reject);
-    reject.style.cssText = 'padding:10px 18px;border-radius:50px;border:1.5px solid #d0d0d0;background:#fff;color:#1a1a1a;font-weight:600;font-size:.86rem;cursor:pointer';
+    reject.style.cssText = 'padding:10px 16px;border-radius:50px;border:1.5px solid #d0d0d0;background:#fff;color:#555;font-weight:500;font-size:.84rem;cursor:pointer';
     var rFull = document.createElement('span');
     rFull.className = 'sp-c-full';
     rFull.textContent = T.reject;
@@ -213,7 +217,7 @@
     accept.type = 'button';
     accept.className = 'sp-consent-accept';
     accept.textContent = T.accept;
-    accept.style.cssText = 'padding:10px 18px;border-radius:50px;border:1.5px solid #1a1a1a;background:#1a1a1a;color:#fff;font-weight:600;font-size:.86rem;cursor:pointer';
+    accept.style.cssText = 'padding:12px 26px;border-radius:50px;border:1.5px solid #1a1a1a;background:#1a1a1a;color:#fff;font-weight:700;font-size:.92rem;cursor:pointer';
     accept.addEventListener('click', function () { choose('granted'); });
 
     row.appendChild(reject);

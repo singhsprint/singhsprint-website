@@ -2544,6 +2544,11 @@
                 body: leadCapiBody,
                 keepalive: true
               }).catch(function () { /* tracking must never break the success state */ });
+            } else if (window.SP_META) {
+              // No consent: still mirror the Lead server-side, but with NO
+              // email/phone/name — only the ad click id (fbc) + IP/UA so the
+              // Leads-objective ad sets get the conversion signal. (2026-10-04)
+              window.SP_META.send('Lead', leadEventId, leadCustom);
             }
           } catch (capiErr) { /* CAPI must never break the success state */ }
         }

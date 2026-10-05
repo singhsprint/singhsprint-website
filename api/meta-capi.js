@@ -81,6 +81,11 @@ module.exports = async function handler(req, res) {
   if (!incoming.event_name || !incoming.event_id) {
     return res.status(400).json({ error: 'missing_event_name_or_event_id' });
   }
+  // Public, unauthenticated endpoint: only accept the events the site fires.
+  const ALLOWED_EVENTS = ['PageView', 'ViewContent', 'Lead', 'Contact', 'InitiateCheckout', 'Purchase'];
+  if (!ALLOWED_EVENTS.includes(incoming.event_name)) {
+    return res.status(400).json({ error: 'event_not_allowed' });
+  }
 
   // -- Build user_data: hash PII, attach IP + UA from the request itself.
   const rawUser = incoming.user_data || {};
@@ -91,6 +96,8 @@ module.exports = async function handler(req, res) {
   }
   if (rawUser.fbp) user_data.fbp = rawUser.fbp;
   if (rawUser.fbc) user_data.fbc = rawUser.fbc;
+  // Fallback: build fbc from a raw fbclid (client normally does this itself).
+  if (!user_data.fbc && rawUser.fbclid) user_data.fbc = 'fb.1.' + Date.now() + '.' + String(rawUser.fbclid).slice(0, 512);
   user_data.client_ip_address = clientIp(req);
   user_data.client_user_agent = req.headers['user-agent'];
 

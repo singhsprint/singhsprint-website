@@ -22,7 +22,8 @@
   try { fbq('consent', (localStorage.getItem('sp_consent') === 'granted') ? 'grant' : 'revoke'); }
   catch (e) { fbq('consent', 'revoke'); }
   fbq('init', '1198620955711122');
-  fbq('track', 'PageView');
+  window.SP_META_PV_ID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('sp-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  fbq('track', 'PageView', {}, { eventID: window.SP_META_PV_ID });
   // Quote-page arrival marker (2026-07-26). /quote previously fired no
   // event of its own, so the only computable "conversion rate" was
   // site-wide PageViews divided by Leads — not a quote-page rate at all.
@@ -105,7 +106,7 @@
         <div id="promoApplied" data-promo-applied style="display:none;background:#0f3a25;border:1px solid #1b6a44;border-radius:12px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:10px;color:#d4f5e3">
           <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e8ff3c;color:#0f3a25;font-weight:800;flex-shrink:0">✓</span>
           <span style="font-size:.92rem;line-height:1.4">
-            <strong style="color:#e8ff3c" data-i18n="quote.sidebar.promo.h" data-promo="sidebar-h">T-shirt gratuit dès 15 articles</strong>
+            <strong style="color:#e8ff3c"  data-i18n="quote.sidebar.promo.h" data-promo="sidebar-h">T-shirt gratuit dès 15 articles</strong>
             <span style="opacity:.85;display:block;font-size:.84rem" data-promo="sidebar-p"  data-i18n="quote.promoApplied.body">Réservé à cette soumission. Votre t-shirt gratuit est ajouté dès la confirmation de 15 unités ou plus — aucun code requis.</span>
           </span>
         </div>
@@ -279,7 +280,7 @@
                  .selected still styles it. Only its position in the DOM
                  moved. No JavaScript changed. -->
             <div class="form-group byo-standalone">
-              <label data-i18n="quote.byo.section">Vous avez déjà les vêtements&nbsp;?</label>
+              <label  data-i18n="quote.byo.section">Vous avez déjà les vêtements ?</label>
               <div class="product-option product-option--byo" data-value="Bring Your Own" data-garment="byo" onclick="selectProduct(this)">
                 <span class="check">&#10003;</span>
                 <span class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16 L24 7 L42 16 L42 34 L24 43 L6 34 Z"/><path d="M6 16 L24 25 L42 16"/><line x1="24" y1="25" x2="24" y2="43"/><path d="M15 11.5 L33 20.5" opacity="0.35"/></svg></span>
