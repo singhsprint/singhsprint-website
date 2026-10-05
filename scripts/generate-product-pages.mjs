@@ -83,7 +83,20 @@ const SHIPPING = { country: 'CA', valueCAD: '0', transitMin: 1, transitMax: 5 };
 //                                                      slow tail the engine
 //                                                      does not model
 //
-// THE INVARIANT, and the only thing check-turnaround-drift.mjs enforces:
+// THE INVARIANT. From 2026-08-16 to 2026-10-05 this comment said it was
+// enforced by a "check-turnaround-drift" script. No such file ever existed, in
+// either repo. The comment read exactly like a live guarantee for seven
+// weeks while the body copy below published a 3-5 day standard this table
+// cannot produce, and while nobody re-ran this generator at all, so even
+// the per-supplier windows added in 7a7d06c71 never reached a page.
+//
+// What is enforced now, by scripts/check-product-page-claims.mjs: every
+// handlingTime on a generated page is a window this table can produce.
+// The containment check below needs the engine's live numbers from the
+// CRM's /api/production/promise-windows, which 307s to /login for
+// anonymous callers -- it is not in the CRM middleware allowlist, the same
+// defect that kept /api/google-reviews from self-correcting for four
+// months. Allowlist it and the checker will run the full invariant:
 //
 //     published.min <= engine.min   AND   published.max >= engine.max
 //
@@ -259,8 +272,12 @@ const I18N = {
   titleSuffix:     { en: 'Custom Printing in Montreal · Singhs Print',
                      fr: 'Impression personnalisée à Montréal · Singhs Print' },
   metaPrefix:      { en: 'Custom printed',                fr: 'Impression personnalisée sur' },
-  metaCore:        { en: 'in Montreal. DTG, DTF, embroidery and screen printing from',
-                     fr: 'à Montréal. DTG, DTF, broderie et sérigraphie à partir de' },
+  // Screen printing came out 2026-10-05: the shop does not run it (owner),
+  // and pricingMethod() in the CRM already collapses anything that is not
+  // embroidery to dtf, so these pages were advertising a method whose
+  // enquiries were being quoted as DTF anyway.
+  metaCore:        { en: 'in Montreal. DTG, DTF and embroidery from',
+                     fr: 'à Montréal. DTG, DTF et broderie à partir de' },
   metaPerUnit:     { en: '/unit',                         fr: '/unité' },
   metaTail:        { en: 'Sainte-Anne-de-Bellevue studio, Net-30 for repeat accounts. Get a quote in 1 hour.',
                      fr: 'Studio à Sainte-Anne-de-Bellevue, Net-30 pour comptes récurrents. Soumission en 1 heure.' },
@@ -299,18 +316,28 @@ const I18N = {
                      fr: 'Impression personnalisée sur le' },
   bodyH2Suffix:    { en: 'in Montreal',    fr: 'à Montréal' },
   bodyP1Lead:      { en: 'The',            fr: 'Le' },
-  bodyP1Mid:       { en: 'is one of the most-decorated styles out of our Sainte-Anne-de-Bellevue studio. We decorate it across all four of our methods:',
-                     fr: 'est l\'un des modèles les plus décorés à notre studio de Sainte-Anne-de-Bellevue. Nous le décorons avec nos quatre méthodes :' },
+  bodyP1Mid:       { en: 'is one of the most-decorated styles out of our Sainte-Anne-de-Bellevue studio. We decorate it across all three of our methods:',
+                     fr: 'est l\'un des modèles les plus décorés à notre studio de Sainte-Anne-de-Bellevue. Nous le décorons avec nos trois méthodes :' },
   bodyP1Dtg:       { en: 'for soft-hand full-colour prints on cotton,',
                      fr: 'pour des impressions souples en couleurs sur coton,' },
   bodyP1Dtf:       { en: 'for vibrant prints on poly blends and dark fabrics,',
                      fr: 'pour des impressions éclatantes sur polyesters et tissus foncés,' },
-  bodyP1Emb:       { en: 'for logos and corporate identity, and',
-                     fr: 'pour les logos et l\'identité corporative, et' },
-  bodyP1Screen:    { en: 'for high-volume single-colour runs.',
-                     fr: 'pour les tirages mono-couleur en gros volume.' },
-  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 10 units for embroidery. Standard turnaround is 3–5 business days from approved artwork for DTG/DTF, with rush options (2–3 days) available for a small surcharge; embroidery takes 7–11 days. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
-                     fr: 'Minimums : 5 unités pour DTG/DTF, 10 unités pour la broderie. Délai standard en DTG/DTF : 3 à 5 jours ouvrables à partir de l\'approbation du visuel, avec options urgentes (2 à 3 jours) moyennant un léger supplément ; la broderie prend de 7 à 11 jours. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
+  bodyP1Emb:       { en: 'for logos and corporate identity.',
+                     fr: 'pour les logos et l\'identité corporative.' },
+  // TURNAROUND, corrected 2026-10-05. This said "Standard turnaround is 3-5
+  // business days ... rush options (2-3 days) ... embroidery takes 7-11 days"
+  // on 6,899 pages, inside FAQPage structured data, i.e. the figure Google
+  // publishes. The owner confirmed the standard is 7-14 and 3-5 is the rush
+  // path, so every one of those pages was advertising the rush window as the
+  // standard. It also disagreed with this file's own PUBLISHED_HANDLING table
+  // (3-10 / 7-14 / 12-15 by supplier) a hundred lines up, and with the home
+  // page, which has said 7-14 all along.
+  //
+  // The separate embroidery figure is gone rather than corrected: at 7-11 it
+  // sat INSIDE the 7-14 standard, so it read as embroidery being the fast
+  // option, and nobody has given a measured embroidery window.
+  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 10 units for embroidery. Standard turnaround is 7–14 business days from approved artwork, and rush to 3–5 days is available on most jobs for a small surcharge — ask when you request your quote. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
+                     fr: 'Minimums : 5 unités pour DTG/DTF, 10 unités pour la broderie. Délai standard : 7 à 14 jours ouvrables à partir de l\'approbation du visuel, et un service accéléré de 3 à 5 jours est offert sur la plupart des commandes moyennant un léger supplément — demandez-le avec votre soumission. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
 
   specsH2:         { en: 'Specifications', fr: 'Spécifications' },
   specBrand:       { en: 'Brand:',         fr: 'Marque :' },
@@ -529,7 +556,7 @@ function buildPage(p, lang = 'en') {
 
   <section class="copy-section"><div class="container">
     <h2>${t('bodyH2Title', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyH2Suffix', lang)}</h2>
-    <p>${t('bodyP1Lead', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyP1Mid', lang)} <strong>DTG</strong> ${t('bodyP1Dtg', lang)} <strong>DTF</strong> ${t('bodyP1Dtf', lang)} <strong>${lang === 'fr' ? 'broderie' : 'embroidery'}</strong> ${t('bodyP1Emb', lang)} <strong>${lang === 'fr' ? 'sérigraphie' : 'screen printing'}</strong> ${t('bodyP1Screen', lang)}</p>
+    <p>${t('bodyP1Lead', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyP1Mid', lang)} <strong>DTG</strong> ${t('bodyP1Dtg', lang)} <strong>DTF</strong> ${t('bodyP1Dtf', lang)} <strong>${lang === 'fr' ? 'broderie' : 'embroidery'}</strong> ${t('bodyP1Emb', lang)}</p>
     <p>${t('bodyP2', lang)}</p>
 
     <h2 style="margin-top:36px">${t('specsH2', lang)}</h2>

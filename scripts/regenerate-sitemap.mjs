@@ -43,6 +43,55 @@ const MARKETING = [
   { path: '/industries/corporate-tech-swag',            priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/industries/charity-events-fundraisers',     priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/industries/schools-sports-teams',           priority: 0.85, changefreq: 'monthly', hreflang: true },
+
+  // ADDED 2026-10-05. This list had drifted badly behind the site: a
+  // coverage check against the files on disk found 47 real pages with no
+  // <url> entry, including EVERY method landing page and all 13 guides --
+  // the pages the whole content effort exists to rank. Four of them
+  // (brand-colour-matching, bulk-order-size-run, fabric-cotton-polyester-
+  // blends, wash-care-printed-embroidered-apparel) were in the shipped
+  // sitemap and would have been DROPPED by the first run of this script,
+  // because the previous sitemap was written by generate-sitemap.mjs,
+  // which globs, while this one works from the list below. Two generators
+  // for one file, disagreeing -- the same one-rule-in-two-places shape as
+  // the turnaround figure.
+  //
+  // Every entry below was checked to have both an EN file and an FR mirror
+  // on disk before being given hreflang: true.
+  //
+  // DELIBERATELY ABSENT: /screen-printing-montreal. The shop does not run
+  // screen printing (owner, 2026-10-05) and the page is staying up for now
+  // pending a decision, but there is no case for actively submitting it to
+  // Google in the meantime. Also absent: /account/* (gated), /debug-pixel,
+  // /index (duplicate of /), and the legal pages.
+  { path: '/custom-t-shirts-montreal',                  priority: 0.85, changefreq: 'monthly', hreflang: true },
+  { path: '/custom-hoodies-montreal',                   priority: 0.85, changefreq: 'monthly', hreflang: true },
+  { path: '/custom-hats-caps-montreal',                 priority: 0.8,  changefreq: 'monthly', hreflang: true },
+  { path: '/bulk-apparel-printing-montreal',            priority: 0.85, changefreq: 'monthly', hreflang: true },
+  { path: '/dtg-printing-montreal',                     priority: 0.85, changefreq: 'monthly', hreflang: true },
+  { path: '/dtf-printing-montreal',                     priority: 0.85, changefreq: 'monthly', hreflang: true },
+  { path: '/embroidery-montreal',                       priority: 0.85, changefreq: 'monthly', hreflang: true },
+  { path: '/jerseys',                                   priority: 0.8,  changefreq: 'monthly', hreflang: true },
+  { path: '/portfolio',                                 priority: 0.8,  changefreq: 'weekly',  hreflang: true },
+  { path: '/inkwear',                                   priority: 0.7,  changefreq: 'monthly', hreflang: true },
+  { path: '/shop',                                      priority: 0.7,  changefreq: 'weekly',  hreflang: true },
+  { path: '/shop/policies',                             priority: 0.4,  changefreq: 'yearly',  hreflang: true },
+  { path: '/order',                                     priority: 0.7,  changefreq: 'monthly', hreflang: true },
+  { path: '/businesses/rfp',                            priority: 0.8,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides',                                    priority: 0.7,  changefreq: 'weekly',  hreflang: true },
+  { path: '/guides/brand-colour-matching',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/branded-winter-outerwear',           priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/bulk-order-size-run',                priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/charity-run-timeline',               priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/construction-crew-cost',             priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/decoration-method-durability',       priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/fabric-cotton-polyester-blends',     priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/logo-file-requirements',             priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/logo-placement-print-sizes',         priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/minimum-order-price-breaks',         priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/procurement-checklist',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/team-jersey-ordering',               priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/wash-care-printed-embroidered-apparel', priority: 0.6, changefreq: 'monthly', hreflang: true },
 ]
 
 // Given an EN URL like `/p/foo/`, returns `/fr/p/foo/`. Idempotent:
