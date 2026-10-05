@@ -145,8 +145,8 @@ var SP_LANG = (function() {
     },
     'home.hiw.step4.h': { en: 'Pick up or get it shipped', fr: 'Ramassage ou expédition' },
     'home.hiw.step4.p': {
-      en: 'Local West Island pickup or Canada-wide shipping. Most orders in 2-4 days.',
-      fr: 'Ramassage local dans l\'Ouest-de-l\'Île ou expédition partout au Canada. La plupart des commandes en 2 à 4 jours.'
+      en: 'Local West Island pickup or Canada-wide shipping. Most orders in 7–14 business days.',
+      fr: 'Ramassage local dans l\'Ouest-de-l\'Île ou expédition partout au Canada. La plupart des commandes en 7 à 14 jours ouvrables.'
     },
     'home.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'home.cta.p': {
@@ -169,8 +169,8 @@ var SP_LANG = (function() {
     'home.why.guarantee.p':   { en: "If there's a print issue or defect, we reprint or replace it. Period.", fr: "S'il y a un problème d'impression ou un défaut, on réimprime ou on remplace. Point final." },
     'home.why.sample.h':      { en: 'Mockup before production', fr: 'Maquette avant production' },
     'home.why.sample.p':      { en: 'You approve a mockup before production.', fr: 'Vous approuvez une maquette avant la production.' },
-    'home.why.turnaround.h':  { en: '2-4 day turnaround', fr: 'Délai de 2 à 4 jours' },
-    'home.why.turnaround.p':  { en: 'Most orders done in days. Rush options with same-day Montreal pickup.', fr: 'La plupart des commandes en quelques jours. Options urgentes avec ramassage le jour même à Montréal.' },
+    'home.why.turnaround.h':  { en: '7–14 day turnaround', fr: 'Délai de 7 à 14 jours' },
+    'home.why.turnaround.p':  { en: 'Standard is 7–14 business days from approved artwork. Rush to 3–5 days for a surcharge.', fr: 'Délai standard de 7 à 14 jours ouvrables après l\'approbation du visuel. Service accéléré de 3 à 5 jours moyennant un supplément.' },
     'home.why.design.h':      { en: 'Free design help', fr: 'Aide au design gratuite' },
     'home.why.design.p':      { en: 'Cleanups, mockups, and full designs at no extra charge.', fr: 'Retouches, maquettes et designs complets sans frais supplémentaires.' },
     'home.why.bulk.h':        { en: 'Bulk & recurring pricing', fr: 'Prix de volume et récurrents' },
@@ -202,7 +202,7 @@ var SP_LANG = (function() {
     'home.faq.q2': { en: 'Is there a minimum order?', fr: 'Y a-t-il une commande minimum ?' },
     'home.faq.a2': { en: 'No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size.', fr: 'Aucun minimum. On imprime 1 article ou 1 000+. Idéal pour les petites marques, créateurs, écoles, gyms, cafés et entreprises de toute taille.' },
     'home.faq.q3': { en: 'How fast can you complete an order?', fr: 'En combien de temps pouvez-vous compléter une commande ?' },
-    'home.faq.a3': { en: "Standard 3-5 day turnaround from approved artwork. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage.", fr: "Délai standard de 3 à 5 jours après approbation du visuel. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission." },
+    'home.faq.a3': { en: "Standard turnaround is 7–14 business days from approved artwork, with rush to 3–5 days available for a surcharge. You'll get an exact timeline at the quote stage.", fr: "Le délai standard est de 7 à 14 jours ouvrables après l'approbation du visuel, avec un service accéléré de 3 à 5 jours moyennant un supplément. On vous donne un échéancier précis à l'étape de la soumission." },
     'home.faq.q4': { en: 'Can you supply the blank apparel?', fr: 'Pouvez-vous fournir les vêtements vierges ?' },
     'home.faq.a4': { en: "Yes! We source from S&amp;S Activewear and SanMar, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On s\'approvisionne chez S&amp;S Activewear et SanMar — accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
@@ -231,7 +231,7 @@ var SP_LANG = (function() {
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },
     // Sitewide sticky CTA (injected by components.js on every page except /quote and /order)
     'sticky.label': { en: 'Ready when you are', fr: 'On est prêts' },
-    'sticky.sub':   { en: 'No minimums · 2–4 day turnaround', fr: 'Aucun minimum · délai 2 à 4 jours' },
+    'sticky.sub':   { en: 'No minimums · 7–14 day turnaround', fr: 'Aucun minimum · délai de 7 à 14 jours' },
     'sticky.cta':   { en: 'Get a Quote →', fr: 'Soumission →' },
     // Mid-page CTA injected by components.js on long-form pages
     'midcta.eyebrow': { en: 'Quick check',                                       fr: 'Petite question' },
@@ -390,8 +390,8 @@ var SP_LANG = (function() {
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
-      en: 'Printed orders (DTG/DTF) run 3–5 business days from approved artwork, with rush (2–3 days) available for a small surcharge. Embroidery runs 7–11 days. We don\'t quote timelines we can\'t hit.',
-      fr: 'Les commandes imprimées (DTG/DTF) prennent de 3 à 5 jours ouvrables après l\'approbation du visuel, avec une option urgente (2 à 3 jours) moyennant un léger supplément. La broderie prend de 7 à 11 jours. On ne promet pas de délais qu\'on ne peut pas tenir.'
+      en: 'Orders run 7–14 business days from approved artwork, with rush (3–5 days) available for a small surcharge. We don\'t quote timelines we can\'t hit.',
+      fr: 'Les commandes prennent de 7 à 14 jours ouvrables après l\'approbation du visuel, avec une option accélérée (3 à 5 jours) moyennant un léger supplément. On ne promet pas de délais qu\'on ne peut pas tenir.'
     },
     'about.values.qc.h': { en: 'Quality control', fr: 'Contrôle de qualité' },
     'about.values.qc.p': {
@@ -582,10 +582,10 @@ var SP_LANG = (function() {
       en: 'You approve a photoreal mockup before we print the full run.',
       fr: 'Vous approuvez une maquette photoréaliste avant la production complète.'
     },
-    'biz.why.turnaround.h': { en: '2-4 Day Turnaround', fr: 'Délai de 2 à 4 jours' },
+    'biz.why.turnaround.h': { en: '7–14 Day Turnaround', fr: 'Délai de 7 à 14 jours' },
     'biz.why.turnaround.p': {
-      en: 'Most orders ready in 2-4 business days. Rush options available when deadlines are tight.',
-      fr: 'La plupart des commandes prêtes en 2 à 4 jours ouvrables. Options urgentes disponibles.'
+      en: 'Most orders ready in 7–14 business days. Rush to 3–5 days available when deadlines are tight.',
+      fr: 'La plupart des commandes prêtes en 7 à 14 jours ouvrables. Service accéléré de 3 à 5 jours offert quand les échéances sont serrées.'
     },
     'biz.why.design.h': { en: 'Free Design Help', fr: 'Aide au design gratuite' },
     'biz.why.design.p': {
@@ -630,8 +630,8 @@ var SP_LANG = (function() {
     },
     'biz.hiw.step4.h': { en: 'We deliver', fr: 'On livre' },
     'biz.hiw.step4.p': {
-      en: 'Full order ready in 2-4 business days. Free delivery across Montreal for 25+ units.',
-      fr: 'Commande complète prété en 2 à 4 jours ouvrables. Livraison gratuite à Montréal pour 25+ unites.'
+      en: 'Full order ready in 7–14 business days. Free delivery across Montreal for 25+ units.',
+      fr: 'Commande complète prête en 7 à 14 jours ouvrables. Livraison gratuite à Montréal pour 25+ unités.'
     },
     'biz.cta.h2': { en: 'Ready to outfit your team?', fr: 'Prêt à habiller votre équipe ?' },
     'biz.cta.sub': {
@@ -730,8 +730,8 @@ var SP_LANG = (function() {
     'quote.quantity': { en: 'Quantity', fr: 'Quantité' },
     'quote.sizes': { en: 'Sizes Needed', fr: 'Tailles requises' },
     'quote.timeline': { en: 'Timeline', fr: 'Délai' },
-    'quote.timeline.standard': { en: 'Standard (2-4 business days)', fr: 'Standard (2-4 jours ouvrables)' },
-    'quote.timeline.rush': { en: 'Rush (1-2 business days)', fr: 'Urgent (1-2 jours ouvrables)' },
+    'quote.timeline.standard': { en: 'Standard (7–14 business days)', fr: 'Standard (7 à 14 jours ouvrables)' },
+    'quote.timeline.rush': { en: 'Rush (3–5 business days)', fr: 'Accéléré (3 à 5 jours ouvrables)' },
     'quote.timeline.flexible': { en: 'Flexible / No rush', fr: 'Flexible / Pas presse' },
     'quote.upload': { en: 'Upload Your Design', fr: 'Téléversez votre design' },
     'quote.notes': { en: 'Additional Notes', fr: 'Notes supplémentaires' },
@@ -835,7 +835,7 @@ var SP_LANG = (function() {
       fr: 'Parcourez <strong id="catCount">4 500+</strong> vêtements de S&amp;S Activewear, SanMar Canada et Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d\'une minute.'
     },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
-    'cat.hero.meta2': { en: '<strong>5–10 day</strong> typical turnaround', fr: 'Délai habituel de <strong>5 à 10 jours</strong>' },
+    'cat.hero.meta2': { en: '<strong>7–14 day</strong> typical turnaround', fr: 'Délai habituel de <strong>7 à 14 jours</strong>' },
     'cat.hero.meta3': { en: 'Montreal-designed blanks available', fr: 'Vêtements conçus à Montréal disponibles' },
 
     // ===== SPORTS JERSEYS HUB (jerseys.html) =====
@@ -1263,7 +1263,7 @@ var SP_LANG = (function() {
     'quote.contact.delivery.opt2': { en: 'Montreal delivery', fr: 'Livraison à Montréal' },
     'quote.contact.delivery.opt3': { en: 'Shipping (Canada-wide)', fr: 'Expédition (partout au Canada)' },
     'quote.contact.needby': { en: 'When do you need these by? <span style="color:#888;font-weight:400">(optional)</span>', fr: 'Pour quand en avez-vous besoin ? <span style="color:#888;font-weight:400">(facultatif)</span>' },
-    'quote.contact.needby.hint': { en: 'Standard turnaround is 3–5 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.', fr: 'Le délai standard est de 3 à 5 jours ouvrables après l\'approbation. Une date plus rapprochée peut entraîner des frais d\'urgence, précisés dans notre réponse.' },
+    'quote.contact.needby.hint': { en: 'Standard turnaround is 7–14 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.', fr: 'Le délai standard est de 7 à 14 jours ouvrables après l\'approbation. Une date plus rapprochée peut entraîner des frais d\'urgence, précisés dans notre réponse.' },
     'quote.contact.rushlabel': { en: 'Rush?', fr: 'Urgent ?' },
     'quote.contact.rush': { en: 'This is a rush order — please prioritize', fr: 'Commande urgente — veuillez prioriser' },
     'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG and embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG et broderie librement.' },

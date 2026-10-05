@@ -228,6 +228,62 @@ console.log('5. the sitemap only lists pages that will actually deploy');
     lonely.length === 0, `unpaired: ${lonely.slice(0, 6).join(', ')}`);
 }
 
+console.log('6. one turnaround standard, in the layer visitors actually see');
+{
+  // lang.js, NOT the markup. applyLang() overwrites every data-i18n element's
+  // innerHTML -- including for English -- so lang.js wins at runtime and the
+  // markup is only what a crawler sees before JS runs. On 2026-10-05 the home
+  // page markup said 7-14 while lang.js said "2-4 day turnaround" and "Rush
+  // options with same-day Montreal pickup", and visitors were seeing 2-4. An
+  // audit that reads index.html and stops there measures the wrong layer.
+  //
+  // The owner confirmed the standard is 7-14 business days and 3-5 is the rush
+  // path. Fourteen keys carried something else and disagreed with each other:
+  // quote.timeline.rush promised 1-2 business days, about.values.turnaround.p
+  // carried 2-3, 3-5 AND 7-11 in one string, biz.* said 2-4, cat.hero.meta2
+  // said 5-10.
+  const LANG = read('lang.js');
+  const FIGURE = /\d{1,2}\s*(?:-|–|&ndash;|to|à)\s*\d{1,2}\s*(?:business\s+|jours?\s+)?(?:days?|jours?|weeks?|semaines?)|same[-\s]day|jour même/gi;
+  const ALLOWED = /^(?:7\s*(?:–|-|à)\s*14|3\s*(?:–|-|à)\s*5)/;
+
+  // The one key that may say "same day" is about how fast a QUOTE comes back,
+  // not how fast an order ships. Named explicitly so it cannot become a
+  // blanket exemption.
+  const QUOTE_SPEED_KEYS = new Set(['quote.step3.desc']);
+
+  const entries = [...LANG.matchAll(/'([a-z0-9._]+)':\s*\{([\s\S]{0,1200}?)\n?\s*\},/g)];
+  ok('6a lang.js parses into keys to check', entries.length > 100, `${entries.length} keys`);
+
+  const offenders = [];
+  for (const [, key, body] of entries) {
+    if (QUOTE_SPEED_KEYS.has(key)) continue;
+    const found = (body.match(FIGURE) || []).filter((f) => !ALLOWED.test(f.trim()));
+    if (found.length) offenders.push(`${key} (${[...new Set(found)].join(', ')})`);
+  }
+  ok('6b every lead-time figure in lang.js is the 7-14 standard or the 3-5 rush',
+    offenders.length === 0, offenders.slice(0, 6).join('; '));
+
+  // "Same-day Montreal pickup" was the most specific promise on the page and
+  // the least deliverable: the rush path is 3-5 days.
+  const sameDay = entries.filter(([, k, b]) => !QUOTE_SPEED_KEYS.has(k) && /same[-\s]day|jour même/i.test(b)).map(([, k]) => k);
+  ok('6c nothing promises same-day production',
+    sameDay.length === 0, sameDay.join(', '));
+
+  // And the markup default must not contradict the lang.js value it is about
+  // to be replaced by -- a crawler reads one and a visitor reads the other.
+  const EN_HOME = read('index.html');
+  const pairs = [['home.why.turnaround.h'], ['home.hiw.step4.p'], ['home.faq.a3']];
+  const mismatched = [];
+  for (const [key] of pairs) {
+    const inMarkup = (EN_HOME.match(new RegExp('data-i18n="' + key.replace(/\./g, '\\.') + '"[^>]*>([^<]*)')) || [])[1];
+    if (!inMarkup) continue;
+    const markupFig = (inMarkup.match(FIGURE) || []).filter((f) => !ALLOWED.test(f.replace(/&ndash;/g, '–').trim()));
+    if (markupFig.length) mismatched.push(`${key}: markup says ${markupFig.join(', ')}`);
+  }
+  ok('6d the markup defaults state the same standard as lang.js',
+    mismatched.length === 0, mismatched.join('; '));
+}
+
 console.log('');
 console.log(`${pass} passed, ${fails.length} failed`);
 if (fails.length) { fails.forEach((f) => console.log(' - ' + f)); process.exit(1); }

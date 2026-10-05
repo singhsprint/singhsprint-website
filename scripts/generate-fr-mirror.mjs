@@ -77,7 +77,11 @@ async function findHtmlFiles(dir, out = []) {
       // hardcoded English and we don't want to ship 1,100 FR URLs that
       // serve English content (language mismatch penalty). When the
       // template gets data-i18n keys, remove 'p' from this list.
-      if (['fr', 'scripts', 'node_modules', '.git', 'images', 'downloads', 'p'].includes(e.name)) continue;
+      // '_to_delete' added 2026-10-05. Orphaned product pages are moved there
+      // rather than removed (the mount refuses rm), and this walker mirrored
+      // all of them: 2,371 French pages for products deliberately taken off
+      // the site, committed before anyone looked at the file count.
+      if (['fr', 'scripts', 'node_modules', '.git', 'images', 'downloads', 'p', '_to_delete'].includes(e.name)) continue;
       await findHtmlFiles(full, out);
     } else if (e.isFile() && e.name.endsWith('.html') && !SKIP_FILES.has(e.name)) {
       out.push(full);
