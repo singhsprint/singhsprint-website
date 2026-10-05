@@ -19,6 +19,7 @@
  */
 
 import fs from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -135,6 +136,62 @@ function urlNode({ loc, lastmod, changefreq, priority, hreflang, lang }) {
   return lines.join('\n')
 }
 
+// A SITEMAP MAY ONLY LIST PAGES THAT WILL ACTUALLY DEPLOY.
+//
+// Added 2026-10-05 after shipping a sitemap with 12 dead URLs. The MARKETING
+// list above was expanded to cover the guides, every entry checked against a
+// file ON DISK -- and six of those guide files had never been committed. They
+// exist locally and do not exist on the deployed site, because Vercel builds
+// from git, not from someone's working tree. Google was handed 6 EN + 6 FR
+// URLs that 404.
+//
+// "The file exists" is the wrong test. "git will ship it" is the right one.
+// hreflang: true also promises a French alternate, so both sides must be
+// tracked or the entry is dropped rather than half-listed.
+// HEAD, not the index. `git ls-files` reads .git/index, which in this repo is
+// routinely stale -- commits here are built through a temporary index because
+// .git/index.lock cannot be removed through the mount, so the real index never
+// advances and ls-files reports thousands of files in states the working tree
+// left behind. HEAD is what the last commit contains and therefore what the
+// last deploy served. The rule this makes explicit is a good one anyway: a
+// page must be COMMITTED before the sitemap may advertise it.
+function trackedPaths() {
+  try {
+    return new Set(execFileSync('git', ['ls-tree', '-r', 'HEAD', '--name-only', '-z'],
+      { cwd: ROOT, maxBuffer: 1 << 28 }).toString('utf8').split('\0').filter(Boolean))
+  } catch (e) {
+    console.error('git ls-tree HEAD failed, refusing to guess what deploys:', e.message)
+    process.exit(1)
+  }
+}
+
+/** Candidate repo-relative files for a site path, e.g. /guides -> guides.html,
+ *  guides/index.html; / -> index.html. */
+function filesFor(sitePath, prefix = '') {
+  // Normalise BOTH ends: '/' with prefix '/fr' was building 'fr//index.html',
+  // which is tracked by nothing, so the home page reported its own French
+  // mirror as uncommitted and dropped /fr/ from the sitemap. A filter that
+  // silently removes the French home page is worse than the bug it fixes.
+  const rel = (prefix + sitePath).replace(/^\/+/, '').replace(/\/+$/, '')
+  if (rel === '' || rel === 'fr') return [rel ? 'fr/index.html' : 'index.html']
+  return [`${rel}.html`, `${rel}/index.html`]
+}
+
+function deployableMarketing(tracked) {
+  const kept = [], dropped = []
+  for (const m of MARKETING) {
+    const en = filesFor(m.path).some((f) => tracked.has(f))
+    const fr = !m.hreflang || filesFor(m.path, '/fr').some((f) => tracked.has(f))
+    if (en && fr) kept.push(m)
+    else dropped.push(`${m.path}${!en ? ' (EN not committed)' : ''}${!fr ? ' (FR not committed)' : ''}`)
+  }
+  if (dropped.length) {
+    console.log(`  skipping ${dropped.length} page(s) not committed to git:`)
+    for (const d of dropped) console.log(`    - ${d}`)
+  }
+  return kept
+}
+
 async function listProductSlugs() {
   const p = path.join(ROOT, 'p')
   let entries = []
@@ -178,8 +235,10 @@ async function run() {
   blocks.push('  xmlns:xhtml="http://www.w3.org/1999/xhtml">')
   blocks.push('')
 
+  const MARKETING_LIVE = deployableMarketing(trackedPaths())
+
   // EN marketing pages.
-  for (const m of MARKETING) {
+  for (const m of MARKETING_LIVE) {
     blocks.push(urlNode({
       loc: `${SITE}${m.path === '/' ? '/' : m.path}`,
       lastmod: TODAY,
@@ -194,7 +253,10 @@ async function run() {
   // FR marketing pages — list each as its own primary entry so
   // /fr/quote etc. land in the index instead of just being an
   // hreflang alternate. Same priority as EN; same changefreq.
-  for (const m of MARKETING) {
+  // MARKETING_LIVE, not MARKETING: the French side has to be filtered too,
+  // and it is where most of the dead URLs were. Of the 12 broken entries
+  // shipped on 2026-10-05, 7 were French.
+  for (const m of MARKETING_LIVE) {
     const frPath = m.path === '/' ? '/fr/' : `/fr${m.path}`
     blocks.push(urlNode({
       loc: `${SITE}${frPath}`,
@@ -248,9 +310,9 @@ async function run() {
     return
   }
   await fs.writeFile(path.join(ROOT, 'sitemap.xml'), xml + '\n')
-  const total = MARKETING.length * 2 + slugs.length + frSlugs.length
-  console.log(`✓ wrote sitemap.xml — EN: ${MARKETING.length} marketing + ${slugs.length} products = ${MARKETING.length + slugs.length}`)
-  console.log(`                  FR: ${MARKETING.length} marketing + ${frSlugs.length} products = ${MARKETING.length + frSlugs.length}`)
+  const total = MARKETING_LIVE.length * 2 + slugs.length + frSlugs.length
+  console.log(`✓ wrote sitemap.xml — EN: ${MARKETING_LIVE.length} marketing + ${slugs.length} products = ${MARKETING_LIVE.length + slugs.length}`)
+  console.log(`                  FR: ${MARKETING_LIVE.length} marketing + ${frSlugs.length} products = ${MARKETING_LIVE.length + frSlugs.length}`)
   console.log(`                  Total URLs: ${total}`)
 }
 

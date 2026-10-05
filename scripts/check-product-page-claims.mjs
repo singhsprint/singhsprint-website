@@ -30,6 +30,7 @@
  * Run: node scripts/check-product-page-claims.mjs
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 let pass = 0;
 const fails = [];
@@ -169,6 +170,62 @@ console.log('4. the invariant the generator claims is enforced');
   ok('4d the generator points at the checker that does enforce this',
     named.includes('check-product-page-claims.mjs'),
     'nothing tells a reader of this file what guards it');
+}
+
+console.log('5. the sitemap only lists pages that will actually deploy');
+{
+  // SHIPPED BROKEN ON 2026-10-05. The marketing list in regenerate-sitemap.mjs
+  // was expanded to cover the guides, every entry checked against a file ON
+  // DISK -- and six of those guide files had never been committed. Vercel
+  // builds from git, not from a working tree, so Google was handed 6 EN + 6 FR
+  // URLs that 404. "The file exists" was the wrong test; "git will ship it" is
+  // the right one. Caught only because the owner questioned the guide count in
+  // a summary, which was itself wrong -- it reported 104 matching LINES as
+  // though they were entries, when a <url> block contributes about four.
+  // HEAD, not the index: .git/index is stale in this repo (commits are built
+  // through a temp index because .git/index.lock cannot be removed through the
+  // mount), so `git ls-files` reports 14,072 paths against HEAD's 9,430 and
+  // would wave through pages that were never committed. The first spelling of
+  // 5c used ls-files and failed on two product pages that are in fact fine.
+  const tracked = new Set(
+    execFileSync('git', ['ls-tree', '-r', 'HEAD', '--name-only', '-z'], { maxBuffer: 1 << 28 })
+      .toString('utf8').split('\0').filter(Boolean));
+  const sm = read('sitemap.xml');
+  const locs = [...sm.matchAll(/<loc>https:\/\/www\.singhsprint\.com(\/[^<]*)<\/loc>/g)].map((m) => m[1]);
+  ok('5a the sitemap has marketing URLs to check', locs.length > 100, `${locs.length} urls`);
+
+  const candidates = (u) => {
+    const rel = u.replace(/^\/+/, '').replace(/\/+$/, '');
+    if (rel === '') return ['index.html'];
+    if (rel === 'fr') return ['fr/index.html'];
+    return [rel + '.html', rel + '/index.html'];
+  };
+  const marketing = locs.filter((u) => !u.startsWith('/p/') && !u.startsWith('/fr/p/'));
+  const dead = marketing.filter((u) => !candidates(u).some((c) => tracked.has(c)));
+  ok('5b every non-product URL maps to a file git will deploy',
+    dead.length === 0, `${dead.length} would 404: ${dead.slice(0, 6).join(', ')}`);
+
+  // Product pages are covered by 3f/3g against the directory listing, but they
+  // must be committed too -- the same regen that writes them can leave them
+  // untracked if .gitignore ever grows a /p rule.
+  //
+  // ALL of them, not a sample. The first spelling checked the first 50 and a
+  // mutation pointing a late-alphabet slug at a page that was never committed
+  // walked straight past it. 4,592 set lookups cost nothing; a sampled
+  // assertion that passes on a broken sitemap costs a lot.
+  const productLocs = locs.filter((u) => u.startsWith('/p/') || u.startsWith('/fr/p/'));
+  const deadProducts = productLocs.filter((u) => !tracked.has(u.replace(/^\//, '').replace(/\/$/, '') + '/index.html'));
+  ok('5c every product URL is committed, not just present on disk',
+    deadProducts.length === 0,
+    `${deadProducts.length} of ${productLocs.length} untracked, e.g. ${deadProducts.slice(0, 3).join(', ')}`);
+
+  // Both halves of an hreflang pair, or neither. Seven of the twelve dead URLs
+  // were French: the English guide was committed and its mirror was not.
+  const en = new Set(marketing.filter((u) => !u.startsWith('/fr')));
+  const fr = new Set(marketing.filter((u) => u.startsWith('/fr')).map((u) => u.replace(/^\/fr/, '') || '/'));
+  const lonely = [...en].filter((u) => !fr.has(u)).concat([...fr].filter((u) => !en.has(u)));
+  ok('5d every listed page is listed in both languages',
+    lonely.length === 0, `unpaired: ${lonely.slice(0, 6).join(', ')}`);
 }
 
 console.log('');
