@@ -164,74 +164,73 @@
     .proof-stat strong{font-size:1.5rem;font-weight:800;font-family:'Playfair Display',serif;display:block}
     .proof-stat span{font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 
-    /* ===== CLIENTS — static, three tiers =====
-       This was an auto-scrolling ticker holding 18 names at #ccc, all the
-       same size. Three things were wrong with it and they compounded:
+    /* ===== CLIENTS — six names and a count =====
+       WHAT THIS REPLACED, AND WHY TWICE.
+       First it was an auto-scrolling ticker: 18 names at #ccc (1.61:1 against
+       white, far under WCAG AA's 4.5:1) on a 48s loop, every name the same
+       size. A name you cannot finish reading is not proof.
+       Then it was 31 names in three tiers. Readable, and honest about the
+       roster — but a list of 31 reads as THE LIST. It caps the impression at
+       whatever is printed, and the shop has printed for more businesses than
+       fit on a home page.
 
-         1. It moved. A name you cannot finish reading is not proof, and the
-            48s loop meant most of the list was off-screen at any moment.
-         2. Every name carried the same weight, so the strongest client sat
-            in identical grey beside the smallest. Nineteen equals read as a
-            long list, not as a reference.
-         3. #ccc on #fff measures 1.61:1 — far below WCAG AA's 4.5:1 for
-            body text. The section label above was #bbb, 1.92:1, no better.
+       So: six names, and no number at all. The six are the ones a stranger
+       recognises without being told, which is the only job this section has.
 
-       WHY THREE TIERS AND NOT TWO. Two kinds of name do two different jobs
-       here, and flattening them wastes both:
+       NO COUNT, DELIBERATELY. A draft of this carried "a few of the 45+
+       businesses we print for". It was true and measured, and it was still
+       the wrong instinct: a firm that counts its clients is telling you it
+       can count them. Established suppliers show a handful of names and a
+       link to the work, and let the reader assume the rest — enumeration
+       caps the impression at the number printed, which is the same failure
+       the 31-name list had, just shorter. The strip now makes no
+       quantitative claim whatsoever, which also means there is nothing here
+       to go stale or to have to defend.
 
-         HERO — recognised without explanation. Lamborghini, ALDO, McGill,
-           Silk Laundry, C4 Energy. For these, recognition IS the argument;
-           they answer "is this shop real". Five is the most that can hold a
-           line at this size without becoming a paragraph.
-         LEAD — local businesses with real repeat work behind them. These
-           answer the different question, "do they actually deliver" —
-           Artwood at $4,568 over two orders carries more evidence than any
-           hero name, but a stranger has to be told who they are, so the
-           name alone cannot be the headline.
-         REST — everyone else, still listed. They count toward "50+ clients"
-           and a West Island visitor may well recognise a neighbour's shop.
-
-       The tiers are pure ORDERING: see the rebuild script at the foot of the
-       page. Nothing animates, so there is no reduced-motion case to handle.
-
-       Every grey here clears 4.5:1 on white — 17.40:1, 14.35:1 and 4.54:1.
-       #767676 is the lightest grey that passes at all. That is checked by
-       computation, not by eye: the first draft of this block used #9a9a9a
-       and #999 (2.81:1 and 2.85:1), prettier and still failing the thing the
-       change was partly meant to fix. */
-    .trust-bar{padding:44px 0;border-bottom:1px solid #eee}
-    .trust-bar p{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#767676;font-weight:600;margin-bottom:24px;text-align:center}
-    .trust-clients{max-width:900px;margin:0 auto}
-    .trust-clients ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center}
-    .trust-clients__hero{gap:8px 40px;margin-bottom:20px}
-    .trust-clients__hero li{font-weight:700;font-size:1.45rem;line-height:1.25;color:#1a1a1a;white-space:nowrap;letter-spacing:-.025em}
-    .trust-clients__lead{gap:9px 30px;margin-bottom:18px}
-    .trust-clients__lead li{font-weight:700;font-size:1.02rem;color:#2a2a2a;white-space:nowrap;letter-spacing:-.01em}
-    .trust-clients__rest{gap:6px 20px}
-    .trust-clients__rest li{font-weight:600;font-size:.8rem;color:#767676;white-space:nowrap}
-    /* THE RATIO BETWEEN TIERS IS THE POINT, AT EVERY WIDTH.
-       Measured in headless Chromium at 390px before this block was fixed:
-       hero 16.32px against lead 14.72px — 1.11x apart, which on the screen
-       is not a hierarchy, it is fourteen bold names in a column. The desktop
-       rule is 1.42x and reads correctly; the phone rule had been written for
-       fit alone and quietly threw away the whole reason for three tiers.
-       Shrink all three together and the ratios survive. */
+       THE YELLOW IS DECORATIVE, NEVER TEXT. #e8ff3c on white is about 1.2:1.
+       It appears here as dot separators and a link underline, where contrast
+       rules do not apply, and nowhere as a foreground colour on a light
+       background. check-home-client-proof asserts that. */
+    .trust-bar{padding:52px 0;border-bottom:1px solid #eee}
+    .trust-bar p.trust-label{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#767676;font-weight:600;margin-bottom:26px;text-align:center}
+    /* 1100, not 1000. The six names need 1063px at this size, so a 1000px
+       box wrapped Petinos onto a line of its own — which reads as an
+       afterthought rather than as a sixth client. The page .container is
+       1200 with 24px gutters, so this still sits inside it. */
+    .trust-clients{max-width:1100px;margin:0 auto}
+    .trust-clients__hero{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 0}
+    .trust-clients__hero li{font-weight:700;font-size:1.5rem;line-height:1.3;color:#1a1a1a;white-space:nowrap;letter-spacing:-.025em;padding:0 20px;position:relative}
+    /* The dot is a pseudo-element, not a character in the markup, so a screen
+       reader reads six names and not six names and five bullets.
+       :last-child drops the final one — which is correct ONLY while the row
+       does not wrap, because a wrapped row leaves a dot dangling at the end
+       of every line but the last. That was visible at 1000px before the
+       width above was fixed. Below 760px the names DO wrap by design, so the
+       dots are removed there entirely and the gap separates them instead. */
+    .trust-clients__hero li::after{content:'';position:absolute;right:-5px;top:50%;
+      width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#e8ff3c}
+    .trust-clients__hero li:last-child::after{display:none}
+    .trust-clients__more{text-align:center;margin:28px 0 0;line-height:1.6}
+    .trust-clients__more a{display:inline-block;font-size:.84rem;color:#2a2a2a;font-weight:700;
+      letter-spacing:.02em;text-decoration:none;border-bottom:2px solid #e8ff3c;
+      padding-bottom:2px;transition:border-color .2s}
+    .trust-clients__more a:hover{border-bottom-color:#1a1a1a}
     @media (max-width:760px){
-      .trust-clients__hero{gap:6px 26px}
-      .trust-clients__hero li{font-size:1.28rem}
-      .trust-clients__lead li{font-size:.96rem}
-      .trust-clients__rest li{font-size:.78rem}
+      /* Wrapping starts here, so the dots go: a separator that only
+         sometimes lands between two names is worse than no separator. The
+         accent still carries the link underline below. */
+      .trust-clients__hero{gap:8px 26px}
+      .trust-clients__hero li{font-size:1.24rem;padding:0}
+      .trust-clients__hero li::after{display:none}
     }
     @media (max-width:540px){
-      /* white-space:normal here, not for looks: a flex item set to nowrap
-         does not shrink, so "Lamborghini Montréal" at the hero size would
-         force a horizontal scrollbar on a narrow phone rather than wrap. */
-      .trust-clients__hero{gap:4px 18px}
-      .trust-clients__hero li{font-size:1.18rem;white-space:normal;text-align:center}
-      .trust-clients__lead{gap:8px 18px}
-      .trust-clients__lead li{font-size:.88rem;white-space:normal}
-      .trust-clients__rest{gap:5px 14px}
-      .trust-clients__rest li{font-size:.72rem;white-space:normal}
+      /* nowrap off: a flex item set to nowrap does not shrink, so
+         "Lamborghini Montréal" at this size would force a horizontal
+         scrollbar rather than wrap on a narrow phone. */
+      .trust-bar{padding:40px 0}
+      .trust-clients__hero{gap:9px 20px}
+      .trust-clients__hero li{font-size:1.1rem;white-space:normal;text-align:center;padding:0}
+      .trust-clients__more{font-size:.82rem;margin-top:20px}
     }
 
     /* ===== PRODUCT BROWSE ===== */
@@ -644,19 +643,14 @@
   <!-- ===== CLIENTS ===== -->
   <section class="trust-bar">
     <div class="container">
-      <p data-i18n="home.trust">Trusted by brands &amp; businesses across the West Island &amp; Montreal</p>
-      <!-- Three tiers, all static. Which tier a client sits in is decided by
-           its position in the CRM (portfolio_clients, ordered by sort_index):
-           the first five rows are the hero line, the next nine the lead row,
-           everything after that the small row. So promoting a client is a
-           drag in /portfolio, not a deploy, and there is no second column to
-           fall out of sync with.
-
-           This markup is the no-JS and crawler-visible copy, and the script
-           at the foot of the page rebuilds all three rows from the CRM. Keep
-           it in step when the tiers change — it is what Google reads, and
-           until APPLY_ME_20261005_lead_clients.sql has run it is also what
-           every visitor sees. -->
+      <p class="trust-label" data-i18n="home.trust">Trusted by brands &amp; businesses across the West Island &amp; Montreal</p>
+      <!-- Six names, then a number.
+           The six come from the CRM: the first six published rows of
+           portfolio_clients, ordered by sort_index, so which names appear is
+           a decision made in /portfolio rather than a deploy. This markup is
+           the no-JS and crawler-visible copy and must be kept in step with
+           those first six — it is what Google reads, and what every visitor
+           sees until the fetch below lands. -->
       <div class="trust-clients">
         <ul class="trust-clients__hero" aria-label="Brands and businesses Singhs Print has served">
           <li>Lamborghini Montréal</li>
@@ -664,37 +658,11 @@
           <li>McGill University</li>
           <li>Silk Laundry</li>
           <li>C4 Energy</li>
-        </ul>
-        <ul class="trust-clients__lead" aria-label="More clients">
-          <li>Artwood Construction</li>
-          <li>Place Tevere</li>
-          <li>Cafe GotSoul</li>
-          <li>Cardinal Brewery</li>
-          <li>Evershield RV Roofs</li>
           <li>Petinos</li>
-          <li>Asgard</li>
-          <li>Pizza Rosie</li>
-          <li>Île Perrot Yacht Club</li>
         </ul>
-        <ul class="trust-clients__rest" aria-label="More clients">
-          <li>McGill Sororities</li>
-          <li>Sainte-Anne-de-Bellevue</li>
-          <li>CUSEC 2024</li>
-          <li>Old Soul</li>
-          <li>Montreal Pinball</li>
-          <li>McGill Pizza</li>
-          <li>Concordia SSA</li>
-          <li>Antsy</li>
-          <li>McGill Boxing Club</li>
-          <li>McGill Run Club</li>
-          <li>Nyota Parker</li>
-          <li>Morgan Arboretum</li>
-          <li>Durante Landscapers</li>
-          <li>McGill Animal Sciences</li>
-          <li>Sigma Chi Fraternity</li>
-          <li>Icey Vibes</li>
-          <li>CANAUST</li>
-        </ul>
+        <p class="trust-clients__more">
+          <a href="portfolio" data-i18n="home.trust.seework">See the work &rarr;</a>
+        </p>
       </div>
     </div>
   </section>
@@ -1387,40 +1355,27 @@
       });
     }
 
-    // Client strip — rebuild all three tiers from portfolio_clients.
+    // Client strip — rebuild the six names from portfolio_clients.
     //
-    // Position decides tier: rows 0-4 are the hero line, 5-13 the lead row,
-    // 14+ the small row. That makes "which clients get the big type" an
-    // ordering decision the owner makes in /portfolio by dragging, with no
-    // deploy and no extra column to keep in sync.
+    // The first SHOWN_COUNT published rows, by sort_index, which is the order
+    // the dashboard lists them in. So which six names appear is an ordering
+    // decision made in /portfolio, with no deploy.
     //
-    // All three rows are replaced together or none is. Writing the hero row
-    // and leaving a committed row below it untouched would print the promoted
-    // names twice at two different sizes, which reads as a styling bug rather
-    // than as the failed fetch it would actually be.
-    var HERO_COUNT = 5;
-    var LEAD_COUNT = 14;   // cumulative: hero + lead
+    // The line beneath is NOT touched. It says "45+ businesses", which is a
+    // fact about the shop, not about how many rows happen to be published —
+    // deriving it from cs.length would make it drift to whatever the CMS
+    // holds and would start understating the moment the table was tidied.
+    var SHOWN_COUNT = 6;
     fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         var cs = j && j.clients;
         if (!Array.isArray(cs) || !cs.length) return; // keep hardcoded fallback
-        var hero = document.querySelector('.trust-clients__hero');
-        var lead = document.querySelector('.trust-clients__lead');
-        var rest = document.querySelector('.trust-clients__rest');
-        if (!hero || !lead || !rest) return;          // keep hardcoded fallback
-        var items = function (arr) {
-          return arr.map(function (c) { return '<li>' + esc(c.name) + '</li>'; }).join('');
-        };
-        var mid  = cs.slice(HERO_COUNT, LEAD_COUNT);
-        var tail = cs.slice(LEAD_COUNT);
-        hero.innerHTML = items(cs.slice(0, HERO_COUNT));
-        lead.innerHTML = items(mid);
-        rest.innerHTML = items(tail);
-        // Hidden rather than left empty: an empty <ul> still occupies its
-        // row's bottom margin, which shows up as a gap nobody put there.
-        lead.hidden = mid.length === 0;
-        rest.hidden = tail.length === 0;
+        var row = document.querySelector('.trust-clients__hero');
+        if (!row) return;                             // keep hardcoded fallback
+        row.innerHTML = cs.slice(0, SHOWN_COUNT).map(function (c) {
+          return '<li>' + esc(c.name) + '</li>';
+        }).join('');
       })
       .catch(function () { /* keep hardcoded fallback */ });
 

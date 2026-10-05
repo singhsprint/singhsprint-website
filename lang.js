@@ -109,6 +109,7 @@ var SP_LANG = (function() {
     'home.stats.orders': { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.stats.turnaround': { en: 'Day Avg Turnaround', fr: 'Jours délai moyen' },
     'home.stats.rating': { en: 'Google Rating', fr: 'Note Google' },
+    'home.trust.seework': { en: 'See the work \u2192', fr: 'Voir nos r\u00e9alisations \u2192' },
     'home.trust': {
       en: 'Trusted by brands & businesses across the West Island & Montreal',
       fr: 'La confiance des marques et entreprises de l\'Ouest-de-l\'Île et Montréal'

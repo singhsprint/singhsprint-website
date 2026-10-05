@@ -40,29 +40,23 @@ const EN = read('index.html');
 const FR = read('fr/index.html');
 const LANG = read('lang.js');
 
-// The names that carry the page, stated here rather than derived from the
-// file, so the checker fails loudly if one is dropped or quietly respelled.
+// The six, stated here rather than derived from the file, so the checker
+// fails loudly if one is dropped or quietly respelled.
 //
-// Every one of these was checked against the OS on 2026-10-05 (companies
-// rollup + /api/companies?q=). Two were wrong as first committed and are
-// corrected here:
-//   - 'Place de Verre' does not exist. 'Place Tevere' does: 3 orders,
-//     $2,138.54, $1,103.76 still open.
-//   - 'Lamborghini Montreal' is 'Lamborghini Montréal' in the CRM.
-// Four names have no OS record at all (ALDO, Cardinal Brewery, Île Perrot
-// Yacht Club, and McGill as an institution rather than its clubs) and one has
-// a company row with zero orders (Lamborghini Montréal). They are the owner's
-// clients and he has confirmed them; the OS simply predates or missed the
-// work. Recorded here because a future reader will otherwise re-derive this
-// list from the database and quietly drop five of them.
-const HERO = [
+// Checked against the OS on 2026-10-05 (companies rollup + /api/companies?q=).
+// Two were wrong as first committed and stay corrected here: "Place de Verre"
+// is not a client (the client was PLACE TEVERE — 3 orders, $2,138.54), and
+// "Lamborghini Montreal" is "Lamborghini Montréal".
+//
+// Three of the six have no order behind them in the OS — ALDO has no company
+// row at all, Lamborghini Montréal has one with zero orders, and there is no
+// McGill institutional row (only Animal Science at $1,571, plus the clubs).
+// The owner has confirmed them; the CRM predates or missed that work. Written
+// down because a future reader will otherwise re-derive this list from the
+// orders table and quietly drop half of it.
+const SHOWN = [
   'Lamborghini Montréal', 'ALDO', 'McGill University', 'Silk Laundry',
-  'C4 Energy',
-];
-const LEAD = [
-  'Artwood Construction', 'Place Tevere', 'Cafe GotSoul', 'Cardinal Brewery',
-  'Evershield RV Roofs', 'Petinos', 'Asgard', 'Pizza Rosie',
-  'Île Perrot Yacht Club',
+  'C4 Energy', 'Petinos',
 ];
 
 /** Inner HTML of one <ul class="..."> by class, or '' if absent. */
@@ -84,37 +78,49 @@ function visibleText(html) {
     .replace(/<!--[\s\S]*?-->/g, ' ');
 }
 
-console.log('1. clients lead, in the right tier');
+console.log('1. six names, and nothing that reads as a complete list');
 {
-  const hero = names(ulBody(EN, 'trust-clients__hero'));
-  const lead = names(ulBody(EN, 'trust-clients__lead'));
-  const rest = names(ulBody(EN, 'trust-clients__rest'));
+  const shown = names(ulBody(EN, 'trust-clients__hero'));
+  const missing = SHOWN.filter((n) => !shown.includes(n));
+  ok('1a all six clients are on the strip', missing.length === 0, missing.join(', '));
+  ok('1b the strip holds those six and nothing else',
+    shown.length === SHOWN.length, `${shown.length} names`);
 
-  const heroMissing = HERO.filter((n) => !hero.includes(n));
-  ok('1a every hero client is on the hero line', heroMissing.length === 0, heroMissing.join(', '));
-  ok('1b the hero line holds nothing else', hero.length === HERO.length, `${hero.length} names`);
-  const leadMissing = LEAD.filter((n) => !lead.includes(n));
-  ok('1c every lead client is in the lead row', leadMissing.length === 0, leadMissing.join(', '));
-  ok('1d the lead row holds nothing else', lead.length === LEAD.length, `${lead.length} names`);
-  ok('1e the small row still carries the remaining clients', rest.length >= 10, `${rest.length} names`);
+  // The long list is the thing being removed, not restyled. A list of 31
+  // reads as THE list — it caps the impression at whatever is printed, when
+  // the shop has printed for more businesses than fit on a home page.
+  ok('1c the long roster rows are gone, not just hidden',
+    !/trust-clients__lead/.test(EN) && !/trust-clients__rest/.test(EN)
+    && !/trust-logo/.test(EN),
+    'an old tier row is still in the markup');
+  ok('1d the French mirror shows the same six',
+    (() => { const f = names(ulBody(FR, 'trust-clients__hero'));
+      return SHOWN.every((n) => f.includes(n)) && f.length === SHOWN.length; })(),
+    `fr has ${names(ulBody(FR, 'trust-clients__hero')).length}`);
 
-  // Duplication across tiers is the specific failure the rebuild script's
-  // comment warns about: one name printed twice at two sizes reads as a
-  // styling bug, not as the partial write it would be.
-  const all = [...hero, ...lead, ...rest];
-  const dupes = all.filter((n, i) => all.indexOf(n) !== i);
-  ok('1f no client appears in more than one tier', dupes.length === 0, [...new Set(dupes)].join(', '));
+  // NO NUMBER ANYWHERE ON THE STRIP. A draft carried "a few of the 45+
+  // businesses we print for" — true, measured, and the wrong instinct: a firm
+  // that counts its clients is telling you it can count them, and the count
+  // caps the impression at whatever is printed. This asserts the strip makes
+  // no quantitative claim at all, which is also why there is nothing here
+  // that can go stale, as the review count did for four months.
+  // The COPY, not the names. "C4 Energy" is a client's own name and the
+  // first version of this test flagged its digit — a check that cannot tell
+  // a brand from a claim is not checking the claim.
+  const stripHtml = EN.slice(EN.indexOf('<section class="trust-bar">'),
+                             EN.indexOf('===== BROWSE PRODUCTS'));
+  const copyOnly = stripHtml
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<ul[\s\S]*?<\/ul>/g, ' ')   // the client names are not a claim
+    .replace(/<[^>]+>/g, ' ');
+  ok('1e the strip\'s own copy makes no numeric claim',
+    !/\d/.test(copyOnly), `found "${(copyOnly.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
+  const more = (EN.match(/<p class="trust-clients__more">([\s\S]*?)<\/p>/) || [])[1] || '';
+  ok('1f a link out to the work follows the names',
+    /<a href="portfolio"/.test(more), 'no link under the names');
+  ok('1g that link is translated, not hardcoded English',
+    /data-i18n="home\.trust\.seework"/.test(more) && /'home\.trust\.seework'/.test(LANG));
 
-  const frHero = names(ulBody(FR, 'trust-clients__hero'));
-  const frLead = names(ulBody(FR, 'trust-clients__lead'));
-  ok('1g the French mirror shows the same hero line and lead row',
-    HERO.every((n) => frHero.includes(n)) && frHero.length === HERO.length
-    && LEAD.every((n) => frLead.includes(n)) && frLead.length === LEAD.length,
-    `fr hero ${frHero.length}, fr lead ${frLead.length}`);
-
-  // Place de Verre was on the page for one commit. It is not a client; the
-  // client is Place Tevere. Named explicitly so a revert cannot restore it
-  // quietly, in either language.
   ok('1h the name that turned out not to be a client is gone',
     !/Place de Verre/i.test(EN) && !/Place de Verre/i.test(FR));
 }
@@ -147,10 +153,9 @@ console.log('2. readable — ratios computed, not assumed');
     return m ? m[1] : null;
   };
   for (const [id, sel, label] of [
-    ['2b', '.trust-clients__hero li', 'the hero line'],
-    ['2c', '.trust-clients__lead li', 'the lead row'],
-    ['2d', '.trust-clients__rest li', 'the small row'],
-    ['2e', '.trust-bar p', 'the section label'],
+    ['2b', '.trust-clients__hero li', 'the client names'],
+    ['2c', '.trust-clients__more a', 'the link under the names'],
+    ['2d', '.trust-bar p.trust-label', 'the section label'],
   ]) {
     const c = colourOf(sel);
     const r = c ? ratio(c, '#ffffff') : 0;
@@ -160,43 +165,53 @@ console.log('2. readable — ratios computed, not assumed');
   }
 }
 
-console.log('2f the tiers stay a hierarchy at every width');
+console.log('2e the brand yellow is decoration, never text');
 {
-  // AT EVERY WIDTH is the whole assertion. The first version of this test
-  // read only the base rule, passed, and shipped a phone layout measured in
-  // headless Chromium at hero 16.32px against lead 14.72px — 1.11x, which
-  // reads as one list of fourteen bold names. A ratio that survives on the
-  // desktop and collapses on the phone is not a hierarchy, and most of this
-  // page's traffic is the phone.
-  const blocks = [];
-  const base = EN.slice(EN.indexOf('.trust-clients__hero{'), EN.indexOf('@media (max-width:760px)'));
-  blocks.push(['base', base]);
+  // #e8ff3c on white measures about 1.2:1. It is a fine dot, rule or
+  // underline, and an unreadable word.
+  //
+  // SCOPED TO THE CLIENT STRIP'S OWN RULES. The first version of this test
+  // scanned the whole file and failed on nine legitimate uses — the reviews
+  // section sets the accent as a text colour on a near-black background,
+  // where it measures about 17:1. A contrast rule that ignores the
+  // background is not a contrast rule.
+  const stripCss = EN.slice(EN.indexOf('/* ===== CLIENTS'), EN.indexOf('/* ===== PRODUCT BROWSE'));
+  const asText = [...stripCss.matchAll(/(^|[;{\s])color:\s*#e8ff3c/gi)];
+  ok('2e the accent is never a text colour on the strip, which is white',
+    asText.length === 0, `${asText.length} color:#e8ff3c declarations in the strip`);
+  // And it IS present, in BOTH places it is meant to be. "is the colour
+  // mentioned anywhere in this block" was the first spelling, and a mutant
+  // that greyed out the dots passed it on the strength of the link underline
+  // alone — one of the two uses can disappear without the test noticing.
+  ok('2f the accent marks the separators between names',
+    /li::after\{[^}]*background:#e8ff3c/i.test(stripCss),
+    'the dots between the names are not the brand colour');
+  ok('2g the accent underlines the link',
+    /__more a\{[^}]*border-bottom:[^;]*#e8ff3c/i.test(stripCss),
+    'the link is not underlined in the brand colour');
+
+  // A dot between names is drawn with ::after and dropped on :last-child.
+  // That is right only while the row does NOT wrap — a wrapped row leaves a
+  // dot dangling off the end of every line but the last, which shipped
+  // visibly at 1000px before the container was widened. So at every
+  // breakpoint where the names are meant to wrap, the dot must be off.
+  //
+  // Resolved through the cascade, not read block by block. max-width:760
+  // still matches at 540, so a rule turning the dot off at 760 governs 540
+  // as well; an earlier spelling of this demanded it be restated in each
+  // block and failed on correct CSS. What has to be true is that from the
+  // first wrapping breakpoint onward, nothing turns the dot back on.
+  let dotOffFrom = null, dotBackOn = null;
   for (const w of [760, 540]) {
-    const at = EN.indexOf(`@media (max-width:${w}px)`);
+    const at = stripCss.indexOf(`@media (max-width:${w}px)`);
     if (at < 0) continue;
-    blocks.push([`<=${w}px`, EN.slice(at, EN.indexOf('}\n    }', at) + 7)]);
+    const css = stripCss.slice(at, stripCss.indexOf('}\n    }', at) + 7);
+    if (/li::after\{display:none\}/.test(css) && dotOffFrom === null) dotOffFrom = w;
+    else if (dotOffFrom !== null && /li::after\{(?!display:none)/.test(css)) dotBackOn = w;
   }
-  // Inheritance: a breakpoint that restates only some tiers keeps the rest
-  // from the rule above it, so each block is resolved against what precedes.
-  const resolved = { hero: null, lead: null, rest: null };
-  let worstHL = Infinity, worstLR = Infinity, detail = [];
-  for (const [label, css] of blocks) {
-    for (const t of ['hero', 'lead', 'rest']) {
-      const m = css.match(new RegExp('__' + t + ' li\\{[^}]*?font-size:([\\d.]+)rem'));
-      if (m) resolved[t] = Number(m[1]);
-    }
-    const { hero, lead, rest } = resolved;
-    if (hero === null || lead === null || rest === null) continue;
-    worstHL = Math.min(worstHL, hero / lead);
-    worstLR = Math.min(worstLR, lead / rest);
-    detail.push(`${label} ${(hero / lead).toFixed(2)}x/${(lead / rest).toFixed(2)}x`);
-  }
-  ok('2f the hero tier stays clearly larger than the lead tier at every width',
-    worstHL >= 1.25, `worst ${worstHL.toFixed(2)}x — ${detail.join(', ')}`);
-  ok('2g the lead tier stays clearly larger than the small row at every width',
-    worstLR >= 1.15, `worst ${worstLR.toFixed(2)}x — ${detail.join(', ')}`);
-  ok('2h more than one breakpoint was actually examined',
-    blocks.length >= 3, `${blocks.length} blocks parsed`);
+  ok('2h the separator dot is off from the first wrapping breakpoint on',
+    dotOffFrom !== null && dotBackOn === null,
+    dotOffFrom === null ? 'never turned off' : `turned back on at ${dotBackOn}px`);
 }
 
 console.log('3. nothing moves');
@@ -228,63 +243,41 @@ console.log('4. the review count appears once, where the quotes are');
     (EN.match(/class="review-author"/g) || []).length === 3);
 }
 
-console.log('5. the CRM can repoint the strip, and cannot half-apply it');
+console.log('5. the CRM can repoint the six, and the claim stays put');
 {
-  // Narrowed to the CLIENT-STRIP fetch, not the whole inline block. The
-  // "Recent Work" fetch below it has a byte-identical
-  // `.catch(function () { /* keep hardcoded fallback */ });`, so a mutant
-  // that broke the client strip's catch was matched by its neighbour's and
-  // 5e passed on a page that would have blanked the client row on a failed
-  // fetch.
   const scriptAll = EN.slice(EN.indexOf('CRM-managed'));
-  // 'Client strip —' to the NEXT 'mini-gallery' is exactly the client fetch.
-  // Both end anchors tried before this one also appear in the block's own
-  // header comment, which sits ABOVE the client fetch — so an unanchored
-  // search found them first, the slice came back nearly empty, and every
-  // section-5 assertion failed at once. Hence the explicit start offset.
   const cStart = scriptAll.indexOf('Client strip —');
   const script = scriptAll.slice(cStart, scriptAll.indexOf('mini-gallery', cStart));
-  const heroCount = Number((script.match(/var HERO_COUNT = (\d+);/) || [])[1]);
-  const leadCount = Number((script.match(/var LEAD_COUNT = (\d+);/) || [])[1]);
-  // Resolving both and then writing only one is the half-apply this guards.
-  // The first version of this assertion checked only that the two
-  // querySelectors and the guard existed, and a mutant that deleted the
-  // `rest.innerHTML =` line passed it — every promoted client would then
-  // print twice, once from the CRM and once from the untouched fallback row.
-  ok('5a all three tiers are resolved, and all three are written',
-    /var hero = document\.querySelector\('\.trust-clients__hero'\)/.test(script)
-    && /var lead = document\.querySelector\('\.trust-clients__lead'\)/.test(script)
-    && /var rest = document\.querySelector\('\.trust-clients__rest'\)/.test(script)
-    && /if \(!hero \|\| !lead \|\| !rest\) return;/.test(script)
-    && /\bhero\.innerHTML\s*=/.test(script)
-    && /\blead\.innerHTML\s*=/.test(script)
-    && /\brest\.innerHTML\s*=/.test(script),
-    'the rebuild can write one tier and leave another hardcoded');
-  // Every cut comes off the two constants. A literal written inline anywhere
-  // here is how the tiers would silently start overlapping or skipping a
-  // client — and an overlap prints a name twice while a gap drops one.
-  ok('5b the slices come off HERO_COUNT and LEAD_COUNT, not inline numbers',
-    /cs\.slice\(0, HERO_COUNT\)/.test(script)
-    && /cs\.slice\(HERO_COUNT, LEAD_COUNT\)/.test(script)
-    && /cs\.slice\(LEAD_COUNT\)/.test(script));
-  ok('5c the committed fallback and the script agree on both tier sizes',
-    heroCount === HERO.length && leadCount === HERO.length + LEAD.length,
-    `HERO_COUNT=${heroCount} (markup ${HERO.length}), LEAD_COUNT=${leadCount} (markup ${HERO.length + LEAD.length})`);
-  // LEAD_COUNT is cumulative. If it were ever set below HERO_COUNT the middle
-  // slice would come back empty and the lead row would vanish silently.
-  ok('5d LEAD_COUNT is cumulative and above HERO_COUNT',
-    Number.isFinite(heroCount) && Number.isFinite(leadCount) && leadCount > heroCount,
-    `HERO_COUNT=${heroCount}, LEAD_COUNT=${leadCount}`);
-  ok('5e an empty row is hidden, not left holding its margin',
-    /lead\.hidden = mid\.length === 0/.test(script)
-    && /rest\.hidden = tail\.length === 0/.test(script));
-  // A catch that writes anything is not a fallback. Assert the body holds no
-  // assignment, rather than that one specific comment string is present.
-  const catchBody = (script.match(/\.catch\(function \(\) \{([\s\S]*?)\}\)/) || [])[1];
-  ok('5f an empty or failed CRM response keeps the committed names',
+  const shownCount = Number((script.match(/var SHOWN_COUNT = (\d+);/) || [])[1]);
+
+  ok('5a the row is resolved before it is written',
+    /var row = document\.querySelector\('\.trust-clients__hero'\)/.test(script)
+    && /if \(!row\) return;/.test(script)
+    && /\brow\.innerHTML\s*=/.test(script));
+  ok('5b the slice comes off SHOWN_COUNT, not an inline number',
+    /cs\.slice\(0, SHOWN_COUNT\)/.test(script));
+  ok('5c the committed fallback and the script agree on how many show',
+    shownCount === SHOWN.length,
+    `SHOWN_COUNT=${shownCount}, markup has ${SHOWN.length}`);
+
+  // The count line is a fact about the shop, not about the CMS. Rendering it
+  // from cs.length would make it drift to however many rows are published and
+  // start understating the moment the table was tidied.
+  // ONE innerHTML write, to the names row. The earlier spelling of this also
+  // banned `cs.length` anywhere in the script, which the empty-response guard
+  // `if (!Array.isArray(cs) || !cs.length) return;` legitimately contains —
+  // so it failed on correct code. What actually matters is that the count
+  // line is never selected and never written.
+  ok('5d the rebuild never rewrites the count line',
+    !/trust-clients__more/.test(script)
+    && (script.match(/\.innerHTML\s*=/g) || []).length === 1,
+    'the script writes somewhere other than the names row');
+
+  ok('5e an empty or failed CRM response keeps the committed names',
     /if \(!Array\.isArray\(cs\) \|\| !cs\.length\) return;/.test(script)
-    && catchBody !== undefined && !/=|throw/.test(catchBody),
-    catchBody === undefined ? 'no catch on the client fetch' : 'the catch body does something: ' + catchBody.trim());
+    && (() => { const c = (script.match(/\.catch\(function \(\) \{([\s\S]*?)\}\)/) || [])[1];
+      return c !== undefined && !/=|throw/.test(c); })(),
+    'a failed fetch does not fall back cleanly');
 }
 
 console.log('6. the retired i18n keys are gone, not just unused');
