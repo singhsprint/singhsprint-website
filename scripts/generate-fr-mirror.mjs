@@ -161,7 +161,12 @@ function translateHtml(html, T) {
 const META_DESC_FR = {
   'index.html': 'Imprimerie de vêtements personnalisés à l\'Ouest-de-l\'Île de Montréal. DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Délai standard de 3 à 5 jours, options urgentes, NEQ 1181573313.',
   'about.html': 'Studio de vêtements personnalisés familial à Sainte-Anne-de-Bellevue, Québec. DTG, DTF, broderie et sérigraphie pour les clubs McGill, les entreprises de l\'Ouest-de-l\'Île et les comptes corporatifs Net-30. 1 100+ vêtements vierges, soumission en 1 heure, NEQ 1181573313.',
-  'catalog.html': 'Parcourez 1 100+ vêtements vierges chez S&S Activewear, SanMar et Rue Saint-Patrick. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.',
+  // 2026-10-05 — was 'S&S Activewear, SanMar et Rue Saint-Patrick' with a
+  // count of 1 100+. The supplier was delisted in September and removed from
+  // every EN page; this table was missed, so a regen re-injected the brand
+  // into /fr/catalog's description, og:description and twitter:description.
+  // Keep the supplier list and the count in step with catalog.html.
+  'catalog.html': 'Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.',
   'quote.html': 'Demandez une soumission personnalisée pour t-shirts, hoodies, polos, casquettes et plus. Réponse humaine en moins d\'une heure pendant les heures d\'ouverture.',
   'businesses.html': 'Programmes de vêtements corporatifs pour les entreprises de Montréal. Net-30, entente-cadre, appels d\'offres acceptés. Soumission ferme en un jour ouvrable.',
   'businesses/rfp.html': 'Formulaire d\'appel d\'offres pour Imprimerie Singhs Print. Soumission détaillée, échéancier de maquette et paperasse Net-30 en moins d\'un jour ouvrable.',
@@ -184,7 +189,7 @@ const META_OG_FR = {
   },
   'catalog.html': {
     title: 'Catalogue — Singhs Print',
-    desc:  'Parcourez 1 100+ vêtements vierges chez S&S Activewear, SanMar et Rue Saint-Patrick. Prix unitaire en direct selon la quantité.'
+    desc:  'Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Prix unitaire en direct selon la quantité.'
   }
 };
 

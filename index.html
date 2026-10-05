@@ -164,41 +164,65 @@
     .proof-stat strong{font-size:1.5rem;font-weight:800;font-family:'Playfair Display',serif;display:block}
     .proof-stat span{font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 
-    /* ===== TRUST LOGOS — auto-scrolling ticker =====
-       18 client names won't fit cleanly on one line. Mirrors the brands
-       marquee pattern: two identical tracks inside .trust-logos__inner,
-       animation translates the wrapper -50% (one track-width) so the
-       second copy lands where the first started — seamless loop.
-       Edge fades, pause-on-hover, reduced-motion fallback included. */
-    .trust-bar{padding:32px 0;border-bottom:1px solid #eee}
-    .trust-bar p{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px;text-align:center}
-    .trust-logos{
-      display:flex;overflow:hidden;margin:0 -24px;padding:0;
-      mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
-      -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
-      position:relative;
+    /* ===== CLIENTS — static, three tiers =====
+       This was an auto-scrolling ticker holding 18 names at #ccc, all the
+       same size. Three things were wrong with it and they compounded:
+
+         1. It moved. A name you cannot finish reading is not proof, and the
+            48s loop meant most of the list was off-screen at any moment.
+         2. Every name carried the same weight, so the strongest client sat
+            in identical grey beside the smallest. Nineteen equals read as a
+            long list, not as a reference.
+         3. #ccc on #fff measures 1.61:1 — far below WCAG AA's 4.5:1 for
+            body text. The section label above was #bbb, 1.92:1, no better.
+
+       WHY THREE TIERS AND NOT TWO. Two kinds of name do two different jobs
+       here, and flattening them wastes both:
+
+         HERO — recognised without explanation. Lamborghini, ALDO, McGill,
+           Silk Laundry, C4 Energy. For these, recognition IS the argument;
+           they answer "is this shop real". Five is the most that can hold a
+           line at this size without becoming a paragraph.
+         LEAD — local businesses with real repeat work behind them. These
+           answer the different question, "do they actually deliver" —
+           Artwood at $4,568 over two orders carries more evidence than any
+           hero name, but a stranger has to be told who they are, so the
+           name alone cannot be the headline.
+         REST — everyone else, still listed. They count toward "50+ clients"
+           and a West Island visitor may well recognise a neighbour's shop.
+
+       The tiers are pure ORDERING: see the rebuild script at the foot of the
+       page. Nothing animates, so there is no reduced-motion case to handle.
+
+       Every grey here clears 4.5:1 on white — 17.40:1, 14.35:1 and 4.54:1.
+       #767676 is the lightest grey that passes at all. That is checked by
+       computation, not by eye: the first draft of this block used #9a9a9a
+       and #999 (2.81:1 and 2.85:1), prettier and still failing the thing the
+       change was partly meant to fix. */
+    .trust-bar{padding:44px 0;border-bottom:1px solid #eee}
+    .trust-bar p{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#767676;font-weight:600;margin-bottom:24px;text-align:center}
+    .trust-clients{max-width:900px;margin:0 auto}
+    .trust-clients ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center}
+    .trust-clients__hero{gap:8px 40px;margin-bottom:20px}
+    .trust-clients__hero li{font-weight:700;font-size:1.45rem;line-height:1.25;color:#1a1a1a;white-space:nowrap;letter-spacing:-.025em}
+    .trust-clients__lead{gap:9px 30px;margin-bottom:18px}
+    .trust-clients__lead li{font-weight:700;font-size:1.02rem;color:#2a2a2a;white-space:nowrap;letter-spacing:-.01em}
+    .trust-clients__rest{gap:6px 20px}
+    .trust-clients__rest li{font-weight:600;font-size:.8rem;color:#767676;white-space:nowrap}
+    @media (max-width:760px){
+      .trust-clients__hero{gap:6px 26px}
+      .trust-clients__hero li{font-size:1.2rem}
     }
-    .trust-logos__inner{
-      display:flex;width:max-content;flex-wrap:nowrap;align-items:center;
-      animation:trust-marquee 48s linear infinite;
-    }
-    .trust-logos__track{display:flex;flex-shrink:0;align-items:center}
-    .trust-logo-text{font-weight:700;font-size:.95rem;color:#ccc;white-space:nowrap;transition:color .3s;padding:6px 24px;flex-shrink:0}
-    .trust-logo-text:hover{color:#555}
-    .trust-logos:hover .trust-logos__inner{animation-play-state:paused}
     @media (max-width:540px){
-      .trust-logos{margin:0 -18px}
-      .trust-logos__inner{animation-duration:36s}
-      .trust-logo-text{font-size:.82rem;padding:6px 18px}
-    }
-    @media (prefers-reduced-motion: reduce){
-      .trust-logos{mask-image:none;-webkit-mask-image:none}
-      .trust-logos__inner{animation:none !important;flex-wrap:wrap;justify-content:center}
-      .trust-logos__track[aria-hidden="true"]{display:none}
-    }
-    @keyframes trust-marquee{
-      from{transform:translateX(0)}
-      to  {transform:translateX(-50%)}
+      /* Long names stop being allowed to force a horizontal scrollbar —
+         "Lamborghini Montréal" alone is wider than a 360px viewport at the
+         hero size, and nowrap on a flex item does not shrink. */
+      .trust-clients__hero{gap:4px 18px}
+      .trust-clients__hero li{font-size:1.02rem;white-space:normal;text-align:center}
+      .trust-clients__lead{gap:8px 18px}
+      .trust-clients__lead li{font-size:.92rem;white-space:normal}
+      .trust-clients__rest{gap:5px 14px}
+      .trust-clients__rest li{font-size:.74rem;white-space:normal}
     }
 
     /* ===== PRODUCT BROWSE ===== */
@@ -415,15 +439,17 @@
       .hero-stats > .stat{min-width:0;text-align:left}
       .hero-stats .stat strong{font-size:1.1rem;line-height:1.1;white-space:nowrap}
       .hero-stats .stat span{font-size:.72rem;line-height:1.3;display:block;margin-top:2px}
-      /* Proof bar — 2×2 on phones (was wrapping unevenly across 1/2/1 rows). */
-      .proof-stats{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;justify-items:center}
+      /* Proof bar on phones. This was a 2×2 grid, which was right when
+         there were FOUR stats; the review-count stat has since gone, and a
+         two-column grid leaves the third stat orphaned in the left-hand
+         column instead of centred under the other two. Flex centres a short
+         final row by itself, which a grid cannot do. */
+      .proof-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 22px}
       .proof-stat{text-align:center;min-width:0;max-width:160px}
       .proof-stat strong{font-size:1.15rem;line-height:1.1;display:block;word-break:break-word}
       .proof-stat span{font-size:.66rem;letter-spacing:.06em;line-height:1.3;display:block;margin-top:4px}
       .service-card{padding:24px 18px}
       .review-card p{font-size:.88rem}
-      .trust-logos{gap:18px}
-      .trust-logo-text{font-size:.78rem}
       .section{padding:36px 0}
       .hero{padding:24px 0 36px}
       /* Mobile feedback: "feels overwhelming". Two surgical hides cut
@@ -453,7 +479,7 @@
     @media(max-width:360px){
       .hero-stats{grid-template-columns:1fr 1fr;gap:12px}
       .hero-stats .stat strong{font-size:1rem}
-      .proof-stats{grid-template-columns:1fr 1fr;gap:14px 10px}
+      .proof-stats{gap:14px 10px}
       .proof-stat strong{font-size:1.05rem}
     }
 
@@ -537,10 +563,16 @@
                replaces both the old hero-stats and gives users at-a-
                glance trust without scrolling to the proof bar.
                Pattern source: Stripe, Allbirds, Linear hero. -->
+          <!-- The review count used to be the middle signal on this line.
+               It was the weakest thing here and the least verifiable: the
+               figure was last synced 2026-06-11, and the runtime patcher
+               meant to keep it current could never reach its endpoint (see
+               the CRM middleware fix shipped alongside this). The rating
+               still appears once, in the reviews section, beside the three
+               named quotes that give it substance. Nothing was invented to
+               fill the gap it left. -->
           <div class="hero-proof" aria-label="Social proof">
             <span><strong>100+</strong> <span data-i18n="home.heroproof.orders">orders</span></span>
-            <span class="dot-sep" aria-hidden="true">·</span>
-            <span><strong>5.0★</strong> <span data-i18n="home.heroproof.rating">(23 reviews)</span></span>
             <span class="dot-sep" aria-hidden="true">·</span>
             <span data-i18n="home.heroproof.local">West Island, Montreal</span>
           </div>
@@ -595,62 +627,65 @@
       <div class="proof-stats">
         <div class="proof-stat"><strong>100+</strong><span data-i18n="home.proof.orders">Orders Completed</span></div>
         <div class="proof-stat"><strong>50+</strong><span data-i18n="home.proof.clients">Happy Clients</span></div>
-        <div class="proof-stat"><strong data-i18n="home.proof.rating-num">5.0/5 (23 reviews)</strong><span data-i18n="home.proof.rating">Google Reviews</span></div>
         <div class="proof-stat"><strong>100%</strong><span data-i18n="home.proof.production">In-House Production</span></div>
       </div>
     </div>
   </section>
 
-  <!-- ===== TRUST LOGOS ===== -->
+  <!-- ===== CLIENTS ===== -->
   <section class="trust-bar">
     <div class="container">
       <p data-i18n="home.trust">Trusted by brands &amp; businesses across the West Island &amp; Montreal</p>
-      <div class="trust-logos" aria-label="Brands and businesses Singhs Print has served">
-        <!-- Two identical tracks. .trust-logos__inner is 2x natural
-             content width and animates -50%, so when the loop resets the
-             second track is exactly where the first started. -->
-        <div class="trust-logos__inner">
-          <div class="trust-logos__track">
-            <span class="trust-logo-text">McGill Sororities</span>
-            <span class="trust-logo-text">CUSEC 2024</span>
-            <span class="trust-logo-text">Old Soul</span>
-            <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
-            <span class="trust-logo-text">Montreal Pinball</span>
-            <span class="trust-logo-text">McGill Pizza</span>
-            <span class="trust-logo-text">Concordia SSA</span>
-            <span class="trust-logo-text">Artwood Construction</span>
-            <span class="trust-logo-text">Antsy</span>
-            <span class="trust-logo-text">McGill Boxing Club</span>
-            <span class="trust-logo-text">McGill Run Club</span>
-            <span class="trust-logo-text">Nyota Parker</span>
-            <span class="trust-logo-text">Morgan Arboretum</span>
-            <span class="trust-logo-text">Durante Landscapers</span>
-            <span class="trust-logo-text">McGill Animal Sciences</span>
-            <span class="trust-logo-text">Sigma Chi Fraternity</span>
-            <span class="trust-logo-text">Icey Vibes</span>
-            <span class="trust-logo-text">CANAUST</span>
-          </div>
-          <div class="trust-logos__track" aria-hidden="true">
-            <span class="trust-logo-text">McGill Sororities</span>
-            <span class="trust-logo-text">CUSEC 2024</span>
-            <span class="trust-logo-text">Old Soul</span>
-            <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
-            <span class="trust-logo-text">Montreal Pinball</span>
-            <span class="trust-logo-text">McGill Pizza</span>
-            <span class="trust-logo-text">Concordia SSA</span>
-            <span class="trust-logo-text">Artwood Construction</span>
-            <span class="trust-logo-text">Antsy</span>
-            <span class="trust-logo-text">McGill Boxing Club</span>
-            <span class="trust-logo-text">McGill Run Club</span>
-            <span class="trust-logo-text">Nyota Parker</span>
-            <span class="trust-logo-text">Morgan Arboretum</span>
-            <span class="trust-logo-text">Durante Landscapers</span>
-            <span class="trust-logo-text">McGill Animal Sciences</span>
-            <span class="trust-logo-text">Sigma Chi Fraternity</span>
-            <span class="trust-logo-text">Icey Vibes</span>
-            <span class="trust-logo-text">CANAUST</span>
-          </div>
-        </div>
+      <!-- Three tiers, all static. Which tier a client sits in is decided by
+           its position in the CRM (portfolio_clients, ordered by sort_index):
+           the first five rows are the hero line, the next nine the lead row,
+           everything after that the small row. So promoting a client is a
+           drag in /portfolio, not a deploy, and there is no second column to
+           fall out of sync with.
+
+           This markup is the no-JS and crawler-visible copy, and the script
+           at the foot of the page rebuilds all three rows from the CRM. Keep
+           it in step when the tiers change — it is what Google reads, and
+           until APPLY_ME_20261005_lead_clients.sql has run it is also what
+           every visitor sees. -->
+      <div class="trust-clients">
+        <ul class="trust-clients__hero" aria-label="Brands and businesses Singhs Print has served">
+          <li>Lamborghini Montréal</li>
+          <li>ALDO</li>
+          <li>McGill University</li>
+          <li>Silk Laundry</li>
+          <li>C4 Energy</li>
+        </ul>
+        <ul class="trust-clients__lead" aria-label="More clients">
+          <li>Artwood Construction</li>
+          <li>Place Tevere</li>
+          <li>Cafe GotSoul</li>
+          <li>Cardinal Brewery</li>
+          <li>Evershield RV Roofs</li>
+          <li>Petinos</li>
+          <li>Asgard</li>
+          <li>Pizza Rosie</li>
+          <li>Île Perrot Yacht Club</li>
+        </ul>
+        <ul class="trust-clients__rest" aria-label="More clients">
+          <li>McGill Sororities</li>
+          <li>Sainte-Anne-de-Bellevue</li>
+          <li>CUSEC 2024</li>
+          <li>Old Soul</li>
+          <li>Montreal Pinball</li>
+          <li>McGill Pizza</li>
+          <li>Concordia SSA</li>
+          <li>Antsy</li>
+          <li>McGill Boxing Club</li>
+          <li>McGill Run Club</li>
+          <li>Nyota Parker</li>
+          <li>Morgan Arboretum</li>
+          <li>Durante Landscapers</li>
+          <li>McGill Animal Sciences</li>
+          <li>Sigma Chi Fraternity</li>
+          <li>Icey Vibes</li>
+          <li>CANAUST</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -1330,7 +1365,7 @@
   </script>
   -->
 
-  <!-- CRM-managed "Trusted by..." strip + "Recent Work" mini-gallery.
+  <!-- CRM-managed client strip + "Recent Work" mini-gallery.
        Progressive enhancement: the hardcoded markup above is the SEO/no-JS
        fallback; when the CRM returns published rows we rebuild from them so
        operators can edit both from the dashboard (/portfolio). -->
@@ -1343,18 +1378,40 @@
       });
     }
 
-    // "Trusted by..." marquee — rebuild both tracks from portfolio_clients.
+    // Client strip — rebuild all three tiers from portfolio_clients.
+    //
+    // Position decides tier: rows 0-4 are the hero line, 5-13 the lead row,
+    // 14+ the small row. That makes "which clients get the big type" an
+    // ordering decision the owner makes in /portfolio by dragging, with no
+    // deploy and no extra column to keep in sync.
+    //
+    // All three rows are replaced together or none is. Writing the hero row
+    // and leaving a committed row below it untouched would print the promoted
+    // names twice at two different sizes, which reads as a styling bug rather
+    // than as the failed fetch it would actually be.
+    var HERO_COUNT = 5;
+    var LEAD_COUNT = 14;   // cumulative: hero + lead
     fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         var cs = j && j.clients;
         if (!Array.isArray(cs) || !cs.length) return; // keep hardcoded fallback
-        var html = cs.map(function (c) {
-          return '<span class="trust-logo-text">' + esc(c.name) + '</span>';
-        }).join('');
-        document.querySelectorAll('.trust-logos__track').forEach(function (t) {
-          t.innerHTML = html;
-        });
+        var hero = document.querySelector('.trust-clients__hero');
+        var lead = document.querySelector('.trust-clients__lead');
+        var rest = document.querySelector('.trust-clients__rest');
+        if (!hero || !lead || !rest) return;          // keep hardcoded fallback
+        var items = function (arr) {
+          return arr.map(function (c) { return '<li>' + esc(c.name) + '</li>'; }).join('');
+        };
+        var mid  = cs.slice(HERO_COUNT, LEAD_COUNT);
+        var tail = cs.slice(LEAD_COUNT);
+        hero.innerHTML = items(cs.slice(0, HERO_COUNT));
+        lead.innerHTML = items(mid);
+        rest.innerHTML = items(tail);
+        // Hidden rather than left empty: an empty <ul> still occupies its
+        // row's bottom margin, which shows up as a gap nobody put there.
+        lead.hidden = mid.length === 0;
+        rest.hidden = tail.length === 0;
       })
       .catch(function () { /* keep hardcoded fallback */ });
 
