@@ -130,9 +130,17 @@
     .btn-ghost:hover{text-decoration-color:#1a1a1a;background:transparent !important}
     /* Inline social-proof line — three signals separated by ·. Tight
        text, no card, no border — sits like a caption under the CTAs. */
-    .hero-proof{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.85rem;color:#666;margin-bottom:24px;line-height:1.4}
+    /* STACKED, NOT WRAPPED, AND NO SEPARATOR DOT.
+       This was one row with a · between the promise and the location. That
+       works only while the row does not wrap, and measured 2026-10-05 the
+       English line wraps below 970px and the FRENCH LINE WRAPS AT EVERY WIDTH
+       -- 1440 included. A wrapped row leaves the dot dangling off the end of
+       the first line, which shipped visibly on the client strip earlier for
+       exactly this reason. French is ~30% longer than English here and no
+       breakpoint fixes that, so the row stacks instead and the dot is gone.
+       Two short lines also read better: the promise gets its own line. */
+    .hero-proof{display:flex;flex-direction:column;align-items:flex-start;gap:3px;font-size:.85rem;color:#666;margin-bottom:24px;line-height:1.4}
     .hero-proof strong{color:#1a1a1a;font-weight:700}
-    .hero-proof .dot-sep{color:#ccc}
     .hero-stats{display:flex;gap:32px;padding-top:24px;border-top:1px solid #e0e0e0}
     .stat strong{display:block;font-size:1.4rem;font-weight:800;font-family:'Playfair Display',serif}
     .stat span{font-size:.8rem;color:#777}
@@ -618,17 +626,40 @@
                replaces both the old hero-stats and gives users at-a-
                glance trust without scrolling to the proof bar.
                Pattern source: Stripe, Allbirds, Linear hero. -->
-          <!-- The review count used to be the middle signal on this line.
-               It was the weakest thing here and the least verifiable: the
-               figure was last synced 2026-06-11, and the runtime patcher
-               meant to keep it current could never reach its endpoint (see
-               the CRM middleware fix shipped alongside this). The rating
-               still appears once, in the reviews section, beside the three
-               named quotes that give it substance. Nothing was invented to
-               fill the gap it left. -->
+          <!-- THIS LINE IS THE MOBILE PROOF BAR. Below 480px .proof-bar is
+               display:none (see MOBILE TRIM), so on a phone this is the only
+               version of it a visitor ever sees. It has to stand on its own.
+
+               It said "100+ orders" until 2026-10-05, which was the weakest
+               proof available and also false low: 130 fulfilled orders
+               measured that day. A count was the wrong instinct here for the
+               same reason it was wrong in the bar below -- a tally shrinks
+               next to Lamborghini Montréal and ALDO, which the client strip
+               names two sections down.
+
+               Before that, the middle signal was the Google review count:
+               last synced 2026-06-11, with a runtime patcher that could never
+               reach its endpoint because /api/google-reviews was not in the
+               CRM middleware allowlist. Four months stale with a repair
+               mechanism that had never run. The rating now appears once, in
+               the reviews section, beside the three named quotes that give it
+               substance.
+
+               WHY THIS LINE. It has to work on two readers at once. Someone
+               holding a logo screenshotted off Instagram is afraid of being
+               told the file is unusable, or being charged a setup fee to fix
+               it. A procurement buyer at McGill or ALDO has clean vector art
+               and reads "we fix bad logos" as down-market. "Send any file" is
+               permission to the first and capability to the second, and it is
+               true either way. "Free" stays because the fear is not only
+               whether it can be fixed but what that costs -- setup and
+               artwork fees are the standard print-shop surprise, and the
+               comparison block further down already calls that out.
+
+               It deliberately repeats the artwork line in .proof-bar below.
+               On a phone that is not a repeat, it is the only showing. -->
           <div class="hero-proof" aria-label="Social proof">
-            <span><strong>100+</strong> <span  data-i18n="home.heroproof.orders">commandes</span></span>
-            <span class="dot-sep" aria-hidden="true">·</span>
+            <span  data-i18n="home.heroproof.artwork"><strong>Envoyez n'importe quel fichier.</strong> On le prépare pour l'impression, gratuitement</span>
             <span  data-i18n="home.heroproof.local">Ouest-de-l'Île, Montréal</span>
           </div>
 

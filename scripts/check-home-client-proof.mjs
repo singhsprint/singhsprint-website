@@ -488,6 +488,78 @@ console.log('7. the proof bar states standards -- no counts, no claims about whe
   }
 }
 
+console.log('8. the hero line is the phone version of the bar, and holds the same rule');
+{
+  // BELOW 480px .proof-bar IS display:none. The home page's mobile trim drops
+  // it deliberately, saying it is "covered by the .hero-proof inline strip".
+  // So every assertion in section 7 about the bar having no counts applies
+  // here too, or the rule only holds on desktop -- which is where it matters
+  // least. That is exactly what happened: the bar lost its counts on
+  // 2026-10-05 while this line still read "100+ orders", and 100+ was itself
+  // false low against 130 measured fulfilled orders.
+  // Anchored on the RULE, then walked back to its own media query. Two
+  // earlier spellings of this got the anchor wrong and failed on correct
+  // CSS: "MOBILE TRIM" appears elsewhere in the file, and there is more
+  // than one @media(max-width:480px) block, so searching for either found
+  // the wrong one. The rule is the only unambiguous landmark.
+  // Searched in the STYLESHEET with HTML comments stripped. The third
+  // spelling of this matched inside the markup comment above, which says
+  // ".proof-bar is display:none" in prose -- [^{]* then ran on into real CSS
+  // until it found a brace, and the 400 chars before that point were English,
+  // so the assertion failed on correct code. A check that cannot tell CSS
+  // from a sentence about CSS is not checking the CSS.
+  const css = EN.replace(/<!--[\s\S]*?-->/g, ' ');
+  const hideAt = css.search(/\.proof-bar[^{]{0,120}\{[^}]*display:\s*none/);
+  const enclosing = hideAt < 0 ? '' : css.slice(Math.max(0, hideAt - 400), hideAt);
+  const lastMedia = enclosing.lastIndexOf('@media');
+  ok('8a the proof bar really is hidden on phones, so this line stands alone',
+    hideAt >= 0 && lastMedia >= 0 && /max-width:\s*480px/.test(enclosing.slice(lastMedia)),
+    hideAt < 0 ? 'nothing hides .proof-bar at all — if the bar now shows on phones, revisit this section'
+               : 'the rule hiding .proof-bar is no longer inside a 480px media query');
+
+  const start = EN.indexOf('<div class="hero-proof"');
+  const line = EN.slice(start, EN.indexOf('</div>', start));
+  const copy = line.replace(/<[^>]+>/g, ' ');
+  ok('8b the hero line makes no numeric claim',
+    !/\d/.test(copy), `found "${(copy.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
+  ok('8c and no claim about where the work happens',
+    !/\bin[-\s]house\b|\bunder one roof\b|\bour (?:own )?(?:machines?|presses?)\b/i.test(copy));
+  ok('8d the artwork promise is there, worded as approved',
+    /<strong>Send any file\.<\/strong> We make it print-ready, free/.test(line));
+  ok('8e it is translated, not hardcoded English',
+    /data-i18n="home\.heroproof\.artwork"/.test(line)
+    && /'home\.heroproof\.artwork'/.test(LANG));
+  ok('8f the location signal survives',
+    /data-i18n="home\.heroproof\.local"/.test(line));
+  // THE SEPARATOR DOT IS GONE, AND MUST STAY GONE. It only works while the
+  // row does not wrap. Measured 2026-10-05: English wraps below 970px and
+  // French wraps at EVERY width, 1440 included, because the French line is
+  // ~30% longer. There is no breakpoint that saves it, so the row stacks.
+  // Re-adding a separator here puts a dangling dot at the end of the first
+  // line for every French visitor at every screen size.
+  ok('8k the line stacks rather than wraps, so no separator can dangle',
+    /\.hero-proof\{[^}]*flex-direction:column/.test(EN)
+    && !/class="dot-sep"/.test(line),
+    'the hero line wraps again, or a separator came back');
+  ok('8l no orphaned separator styling left behind',
+    !/dot-sep/.test(EN) || /class="dot-sep"/.test(EN),
+    'a .dot-sep rule survives with nothing using it');
+  // "free" is the half of this that answers the cost fear, and it is the half
+  // most likely to be quietly dropped for brevity. It is also a real promise:
+  // the page says twice that cleanups are at no extra charge.
+  ok('8g the no-charge half is still in the line',
+    /\bfree\b/i.test(copy), 'the promise lost the part that removes the cost');
+  ok('8h the French says it too',
+    /gratuitement/.test(LANG.match(/'home\.heroproof\.artwork':[^\n]*/)[0]));
+  ok('8i the retired count key is gone, not just unused',
+    !LANG.includes("'home.heroproof.orders'") && !EN.includes('home.heroproof.orders')
+    && !FR.includes('home.heroproof.orders'));
+  const frStart = FR.indexOf('<div class="hero-proof"');
+  ok('8j the French mirror carries the French line',
+    /Envoyez n'importe quel fichier/.test(FR.slice(frStart, FR.indexOf('</div>', frStart))),
+    'FR mirror is stale — rerun scripts/generate-fr-mirror.mjs');
+}
+
 console.log('');
 console.log(`${pass} passed, ${fails.length} failed`);
 if (fails.length) { fails.forEach((f) => console.log(' - ' + f)); process.exit(1); }

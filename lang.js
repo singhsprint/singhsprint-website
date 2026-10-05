@@ -104,7 +104,7 @@ var SP_LANG = (function() {
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
     'home.hero.guarantee': { en: 'Quality guarantee: if we misprint it, we reprint it.', fr: 'Garantie qualité : une erreur d\'impression, on réimprime.' },
     // Inline hero social-proof line (replaces old hero-stats block)
-    'home.heroproof.orders': { en: 'orders',         fr: 'commandes' },
+    'home.heroproof.artwork': { en: '<strong>Send any file.</strong> We make it print-ready, free', fr: '<strong>Envoyez n\'importe quel fichier.</strong> On le prépare pour l\'impression, gratuitement' },
     'home.heroproof.local':  { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'home.stats.orders': { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.stats.turnaround': { en: 'Day Avg Turnaround', fr: 'Jours délai moyen' },
