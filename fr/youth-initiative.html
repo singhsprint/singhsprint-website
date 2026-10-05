@@ -509,12 +509,37 @@
       document.getElementById('yiUploadIcon').textContent = '⏳';
       document.getElementById('yiUploadHint').textContent = 'Uploading…';
       document.getElementById('yiUploadSub').textContent = f.name + ' · ' + Math.round(f.size/1024) + ' KB';
-      // Upload via /api/inbound/upload, returns { path, signed_url, ... }
-      var fd = new FormData();
-      fd.append('file', f);
-      fd.append('kind', 'design');
-      fetch(UPLOAD_API, { method: 'POST', body: fd })
-        .then(function(r){ return r.ok ? r.json() : null; })
+      // Direct to storage via a signed upload URL. The multipart relay is a
+      // Vercel serverless function and Vercel caps serverless request bodies
+      // at 4.5 MB — measured on production 2026-08-01: 4 MB returned 201,
+      // 5 MB was refused at the edge. This form promises 10 MB, so photos
+      // from a phone were failing with a generic error. Falls back to the
+      // relay, which still works for the small files it can carry.
+      (function(){
+        return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: f.name || 'photo', mime: f.type || 'application/octet-stream', bytes: f.size })
+        })
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){
+            if (!d || !d.upload_url) throw new Error('no-signed-url');
+            return fetch(d.upload_url, {
+              method: 'PUT',
+              headers: { 'Content-Type': f.type || 'application/octet-stream', 'x-upsert': 'false' },
+              body: f
+            }).then(function(put){
+              if (!put.ok) throw new Error('storage PUT ' + put.status);
+              return { path: d.path };
+            });
+          })
+          .catch(function(){
+            var fd = new FormData();
+            fd.append('file', f);
+            fd.append('kind', 'design');
+            return fetch(UPLOAD_API, { method: 'POST', body: fd })
+              .then(function(r){ return r.ok ? r.json() : null; });
+          });
+      })()
         .then(function(d){
           if (d && d.path) {
             _uploadedPath = d.path;

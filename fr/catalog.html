@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Singhs Print · Impression de vêtements personnalisés · FR</title>
-  <meta name="description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear et SanMar. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.">
+  <meta name="description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +27,7 @@
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/fr/catalog">
   <meta property="og:title" content="Catalogue — Singhs Print">
-  <meta property="og:description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear et SanMar. Prix unitaire en direct selon la quantité.">
+  <meta property="og:description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Prix unitaire en direct selon la quantité.">
   <meta property="og:locale" content="fr_CA">
   <meta property="og:locale:alternate" content="en_CA">
   <meta property="og:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
@@ -35,7 +35,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Catalogue — Singhs Print">
-  <meta name="twitter:description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear et SanMar. Prix unitaire en direct selon la quantité.">
+  <meta name="twitter:description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Prix unitaire en direct selon la quantité.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <script>
   // Early-fire the catalog fetch so it overlaps with the rest of
@@ -94,7 +94,7 @@
     <div class="meta">
       <span  data-i18n="cat.hero.meta1"><strong>Stock et prix</strong> mis à jour chaque jour</span>
       <span>·</span>
-      <span  data-i18n="cat.hero.meta2">Délai habituel de <strong>3 à 5 jours</strong></span>
+      <span  data-i18n="cat.hero.meta2">Délai habituel de <strong>5 à 10 jours</strong></span>
       <span>·</span>
       <span  data-i18n="cat.hero.meta3">Vêtements conçus à Montréal disponibles</span>
     </div>
@@ -132,6 +132,21 @@
        Customer can also tap a tick or type a custom number. The whole bar
        collapses to two rows on mobile so the slider stays touch-friendly. -->
   <style>
+    /* ── Quantity ladder ──────────────────────────────────────────────
+       Replaced the slider 2026-08-01. Three reasons, in order of weight:
+
+       1. A slider implies a continuum. This pricing is eight discrete,
+          non-linear stops, and the 1-4 stop is a different regime entirely
+          (one flat micro-run price; embroidery unavailable under 10).
+       2. Options that aren't exposed don't get discovered (Baymard). The
+          slider hid the whole ladder behind a drag; a single-item shopper
+          had no on-screen evidence that a single-item price even existed.
+       3. The 1-4 affordance had nowhere to live. Putting it on the track
+          collided with the thumb, because the leftmost stop IS where the
+          thumb sits at that value. Off-track, the collision cannot happen.
+
+       MOO and Uline both show the entire ladder without interaction; that
+       is the thing they get right, and it is what this copies. */
     .qty-bar{max-width:1200px;margin:-4px auto 18px;padding:14px 18px;background:#fff;
       border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;
       gap:18px;flex-wrap:wrap}
@@ -173,7 +188,7 @@
     }
   </style>
   <div id="qtyPricingBar" class="qty-bar">
-    <span class="qty-bar__lede" data-i18n="cat.qty.label">Prix pour</span>
+    <span class="qty-bar__lede"  data-i18n="cat.qty.label">Prix pour</span>
     <div class="qty-ladder" id="qtyLadder" role="group" aria-label="Quantity">
       <button type="button" class="qty-tier" data-qty="1" aria-pressed="false" onclick="setQty(1)">1&ndash;4</button>
       <span class="qty-ladder__sep" aria-hidden="true"></span>
@@ -185,9 +200,9 @@
       <button type="button" class="qty-tier" data-qty="200" aria-pressed="true"  onclick="setQty(200)">200</button>
       <button type="button" class="qty-tier" data-qty="500" aria-pressed="false" onclick="setQty(500)">500+</button>
     </div>
-    <span class="qty-bar__note" id="qtyNote" data-i18n="cat.qty.note.bulk">Prix unitaire &middot; 1 côté imprimé</span>
+    <span class="qty-bar__note" id="qtyNote"  data-i18n="cat.qty.note.bulk">Prix unitaire · 1 côté imprimé</span>
     <label class="qty-bar__custom">
-      <span data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span  data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 
@@ -349,13 +364,14 @@
           <div id="detailModalBrand" style="font-size:.7rem;letter-spacing:.06em;color:#888;text-transform:uppercase;font-weight:700"></div>
           <div id="detailModalTitle" style="font-size:1.15rem;font-weight:700;margin-top:2px;line-height:1.25"></div>
         </div>
+        <div id="detailModalPrice" class="detail-modal__price"></div>
         <!-- Share this blank. Builds /b/<brand-style>/<colour> — server-rendered
              in api/share/blank.js purely so the link unfurls with THIS garment
              in THIS colour instead of the catalog's generic OG image. -->
         <button class="sp-share" type="button" id="spShareBtn" onclick="spShareToggle(event)"
                 aria-expanded="false" aria-controls="spSharePop" aria-label="Share this blank">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5l5-5"/><path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/><path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg>
-          <span id="spShareLabel" data-i18n="cat.share.cta">Share</span>
+          <span id="spShareLabel"  data-i18n="cat.share.cta">Partager</span>
         </button>
         <div class="sp-sharepop" id="spSharePop" role="dialog" aria-modal="false" aria-label="Share this blank" hidden></div>
         <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Close">✕</button>
@@ -374,7 +390,6 @@
              color swatches, then the customizer (method / placements /
              uploads), with tech specs at the bottom. -->
         <div class="detail-modal__controls-col" id="dmczCustomizer">
-          <div id="detailModalPrice" class="detail-modal__price"></div>
           <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5;margin-bottom:16px"></div>
 
           <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
