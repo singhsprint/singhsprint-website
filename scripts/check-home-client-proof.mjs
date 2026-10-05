@@ -48,15 +48,24 @@ const LANG = read('lang.js');
 // is not a client (the client was PLACE TEVERE — 3 orders, $2,138.54), and
 // "Lamborghini Montreal" is "Lamborghini Montréal".
 //
-// Three of the six have no order behind them in the OS — ALDO has no company
-// row at all, Lamborghini Montréal has one with zero orders, and there is no
-// McGill institutional row (only Animal Science at $1,571, plus the clubs).
-// The owner has confirmed them; the CRM predates or missed that work. Written
-// down because a future reader will otherwise re-derive this list from the
-// orders table and quietly drop half of it.
+// EVERY ONE OF THESE SIX HAS RECORDED ORDERS. Measured 2026-10-05: Artwood
+// $4,568/2, Cafe GotSoul $2,723/2, Evershield $2,149/2, Place Tevere
+// $2,139/3, Silk Laundry $1,178/1, Petinos $547/1.
+//
+// The more recognisable names the owner also prints for — Lamborghini
+// Montréal, ALDO, McGill University, C4 Energy, Cardinal Brewery, Île Perrot
+// Yacht Club — are deliberately NOT here. He has confirmed all of them as
+// genuine clients and the work predates or bypassed the CRM, but none carries
+// an order record, and this strip is the most checkable claim on the site.
+// Lamborghini in particular: its only CRM row is a prospect import, created
+// alongside Aston Martin Montréal, Audi Anjou, BMW Canbec, BMW Laval and
+// Bentley Montréal, with two people's names in one field, no email, no phone
+// and no message. They are seeded below the cut in
+// APPLY_ME_20261005_lead_clients.sql, so promoting one is a sort_index change
+// in /portfolio rather than a deploy.
 const SHOWN = [
-  'Lamborghini Montréal', 'ALDO', 'McGill University', 'Silk Laundry',
-  'C4 Energy', 'Petinos',
+  'Artwood Construction', 'Cafe GotSoul', 'Place Tevere', 'Silk Laundry',
+  'Evershield RV Roofs', 'Petinos',
 ];
 
 /** Inner HTML of one <ul class="..."> by class, or '' if absent. */
