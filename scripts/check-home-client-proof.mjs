@@ -40,7 +40,7 @@ const EN = read('index.html');
 const FR = read('fr/index.html');
 const LANG = read('lang.js');
 
-// The six, stated here rather than derived from the file, so the checker
+// The five, stated here rather than derived from the file, so the checker
 // fails loudly if one is dropped or quietly respelled.
 //
 // Checked against the OS on 2026-10-05 (companies rollup + /api/companies?q=).
@@ -90,12 +90,12 @@ function visibleText(html) {
     .replace(/<!--[\s\S]*?-->/g, ' ');
 }
 
-console.log('1. six names, and nothing that reads as a complete list');
+console.log('1. five names, and nothing that reads as a complete list');
 {
   const shown = names(ulBody(EN, 'trust-clients__hero'));
   const missing = SHOWN.filter((n) => !shown.includes(n));
-  ok('1a all six clients are on the strip', missing.length === 0, missing.join(', '));
-  ok('1b the strip holds those ten and nothing else',
+  ok('1a all five clients are on the strip', missing.length === 0, missing.join(', '));
+  ok('1b the strip holds those five and nothing else',
     shown.length === SHOWN.length, `${shown.length} names`);
   // The forced row break went with the second row. Its leftovers would be
   // invisible — a zero-height flex item renders as nothing — so assert it is
@@ -111,7 +111,7 @@ console.log('1. six names, and nothing that reads as a complete list');
     !/trust-clients__lead/.test(EN) && !/trust-clients__rest/.test(EN)
     && !/trust-logo/.test(EN),
     'an old tier row is still in the markup');
-  ok('1d the French mirror shows the same six',
+  ok('1d the French mirror shows the same five',
     (() => { const f = names(ulBody(FR, 'trust-clients__hero'));
       return SHOWN.every((n) => f.includes(n)) && f.length === SHOWN.length; })(),
     `fr has ${names(ulBody(FR, 'trust-clients__hero')).length}`);
@@ -261,7 +261,7 @@ console.log('4. the review count appears once, where the quotes are');
     (EN.match(/class="review-author"/g) || []).length === 3);
 }
 
-console.log('5. the CRM can repoint the six, and the claim stays put');
+console.log('5. the CRM can repoint the five, and nothing else moves');
 {
   const scriptAll = EN.slice(EN.indexOf('CRM-managed'));
   const cStart = scriptAll.indexOf('Client strip —');
@@ -303,6 +303,187 @@ console.log('6. the retired i18n keys are gone, not just unused');
 {
   for (const k of ['home.heroproof.rating', 'home.proof.rating-num', 'home.proof.rating']) {
     ok(`6-${k} is undefined and unreferenced`,
+      !LANG.includes(`'${k}'`) && !EN.includes(k) && !FR.includes(k));
+  }
+}
+
+console.log('7. the proof bar states standards -- no counts, no claims about where');
+{
+  // TWO MISTAKES ARE BURIED IN THIS SECTION'S HISTORY. Both are worth keeping
+  // written down, because the second one is the kind a checker can cause.
+  //
+  // 1. The bar read "100+ Orders Completed · 50+ Happy Clients · 100% In-House
+  //    Production" above a strip naming Lamborghini Montréal, ALDO and McGill.
+  //    Measured 2026-10-05: 130 fulfilled orders ($59,723) and 79-120 distinct
+  //    buyers, so both figures understated -- and correcting them would not
+  //    have helped, because 130 is still small beside ALDO.
+  //
+  // 2. The first replacement said "All under one roof" and "100% In-House
+  //    Production". Embroidery is fulfilled by a partner, so both were false,
+  //    and they reached a commit. The assertions here at the time checked that
+  //    each line was REPEATED elsewhere on the page and treated that as
+  //    evidence it was true. It proved only that the same false claim was in
+  //    five places -- the hero sub-head says "all under one roof" too.
+  //
+  //    REPETITION IS NOT VERIFICATION, and a checker cannot establish that a
+  //    sentence about the world is true. What it can do is hold the line on
+  //    SHAPE: the exact approved copy, and a ban on the categories of claim
+  //    that went wrong before -- counts, and anything asserting where or on
+  //    whose equipment the work happens. Truth of the three lines is a fact
+  //    about the business, confirmed by the owner on 2026-10-05, and recorded
+  //    in the markup comment rather than pretend-tested here.
+  const barStart = EN.indexOf('<section class="proof-bar">');
+  const bar = EN.slice(barStart, EN.indexOf('</section>', barStart));
+  const barCopy = bar
+    .replace(/<!--[\s\S]*?-->/g, ' ')   // the reasoning above is not copy
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&middot;/g, ' ');
+
+  // No tally, of anything, in any form.
+  ok('7a the bar makes no numeric claim at all',
+    !/\d/.test(barCopy),
+    `found "${(barCopy.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
+
+  // No claim about WHERE, or whose machine. This is the assertion that would
+  // have caught the thing I shipped.
+  const WHERE = /\bin[-\s]house\b|\bunder one roof\b|\bon[-\s]site\b|\bour (?:own )?(?:machines?|presses?|equipment)\b|\bwe own\b/i;
+  ok('7b the bar claims nothing about where the work happens',
+    !WHERE.test(barCopy),
+    `found "${(barCopy.match(WHERE) || [''])[0]}"`);
+  // And neither does the rest of the home page's visible copy, which is where
+  // the first version got its false corroboration.
+  const pageCopy = visibleText(EN);
+  ok('7c no in-house or under-one-roof claim anywhere in the home page copy',
+    !WHERE.test(pageCopy),
+    `found "${(pageCopy.match(WHERE) || [''])[0]}" elsewhere on the page`);
+
+  // AND IN lang.js, WHICH IS NOT THE SAME THING. The markup carries one
+  // English string and lang.js carries another, and they are allowed to
+  // differ -- home.services.h2 reads "Three ways to print your vision" in the
+  // markup and "Three methods, one shop" in lang.js. So a claim can sit in
+  // lang.js, never appear in index.html, and surface the moment a visitor
+  // toggles FR then back to EN. That is exactly where "Every method in-house
+  // means we pick the right one" was still hiding after the page itself was
+  // clean. Scanned per key, so the failure names the key.
+  const langEntries = [...LANG.matchAll(/'(home\.[a-z0-9.]+)':\s*\{([\s\S]{0,1200}?)\n?\s*\},/g)];
+  const FR_WHERE = /sous (?:un )?(?:même |seul )?toit|à l'interne|sur place\b|même bâtiment/i;
+  const dirty = langEntries.filter(([, , body]) => WHERE.test(body) || FR_WHERE.test(body))
+    .map(([, k]) => k);
+  ok('7d no such claim in the home-page strings in lang.js, either language',
+    dirty.length === 0, dirty.join(', '));
+
+  ok('7e the French mirror makes no equivalent claim',
+    !FR_WHERE.test(visibleText(FR)),
+    `found "${(visibleText(FR).match(FR_WHERE) || [''])[0]}"`);
+
+  // The approved copy, exactly. A silent reword is a claim nobody signed off.
+  const stats = [...bar.matchAll(/<div class="proof-stat">([\s\S]*?)<\/div>/g)].map((m) => m[1]);
+  ok('7f three stats, no more and no fewer', stats.length === 3, `${stats.length} stats`);
+  for (const [id, key, head, subKey, sub] of [
+    ['7g', 'home.proof.oneshop', 'Every method, one shop',  'home.proof.methods',     'DTG &middot; DTF &middot; Embroidery'],
+    ['7h', 'home.proof.mockup',  'Mockup before we print',  'home.proof.mockup.sub',  'Every single order'],
+    ['7i', 'home.proof.artwork', 'Free artwork cleanup',    'home.proof.artwork.sub', 'Print-ready, not your problem'],
+  ]) {
+    ok(`${id} "${head}" / "${sub.replace(/&middot;/g, '·')}" is on the bar, worded as approved`,
+      stats.some((st) => st.includes(`<strong data-i18n="${key}">${head}</strong>`)
+                      && st.includes(`<span data-i18n="${subKey}">${sub}</span>`)),
+      'stat missing, reworded, or no longer translated');
+  }
+
+  // DELIBERATELY ABSENT: turnaround, while the site states two standards. The
+  // owner confirmed 2026-10-05 that 7-14 business days is standard and 3-5 is
+  // possible. Nine pages say 7-14; 6,904 say "Standard turnaround is 3-5
+  // business days", including inside FAQPage structured data. A figure in the
+  // bar before that is reconciled is a third voice. Remove this when the
+  // product-page generator is corrected, not before.
+  ok('7j no turnaround figure while the site still contradicts itself',
+    !/\b\d+\s*[-–&]?\s*(?:ndash;)?\s*\d*\s*(?:business\s+)?days?\b/i.test(barCopy)
+    && !/turnaround/i.test(barCopy));
+
+  // Readable. Ratios computed against the bar's OWN background, parsed from
+  // the CSS rather than assumed -- #888 on #fafafa measures 3.39:1 and shipped
+  // that way until this section existed.
+  const relLum = (hex) => {
+    let h = hex.replace('#', '');
+    if (h.length === 3) h = [...h].map((c) => c + c).join('');
+    const chan = [0, 1, 2].map((i) => {
+      const c = parseInt(h.slice(i * 2, i * 2 + 2), 16) / 255;
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * chan[0] + 0.7152 * chan[1] + 0.0722 * chan[2];
+  };
+  const ratio = (a, b) => {
+    const [x, y] = [relLum(a), relLum(b)];
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+  const bg = (EN.match(/\.proof-bar\{[^}]*background:\s*(#[0-9a-fA-F]{3,6})/) || [])[1];
+  ok('7k the bar declares its own background, so the ratio is not a guess',
+    typeof bg === 'string', 'no background on .proof-bar');
+  const subColour = (EN.match(/\.proof-stat span\{[^}]*color:\s*(#[0-9a-fA-F]{3,6})/) || [])[1];
+  const subRatio = bg && subColour ? ratio(subColour, bg) : 0;
+  ok('7l the sub-lines clear WCAG AA on that background',
+    subRatio >= 4.5, `${subColour} on ${bg} = ${subRatio.toFixed(2)}:1, needs 4.50:1`);
+  const bodyColour = (EN.match(/\bbody\{[^}]*color:\s*(#[0-9a-fA-F]{3,6})/) || [])[1];
+  ok('7m the headline lines clear AA too',
+    !/\.proof-stat strong\{[^}]*color:/.test(EN)
+    && bodyColour && ratio(bodyColour, bg) >= 4.5,
+    `body ${bodyColour} on ${bg} = ${(bodyColour && bg ? ratio(bodyColour, bg) : 0).toFixed(2)}:1`);
+
+  // All three lines are phrases now, so the type had to come down from 1.5rem,
+  // at which "Mockup before we print" overran its third of the row.
+  const strongSize = Number((EN.match(/\.proof-stat strong\{font-size:([\d.]+)rem/) || [])[1]);
+  ok('7m2 the headline type is sized for phrases, not a single figure',
+    strongSize > 0 && strongSize <= 1.25, `${strongSize}rem`);
+
+  // NEVER 2 + 1. With three phrases instead of three figures the row is wide
+  // enough to wrap, and plain flex-wrap drops the third stat onto a line of
+  // its own, which reads as a bug rather than a layout. The fix is to stack
+  // instead of wrap, and the breakpoint is set by FRENCH -- the French row
+  // needs 818px against English's 672px, so a value tuned on the English page
+  // would have shipped an orphan to half the visitors. Whether it actually
+  // holds is a render question, answered by rendering both languages at
+  // 1440/1101/1099/1000/960/941/939/760/540/481; what is checkable here is
+  // that the rule exists, stacks rather than wraps, and leaves a stacked
+  // range above the 480px point where the bar disappears entirely.
+  const stackBp = Number((EN.match(/@media\(max-width:(\d+)px\)\{\s*\.proof-stats\{flex-direction:column/) || [])[1]);
+  ok('7n the stats stack rather than wrap once the row stops fitting',
+    stackBp > 480, stackBp ? `stacks at ${stackBp}px, at or below the 480px trim` : 'no column rule for .proof-stats');
+  ok('7o the breakpoint clears the French row, not just the English one',
+    stackBp >= 940, `stacks at ${stackBp}px; French needs 818px of names and stops fitting at 940`);
+
+  // The French mirror is GENERATED -- a hand edit to fr/index.html dies on the
+  // next run of generate-fr-mirror.mjs, so lang.js is the only durable home.
+  const frBar = FR.slice(FR.indexOf('<section class="proof-bar">'),
+                         FR.indexOf('</section>', FR.indexOf('<section class="proof-bar">')));
+  ok('7p2 the French bar carries the French copy',
+    /Toutes les méthodes, un seul atelier/.test(frBar)
+    && /Maquette avant l'impression/.test(frBar)
+    && /Retouche de visuel gratuite/.test(frBar),
+    'the FR mirror is stale -- rerun scripts/generate-fr-mirror.mjs');
+  ok('7p3 the French bar carries no count either',
+    !/\d/.test(frBar.replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ')));
+
+  for (const [id, k, en, fr] of [
+    ['7q', 'home.proof.oneshop',     'Every method, one shop',       'Toutes les méthodes, un seul atelier'],
+    ['7r', 'home.proof.methods',     'DTG &middot; DTF &middot; Embroidery', 'DTG &middot; DTF &middot; Broderie'],
+    ['7s', 'home.proof.mockup',      'Mockup before we print',       "Maquette avant l'impression"],
+    ['7t', 'home.proof.mockup.sub',  'Every single order',           'Pour chaque commande'],
+    ['7u', 'home.proof.artwork',     'Free artwork cleanup',         'Retouche de visuel gratuite'],
+    ['7v', 'home.proof.artwork.sub', 'Print-ready, not your problem', "Prêt à imprimer, on s'en occupe"],
+  ]) {
+    const line = (LANG.match(new RegExp("'" + k.replace(/\./g, '\\.') + "':[^\\n]*")) || [''])[0];
+    ok(`${id} ${k} is defined in both languages`,
+      line.includes(en) && line.includes(fr.replace("'", "\\'")),
+      line ? 'defined as: ' + line.trim() : 'key is undefined');
+    ok(`${id}2 ${k} is actually used by the markup`,
+      EN.includes('data-i18n="' + k + '"'), 'key defined but nothing reads it');
+  }
+
+  // Retired keys go, rather than linger as dead weight that reads like live
+  // copy. home.proof.production and home.proof.methods.sub carried the two
+  // false claims; orders and clients carried the counts.
+  for (const k of ['home.proof.orders', 'home.proof.clients', 'home.proof.production', 'home.proof.methods.sub']) {
+    ok(`7w-${k} is undefined and unreferenced`,
       !LANG.includes(`'${k}'`) && !EN.includes(k) && !FR.includes(k));
   }
 }

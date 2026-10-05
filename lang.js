@@ -98,7 +98,7 @@ var SP_LANG = (function() {
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
       en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and a mockup you approve before we print.",
-      fr: "DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et une maquette que vous approuvez avant l'impression. T-shirt gratuit dès 15 articles."
+      fr: "DTG, DTF et broderie depuis notre studio de Sainte-Anne-de-Bellevue. Faibles minimums, ramassage local, et une maquette que vous approuvez avant l'impression. T-shirt gratuit dès 15 articles."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
@@ -121,10 +121,10 @@ var SP_LANG = (function() {
       fr: 'Des vêtements de qualité, imprimés ou brodés exactement comme vous le souhaitez.'
     },
     'home.services.label': { en: 'Services', fr: 'Services' },
-    'home.services.h2': { en: 'Three methods, one studio', fr: 'Trois méthodes, un studio' },
+    'home.services.h2': { en: 'Three methods, one shop', fr: 'Trois méthodes, un seul atelier' },
     'home.services.sub': {
-      en: 'Every method in-house means we pick the right one for your project.',
-      fr: 'Toutes les méthodes sur place, on choisit la meilleure pour votre projet.'
+      en: 'Every method on the table means we pick the right one for your project.',
+      fr: 'Toutes les méthodes à notre disposition, on choisit la meilleure pour votre projet.'
     },
     'home.hiw.label': { en: 'How It Works', fr: 'Comment ça marche' },
     'home.hiw.h2': { en: 'From idea to finished product', fr: 'De l\'idée au produit fini' },
@@ -157,9 +157,12 @@ var SP_LANG = (function() {
     'home.cta.call': { en: 'Call 438-544-3800', fr: 'Appelez le 438-544-3800' },
     'home.stats.orderqty': { en: 'Order any qty', fr: 'Toute quantité' },
     // Proof bar
-    'home.proof.orders':     { en: 'Orders Completed', fr: 'Commandes complétées' },
-    'home.proof.clients':    { en: 'Happy Clients', fr: 'Clients satisfaits' },
-    'home.proof.production': { en: 'In-House Production', fr: 'Production sur place' },
+    'home.proof.oneshop':     { en: 'Every method, one shop', fr: 'Toutes les méthodes, un seul atelier' },
+    'home.proof.methods':     { en: 'DTG &middot; DTF &middot; Embroidery', fr: 'DTG &middot; DTF &middot; Broderie' },
+    'home.proof.mockup':      { en: 'Mockup before we print', fr: 'Maquette avant l\'impression' },
+    'home.proof.mockup.sub':  { en: 'Every single order',  fr: 'Pour chaque commande' },
+    'home.proof.artwork':     { en: 'Free artwork cleanup', fr: 'Retouche de visuel gratuite' },
+    'home.proof.artwork.sub': { en: 'Print-ready, not your problem', fr: 'Prêt à imprimer, on s\'en occupe' },
     // Why us
     'home.why.h2':            { en: 'Built for brands that care about quality', fr: 'Conçu pour les marques qui se soucient de la qualité' },
     'home.why.guarantee.h':   { en: 'Misprint guarantee', fr: 'Garantie contre les erreurs d\'impression' },
@@ -172,8 +175,6 @@ var SP_LANG = (function() {
     'home.why.design.p':      { en: 'Cleanups, mockups, and full designs at no extra charge.', fr: 'Retouches, maquettes et designs complets sans frais supplémentaires.' },
     'home.why.bulk.h':        { en: 'Bulk & recurring pricing', fr: 'Prix de volume et récurrents' },
     'home.why.bulk.p':        { en: 'Discounts for volume + business packages for ongoing orders.', fr: 'Rabais sur volume + forfaits entreprises pour commandes récurrentes.' },
-    'home.why.inhouse.h':     { en: '100% in-house', fr: '100% sur place' },
-    'home.why.inhouse.p':     { en: 'DTG, DTF, and embroidery under one roof. No outsourcing.', fr: 'DTG, DTF et broderie sous un même toit. Aucune sous-traitance.' },
     // Differentiator — "the print shop problem" comparison (#why-switch)
     'home.diff.label': { en: 'The print shop problem', fr: 'Le problème des imprimeries' },
     'home.diff.h2': { en: "Most print shops make you pay to find out if they're any good.", fr: 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes.' },
@@ -197,7 +198,7 @@ var SP_LANG = (function() {
     'home.faq.label': { en: 'FAQ', fr: 'FAQ' },
     'home.faq.h2':    { en: 'Common questions', fr: 'Questions fréquentes' },
     'home.faq.q1': { en: 'What printing services do you offer?', fr: 'Quels services d\'impression offrez-vous ?' },
-    'home.faq.a1': { en: 'We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film), and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more, all printed in-house in Montreal.', fr: 'On se spécialise en DTG (impression directe sur vêtement), DTF (transfert sur film) et broderie. T-shirts, hoodies, crewnecks, uniformes, casquettes et plus — tout imprimé sur place à Montréal.' },
+    'home.faq.a1': { en: 'We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film), and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more, all decorated to the same standard in Montreal.', fr: 'On se spécialise en DTG (impression directe sur vêtement), DTF (transfert sur film) et broderie. T-shirts, hoodies, crewnecks, uniformes, casquettes et plus — tout décoré selon la même norme à Montréal.' },
     'home.faq.q2': { en: 'Is there a minimum order?', fr: 'Y a-t-il une commande minimum ?' },
     'home.faq.a2': { en: 'No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size.', fr: 'Aucun minimum. On imprime 1 article ou 1 000+. Idéal pour les petites marques, créateurs, écoles, gyms, cafés et entreprises de toute taille.' },
     'home.faq.q3': { en: 'How fast can you complete an order?', fr: 'En combien de temps pouvez-vous compléter une commande ?' },
@@ -341,8 +342,8 @@ var SP_LANG = (function() {
       fr: 'Singhs Print a été lancée par une petite équipe familiale à Sainte-Anne-de-Bellevue parce qu\'on en avait assez de voir l\'impression personnalisée mal faite : délais lents, qualité incohérente et ateliers qui traitaient les petites commandes comme un dérangement.'
     },
     'about.who.p2': {
-      en: 'Every order, whether it\'s 5 t-shirts for a birthday or 500 hoodies for a brand launch, runs through the same mockup-and-approve process. Everything is decorated in-house in our Montreal studio so we control quality from artwork prep through final QC. We\'re Quebec-registered (Imprimerie Singhs Print · NEQ 1181573313), and GST and QST compliant. Important if you\'re a procurement-led organization or just like knowing the people printing your gear aren\'t trading out of a parking lot.',
-      fr: 'Chaque commande, que ce soit 5 t-shirts pour un anniversaire ou 500 hoodies pour un lancement de marque, passe par le même processus de maquette et d\'approbation. Tout est décoré sur place dans notre studio de Montréal pour qu\'on contrôle la qualité de la préparation du fichier au CQ final. Nous sommes immatriculés au Québec (Imprimerie Singhs Print · NEQ 1181573313), conformes à la TPS et à la TVQ. Important si vous êtes une organisation pilotée par les achats ou si vous aimez simplement savoir que les gens qui impriment vos vêtements ne travaillent pas depuis un stationnement.'
+      en: 'Every order, whether it\'s 5 t-shirts for a birthday or 500 hoodies for a brand launch, runs through the same mockup-and-approve process. Every order runs the same route through our Montreal studio, from artwork prep to final QC. We\'re Quebec-registered (Imprimerie Singhs Print · NEQ 1181573313), and GST and QST compliant. Important if you\'re a procurement-led organization or just like knowing the people printing your gear aren\'t trading out of a parking lot.',
+      fr: 'Chaque commande, que ce soit 5 t-shirts pour un anniversaire ou 500 hoodies pour un lancement de marque, passe par le même processus de maquette et d\'approbation. Chaque commande suit le même parcours dans notre studio de Montréal, de la préparation du fichier au CQ final. Nous sommes immatriculés au Québec (Imprimerie Singhs Print · NEQ 1181573313), conformes à la TPS et à la TVQ. Important si vous êtes une organisation pilotée par les achats ou si vous aimez simplement savoir que les gens qui impriment vos vêtements ne travaillent pas depuis un stationnement.'
     },
 
     'about.stats.orders':  { en: 'Orders decorated',                fr: 'Commandes décorées' },
@@ -351,10 +352,10 @@ var SP_LANG = (function() {
     'about.stats.quote':   { en: 'Typical quote turnaround',        fr: 'Délai typique de soumission' },
 
     'about.what.label': { en: 'What we do', fr: 'Ce qu\'on fait' },
-    'about.what.h2': { en: 'DTG, DTF, embroidery & screen, all under one roof', fr: 'DTG, DTF, broderie et sérigraphie, tout sous un même toit' },
+    'about.what.h2': { en: 'DTG, DTF and embroidery, handled end to end', fr: 'DTG, DTF et broderie, pris en charge de bout en bout' },
     'about.what.p1': {
-      en: 'Having every method in-house means we recommend the right one for your project instead of forcing everything through one machine. Cotton tees? DTG. Polyester athleisure and dark blends? DTF. Logo embroidery on caps, polos, and jackets? Stitched in-house. High-volume single-color screen runs? Same building.',
-      fr: 'Avoir toutes les méthodes sur place nous permet de recommander la bonne pour votre projet plutôt que de tout forcer à travers une seule machine. T-shirts en coton ? DTG. Athleisure en polyester et mélanges foncés ? DTF. Broderie de logos sur casquettes, polos et vestes ? Cousue sur place. Tirages sérigraphiques mono-couleur en gros volume ? Même bâtiment.'
+      en: 'Having every method on the table means we recommend the right one for your project instead of forcing everything through one machine. Cotton tees? DTG. Polyester athleisure and dark blends? DTF. Logo embroidery on caps, polos, and jackets? Stitched to spec.',
+      fr: 'Avoir toutes les méthodes à notre disposition nous permet de recommander la bonne pour votre projet plutôt que de tout forcer à travers une seule machine. T-shirts en coton ? DTG. Athleisure en polyester et mélanges foncés ? DTF. Broderie de logos sur casquettes, polos et vestes ? Cousue selon vos specs.'
     },
     'about.what.p2': {
       en: 'We carry 4,500+ blank styles from S&S Activewear, SanMar and AlphaBroder. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
@@ -394,8 +395,8 @@ var SP_LANG = (function() {
     },
     'about.values.qc.h': { en: 'Quality control', fr: 'Contrôle de qualité' },
     'about.values.qc.p': {
-      en: '100% in-house decoration, so we catch issues before they ship. No outsourcing, no middlemen, no surprise vendor reshuffles mid-project.',
-      fr: 'Décoration 100% à l\'interne, ce qui nous permet de repérer les problèmes avant qu\'ils ne partent. Pas de sous-traitance, pas d\'intermédiaires, pas de fournisseur surprise en cours de projet.'
+      en: 'Every piece inspected before it ships, so we catch issues while we can still fix them.',
+      fr: 'Chaque pièce inspectée avant l\'expédition, pour repérer les problèmes pendant qu\'on peut encore les corriger.'
     },
     'about.values.design.h': { en: 'Free design help', fr: 'Aide au design gratuite' },
     'about.values.design.p': {
@@ -454,7 +455,7 @@ var SP_LANG = (function() {
     // ===== PORTFOLIO =====
     'portfolio.h1': { en: 'Our work', fr: 'Nos réalisations' },
     'portfolio.sub': {
-      en: 'Recent prints, merch drops, uniforms, and creative projects, all done in-house at our Montreal studio.',
+      en: 'Recent prints, merch drops, uniforms, and creative projects, all out of our Montreal studio.',
       fr: 'Impressions recentes, lancements de merch, uniformes et projets creatifs, le tout réalisé dans notre studio de Montréal.'
     },
     'portfolio.filter.all': { en: 'All', fr: 'Tout' },
