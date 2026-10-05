@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom T-Shirt & Apparel Printing Montreal | DTG, DTF & Embroidery | Singhs Print</title>
-  <meta name="description" content="Imprimerie de vêtements personnalisés à l'Ouest-de-l'Île de Montréal. DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Délai standard de 7 à 14 jours ouvrables, options urgentes, NEQ 1181573313.">
+  <meta name="description" content="Imprimerie de vêtements personnalisés à l'Ouest-de-l'Île de Montréal. DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Délai standard de 3 à 5 jours, options urgentes, NEQ 1181573313.">
   <link rel="canonical" href="https://www.singhsprint.com/fr/">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/">
@@ -20,7 +20,7 @@
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/fr/">
   <meta property="og:title" content="Singhs Print — Impression de vêtements personnalisés à Montréal">
-  <meta property="og:description" content="DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l'Ouest-de-l'Île. Petits minimums, délai de 7 à 14 jours ouvrables avec options urgentes. T-shirt gratuit dès 15 articles.">
+  <meta property="og:description" content="DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l'Ouest-de-l'Île. Petits minimums, délai de 3 à 5 jours avec options urgentes. T-shirt gratuit dès 15 articles.">
   <meta property="og:image" content="https://www.singhsprint.com/images/og-card.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
   <meta property="og:locale:alternate" content="en_CA">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Singhs Print — Impression de vêtements personnalisés à Montréal">
-  <meta name="twitter:description" content="DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l'Ouest-de-l'Île. Petits minimums, délai de 7 à 14 jours ouvrables avec options urgentes. T-shirt gratuit dès 15 articles.">
+  <meta name="twitter:description" content="DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l'Ouest-de-l'Île. Petits minimums, délai de 3 à 5 jours avec options urgentes. T-shirt gratuit dès 15 articles.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/og-card.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -165,41 +165,43 @@
     .proof-stat strong{font-size:1.5rem;font-weight:800;font-family:'Playfair Display',serif;display:block}
     .proof-stat span{font-size:.8rem;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 
-    /* ===== TRUST LOGOS — auto-scrolling ticker =====
-       18 client names won't fit cleanly on one line. Mirrors the brands
-       marquee pattern: two identical tracks inside .trust-logos__inner,
-       animation translates the wrapper -50% (one track-width) so the
-       second copy lands where the first started — seamless loop.
-       Edge fades, pause-on-hover, reduced-motion fallback included. */
-    .trust-bar{padding:32px 0;border-bottom:1px solid #eee}
-    .trust-bar p{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px;text-align:center}
-    .trust-logos{
-      display:flex;overflow:hidden;margin:0 -24px;padding:0;
-      mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
-      -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 6%,#000 94%,transparent 100%);
-      position:relative;
-    }
-    .trust-logos__inner{
-      display:flex;width:max-content;flex-wrap:nowrap;align-items:center;
-      animation:trust-marquee 48s linear infinite;
-    }
-    .trust-logos__track{display:flex;flex-shrink:0;align-items:center}
-    .trust-logo-text{font-weight:700;font-size:.95rem;color:#ccc;white-space:nowrap;transition:color .3s;padding:6px 24px;flex-shrink:0}
-    .trust-logo-text:hover{color:#555}
-    .trust-logos:hover .trust-logos__inner{animation-play-state:paused}
+    /* ===== CLIENTS — static, two tiers =====
+       This was an auto-scrolling ticker holding 18 names at #ccc, all the
+       same size. Three things were wrong with it and they compounded:
+
+         1. It moved. A name you cannot finish reading is not proof, and the
+            48s loop meant most of the list was off-screen at any moment.
+         2. Every name carried the same weight, so the strongest client sat
+            in identical grey beside the smallest. Nineteen equals read as a
+            long list, not as a reference.
+         3. #ccc on #fff measures 1.61:1 — far below WCAG AA's 4.5:1 for
+            body text — so the names were close to unreadable even standing
+            still. The section label above them was #bbb, 1.92:1, no better.
+
+       Both greys here are #767676, which is the lightest grey that clears
+       4.5:1 on white (it measures 4.54:1). scripts/check-home-client-proof
+       computes these ratios rather than trusting the choice, which is how
+       the first draft of this block got caught: it used #9a9a9a and #999,
+       2.81:1 and 2.85:1 — prettier, and still failing.
+
+       Now: everything visible at once, in two tiers. The lead tier is dark
+       and large enough to land; the rest stay present at a smaller size
+       because they still count toward "50+ clients" and a West Island
+       visitor may well recognise a neighbour's shop. Nothing animates, so
+       there is no reduced-motion case left to handle. */
+    .trust-bar{padding:40px 0;border-bottom:1px solid #eee}
+    .trust-bar p{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#767676;font-weight:600;margin-bottom:22px;text-align:center}
+    .trust-clients{max-width:880px;margin:0 auto}
+    .trust-clients ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center}
+    .trust-clients__lead{gap:10px 34px;margin-bottom:18px}
+    .trust-clients__lead li{font-weight:700;font-size:1.06rem;color:#2a2a2a;white-space:nowrap;letter-spacing:-.01em}
+    .trust-clients__rest{gap:6px 20px}
+    .trust-clients__rest li{font-weight:600;font-size:.8rem;color:#767676;white-space:nowrap}
     @media (max-width:540px){
-      .trust-logos{margin:0 -18px}
-      .trust-logos__inner{animation-duration:36s}
-      .trust-logo-text{font-size:.82rem;padding:6px 18px}
-    }
-    @media (prefers-reduced-motion: reduce){
-      .trust-logos{mask-image:none;-webkit-mask-image:none}
-      .trust-logos__inner{animation:none !important;flex-wrap:wrap;justify-content:center}
-      .trust-logos__track[aria-hidden="true"]{display:none}
-    }
-    @keyframes trust-marquee{
-      from{transform:translateX(0)}
-      to  {transform:translateX(-50%)}
+      .trust-clients__lead{gap:8px 20px}
+      .trust-clients__lead li{font-size:.94rem;white-space:normal}
+      .trust-clients__rest{gap:5px 14px}
+      .trust-clients__rest li{font-size:.74rem;white-space:normal}
     }
 
     /* ===== PRODUCT BROWSE ===== */
@@ -416,15 +418,17 @@
       .hero-stats > .stat{min-width:0;text-align:left}
       .hero-stats .stat strong{font-size:1.1rem;line-height:1.1;white-space:nowrap}
       .hero-stats .stat span{font-size:.72rem;line-height:1.3;display:block;margin-top:2px}
-      /* Proof bar — 2×2 on phones (was wrapping unevenly across 1/2/1 rows). */
-      .proof-stats{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;justify-items:center}
+      /* Proof bar on phones. This was a 2×2 grid, which was right when
+         there were FOUR stats; the review-count stat has since gone, and a
+         two-column grid leaves the third stat orphaned in the left-hand
+         column instead of centred under the other two. Flex centres a short
+         final row by itself, which a grid cannot do. */
+      .proof-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 22px}
       .proof-stat{text-align:center;min-width:0;max-width:160px}
       .proof-stat strong{font-size:1.15rem;line-height:1.1;display:block;word-break:break-word}
       .proof-stat span{font-size:.66rem;letter-spacing:.06em;line-height:1.3;display:block;margin-top:4px}
       .service-card{padding:24px 18px}
       .review-card p{font-size:.88rem}
-      .trust-logos{gap:18px}
-      .trust-logo-text{font-size:.78rem}
       .section{padding:36px 0}
       .hero{padding:24px 0 36px}
       /* Mobile feedback: "feels overwhelming". Two surgical hides cut
@@ -454,7 +458,7 @@
     @media(max-width:360px){
       .hero-stats{grid-template-columns:1fr 1fr;gap:12px}
       .hero-stats .stat strong{font-size:1rem}
-      .proof-stats{grid-template-columns:1fr 1fr;gap:14px 10px}
+      .proof-stats{gap:14px 10px}
       .proof-stat strong{font-size:1.05rem}
     }
 
@@ -529,7 +533,7 @@
             </span>
           </div>
           <h1  data-i18n="home.hero.h1">Impression de t-shirts<br>et hoodies + broderie<br>à <span class="accent">Montréal</span></h1>
-          <p class="subhead"  data-i18n="home.hero.sub">DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 7 à 14 jours ouvrables (options urgentes), et une maquette que vous approuvez avant l'impression. T-shirt gratuit dès 15 articles.</p>
+          <p class="subhead"  data-i18n="home.hero.sub">DTG, DTF et broderie réalisés sur place dans l'Ouest-de-l'Île de Montréal. Faibles minimums, délai standard de 3 à 5 jours (options urgentes), et une maquette que vous approuvez avant l'impression. T-shirt gratuit dès 15 articles.</p>
           <div class="hero-buttons">
             <a href="quote" class="btn btn-accent"  data-i18n="home.hero.cta1">Soumission gratuite</a>
             <a href="portfolio" class="btn btn-ghost btn-outline"  data-i18n="home.hero.cta2">Voir nos réalisations</a>
@@ -538,10 +542,16 @@
                replaces both the old hero-stats and gives users at-a-
                glance trust without scrolling to the proof bar.
                Pattern source: Stripe, Allbirds, Linear hero. -->
+          <!-- The review count used to be the middle signal on this line.
+               It was the weakest thing here and the least verifiable: the
+               figure was last synced 2026-06-11, and the runtime patcher
+               meant to keep it current could never reach its endpoint (see
+               the CRM middleware fix shipped alongside this). The rating
+               still appears once, in the reviews section, beside the three
+               named quotes that give it substance. Nothing was invented to
+               fill the gap it left. -->
           <div class="hero-proof" aria-label="Social proof">
             <span><strong>100+</strong> <span  data-i18n="home.heroproof.orders">commandes</span></span>
-            <span class="dot-sep" aria-hidden="true">·</span>
-            <span><strong>5.0★</strong> <span  data-i18n="home.heroproof.rating">(23 avis)</span></span>
             <span class="dot-sep" aria-hidden="true">·</span>
             <span  data-i18n="home.heroproof.local">Ouest-de-l'Île, Montréal</span>
           </div>
@@ -593,62 +603,58 @@
       <div class="proof-stats">
         <div class="proof-stat"><strong>100+</strong><span  data-i18n="home.proof.orders">Commandes complétées</span></div>
         <div class="proof-stat"><strong>50+</strong><span  data-i18n="home.proof.clients">Clients satisfaits</span></div>
-        <div class="proof-stat"><strong  data-i18n="home.proof.rating-num">5,5.0/5 (23 avis)</strong><span  data-i18n="home.proof.rating">Avis Google</span></div>
         <div class="proof-stat"><strong>100%</strong><span  data-i18n="home.proof.production">Production sur place</span></div>
       </div>
     </div>
   </section>
 
-  <!-- ===== TRUST LOGOS ===== -->
+  <!-- ===== CLIENTS ===== -->
   <section class="trust-bar">
     <div class="container">
       <p  data-i18n="home.trust">La confiance des marques et entreprises de l'Ouest-de-l'Île et Montréal</p>
-      <div class="trust-logos" aria-label="Brands and businesses Singhs Print has served">
-        <!-- Two identical tracks. .trust-logos__inner is 2x natural
-             content width and animates -50%, so when the loop resets the
-             second track is exactly where the first started. -->
-        <div class="trust-logos__inner">
-          <div class="trust-logos__track">
-            <span class="trust-logo-text">McGill Sororities</span>
-            <span class="trust-logo-text">CUSEC 2024</span>
-            <span class="trust-logo-text">Old Soul</span>
-            <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
-            <span class="trust-logo-text">Montreal Pinball</span>
-            <span class="trust-logo-text">McGill Pizza</span>
-            <span class="trust-logo-text">Concordia SSA</span>
-            <span class="trust-logo-text">Artwood Construction</span>
-            <span class="trust-logo-text">Antsy</span>
-            <span class="trust-logo-text">McGill Boxing Club</span>
-            <span class="trust-logo-text">McGill Run Club</span>
-            <span class="trust-logo-text">Nyota Parker</span>
-            <span class="trust-logo-text">Morgan Arboretum</span>
-            <span class="trust-logo-text">Durante Landscapers</span>
-            <span class="trust-logo-text">McGill Animal Sciences</span>
-            <span class="trust-logo-text">Sigma Chi Fraternity</span>
-            <span class="trust-logo-text">Icey Vibes</span>
-            <span class="trust-logo-text">CANAUST</span>
-          </div>
-          <div class="trust-logos__track" aria-hidden="true">
-            <span class="trust-logo-text">McGill Sororities</span>
-            <span class="trust-logo-text">CUSEC 2024</span>
-            <span class="trust-logo-text">Old Soul</span>
-            <span class="trust-logo-text">Sainte-Anne-de-Bellevue</span>
-            <span class="trust-logo-text">Montreal Pinball</span>
-            <span class="trust-logo-text">McGill Pizza</span>
-            <span class="trust-logo-text">Concordia SSA</span>
-            <span class="trust-logo-text">Artwood Construction</span>
-            <span class="trust-logo-text">Antsy</span>
-            <span class="trust-logo-text">McGill Boxing Club</span>
-            <span class="trust-logo-text">McGill Run Club</span>
-            <span class="trust-logo-text">Nyota Parker</span>
-            <span class="trust-logo-text">Morgan Arboretum</span>
-            <span class="trust-logo-text">Durante Landscapers</span>
-            <span class="trust-logo-text">McGill Animal Sciences</span>
-            <span class="trust-logo-text">Sigma Chi Fraternity</span>
-            <span class="trust-logo-text">Icey Vibes</span>
-            <span class="trust-logo-text">CANAUST</span>
-          </div>
-        </div>
+      <!-- Two tiers, both static. The ten in the lead row are the names a
+           stranger is most likely to recognise; the rest are real clients
+           too and stay listed, just smaller.
+
+           This markup is the no-JS and crawler-visible copy. The script at
+           the bottom of the page rebuilds both rows from the CRM
+           (portfolio_clients, ordered by sort_index) so the strip stays
+           editable from the dashboard without a deploy — the first ten rows
+           become the lead tier. Keep this fallback in step with the CRM when
+           the lead ten change, because it is what Google reads. -->
+      <div class="trust-clients">
+        <ul class="trust-clients__lead" aria-label="Brands and businesses Singhs Print has served">
+          <li>Lamborghini Montreal</li>
+          <li>ALDO</li>
+          <li>McGill University</li>
+          <li>C4 Energy</li>
+          <li>Cardinal Brewery</li>
+          <li>Petinos</li>
+          <li>Place de Verre</li>
+          <li>Cafe GotSoul</li>
+          <li>Pizza Rosie</li>
+          <li>Île Perrot Yacht Club</li>
+        </ul>
+        <ul class="trust-clients__rest" aria-label="More clients">
+          <li>McGill Sororities</li>
+          <li>Sainte-Anne-de-Bellevue</li>
+          <li>Artwood Construction</li>
+          <li>CUSEC 2024</li>
+          <li>Old Soul</li>
+          <li>Montreal Pinball</li>
+          <li>McGill Pizza</li>
+          <li>Concordia SSA</li>
+          <li>Antsy</li>
+          <li>McGill Boxing Club</li>
+          <li>McGill Run Club</li>
+          <li>Nyota Parker</li>
+          <li>Morgan Arboretum</li>
+          <li>Durante Landscapers</li>
+          <li>McGill Animal Sciences</li>
+          <li>Sigma Chi Fraternity</li>
+          <li>Icey Vibes</li>
+          <li>CANAUST</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -873,8 +879,16 @@
         // DOMContentLoaded handler below.
         // Fallback TIERS — used if the live fetch to /api/pricing/
         // homepage-tiers fails. Seven bands per garment matching the
-        // chart breakpoints: 1-4 (base + micro-run premium) / 5-9 /
-        // 10-24 / 25-49 / 50-99 / 100-249 / 250+. The qty 1-4 row is
+        // ENGINE's breakpoints: 1-4 (base + micro-run premium) / 5-9 /
+        // 10-24 / 25-49 / 50-99 / 100-199 / 200+.
+        //
+        // 2026-09-20 — the top two bands used to read 100-249 / 250+,
+        // copied from the published chart rather than the engine, which
+        // breaks at 200. Quantities 200-249 were quoted a band high:
+        // tee $11.95 vs $9.95, hoodie $26.95 vs $24.95, longsleeve
+        // $17.95 vs $14.95. The live endpoint now derives its bands from
+        // the engine's qty_tiers; this literal only shows if that fetch
+        // fails, so it must agree with it. The qty 1-4 row is
         // the qty=5 tier price plus the per-garment
         // micro_run_premium_cad ($6 tshirt, $7 hoodie, $4 longsleeve).
         // Hat has no sub-5 premium (embroidery 5-piece minimum), so
@@ -882,10 +896,10 @@
         // sake — the live API + display layer clamp display qty to 5.
         // Updated 2026-05-24.
         var TIERS = {
-          tshirt:    [[1,4,24.95],[5,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,249,11.95],[250,99999,9.95]],
-          hoodie:    [[1,4,44.95],[5,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,249,26.95],[250,99999,24.95]],
-          longsleeve:[[1,4,30.95],[5,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,249,17.95],[250,99999,14.95]],
-          cap:       [[1,4,36.95],[5,9,28.95],[10,24,21.95],[25,49,19.95],[50,99,17.95],[100,249,16.95],[250,99999,14.95]]
+          tshirt:    [[1,4,24.95],[5,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,199,11.95],[200,99999,9.95]],
+          hoodie:    [[1,4,44.95],[5,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,199,26.95],[200,99999,24.95]],
+          longsleeve:[[1,4,30.95],[5,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,199,17.95],[200,99999,14.95]],
+          cap:       [[1,4,36.95],[5,9,28.95],[10,24,21.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,14.95]]
         };
         // Hit the live tier endpoint once and overwrite TIERS in place
         // so subsequent recalc() calls use the fresh numbers. Done
@@ -916,7 +930,7 @@
                   }
                 });
                 // Refresh the "from $X" chip labels with the live
-                // bottom-tier price (qty=200+ band = TIERS[g][5][2]).
+                // bottom-tier price (the last band — read by index, not position).
                 // Skips chips the customer's i18n layer has already
                 // localized via data-i18n — that locks the string.
                 document.querySelectorAll('.sp-calc__chip').forEach(function(chip) {
@@ -1185,7 +1199,7 @@
         <div class="process-step fade-up"><div class="step-num">1</div><h3  data-i18n="home.hiw.step1.h">Dites-nous ce qu'il vous faut</h3><p  data-i18n="home.hiw.step1.p">Remplissez un formulaire rapide ou envoyez-nous un message. Incluez votre design, vos préférences et la quantité.</p></div>
         <div class="process-step fade-up"><div class="step-num">2</div><h3  data-i18n="home.hiw.step2.h">Recevez votre soumission</h3><p  data-i18n="home.hiw.step2.p">On confirme les détails, l'échéancier et le prix. Pas de surprises, pas de frais cachés.</p></div>
         <div class="process-step fade-up"><div class="step-num">3</div><h3  data-i18n="home.hiw.step3.h">Approuvez votre maquette</h3><p  data-i18n="home.hiw.step3.p">Vous approuvez une maquette photoréaliste avant qu'on imprime.</p></div>
-        <div class="process-step fade-up"><div class="step-num">4</div><h3  data-i18n="home.hiw.step4.h">Ramassage ou expédition</h3><p  data-i18n="home.hiw.step4.p">Ramassage local dans l'Ouest-de-l'Île ou expédition partout au Canada. La plupart des commandes en 7 à 14 jours ouvrables.</p></div>
+        <div class="process-step fade-up"><div class="step-num">4</div><h3  data-i18n="home.hiw.step4.h">Ramassage ou expédition</h3><p  data-i18n="home.hiw.step4.p">Ramassage local dans l'Ouest-de-l'Île ou expédition partout au Canada. La plupart des commandes en 2 à 4 jours.</p></div>
       </div>
     </div>
   </section>
@@ -1198,7 +1212,7 @@
         <h2  data-i18n="home.why.h2">Conçu pour les marques qui se soucient de la qualité</h2>
       </div>
       <div class="why-grid">
-        <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12.5" r="8.2"/><path d="M12 7.6v5.2l3.4 2"/></svg></div><div><h3  data-i18n="home.why.turnaround.h">Délai de 7 à 14 jours</h3><p  data-i18n="home.why.turnaround.p">Délai standard de 7 à 14 jours ouvrables après l'encaissement du dépôt. Options urgentes disponibles.</p></div></div>
+        <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12.5" r="8.2"/><path d="M12 7.6v5.2l3.4 2"/></svg></div><div><h3  data-i18n="home.why.turnaround.h">Délai de 2 à 4 jours</h3><p  data-i18n="home.why.turnaround.p">La plupart des commandes en quelques jours. Options urgentes avec ramassage le jour même à Montréal.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20.2l1.3-4.2 9.7-9.7a2 2 0 0 1 2.8 2.8l-9.7 9.7L4 20.2z"/><path d="M13.6 7.4l3 3"/></svg></div><div><h3  data-i18n="home.why.design.h">Aide au design gratuite</h3><p  data-i18n="home.why.design.p">Retouches, maquettes et designs complets sans frais supplémentaires.</p></div></div>
         <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.6 11.4V5.6a1.5 1.5 0 0 1 1.5-1.5h5.8l8.1 8.1a1.6 1.6 0 0 1 0 2.2l-5.2 5.2a1.6 1.6 0 0 1-2.2 0L3.6 11.4z"/><circle cx="7.9" cy="8" r="1.15"/></svg></div><div><h3  data-i18n="home.why.bulk.h">Prix de volume et récurrents</h3><p  data-i18n="home.why.bulk.p">Rabais sur volume + forfaits entreprises pour commandes récurrentes.</p></div></div>
         
@@ -1239,7 +1253,7 @@
       <div class="faq-list">
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q1">Quels services d'impression offrez-vous ?</button><div class="faq-a"><p  data-i18n="home.faq.a1">On se spécialise en DTG (impression directe sur vêtement), DTF (transfert sur film) et broderie. T-shirts, hoodies, crewnecks, uniformes, casquettes et plus — tout imprimé sur place à Montréal.</p></div></div>
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q2">Y a-t-il une commande minimum ?</button><div class="faq-a"><p  data-i18n="home.faq.a2">Aucun minimum. On imprime 1 article ou 1 000+. Idéal pour les petites marques, créateurs, écoles, gyms, cafés et entreprises de toute taille.</p></div></div>
-        <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q3">En combien de temps pouvez-vous compléter une commande ?</button><div class="faq-a"><p  data-i18n="home.faq.a3">Délai standard de 7 à 14 jours ouvrables après l'encaissement du dépôt. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission.</p></div></div>
+        <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q3">En combien de temps pouvez-vous compléter une commande ?</button><div class="faq-a"><p  data-i18n="home.faq.a3">Délai standard de 3 à 5 jours après approbation du visuel. Options urgentes disponibles pour ramassage à Montréal et dans l'Ouest-de-l'Île. On vous donne un échéancier précis à l'étape de la soumission.</p></div></div>
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q4">Pouvez-vous fournir les vêtements vierges ?</button><div class="faq-a"><p  data-i18n="home.faq.a4">Oui ! On s'approvisionne chez S&amp;S Activewear et SanMar — accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d'autres. Ou apportez vos propres vêtements et on imprime sur n'importe quoi.</p></div></div>
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q5">Quels formats de fichier acceptez-vous ?</button><div class="faq-a"><p  data-i18n="home.faq.a5">PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l'impression ? Notre studio de design vous aide gratuitement.</p></div></div>
         <div class="faq-item"><button class="faq-q"  data-i18n="home.faq.q6">Puis-je voir un échantillon d'abord ?</button><div class="faq-a"><p  data-i18n="home.faq.a6">Vous approuvez une maquette photoréaliste avant qu'on imprime quoi que ce soit — couleurs, placement, taille.</p></div></div>
@@ -1320,7 +1334,7 @@
   </script>
   -->
 
-  <!-- CRM-managed "Trusted by..." strip + "Recent Work" mini-gallery.
+  <!-- CRM-managed client strip + "Recent Work" mini-gallery.
        Progressive enhancement: the hardcoded markup above is the SEO/no-JS
        fallback; when the CRM returns published rows we rebuild from them so
        operators can edit both from the dashboard (/portfolio). -->
@@ -1333,18 +1347,36 @@
       });
     }
 
-    // "Trusted by..." marquee — rebuild both tracks from portfolio_clients.
+    // Client strip — rebuild both tiers from portfolio_clients.
+    //
+    // The first LEAD_COUNT rows (by sort_index, which is the order the
+    // dashboard shows) become the lead tier; everything after is the small
+    // row. That makes "which clients get the big type" an ordering decision
+    // the owner makes in /portfolio, with no deploy and no second column to
+    // keep in sync.
+    //
+    // Both tiers are replaced together or neither is. Writing the lead row
+    // and leaving the hardcoded small row in place would print every
+    // promoted name twice — once large, once small — and that reads as a
+    // styling bug rather than as the failed fetch it would actually be.
+    var LEAD_COUNT = 10;
     fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         var cs = j && j.clients;
         if (!Array.isArray(cs) || !cs.length) return; // keep hardcoded fallback
-        var html = cs.map(function (c) {
-          return '<span class="trust-logo-text">' + esc(c.name) + '</span>';
-        }).join('');
-        document.querySelectorAll('.trust-logos__track').forEach(function (t) {
-          t.innerHTML = html;
-        });
+        var lead = document.querySelector('.trust-clients__lead');
+        var rest = document.querySelector('.trust-clients__rest');
+        if (!lead || !rest) return;                   // keep hardcoded fallback
+        var items = function (arr) {
+          return arr.map(function (c) { return '<li>' + esc(c.name) + '</li>'; }).join('');
+        };
+        var tail = cs.slice(LEAD_COUNT);
+        lead.innerHTML = items(cs.slice(0, LEAD_COUNT));
+        rest.innerHTML = items(tail);
+        // Hidden rather than left empty when the CRM holds ten clients or
+        // fewer: an empty <ul> still occupies its row's margin.
+        rest.hidden = tail.length === 0;
       })
       .catch(function () { /* keep hardcoded fallback */ });
 

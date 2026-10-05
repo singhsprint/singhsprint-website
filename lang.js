@@ -105,7 +105,6 @@ var SP_LANG = (function() {
     'home.hero.guarantee': { en: 'Quality guarantee: if we misprint it, we reprint it.', fr: 'Garantie qualité : une erreur d\'impression, on réimprime.' },
     // Inline hero social-proof line (replaces old hero-stats block)
     'home.heroproof.orders': { en: 'orders',         fr: 'commandes' },
-    'home.heroproof.rating': { en: '(23 reviews)',   fr: '(23 avis)' },
     'home.heroproof.local':  { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'home.stats.orders': { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.stats.turnaround': { en: 'Day Avg Turnaround', fr: 'Jours délai moyen' },
@@ -159,8 +158,6 @@ var SP_LANG = (function() {
     // Proof bar
     'home.proof.orders':     { en: 'Orders Completed', fr: 'Commandes complétées' },
     'home.proof.clients':    { en: 'Happy Clients', fr: 'Clients satisfaits' },
-    'home.proof.rating-num': { en: '5.0/5 (23 reviews)', fr: '5,5.0/5 (23 avis)' },
-    'home.proof.rating':     { en: 'Google Reviews', fr: 'Avis Google' },
     'home.proof.production': { en: 'In-House Production', fr: 'Production sur place' },
     // Why us
     'home.why.h2':            { en: 'Built for brands that care about quality', fr: 'Conçu pour les marques qui se soucient de la qualité' },
