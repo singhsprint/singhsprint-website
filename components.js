@@ -1472,12 +1472,20 @@ function loadMobileTrim() {
     // (explainer cards, not items to compare) keep the scroll-snap pattern.
     +   '.services-grid,.why-grid{'
     +     'display:flex !important;'
-    +     'overflow-x:auto;overflow-y:visible;'
+    // overflow-y MUST be hidden, not visible. Per spec, `visible` computes to
+    // `auto` as soon as the other axis is auto/scroll/hidden -- so declaring
+    // visible here silently made the carousel VERTICALLY scrollable too.
+    // Measured at 390px: scrollHeight 380 vs clientHeight 364, i.e. 16px of
+    // vertical scroll inside the strip. A thumb dragging up on a service card
+    // moved the carousel instead of the page, which is what "it messes up the
+    // scroll" means. overscroll-behavior stops the horizontal swipe chaining
+    // out to the page at the ends.
+    +     'overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;'
     +     'scroll-snap-type:x mandatory;'
     +     '-webkit-overflow-scrolling:touch;'
     +     'scroll-padding:0 18px;'
     +     'gap:12px !important;'
-    +     'padding:6px 18px 14px !important;'
+    +     'padding:6px 18px 30px !important;'
     +     'margin:0 -18px !important;'
     +     'scrollbar-width:none;'
     +     'grid-template-columns:none !important;'
