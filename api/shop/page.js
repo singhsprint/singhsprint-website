@@ -131,11 +131,11 @@ function pageHtml(drop, siteUrl, images, specs, remaining, soldOut) {
     img{max-width:100%;height:auto;display:block}
     a{text-decoration:none;color:inherit}
 
-    .topbar{background:#0a0a0a;color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+    .topbar{background:#1a1a1a;color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
     .topbar a{font-weight:600;font-size:.95rem}
     .topbar .left{display:flex;gap:24px;align-items:center}
     .topbar .brand{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;letter-spacing:-.5px}
-    .topbar .pill{background:#e8ff3c;color:#0a0a0a;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:1px}
+    .topbar .pill{background:#e8ff3c;color:#1a1a1a;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:1px}
 
     .wrap{max-width:1100px;margin:0 auto;padding:48px 24px}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}

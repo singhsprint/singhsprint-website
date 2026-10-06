@@ -1124,10 +1124,10 @@ function loadFooter() {
     var s = document.createElement('style');
     s.id = 'sp-footer-styles';
     s.textContent = ''
-      + '.footer{background:#0a0a0a;color:#fff;padding:60px 0 30px;margin-top:40px}'
+      + '.footer{background:#1a1a1a;color:#fff;padding:60px 0 30px;margin-top:40px}'
       // That 40px is breathing room against a light last section. When the
       // page ends on the dark .cta-section it painted a 40px band of body
-      // white between #1a1a1a and #0a0a0a -- a seam, not a gap. Measured on
+      // white between #1a1a1a and #1a1a1a -- a seam, not a gap. Measured on
       // the home page: cta-section ends 7785, footer starts 7825.
       // Affects index, about and portfolio.
       + '.cta-section + #footer-placeholder .footer{margin-top:0}'
@@ -2091,17 +2091,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var fr = (document.documentElement.lang || '').slice(0,2).toLowerCase() === 'fr' || /\/fr\//.test(location.pathname);
     function T(en, frStr){ return fr ? frStr : en; }
     var css =
-      '.sp-tw-btn{position:fixed;right:18px;bottom:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;background:#111;color:#fff;border:none;border-radius:999px;padding:12px 18px;font:600 14px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}' +
+      '.sp-tw-btn{position:fixed;right:18px;bottom:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;background:#1a1a1a;color:#fff;border:none;border-radius:999px;padding:12px 18px;font:600 14px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}' +
       '.sp-tw-btn:hover{opacity:.92}' +
       '.sp-tw-panel{position:fixed;right:18px;bottom:74px;z-index:9999;width:330px;max-width:calc(100vw - 36px);background:#fff;color:#111;border:1px solid #e5e5e5;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden}' +
       '.sp-tw-panel,.sp-tw-panel *{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-sizing:border-box}' +
-      '.sp-tw-head{background:#111;color:#fff;padding:14px 16px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}' +
+      '.sp-tw-head{background:#1a1a1a;color:#fff;padding:14px 16px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}' +
       '.sp-tw-head button{background:none;border:none;color:#fff;font-size:20px;line-height:1;cursor:pointer}' +
       '.sp-tw-body{padding:14px 16px}' +
       '.sp-tw-body>p{margin:0 0 10px;font-size:13px;color:#555}' +
       '.sp-tw-body input,.sp-tw-body textarea{width:100%;border:1px solid #ddd;border-radius:9px;padding:9px 11px;font-size:14px;margin-bottom:8px}' +
       '.sp-tw-body textarea{resize:vertical;min-height:64px}' +
-      '.sp-tw-send{width:100%;background:#111;color:#fff;border:none;border-radius:9px;padding:11px;font-weight:600;font-size:14px;cursor:pointer}' +
+      '.sp-tw-send{width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:9px;padding:11px;font-weight:600;font-size:14px;cursor:pointer}' +
       '.sp-tw-send:disabled{opacity:.5;cursor:default}' +
       '.sp-tw-consent{font-size:11px;color:#999;margin-top:8px;line-height:1.4}' +
       '.sp-tw-alt{display:block;text-align:center;font-size:12px;color:#111;margin-top:10px;text-decoration:underline}' +
