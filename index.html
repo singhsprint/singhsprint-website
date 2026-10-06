@@ -800,7 +800,7 @@
           <div class="product-img"><span class="product-badge" data-i18n="home.badge.popular">Popular</span><img src="images/product-tshirt-white.jpg" alt="Custom printed white t-shirt" loading="lazy"></div>
           <div class="product-info">
             <h4 data-i18n="home.cat.tshirts">Custom T-Shirts</h4>
-            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong>$9.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
+            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong data-sp-from="tshirt">$9.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
             <div class="product-colors">
               <span class="color-dot" style="background:#111"></span>
               <span class="color-dot" style="background:#fff"></span>
@@ -814,7 +814,7 @@
           <div class="product-img"><span class="product-badge" data-i18n="home.badge.bestseller">Best Seller</span><img src="images/product-hoodie-concordia.jpg" alt="Custom printed hoodie - Concordia Sikh Students" loading="lazy"></div>
           <div class="product-info">
             <h4 data-i18n="home.cat.hoodies">Custom Hoodies</h4>
-            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong>$29.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
+            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong data-sp-from="hoodie">$24.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
             <div class="product-colors">
               <span class="color-dot" style="background:#111"></span>
               <span class="color-dot" style="background:#4a4a4a"></span>
@@ -839,7 +839,7 @@
           <div class="product-img"><img src="images/product-hat-artwood.jpg" alt="Custom embroidered cap" loading="lazy"></div>
           <div class="product-info">
             <h4 data-i18n="home.cat.hats">Hats &amp; Caps</h4>
-            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong>$19.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
+            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong data-sp-from="cap">$14.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
             <div class="product-colors">
               <span class="color-dot" style="background:#111"></span>
               <span class="color-dot" style="background:#fff"></span>
@@ -863,7 +863,7 @@
           <div class="product-img"><img src="images/product-longsleeve.jpg" alt="Custom long sleeve shirt" loading="lazy"></div>
           <div class="product-info">
             <h4 data-i18n="home.cat.longsleeve">Long Sleeves</h4>
-            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong>$14.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
+            <p class="price"><span data-i18n="home.price.startingat">Starting at</span> <strong data-sp-from="longsleeve">$14.95<span data-i18n="home.price.perunit">/unit</span></strong></p>
             <div class="product-colors">
               <span class="color-dot" style="background:#111"></span>
               <span class="color-dot" style="background:#fff"></span>
@@ -896,6 +896,41 @@
           </div>
         </a>
       </div>
+      <div class="blank-brands" style="padding:30px 0 4px">
+        <div class="text-center">
+          <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px" data-i18n="home.brands.label">We print on premium blanks from top suppliers</p>
+          <div class="brands-row" aria-label="Premium blank suppliers we print on">
+            <!-- Two identical tracks inside .brands-row__inner. The inner
+                 element animates -50% (one full track-width) so when the
+                 loop resets to 0 the second track is exactly where the
+                 first started — seamless. aria-hidden on the second copy
+                 so screen readers don't repeat the list. -->
+            <div class="brands-row__inner">
+              <div class="brands-row__track">
+                <span class="brand-name">Gildan</span>
+                <span class="brand-name">Bella+Canvas</span>
+                <span class="brand-name">Comfort Colors</span>
+                <span class="brand-name">Champion</span>
+                <span class="brand-name">Next Level</span>
+                <span class="brand-name">Independent</span>
+                <span class="brand-name">American Apparel</span>
+                <span class="brand-name">Hanes</span>
+              </div>
+              <div class="brands-row__track" aria-hidden="true">
+                <span class="brand-name">Gildan</span>
+                <span class="brand-name">Bella+Canvas</span>
+                <span class="brand-name">Comfort Colors</span>
+                <span class="brand-name">Champion</span>
+                <span class="brand-name">Next Level</span>
+                <span class="brand-name">Independent</span>
+                <span class="brand-name">American Apparel</span>
+                <span class="brand-name">Hanes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="text-center" style="margin-top:32px">
         <p style="font-size:.9rem;color:#999" data-i18n="home.products.bulknote">Bulk pricing available. The more you order, the less you pay per unit.</p>
         <p style="margin-top:14px"><a href="catalog" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:#1a1a1a;font-size:.95rem;border-bottom:1.5px solid #1a1a1a;padding-bottom:2px" data-i18n="home.products.browsecatalog">Browse the full catalog &mdash; 4,500+ blanks from Gildan, Bella+Canvas, Comfort Colors &amp; more &rarr;</a></p>
@@ -921,10 +956,10 @@
       </div>
       <div class="sp-calc" data-sp-track="pricing_calculator_visible">
         <div class="sp-calc__row sp-calc__row--products">
-          <button type="button" class="sp-calc__chip is-active" data-garment="tshirt"  data-sp-track="calc_garment_pick" data-sp-garment="tshirt"><strong data-i18n="home.calc.tshirt">T-shirt</strong><span data-i18n="home.calc.fromtshirt">from $9.95</span></button>
-          <button type="button" class="sp-calc__chip"            data-garment="hoodie"  data-sp-track="calc_garment_pick" data-sp-garment="hoodie"><strong data-i18n="home.calc.hoodie">Hoodie</strong><span data-i18n="home.calc.fromhoodie">from $24.95</span></button>
-          <button type="button" class="sp-calc__chip"            data-garment="longsleeve" data-sp-track="calc_garment_pick" data-sp-garment="longsleeve"><strong data-i18n="home.calc.longsleeve">Long-sleeve</strong><span data-i18n="home.calc.fromls">from $14.95</span></button>
-          <button type="button" class="sp-calc__chip"            data-garment="cap"     data-sp-track="calc_garment_pick" data-sp-garment="cap"><strong data-i18n="home.calc.cap">Cap / hat</strong><span data-i18n="home.calc.fromcap">from $15.95</span></button>
+          <button type="button" class="sp-calc__chip is-active" data-garment="tshirt"  data-sp-track="calc_garment_pick" data-sp-garment="tshirt"><strong data-i18n="home.calc.tshirt">T-shirt</strong></button>
+          <button type="button" class="sp-calc__chip"            data-garment="hoodie"  data-sp-track="calc_garment_pick" data-sp-garment="hoodie"><strong data-i18n="home.calc.hoodie">Hoodie</strong></button>
+          <button type="button" class="sp-calc__chip"            data-garment="longsleeve" data-sp-track="calc_garment_pick" data-sp-garment="longsleeve"><strong data-i18n="home.calc.longsleeve">Long-sleeve</strong></button>
+          <button type="button" class="sp-calc__chip"            data-garment="cap"     data-sp-track="calc_garment_pick" data-sp-garment="cap"><strong data-i18n="home.calc.cap">Cap / hat</strong></button>
         </div>
         <div class="sp-calc__row sp-calc__row--qty">
           <div class="sp-calc__qty-head">
@@ -1071,6 +1106,22 @@
                     span.textContent = 'from $' + Number(fromPrice).toFixed(2);
                   }
                 });
+                // ...and the product cards above, which used to carry a
+                // TYPED price. Two of the eight were a band off: the hoodie
+                // card said $29.95 and the cap card $19.95, which are those
+                // garments' 25-49 prices, printed under the words "Starting
+                // at" while the t-shirt and long-sleeve cards used the real
+                // floor. One source now feeds both the cards and the chips,
+                // so they cannot drift apart again. The four cards with no
+                // published ladder (crewneck, polo, tote, joggers) keep
+                // their typed price and are NOT engine-checked.
+                document.querySelectorAll('[data-sp-from]').forEach(function(el) {
+                  var tier = TIERS[el.getAttribute('data-sp-from')];
+                  if (!tier) return;
+                  var unit = el.querySelector('span');
+                  el.textContent = '$' + Number(tier[tier.length - 1][2]).toFixed(2);
+                  if (unit) el.appendChild(unit);
+                });
                 // Re-render with the live numbers if the DOM is ready.
                 if (typeof recalc === 'function') recalc();
               })
@@ -1197,40 +1248,6 @@
   </section>
 
   <!-- ===== BLANK BRANDS ===== -->
-  <section class="blank-brands" style="padding:40px 0;border-top:1px solid #eee;border-bottom:1px solid #eee">
-    <div class="container text-center">
-      <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#bbb;font-weight:600;margin-bottom:20px" data-i18n="home.brands.label">We print on premium blanks from top suppliers</p>
-      <div class="brands-row" aria-label="Premium blank suppliers we print on">
-        <!-- Two identical tracks inside .brands-row__inner. The inner
-             element animates -50% (one full track-width) so when the
-             loop resets to 0 the second track is exactly where the
-             first started — seamless. aria-hidden on the second copy
-             so screen readers don't repeat the list. -->
-        <div class="brands-row__inner">
-          <div class="brands-row__track">
-            <span class="brand-name">Gildan</span>
-            <span class="brand-name">Bella+Canvas</span>
-            <span class="brand-name">Comfort Colors</span>
-            <span class="brand-name">Champion</span>
-            <span class="brand-name">Next Level</span>
-            <span class="brand-name">Independent</span>
-            <span class="brand-name">American Apparel</span>
-            <span class="brand-name">Hanes</span>
-          </div>
-          <div class="brands-row__track" aria-hidden="true">
-            <span class="brand-name">Gildan</span>
-            <span class="brand-name">Bella+Canvas</span>
-            <span class="brand-name">Comfort Colors</span>
-            <span class="brand-name">Champion</span>
-            <span class="brand-name">Next Level</span>
-            <span class="brand-name">Independent</span>
-            <span class="brand-name">American Apparel</span>
-            <span class="brand-name">Hanes</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- ===== SERVICES ===== -->
   <section class="section" id="services" style="background:#f8f7f4">
@@ -1333,20 +1350,6 @@
   </section>
 
   <!-- ===== WHY US ===== -->
-  <section class="section why-us">
-    <div class="container">
-      <div class="text-center">
-        <span class="label">Why Singhs Print</span>
-        <h2 data-i18n="home.why.h2">Built for brands that care about quality</h2>
-      </div>
-      <div class="why-grid">
-        <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12.5" r="8.2"/><path d="M12 7.6v5.2l3.4 2"/></svg></div><div><h3 data-i18n="home.why.turnaround.h">7&ndash;14 day turnaround</h3><p data-i18n="home.why.turnaround.p">Standard turnaround is 7&ndash;14 business days after your deposit clears. Rush options available when deadlines are tight.</p></div></div>
-        <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20.2l1.3-4.2 9.7-9.7a2 2 0 0 1 2.8 2.8l-9.7 9.7L4 20.2z"/><path d="M13.6 7.4l3 3"/></svg></div><div><h3 data-i18n="home.why.design.h">Free design help</h3><p data-i18n="home.why.design.p">Cleanups, mockups, and full designs at no extra charge.</p></div></div>
-        <div class="why-card fade-up"><div class="why-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3.6 11.4V5.6a1.5 1.5 0 0 1 1.5-1.5h5.8l8.1 8.1a1.6 1.6 0 0 1 0 2.2l-5.2 5.2a1.6 1.6 0 0 1-2.2 0L3.6 11.4z"/><circle cx="7.9" cy="8" r="1.15"/></svg></div><div><h3 data-i18n="home.why.bulk.h">Bulk &amp; recurring pricing</h3><p data-i18n="home.why.bulk.p">Discounts for volume + business packages for ongoing orders.</p></div></div>
-        
-      </div>
-    </div>
-  </section>
 
   <!-- ===== DIFFERENTIATOR — "the print shop problem" comparison.
        Condensed version of /why-us: name the pains everyone recognizes,

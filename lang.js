@@ -121,7 +121,7 @@ var SP_LANG = (function() {
       fr: 'Des vêtements de qualité, imprimés ou brodés exactement comme vous le souhaitez.'
     },
     'home.services.label': { en: 'Services', fr: 'Services' },
-    'home.services.h2': { en: 'Three methods, one shop', fr: 'Trois méthodes, un seul atelier' },
+    'home.services.h2': { en: 'We pick the method that suits the garment', fr: 'On choisit la méthode qui convient au vêtement' },
     'home.services.sub': {
       en: 'Every method on the table means we pick the right one for your project.',
       fr: 'Toutes les méthodes à notre disposition, on choisit la meilleure pour votre projet.'
@@ -164,18 +164,6 @@ var SP_LANG = (function() {
     'home.proof.artwork':     { en: 'Free artwork cleanup', fr: 'Retouche de visuel gratuite' },
     'home.proof.artwork.sub': { en: 'Print-ready, not your problem', fr: 'Prêt à imprimer, on s\'en occupe' },
     // Why us
-    'home.why.h2':            { en: 'Built for brands that care about quality', fr: 'Conçu pour les marques qui se soucient de la qualité' },
-    'home.why.guarantee.h':   { en: 'Misprint guarantee', fr: 'Garantie contre les erreurs d\'impression' },
-    'home.why.guarantee.p':   { en: "If there's a print issue or defect, we reprint or replace it. Period.", fr: "S'il y a un problème d'impression ou un défaut, on réimprime ou on remplace. Point final." },
-    'home.why.sample.h':      { en: 'Mockup before production', fr: 'Maquette avant production' },
-    'home.why.sample.p':      { en: 'You approve a mockup before production.', fr: 'Vous approuvez une maquette avant la production.' },
-    'home.why.turnaround.h':  { en: '7–14 day turnaround', fr: 'Délai de 7 à 14 jours' },
-    'home.why.turnaround.p':  { en: 'Standard is 7–14 business days from approved artwork. Rush to 3–5 days for a surcharge.', fr: 'Délai standard de 7 à 14 jours ouvrables après l\'approbation du visuel. Service accéléré de 3 à 5 jours moyennant un supplément.' },
-    'home.why.design.h':      { en: 'Free design help', fr: 'Aide au design gratuite' },
-    'home.why.design.p':      { en: 'Cleanups, mockups, and full designs at no extra charge.', fr: 'Retouches, maquettes et designs complets sans frais supplémentaires.' },
-    'home.why.bulk.h':        { en: 'Bulk & recurring pricing', fr: 'Prix de volume et récurrents' },
-    'home.why.bulk.p':        { en: 'Discounts for volume + business packages for ongoing orders.', fr: 'Rabais sur volume + forfaits entreprises pour commandes récurrentes.' },
-    // Differentiator — "the print shop problem" comparison (#why-switch)
     'home.diff.label': { en: 'The print shop problem', fr: 'Le problème des imprimeries' },
     'home.diff.h2': { en: "Most print shops make you pay to find out if they're any good.", fr: 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes.' },
     'home.diff.sub': { en: "If you've ordered shirts before, you know the drill. Here's how we made it obsolete.", fr: 'Si vous avez déjà commandé des chandails, vous connaissez le refrain. Voici comment on l\'a rendu obsolète.' },
@@ -255,7 +243,7 @@ var SP_LANG = (function() {
     'home.products.bulknote':      { en: 'Bulk pricing available. The more you order, the less you pay per unit.', fr: 'Prix de volume disponibles. Plus vous commandez, moins vous payez à l\'unité.' },
     'home.products.browsecatalog': { en: 'Browse the full catalog — 4,500+ blanks from Gildan, Bella+Canvas, Comfort Colors & more →', fr: 'Parcourez le catalogue complet — 4 500+ vêtements vierges de Gildan, Bella+Canvas, Comfort Colors et plus →' },
     // Brand strip
-    'home.brands.label': { en: 'We print on premium blanks from top suppliers', fr: 'On imprime sur des vêtements de qualité des meilleurs fournisseurs' },
+    'home.brands.label': { en: 'The blanks we print on', fr: 'Les vêtements sur lesquels on imprime' },
     // Services
     'home.svc.dtg.h': { en: 'DTG Printing',   fr: 'Impression DTG' },
     'home.svc.dtg.p': { en: 'Photo-quality, full-color prints directly on garments. Perfect for detailed artwork, gradients, and unlimited colors on cotton and blends.', fr: 'Impressions photo, pleine couleur, directement sur les vêtements. Parfait pour les visuels détaillés, les dégradés et les couleurs illimitées sur coton et mélanges.' },
