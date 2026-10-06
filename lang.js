@@ -404,8 +404,8 @@ var SP_LANG = (function() {
     },
     'about.creds.legal.h':     { en: 'Imprimerie Singhs Print',                fr: 'Imprimerie Singhs Print' },
     'about.creds.legal.p':     {
-      en: '95558110 QUEBEC INC · Quebec-registered NEQ 1181573313 · 81A Sainte Anne St, Sainte-Anne-de-Bellevue, QC H9X 1L9',
-      fr: '95558110 QUÉBEC INC · Immatriculée au Québec NEQ 1181573313 · 81A rue Sainte-Anne, Sainte-Anne-de-Bellevue, QC H9X 1L9'
+      en: '95558110 QUEBEC INC · Quebec-registered NEQ 1181573313 · 83 rue Sainte-Anne, Sainte-Anne-de-Bellevue, QC H9X 1L9',
+      fr: '95558110 QUÉBEC INC · Immatriculée au Québec NEQ 1181573313 · 83 rue Sainte-Anne, Sainte-Anne-de-Bellevue, QC H9X 1L9'
     },
     'about.creds.tax.h':       { en: 'GST & QST registered',                  fr: 'Inscrite à la TPS et à la TVQ' },
     'about.creds.tax.p':       {
@@ -430,8 +430,8 @@ var SP_LANG = (function() {
 
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: '81A Sainte Anne St, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 6PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
-      fr: '81A rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 9 h à 18 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
+      en: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 6PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
+      fr: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 9 h à 18 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {

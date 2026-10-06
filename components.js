@@ -1228,7 +1228,7 @@ function loadSchema() {
         "description": "Montreal custom apparel printer specializing in bulk workwear, staff uniforms, corporate swag, and event merchandise. DTG, DTF, and embroidery decoration. Quebec-registered NEQ 1181573313.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "81A Sainte Anne St",
+          "streetAddress": "83 rue Sainte-Anne",
           "addressLocality": "Sainte-Anne-de-Bellevue",
           "addressRegion": "QC",
           "postalCode": "H9X 1L9",
