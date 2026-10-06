@@ -426,6 +426,14 @@ function loadNav() {
       '.sp-dropdown a{display:block;color:#1a1a1a;text-decoration:none;padding:6px 0;font-size:.86rem;font-weight:400}',
       '.sp-dropdown a:hover{text-decoration:underline}',
       '.sp-dropdown-foot{margin-top:10px;padding-top:10px;border-top:1px solid #f0eee7;display:flex;justify-content:flex-end}',
+      '.sp-about{flex:none}',
+      '.sp-dropdown--about{left:-14px;min-width:560px;padding:18px 20px;display:none;' +
+        'grid-template-columns:repeat(3,minmax(0,1fr));gap:0 30px;align-items:start}',
+      '.sp-nav-parent:hover .sp-dropdown--about,.sp-nav-parent:focus-within .sp-dropdown--about{display:grid}',
+      '.sp-about-col{min-width:0}',
+      '.sp-about-head{display:block;font-weight:600;font-size:.88rem;color:#1a1a1a;padding:5px 0}',
+      '.sp-about-sub{display:block;font-size:.82rem;color:#5a5a5a;padding:3px 0 3px 10px}',
+      '.sp-about-sub:hover{color:#1a1a1a}',
       '.sp-dropdown-foot a{color:#1a1a1a;font-size:.78rem;font-weight:600;text-decoration:underline;padding:0}',
       '.sp-burger,.sp-mobile-quote{display:none}',
       '@media(max-width:960px){',
@@ -766,6 +774,42 @@ function loadNav() {
   // Editorial items support an optional subs[] array — when present we
   // render them with the same dropdown pattern as the product CATS so a
   // single hover reveals the industry verticals under "For Businesses".
+  // ---- "About" mega-menu -------------------------------------------------
+  // The eight editorial links used to sit in their own 55px row under the
+  // category nav. They are now one item in the top row. Children of the two
+  // parents (For Businesses, Services) are listed inline rather than nested
+  // behind a second hover, because a hover-inside-a-hover is a maze and
+  // because those service pages are the SEO landing pages -- they need to
+  // keep their internal links from every page of the site.
+  var aboutMenu = (function () {
+    // Three deliberate columns, not an auto grid: the two parents each take a
+    // column with their children under them, and the six standalone links
+    // share the third. An auto grid sized every row to the tallest cell and
+    // left half the panel empty.
+    function col(l) {
+      var head = '<a class="sp-about-head" href="' + l.href + '" data-i18n="' + l.i18n + '">'
+               + t(l.en, l.fr) + '</a>';
+      var kids = (l.subs || []).map(function (sub) {
+        return '<a class="sp-about-sub" href="' + sub.href + '">' + t(sub.en, sub.fr) + '</a>';
+      }).join('');
+      return head + kids;
+    }
+    var parents  = EDITORIAL.filter(function (l) { return l.subs && l.subs.length; });
+    var singles  = EDITORIAL.filter(function (l) { return !l.subs || !l.subs.length; });
+    var cols = parents.map(function (l) { return '<div class="sp-about-col">' + col(l) + '</div>'; }).join('')
+      + '<div class="sp-about-col">'
+      + singles.map(function (l) {
+          return '<a class="sp-about-head" href="' + l.href + '" data-i18n="' + l.i18n + '">'
+               + t(l.en, l.fr) + '</a>';
+        }).join('')
+      + '</div>';
+    return '<span class="sp-nav-parent sp-about">'
+      + '<a class="sp-nav-item" href="' + BASE + '/about" aria-haspopup="true">'
+      + t('About', '\u00c0 propos') + ICON.chevD + '</a>'
+      + '<div class="sp-dropdown sp-dropdown--about">' + cols + '</div>'
+      + '</span>';
+  })();
+
   var row2Edit = EDITORIAL.map(function (l) {
     var active = isActive(l.href) ? ' is-active' : '';
     if (l.subs && l.subs.length) {
@@ -825,6 +869,7 @@ function loadNav() {
     + '  <div class="sp-row1">'
     + '    <button class="sp-burger" aria-label="' + t('Open menu', 'Ouvrir le menu') + '" onclick="window.__spOpenDrawer()">' + ICON.burger + '</button>'
     + '    <a href="' + BASE + '/" class="sp-logo" aria-label="Singh\'s Print"><img src="/images/logo.png" alt="Singh\'s Print"></a>'
+    +      aboutMenu
     + '    <div class="sp-spacer"></div>'
     + '    <div class="sp-search-wrap" id="sp-search-wrap">'
     + '      <label class="sp-search" for="sp-search-input">'
@@ -851,9 +896,7 @@ function loadNav() {
     + '  <nav class="sp-row2" aria-label="' + t('Shop categories', 'Catégories') + '">'
     +      row2Cats
     + '  </nav>'
-    + '  <nav class="sp-row2 sp-row2--sub" aria-label="' + t('More from Singh\'s Print', 'Plus chez Singh\'s Print') + '">'
-    +      row2Edit
-    + '  </nav>'
+    // (the editorial row is gone -- it is the About menu in row 1 now)
     + '</header>'
     + mobileCatsHTML
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
