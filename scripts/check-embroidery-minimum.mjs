@@ -139,9 +139,37 @@ ok('B3 no bare numeric minimum is assigned anywhere',
   const outside = strip(raw.slice(0, a) + raw.slice(b))
   const spoken = outside.match(/Embroidery (?:has a|needs)[^;]{0,80}/g) || []
   ok(`B4 the page still states the minimum somewhere (${spoken.length} site(s))`, spoken.length >= 2)
+  // Two legal shapes, one rule: the number must come from the engine, never
+  // from the sentence.
+  //
+  //   'Embroidery needs ' + SP_EMB_MIN() + '+ pieces'      — concatenated
+  //   'Embroidery needs {min}+ pieces'  … .replace('{min}', embMin)
+  //
+  // The placeholder form arrived with the BYO panel, because that copy lives
+  // in lang.js and French puts the figure mid-sentence ("La broderie exige
+  // {min} pièces ou plus"), which concatenation cannot express. It is
+  // accepted only when a .replace() nearby feeds it something that traces
+  // back to SP_EMB_MIN() — a literal there would fail the same way a literal
+  // in the sentence does.
+  //
+  // What this cannot see is whether the replace actually RAN, so a stray
+  // "{min}" could in principle reach a customer. That is covered where it
+  // belongs: the BYO browser checks assert the rendered string reads
+  // "needs 5+ pieces", so an unfilled placeholder fails them.
+  const FROM_ENGINE = /\+ (SP_EMB_MIN\(\)|EMB_MIN) \+/
+  const FILLED = /\.replace\(\s*'\{min\}'\s*,\s*(SP_EMB_MIN\(\)|EMB_MIN|embMin|_m|min)\b/
+  // A TYPED FIGURE, which is the thing being banned: "needs 5+", "has a
+  // 10-piece". Checked on its own rather than relying on the positive rules,
+  // because the phrase regex runs 80 characters past the sentence and can
+  // sweep in a .replace() from the NEXT line — which is exactly how a typed
+  // "Embroidery needs 5+ pieces" passed the first version of this.
+  const TYPED = /(?:needs|has a)\s*\d/
   for (const [i, phrase] of spoken.entries()) {
-    ok(`B5.${i} "${phrase.slice(0, 46)}…" interpolates the figure rather than spelling it`,
-      /\+ (SP_EMB_MIN\(\)|EMB_MIN) \+/.test(phrase))
+    const at = outside.indexOf(phrase)
+    const window = at >= 0 ? outside.slice(at, at + 300) : phrase
+    ok(`B5.${i} "${phrase.slice(0, 46)}…" takes the figure from the engine, never from the sentence`,
+      !TYPED.test(phrase) &&
+      (FROM_ENGINE.test(phrase) || (/\{min\}/.test(phrase) && FILLED.test(window))))
   }
   // And the fallback literal is allowed to exist in exactly one place.
   ok(`B6 the fallback 10 lives in the getter`, /_spEmbMin == null \? 10 :/.test(strip(body)))

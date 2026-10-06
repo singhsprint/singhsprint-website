@@ -199,6 +199,28 @@
 
     function spByoLineDirty() { spByoLineRefreshPrice(); }
 
+    // Warning inside the estimate box. Reuses #byoLineNote's slot so nothing
+    // moves on the page when it appears.
+    function spByoMinNote(msg) {
+      var el = document.getElementById('byoLineMinWarn');
+      if (!el) {
+        var host = document.getElementById('byoLineEstimate');
+        if (!host) return;
+        el = document.createElement('div');
+        el.id = 'byoLineMinWarn';
+        el.setAttribute('role', 'status');
+        el.style.cssText = 'flex-basis:100%;font-size:.78rem;font-weight:600;color:#e8ff3c;line-height:1.45';
+        host.appendChild(el);
+      }
+      el.textContent = msg || '';
+      el.style.display = msg ? '' : 'none';
+    }
+
+    /** True when the line as configured is one the engine will refuse. */
+    function spByoBelowEmbMin(qty, method) {
+      return method === 'embroidery' && (Number(qty) || 0) > 0 && (Number(qty) || 0) < SP_EMB_MIN();
+    }
+
     // Debounced so typing in the qty box doesn't fire a request per keystroke.
     var _spByoDebounce = null;
     function spByoLineRefreshPrice() {
@@ -216,9 +238,25 @@
       // number the customer would anchor on and we might not honour.
       if (!spByoMethod) {
         unitEl.textContent = '$—'; totalEl.textContent = '$—';
+        spByoMinNote('');
         return;
       }
-      if (qty < 1) { unitEl.textContent = '$—'; totalEl.textContent = '$—'; return; }
+      if (qty < 1) { unitEl.textContent = '$—'; totalEl.textContent = '$—'; spByoMinNote(''); return; }
+
+      // The embroidery minimum, said out loud. Under it the engine returns a
+      // flat 400 and this panel used to show "$—" with no reason given, while
+      // the Add button stayed live and put an unquotable line in the cart. The
+      // catalog rows have carried this warning since the ladder gained its 5-9
+      // rung; the BYO panel never learned it.
+      var embMin = SP_EMB_MIN();
+      if (spByoMethod === 'embroidery' && qty < embMin) {
+        unitEl.textContent = '$—'; totalEl.textContent = '$—';
+        spByoMinNote((spByoT('quote.byoline.err.embmin',
+          'Embroidery needs {min}+ pieces — add {n} more, or switch to DTG / DTF')
+          .replace('{min}', embMin).replace('{n}', Math.max(0, embMin - qty))));
+        return;
+      }
+      spByoMinNote('');
 
       var seq = ++spByoLineSeq;
       unitEl.textContent = '…'; totalEl.textContent = '…';
@@ -254,6 +292,22 @@
       // nothing to quote against. Everything else can be sorted out on the call.
       if (!desc) { fail(spByoT('quote.byoline.err.desc', 'Tell us what the garments are so we can price the decoration.')); return; }
       if (qty < 1) { fail(spByoT('quote.byoline.err.qty', 'How many garments are you sending?')); return; }
+      // The input carries max="10000" and nothing enforced it: a number input
+      // only blocks a bad value on native form validation, which this button
+      // does not use. 99,999 garments went into a quote unchallenged.
+      var BYO_QTY_MAX = 10000;
+      if (qty > BYO_QTY_MAX) {
+        fail(spByoT('quote.byoline.err.qtymax', 'That is more than {max} pieces — give us a call and we will quote it properly.')
+          .replace('{max}', BYO_QTY_MAX.toLocaleString()));
+        return;
+      }
+      // Refuse what the engine refuses, here rather than three screens later.
+      if (spByoBelowEmbMin(qty, spByoMethod)) {
+        var _m = SP_EMB_MIN();
+        fail(spByoT('quote.byoline.err.embmin', 'Embroidery needs {min}+ pieces — add {n} more, or switch to DTG / DTF')
+          .replace('{min}', _m).replace('{n}', Math.max(0, _m - qty)));
+        return;
+      }
 
       var cart = SinghsCart.read();
       cart.items.push({
@@ -6124,6 +6178,12 @@
         updateCartTotal();
         return;
       }
+      // Below the embroidery minimum we already know the answer, so do not
+      // spend a round trip on a 400 while the previous price sits on screen.
+      // Measured: that refusal takes 0.4-2.9s uncached, and for all of it the
+      // customer is looking at the old rate against the new quantity.
+      if (spByoBelowEmbMin(qty, method)) { spByoRowUnpriced(idx, it); return; }
+
       var seq = (_spByoRowSeq[idx] = (_spByoRowSeq[idx] || 0) + 1);
       var sides = Math.max(1, Number(it.sides) || 1);
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only'
@@ -6132,7 +6192,7 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
           if (seq !== _spByoRowSeq[idx]) return;
-          if (!d || typeof d.unit_price !== 'number') { it.byo_unit_price = null; updateCartTotal(); return; }
+          if (!d || typeof d.unit_price !== 'number') { spByoRowUnpriced(idx, it); return; }
           it.byo_unit_price = d.unit_price;
           // Persist so a reload doesn't lose the number. writeSilent avoids
           // the re-render that would restart this fetch in a loop.
@@ -6151,7 +6211,39 @@
           }
           updateCartTotal();
         })
-        .catch(function () { updateCartTotal(); });
+        .catch(function () { spByoRowUnpriced(idx, it); });
+    }
+
+    // The engine refused this line, or the request failed. Both used to leave
+    // the PREVIOUS price on screen: byoCartItemHtml renders
+    // byo_unit_price * qty from the stored number, so dropping an embroidery
+    // line from 50 pieces to 3 re-rendered it instantly as
+    //     "$12.95 /garment · subtotal $38.85"
+    // -- the 50-piece rate times the new quantity, for a job under the
+    // embroidery minimum that the engine will not quote at all. The stale
+    // number has to be cleared from the item, from storage and from the row,
+    // or the customer is looking at a price we would not honour.
+    function spByoRowUnpriced(idx, it) {
+      it.byo_unit_price = null;
+      try {
+        var c = SinghsCart.read();
+        if (c.items[idx] && c.items[idx].is_byo) {
+          delete c.items[idx].byo_unit_price;
+          SinghsCart.writeSilent(c);
+        }
+      } catch (e) { /* the display still gets cleared below */ }
+      var el = document.getElementById('ci-price-' + idx);
+      if (el) {
+        var _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function () { return ''; };
+        var qty = Number(it.qty) || 0, min = SP_EMB_MIN();
+        el.innerHTML = (it.decoration_type === 'embroidery' && qty > 0 && qty < min)
+          ? '<span style="color:#b45309;font-weight:600">'
+            + (_t('quote.byoline.err.embmin') || ('Embroidery needs ' + min + '+ pieces'))
+                .replace('{min}', min).replace('{n}', Math.max(0, min - qty))
+            + '</span>'
+          : (_t('quote.byoline.pending') || 'Decoration priced with your quote');
+      }
+      updateCartTotal();
     }
 
     function paintCartItemLiveMatrix(idx, it) {
@@ -6528,6 +6620,18 @@
     //   (overrides the cart item's qty because the size grid is the
     //   authoritative count once filled). Single-item carts re-fetch the
     //   unit price at the real qty so the price tier is accurate.
+    // "Total" over a figure that is only part of the job is the lie this
+    // whole branch exists to stop. Swaps the data-i18n key too, so a language
+    // switch does not put the wrong word back.
+    function spSetTotalLabel(partial) {
+      var el = document.getElementById('livePriceTotalLabel');
+      if (!el) return;
+      var key = partial ? 'quote.liveprice.sofar' : 'quote.liveprice.total';
+      el.setAttribute('data-i18n', key);
+      var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+      el.textContent = t || (partial ? 'Priced so far' : 'Total');
+    }
+
     function updateCartTotal() {
       var items = SinghsCart.read().items;
       spPaintFreeTee(items);
@@ -6633,23 +6737,49 @@
             ? ' · sizes filled: ' + cartSizeTotal
             : '');
         totalWrap.style.display = 'block';
+        spSetTotalLabel(false);
         document.getElementById('livePriceTotal').textContent =
           '$' + (cartLineTotal + sur.surchargeTotal).toFixed(2);
-      } else if (avgUnitPrice != null) {
-        // Some prices are still resolving (async fetches in flight).
-        // Show the running estimate but flag it so the customer knows
-        // it's still settling.
-        document.getElementById('livePriceUnit').textContent =
-          '$' + avgUnitPrice.toFixed(2);
-        if (suf) {
-          suf.style.display = '';
-          suf.textContent = '/unit est.';
-        }
+      } else if (cartLineTotal > 0) {
+        // PARTIAL — some lines have a price and some do not. A line can sit
+        // here for a moment (a fetch in flight) or for good: "Not sure" has no
+        // priceable method, and an embroidery line under the minimum is one
+        // the engine refuses outright.
+        //
+        // What stood here invented a number. It took avgUnitPrice, which is
+        // the sum of the KNOWN unit prices divided by the number of lines
+        // INCLUDING the unpriced ones, and multiplied it by every unit in the
+        // cart. Measured on the live site: one embroidery line of 50 at $12.95
+        // (a $647.50 line) plus one "Not sure" line of 30 displayed
+        //     "$6.47/unit est. · 80 pieces · Total $518.00"
+        // -- a total $129 BELOW the one line we could actually price, falling
+        // further the more unpriced pieces were added. The customer anchors on
+        // it, and the shop never quoted it.
+        //
+        // Now it shows the sum of the lines we CAN price, says how many are
+        // still to be quoted, and relabels the figure so it cannot be read as
+        // the whole job.
+        var pendingLines = 0;
+        items.forEach(function (it) {
+          if (it.is_jersey) { if (typeof it.jersey_unit_price !== 'number') pendingLines++; return; }
+          if (it.is_byo)    { if (typeof it.byo_unit_price    !== 'number') pendingLines++; return; }
+          var _s  = it.sides || 1;
+          var _pk = (it.placements || []).join(',');
+          var _rm = (it.decoration_type || '').toLowerCase();
+          var _m  = _rm === 'embroidery' ? 'embroidery' : (_rm ? 'dtf' : currentDecorationMethod());
+          var _q  = Number(it.qty) || 0;
+          if (typeof _priceCache[spPriceCacheKey(it.product_id, _q, _s, _m, _pk,
+                spItemTierQty(_q, _cartPool), !!it.neck_tag)] !== 'number') pendingLines++;
+        });
+        document.getElementById('livePriceUnit').textContent = items.length + ' items';
+        if (suf) suf.style.display = 'none';
         document.getElementById('livePriceQty').textContent =
-          effectiveUnits + ' pieces · pricing in progress…';
+          effectiveUnits + ' pieces · ' + pendingLines +
+          (pendingLines === 1 ? ' line still to be quoted' : ' lines still to be quoted');
         totalWrap.style.display = 'block';
+        spSetTotalLabel(true);
         document.getElementById('livePriceTotal').textContent =
-          '$' + (avgUnitPrice * effectiveUnits + sur.surchargeTotal).toFixed(2);
+          '$' + (cartLineTotal + sur.surchargeTotal).toFixed(2);
       } else {
         // Prices haven't loaded yet — keep the strip visible with a
         // friendly loading state. No total shown because we have no

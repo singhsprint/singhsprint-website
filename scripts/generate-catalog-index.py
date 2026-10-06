@@ -7,7 +7,7 @@ alphabetical index of every product page on the site, grouped by brand.
 
 Why this exists: catalog.html loads products via /api/catalog at runtime so
 Googlebot's initial HTML scan sees zero product links. Without static
-discovery paths the 1,000+ product pages stay un-crawled. This script walks
+discovery paths the 4,592 product pages stay un-crawled. This script walks
 /p/*/index.html, extracts the <title>, and writes the whole list as plain
 HTML anchors. SEO scaffold only; the live catalog UI is unaffected.
 
@@ -77,16 +77,16 @@ def render_page(products, lang):
         else "https://www.singhsprint.com/fr/catalog/all"
     )
     title = (
-        "Complete Product Catalog — 1,000+ Custom Apparel Blanks · Singh's Print"
+        "Complete Product Catalog — 4,600 Custom Apparel Blanks · Singh's Print"
         if lang == 'en' else
-        "Catalogue complet — Plus de 1 000 vêtements personnalisables · Singh's Print"
+        "Catalogue complet — 4 600 vêtements personnalisables · Singh's Print"
     )
     meta = (
-        "Browse our complete catalog of 1,000+ apparel blanks for custom printing and "
+        "Browse our complete catalog of 4,600 apparel blanks for custom printing and "
         "embroidery. T-shirts, hoodies, polos, caps, totes from Gildan, Bella+Canvas, "
         "Champion, Comfort Colors and more. Free tee on orders of 15+."
         if lang == 'en' else
-        "Parcourez notre catalogue de plus de 1 000 vêtements à personnaliser. T-shirts, "
+        "Parcourez notre catalogue de 4 600 vêtements à personnaliser. T-shirts, "
         "hoodies, polos, casquettes, sacs fourre-tout — Gildan, Bella+Canvas, Champion, "
         "Comfort Colors et plus. T-shirt gratuit dès 15 articles."
     )
