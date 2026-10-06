@@ -1125,6 +1125,12 @@ function loadFooter() {
     s.id = 'sp-footer-styles';
     s.textContent = ''
       + '.footer{background:#0a0a0a;color:#fff;padding:60px 0 30px;margin-top:40px}'
+      // That 40px is breathing room against a light last section. When the
+      // page ends on the dark .cta-section it painted a 40px band of body
+      // white between #1a1a1a and #0a0a0a -- a seam, not a gap. Measured on
+      // the home page: cta-section ends 7785, footer starts 7825.
+      // Affects index, about and portfolio.
+      + '.cta-section + #footer-placeholder .footer{margin-top:0}'
       + '.footer .container{max-width:1200px;margin:0 auto;padding:0 24px}'
       + '.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}'
       + '.footer-brand .logo{font-family:"Playfair Display",serif;font-weight:900;font-size:1.5rem;line-height:1;color:#fff}'
