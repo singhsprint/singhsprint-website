@@ -869,8 +869,8 @@ var SP_LANG = (function() {
     // ===== POPULAR (/popular) =====
     'pop.hero.h1': { en: 'What people order most', fr: 'Ce qu\u2019on commande le plus' },
     'pop.hero.p': {
-      en: 'One or two of everything we print, each category led by the blank that comes back most.',
-      fr: 'Un ou deux de chaque chose qu\u2019on imprime, chaque cat\u00e9gorie men\u00e9e par le v\u00eatement qui revient le plus.'
+      en: 'The tees, hoodies, crews, caps and polos that come back most often in orders.',
+      fr: 'Les t-shirts, hoodies, crewnecks, casquettes et polos qui reviennent le plus souvent en commande.'
     },
     'pop.hero.meta1': { en: 'Ordered by <strong>what actually sells</strong>',
                         fr: 'Class\u00e9 selon <strong>ce qui se vend vraiment</strong>' },
