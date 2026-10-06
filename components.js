@@ -426,8 +426,8 @@ function loadNav() {
       '.sp-dropdown a{display:block;color:#1a1a1a;text-decoration:none;padding:6px 0;font-size:.86rem;font-weight:400}',
       '.sp-dropdown a:hover{text-decoration:underline}',
       '.sp-dropdown-foot{margin-top:10px;padding-top:10px;border-top:1px solid #f0eee7;display:flex;justify-content:flex-end}',
-      '.sp-about{flex:none}',
-      '.sp-dropdown--about{left:-14px;min-width:560px;padding:18px 20px;display:none;' +
+      '.sp-about{flex:none;margin-left:auto;padding-left:18px;border-left:1px solid #ece9df}',
+      '.sp-dropdown--about{left:auto;right:-14px;min-width:560px;padding:18px 20px;display:none;' +
         'grid-template-columns:repeat(3,minmax(0,1fr));gap:0 30px;align-items:start}',
       '.sp-nav-parent:hover .sp-dropdown--about,.sp-nav-parent:focus-within .sp-dropdown--about{display:grid}',
       '.sp-about-col{min-width:0}',
@@ -869,7 +869,6 @@ function loadNav() {
     + '  <div class="sp-row1">'
     + '    <button class="sp-burger" aria-label="' + t('Open menu', 'Ouvrir le menu') + '" onclick="window.__spOpenDrawer()">' + ICON.burger + '</button>'
     + '    <a href="' + BASE + '/" class="sp-logo" aria-label="Singh\'s Print"><img src="/images/logo.png" alt="Singh\'s Print"></a>'
-    +      aboutMenu
     + '    <div class="sp-spacer"></div>'
     + '    <div class="sp-search-wrap" id="sp-search-wrap">'
     + '      <label class="sp-search" for="sp-search-input">'
@@ -894,7 +893,7 @@ function loadNav() {
     + '    <a href="' + BASE + '/quote" class="sp-mobile-quote" data-i18n="nav.quote.short">' + t('Quote', 'Devis') + '</a>'
     + '  </div>'
     + '  <nav class="sp-row2" aria-label="' + t('Shop categories', 'Catégories') + '">'
-    +      row2Cats
+    +      row2Cats + aboutMenu
     + '  </nav>'
     // (the editorial row is gone -- it is the About menu in row 1 now)
     + '</header>'
