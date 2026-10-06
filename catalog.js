@@ -3113,6 +3113,9 @@
   }
 
   const state = {
+    pageIndex: Math.max(0, (parseInt(getQueryParam('page'), 10) || 1) - 1),
+    totalPages: 1,
+    serverPaged: false,
     filters: {                       // active filter state — drives Algolia query
       type: getQueryParam('type') || null,
       brand: [],
@@ -3192,7 +3195,7 @@
     if (!Number.isFinite(n) || n < 1) return;
     setQty(Math.min(10000, n));
   }
-  function setQty(n) {
+  function setQty(n, opts) {
     state.qty = n;
     const few = n < 5;
 
@@ -3226,6 +3229,11 @@
 
     document.querySelectorAll('.card .price').forEach(p => p.style.opacity = '.4');
     if (_qtyDebounce) clearTimeout(_qtyDebounce);
+    // The boot call just paints the slider at its starting value; it is not a
+    // customer changing the quantity, and the refetch it used to schedule
+    // landed in resetAndFetch() and threw away the page a ?page=3 link had
+    // asked for -- then rewrote the URL so the evidence was gone too.
+    if (opts && opts.silent) return;
     _qtyDebounce = setTimeout(() => resetAndFetch(), 100);
   }
 
@@ -3288,7 +3296,7 @@
   async function fetchPage() {
     if (state.loading || state.done) return;
     state.loading = true;
-    document.getElementById('catLoading').style.display = state.page === 0 ? 'none' : 'block';
+    document.getElementById('catLoading').style.display = state.products.length ? 'block' : 'none';
 
     // ----------------------------------------------------------------------
     // ALGOLIA PATH — when /catalog-algolia.js has loaded with valid config,
@@ -3300,7 +3308,6 @@
     // ----------------------------------------------------------------------
     if (window.SPCatalog) {
       try {
-        const isFirstPage = state.page === 0;
         const r = await window.SPCatalog.search({
           type:           state.filters.type,
           brands:         state.filters.brand,
@@ -3315,20 +3322,23 @@
           sizes:          state.filters.sizes,
           priceMin:       state.filters.priceMin,
           priceMax:       state.filters.priceMax,
-          page:           state.page,
-          hitsPerPage:    30,
+          page:           state.pageIndex,
+          hitsPerPage:    PER_PAGE,
           qty:            state.qty,    // bridge resolves prices_by_qty[qty]
         });
         const fresh = r.products || [];
-        state.products = isFirstPage ? fresh : state.products.concat(fresh);
-        state.page = state.page + 1;
-        state.done = state.page >= (r.totalPages || 1) || fresh.length === 0;
+        // REPLACE. Appending is what made this infinite: every fetch grew the
+        // list and the grid never shrank.
+        state.products   = fresh;
+        state.serverPaged = true;
+        state.totalPages = Math.max(1, r.totalPages || 1);
+        state.done       = true;
         state._algoliaFacets = r.facets;
         state._algoliaTotal  = r.total;
         render();
       } catch (e) {
         console.error('Algolia search failed; falling back to empty state:', e);
-        if (state.page === 0) state.products = [];
+        state.products = [];
         render();
       } finally {
         state.loading = false;
@@ -3360,7 +3370,7 @@
       // on the very first paint (state.page===0). Saves ~150-300 ms vs
       // starting the fetch after the main script parses.
       let data;
-      if (state.page === 0 && window.__SP_EARLY_CATALOG__) {
+      if (state.pageIndex === 0 && window.__SP_EARLY_CATALOG__) {
         data = await window.__SP_EARLY_CATALOG__;
         window.__SP_EARLY_CATALOG__ = null;
       }
@@ -3428,6 +3438,9 @@
   // instead of skeletons → flash → real cards. Remainder is rendered
   // in idle chunks below (requestIdleCallback) so the main thread isn't
   // pegged for 200 ms while 200 cards build their swatch grids.
+  // 25 products a page, pages you click through. Was infinite scroll:
+  // 30 hits appended on approach to the bottom, forever.
+  const PER_PAGE       = 25;
   const INITIAL_RENDER = 24;
   const CHUNK_SIZE     = 12;
 
@@ -3564,9 +3577,19 @@
       ? state.products.filter(p => p.in_stock !== false)
       : state.products.slice();
     visible = sortProducts(visible, state.sort);
-    emitCatalogJsonLd(visible);
 
+    // The Algolia path already asked for exactly this page. The API fallback
+    // holds the whole filtered set in memory, so it is sliced here. Both end
+    // up drawing at most PER_PAGE cards.
+    if (!state.serverPaged) {
+      state.totalPages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+      if (state.pageIndex > state.totalPages - 1) state.pageIndex = state.totalPages - 1;
+      visible = visible.slice(state.pageIndex * PER_PAGE, state.pageIndex * PER_PAGE + PER_PAGE);
+    }
+
+    emitCatalogJsonLd(visible);
     reconcileGrid(grid, visible, renderOpts(gen));
+    renderPager();
   }
 
   /** The DOM-shaped half of a render, kept separate so reconcileGrid below
@@ -4598,6 +4621,106 @@
     }
   }
 
+  // =========================================================================
+  // PAGER
+  // Numbered pages rather than a Load-more button: a customer comparing
+  // blanks needs to be able to go BACK to the one they saw four screens ago,
+  // and infinite scroll has no address for it. The page is in the URL for the
+  // same reason -- it is linkable, shareable, and the back button works.
+  // =========================================================================
+  function writePageParam() {
+    try {
+      const u = new URL(window.location.href);
+      if (state.pageIndex > 0) u.searchParams.set('page', String(state.pageIndex + 1));
+      else u.searchParams.delete('page');
+      if (u.href !== window.location.href) history.pushState({ p: state.pageIndex }, '', u.href);
+    } catch (e) {}
+  }
+
+  function goToPage(i) {
+    const target = Math.max(0, Math.min(i, state.totalPages - 1));
+    if (target === state.pageIndex) return;
+    state.pageIndex = target;
+    writePageParam();
+    const grid = document.getElementById('catGrid');
+    if (grid) {
+      const top = grid.getBoundingClientRect().top + window.scrollY - 120;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+    if (state.serverPaged) fetchPage(); else render();
+  }
+
+  /** 1 … 4 5 [6] 7 8 … 20 — never more than 7 numbers, always with the
+   *  first and last reachable in one click. */
+  function pageWindow(cur, total) {
+    const out = [];
+    const push = (v) => { if (out[out.length - 1] !== v) out.push(v); };
+    push(0);
+    for (let i = cur - 2; i <= cur + 2; i++) if (i > 0 && i < total - 1) push(i);
+    if (total > 1) push(total - 1);
+    const withGaps = [];
+    out.forEach((v, k) => {
+      if (k && v - out[k - 1] > 1) withGaps.push('gap');
+      withGaps.push(v);
+    });
+    return withGaps;
+  }
+
+  function renderPager() {
+    let host = document.getElementById('catPager');
+    if (!host) {
+      const grid = document.getElementById('catGrid');
+      if (!grid || !grid.parentNode) return;
+      host = document.createElement('nav');
+      host.id = 'catPager';
+      host.className = 'cat-pager';
+      host.setAttribute('aria-label', 'Catalog pages');
+      const after = document.getElementById('catLoading') || grid;
+      after.parentNode.insertBefore(host, after.nextSibling);
+    }
+    const total = Math.max(1, state.totalPages || 1);
+    if (total <= 1) { host.innerHTML = ''; host.style.display = 'none'; return; }
+    host.style.display = '';
+
+    const t = (k, fb) => { try { return (window.SP_LANG && SP_LANG.t && SP_LANG.t(k)) || fb; } catch (e) { return fb; } };
+    const btn = (label, page, opts) => {
+      const o = opts || {};
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cat-pager__btn' + (o.current ? ' is-current' : '');
+      b.textContent = label;
+      if (o.current) b.setAttribute('aria-current', 'page');
+      if (o.disabled) { b.disabled = true; b.className += ' is-disabled'; }
+      else b.addEventListener('click', () => goToPage(page));
+      return b;
+    };
+
+    host.innerHTML = '';
+    host.appendChild(btn(t('cat.pager.prev', 'Previous'), state.pageIndex - 1,
+                         { disabled: state.pageIndex === 0 }));
+    pageWindow(state.pageIndex, total).forEach((v) => {
+      if (v === 'gap') {
+        const g = document.createElement('span');
+        g.className = 'cat-pager__gap'; g.textContent = '\u2026';
+        host.appendChild(g);
+        return;
+      }
+      host.appendChild(btn(String(v + 1), v, { current: v === state.pageIndex }));
+    });
+    host.appendChild(btn(t('cat.pager.next', 'Next'), state.pageIndex + 1,
+                         { disabled: state.pageIndex >= total - 1 }));
+
+    const shown = document.createElement('p');
+    shown.className = 'cat-pager__count';
+    const totalItems = state._algoliaTotal != null ? state._algoliaTotal : state.products.length;
+    const first = state.pageIndex * PER_PAGE + 1;
+    const last  = Math.min(totalItems, (state.pageIndex + 1) * PER_PAGE);
+    shown.textContent = t('cat.pager.showing', 'Showing')
+      + ' ' + first.toLocaleString() + '\u2013' + last.toLocaleString()
+      + ' ' + t('cat.pager.of', 'of') + ' ' + totalItems.toLocaleString();
+    host.appendChild(shown);
+  }
+
   function makeChip(label, klass, onClick) {
     const c = document.createElement('span');
     c.className = `chip ${klass}`;
@@ -4607,7 +4730,14 @@
   }
 
   function resetAndFetch() {
-    state.products = []; state.page = 0; state.done = false;
+    // A new filter means a new result set; staying on page 7 of the old one
+    // would show an empty grid for no visible reason.
+    //
+    // ...but NOT on the way in. setQty() runs from DOMContentLoaded and its
+    // 100ms debounce lands here, so an unguarded reset threw away the page a
+    // ?page=3 link had just asked for -- and rewrote the URL to hide it.
+    state.products = []; state.done = false;
+    state.pageIndex = 0; state.totalPages = 1; writePageParam();
     if (window.SPCatalog && window.SPCatalog.clearCache) window.SPCatalog.clearCache();
     fetchPage();
   }
@@ -4674,10 +4804,14 @@
 
   function debounce(fn, ms) { let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), ms); }; }
 
-  // Infinite scroll
-  window.addEventListener('scroll', function() {
-    if (state.loading || state.done) return;
-    if (window.scrollY + window.innerHeight > document.body.offsetHeight - 600) fetchPage();
+  // Infinite scroll removed 2026-10-06 — the catalog is paged now. The
+  // handler fired fetchPage() on approach to the bottom, which appended
+  // another 30 and moved the bottom further away, forever.
+  window.addEventListener('popstate', function () {
+    const p = Math.max(0, (parseInt(getQueryParam('page'), 10) || 1) - 1);
+    if (p === state.pageIndex) return;
+    state.pageIndex = p;
+    if (state.serverPaged) fetchPage(); else render();
   });
 
   // =========================================================================
@@ -5446,7 +5580,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     // Initialise the qty slider from state.qty (may have been seeded from ?qty=…)
-    setQty(state.qty);
+    setQty(state.qty, { silent: true });
     // Show the floating cart bar if items were added in a previous tab visit.
     renderCartBar();
     fetchPage();

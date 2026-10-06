@@ -185,6 +185,22 @@
       .qty-tier{padding:8px 13px;font-size:.83rem;flex-shrink:0}
       .qty-ladder__sep{margin:4px 7px;flex-shrink:0}
     }
+    /* ===== PAGER ===== (replaces infinite scroll, 2026-10-06) */
+    .cat-pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+      gap:6px;margin:34px auto 8px;max-width:1200px;padding:0 24px}
+    .cat-pager__btn{min-width:40px;height:40px;padding:0 12px;border:1px solid #e4e1d8;
+      background:#fff;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:600;
+      color:#1a1a1a;cursor:pointer;transition:border-color .15s,background .15s}
+    .cat-pager__btn:hover:not(.is-disabled):not(.is-current){border-color:#1a1a1a}
+    .cat-pager__btn.is-current{background:#1a1a1a;color:#e8ff3c;border-color:#1a1a1a;cursor:default}
+    .cat-pager__btn.is-disabled{opacity:.38;cursor:default}
+    .cat-pager__btn:focus-visible{outline:2px solid #8f9f00;outline-offset:2px}
+    .cat-pager__gap{padding:0 2px;color:#8a8a8a;font-size:.9rem}
+    .cat-pager__count{flex-basis:100%;text-align:center;margin:10px 0 0;
+      font-size:.82rem;color:#5c6066}
+    @media(max-width:560px){
+      .cat-pager__btn{min-width:36px;height:36px;padding:0 9px;font-size:.84rem}
+    }
   </style>
   <div id="qtyPricingBar" class="qty-bar">
     <span class="qty-bar__lede" data-i18n="cat.qty.label">Pricing for</span>
@@ -233,7 +249,7 @@
       })();
     </script>
   </div>
-  <div class="cat-loading" id="catLoading" style="display:none" data-i18n="cat.loading">Loading more…</div>
+  <div class="cat-loading" id="catLoading" style="display:none" data-i18n="cat.loading">Loading…</div>
   <div class="cat-empty" id="catEmpty" style="display:none"><h3 data-i18n="cat.empty.h3">No matches</h3><p data-i18n="cat.empty.p">Try removing a filter or check our "Bring your own blank" option.</p></div>
 
   <!-- Floating cart bar — appears whenever the customer has 1+ items
