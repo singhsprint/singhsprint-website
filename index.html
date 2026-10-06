@@ -642,10 +642,21 @@
       .sp-fold .tick.is-rolling .tick__grp+.tick__grp{display:none}
     }
     @media(max-width:900px){
-      /* The five wrap to two lines here; the sizing below is what keeps the
-         quote button above an 844px phone fold (it lands at 829px). */
-      .sp-fold .pf-row{flex-wrap:wrap;gap:2px 14px;padding:7px 0 8px}
-      .sp-fold .tick{flex:1 1 100%;order:2}
+      /* ONE LINE on a phone. This block used to cost four of them: the label
+         on its own row, the five names wrapping over two more, then "See the
+         work". The label and the names now share row one and the names run
+         off the right edge under the mask the strip already had -- the same
+         thing you see once it is rolling. Nothing is removed from the DOM, so
+         the crawler and the rolling state still get all seventeen names. */
+      .sp-fold .pf-row{flex-wrap:wrap;gap:2px 12px;padding:7px 0 8px}
+      .sp-fold .tick{flex:1 1 0;order:1;min-width:0}
+      .sp-fold .tick__track,.sp-fold .tick__grp{flex-wrap:nowrap;width:max-content;max-width:none}
+      /* An empty full-width flex item that only exists to end the line, so the
+         link sits on its own row at its own width. Giving the link itself a
+         100% basis also broke the line, but then its underline ran the full
+         width of the screen; clamping that with max-content stopped it
+         breaking the line at all. */
+      .sp-fold .pf-row::after{content:"";order:2;flex:0 0 100%;height:0}
       .sp-fold .pf-more{order:3;font-size:.74rem}
       .sp-fold .tick__grp span{font-size:.94rem;padding:0 13px 0 0;margin-right:13px;line-height:1.4}
     }
@@ -800,7 +811,7 @@
         <div>
           <p class="addr" data-i18n="fold.addr">83 rue Sainte-Anne &middot; West Island, Montreal</p>
           <h1><span data-i18n="fold.h1a">Custom T&#8209;Shirt &amp; Hoodie</span> <span data-i18n="fold.h1b">Printing + Embroidery</span> <span data-i18n="fold.h1c">in <em>Montreal</em></span></h1>
-          <p class="lede" data-i18n="fold.lede"><strong>Retail&#8209;grade work.</strong> Send us your logo however you&rsquo;ve got it, and we&rsquo;ll get it print&#8209;ready. We&rsquo;ll help you pick blanks that match the look and feel you&rsquo;re going for.</p>
+          <p class="lede" data-i18n="fold.lede"><strong>Retail&#8209;grade work.</strong></p>
 
           <form class="ticket" id="startquote" novalidate>
             <div class="ticket__head"><b data-i18n="fold.start">Start a quote</b><span id="tix">No. SP&#8209;0000</span></div>

@@ -552,8 +552,21 @@ console.log('8. the hero line is the phone version of the bar, and holds the sam
     !/\d/.test(pitch), `found "${(pitch.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
   ok('8c and no claim about where the work happens',
     !/\bin[-\s]house\b|\bunder one roof\b|\bour (?:own )?(?:machines?|presses?)\b/i.test(foldCopy));
-  ok('8d the artwork promise is there, worded as approved',
-    /print&#8209;ready|print-ready/.test(fold) && /Send us your logo/.test(fold));
+  // 2026-10-06, second pass. This used to require the "Send us your logo ...
+  // we'll get it print-ready" sentence inside the fold. The owner cut it: on a
+  // 390px phone that lede ran four lines and the quote button landed at 841px,
+  // i.e. exactly on the fold line of an iPhone, where nobody sees it. Cutting
+  // it moved the button to 701px.
+  //
+  // The promise did NOT leave the site -- 8g below still requires "Free
+  // artwork cleanup" further down the page, and that assertion is the one
+  // carrying the intent now. What is checked here instead is that the lede is
+  // the claim and nothing more, because the thing this section exists to stop
+  // is copy quietly growing back into the fold.
+  const ledeEn = (LANG.match(/'fold\.lede':\s*\{\s*en:\s*'([^']*)'/) || [])[1] || '';
+  ok('8d the lede is the retail-grade claim and nothing else',
+    /grade work\.?<\/strong>\s*$/.test(ledeEn) && ledeEn.length < 80,
+    `fold.lede is ${ledeEn.length} chars: ${JSON.stringify(ledeEn.slice(0, 90))}`);
   ok('8e it is translated, not hardcoded English',
     /data-i18n="fold\.lede"/.test(fold) && /'fold\.lede'/.test(LANG));
   ok('8f the location signal survives',
@@ -569,10 +582,16 @@ console.log('8. the hero line is the phone version of the bar, and holds the sam
   // bar; it must still be SOMEWHERE on the page.
   ok('8g the no-charge half is still on the page',
     /Free artwork cleanup/i.test(EN), 'the promise lost the part that removes the cost');
+  // Was: the French lede must contain "pr\u00eat \u00e0 imprimer". That phrase was in the
+  // sentence the owner cut, so the test now checks the claim that replaced it
+  // -- and, more usefully, that the French is not just the English string,
+  // which is the failure that actually ships (lang.js wins at runtime, so an
+  // untranslated key leaves the French page in English with nothing to show
+  // for it).
+  const ledeFr = (LANG.match(/'fold\.lede':[\s\S]{0,600}?fr:\s*'([^']*)'/) || [])[1] || '';
   ok('8h the French lede says it too, and is really French',
-    (() => { const m = LANG.match(/'fold\.lede':[\s\S]{0,1200}?\}/); if (!m) return false;
-      return /pr\\u00eat \\u00e0 imprimer|pr\u00eat \u00e0 imprimer/.test(m[0]); })(),
-    'fold.lede has no French, or it is still the English string');
+    /qualit\\u00e9 commerciale|qualit\u00e9 commerciale/.test(ledeFr) && ledeFr !== ledeEn,
+    `fold.lede has no French, or it is still the English string: ${JSON.stringify(ledeFr.slice(0, 90))}`);
   ok('8i the retired hero-proof keys are gone, not just unused',
     !LANG.includes("'home.heroproof.") && !EN.includes('home.heroproof.')
     && !FR.includes('home.heroproof.'),
