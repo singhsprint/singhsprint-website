@@ -1290,8 +1290,8 @@ function loadSchema() {
         ],
         "aggregateRating": {
           "@type": "AggregateRating",
-          "ratingValue": "5.0",
-          "reviewCount": "23",
+          "ratingValue": "4.7",
+          "reviewCount": "37",
           "bestRating": "5"
         },
         "areaServed": [
@@ -2029,8 +2029,8 @@ function loadProductModal() {
 }
 
 // =========================================================================
-// loadLiveReviews — patches every visible "5.0/5 (23 reviews)" / "(23 reviews)"
-// / "(23 avis)" instance on the page using the
+// loadLiveReviews — patches every visible "4.7/5 (37 reviews)" / "(37 reviews)"
+// / "(37 avis)" instance on the page using the
 // live numbers from /api/google-reviews. Build-time script (scripts/sync-
 // google-reviews.mjs) handles the same job for SEO + initial render; this
 // runtime patcher is the safety net for visitors hitting a stale deploy.

@@ -574,112 +574,264 @@
       .cta-section .subhead{font-size:.92rem !important;margin-bottom:18px !important;line-height:1.5}
       .cta-section .cta-buttons{flex-direction:column;align-items:stretch;gap:10px}
       .cta-section .cta-buttons .btn{width:100%;justify-content:center}
-      /* FAQ trim: hide items 6 + 7 by default; "See all" reveals them. */
-      .faq-list .faq-item:nth-child(n+6){display:none}
-      .faq-list.faq-list--expanded .faq-item{display:block}
-      /* "See all questions →" link injected by JS below */
-      .faq-seeall{
-        display:block;margin:18px auto 0;background:transparent;border:none;
-        color:#1a1a1a;font-weight:600;font-size:.92rem;cursor:pointer;
-        font-family:inherit;text-decoration:underline;text-underline-offset:3px;
-        padding:8px 12px;
-      }
-      .faq-list--expanded + .faq-seeall{display:none}
+      /* The "See all questions" button is gone (owner, 2026-10-06), and the
+         rule it existed to undo went with it. Hiding items 6-9 on phones was
+         only ever acceptable BECAUSE the button revealed them; removing the
+         button alone would have hidden four answers permanently. */
     }
+    /* ================= THE FOLD (replaces .hero + .trust-bar) ==============
+       Every rule is scoped to .sp-fold. Nothing here can reach the proof bar,
+       the product grid or anything else below. Colours are the site's own
+       (#1a1a1a ink, #e8ff3c accent) and the mono labels use the system mono
+       stack rather than loading a third webfont for ~20 words of UI. */
+    .sp-fold{--ink:#1a1a1a;--ink-2:#5c6066;--rule:#e7e7e2;--paper:#fff;--sunk:#f6f6f2;
+      --accent:#e8ff3c;--accent-deep:#8f9f00;
+      --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+      padding:0 0 46px}
+
+    /* -- "Printing for": still by default, moving when you engage. ------
+       AT REST the strip is a static row and the five names that carry the
+       credibility are simply the first five, fully legible, every time. The
+       loop is loaded but paused, and only the right edge is masked -- so the
+       row reads as a list that continues, not as something mid-slide.
+       IT STARTS on hover (pointer) or on the first page scroll (touch), which
+       is when the visitor has shown interest and the longer roster becomes
+       worth seeing. Measured before this change: a headline client was
+       legible 46% of the time on a laptop and 34% on a phone, because the
+       loop ran whether or not anyone was looking.
+       prefers-reduced-motion never starts it. */
+    .sp-fold .pf-row{display:flex;align-items:center;gap:0 18px;padding:9px 0 10px;
+      border-bottom:1px solid var(--rule)}
+    .sp-fold .pf-lbl{font-family:var(--mono);font-size:.66rem;letter-spacing:.17em;
+      color:var(--ink-2);text-transform:uppercase;white-space:nowrap;flex:none}
+    .sp-fold .pf-more{flex:none;font-size:.78rem;font-weight:700;color:#1a1a1a;text-decoration:none;
+      border-bottom:2px solid var(--accent);padding-bottom:2px;white-space:nowrap}
+    .sp-fold .tick{flex:1 1 auto;min-width:0;overflow:hidden;position:relative;
+      -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 46px),transparent);
+              mask-image:linear-gradient(90deg,#000 calc(100% - 46px),transparent)}
+    .sp-fold .tick:focus-visible{outline:2px solid var(--accent-deep);outline-offset:3px;border-radius:4px}
+    .sp-fold .tick__track{display:flex;flex-wrap:wrap;width:auto;max-width:100%;align-items:baseline;
+      row-gap:2px;animation:sp-tickroll 70s linear infinite;animation-play-state:paused}
+    .sp-fold .tick__grp{display:flex;flex-wrap:wrap;align-items:baseline;max-width:100%;row-gap:2px}
+    .sp-fold .tick__grp+.tick__grp{display:none}
+    .sp-fold .tick__grp span{font-weight:700;font-size:1.06rem;letter-spacing:-.025em;
+      white-space:nowrap;padding:0 20px 0 0;margin-right:20px;position:relative;color:var(--ink);line-height:1.5}
+    .sp-fold .tick__grp span::after{content:"";position:absolute;right:-4px;top:50%;width:5px;height:5px;
+      margin-top:-2.5px;border-radius:50%;background:var(--accent-deep)}
+    /* AT REST only the five show. The other twelve are in the DOM (and in the
+       crawler's copy) but hidden until the strip is rolling -- otherwise 17
+       names wrap into four rows and push the headline 80px down the page. */
+    .sp-fold .tick__grp span:nth-child(n+6){display:none}
+    .sp-fold .tick__grp span:nth-child(5)::after{display:none}
+    .sp-fold .tick.is-rolling .tick__grp span:nth-child(n+6){display:block}
+    .sp-fold .tick.is-rolling .tick__grp span:nth-child(5)::after{display:block}
+
+    /* ROLLING. One class drives it, set by hover or by the first scroll. */
+    .sp-fold .tick.is-rolling{
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 46px,#000 calc(100% - 46px),transparent);
+              mask-image:linear-gradient(90deg,transparent,#000 46px,#000 calc(100% - 46px),transparent)}
+    .sp-fold .tick.is-rolling .tick__track{flex-wrap:nowrap;width:max-content;max-width:none;
+      animation-play-state:running}
+    .sp-fold .tick.is-rolling .tick__grp{flex-wrap:nowrap;flex:none;max-width:none}
+    .sp-fold .tick.is-rolling .tick__grp+.tick__grp{display:flex}
+    @keyframes sp-tickroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    @media (prefers-reduced-motion:reduce){
+      .sp-fold .tick__track{animation:none !important}
+      .sp-fold .tick.is-rolling .tick__track{flex-wrap:wrap;width:auto;max-width:100%}
+      .sp-fold .tick.is-rolling .tick__grp+.tick__grp{display:none}
+    }
+    @media(max-width:900px){
+      /* The five wrap to two lines here; the sizing below is what keeps the
+         quote button above an 844px phone fold (it lands at 829px). */
+      .sp-fold .pf-row{flex-wrap:wrap;gap:2px 14px;padding:7px 0 8px}
+      .sp-fold .tick{flex:1 1 100%;order:2}
+      .sp-fold .pf-more{order:3;font-size:.74rem}
+      .sp-fold .tick__grp span{font-size:.94rem;padding:0 13px 0 0;margin-right:13px;line-height:1.4}
+    }
+
+    /* The category rows are NOT hidden. An earlier version of this file hid
+       both of them to buy 69px for the fold, on the claim that they
+       duplicated the Products grid further down. That claim was wrong and I
+       had not checked it: the grid covers t-shirts, hoodies, crewnecks,
+       hats, totes, long sleeves, polos and joggers -- it does NOT cover
+       Workwear, and it does not cover Jerseys. /jerseys has exactly one link
+       in the entire navigation, and it is that chip. Hiding the row deleted
+       the only route to a product line from the home page. */
+
+    .sp-fold .fold-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+      gap:46px;align-items:start;padding-top:14px}
+    /* ONE-COLUMN STATE. The grid collapsing was only half the job: the text
+       column then inherited the full container width while .ticket stayed
+       capped at 580px and .lede at 48ch, so at ~800px the whole fold hugged
+       the left with ~200px of dead space down the right. It read as broken
+       alignment rather than as a stacked layout. Below 940 the column gets a
+       measure of its own and is centred, and the card fills it. */
+    @media(max-width:940px){
+      .sp-fold .fold-grid{grid-template-columns:1fr;gap:30px;max-width:620px;margin-inline:auto}
+    }
+
+    /* The three H1 lines are authored, not left to the column: each span is
+       its own block. 2.92rem is the largest size that keeps line 1 inside the
+       column at 1180px. Under 760px the spans go inline and wrap naturally -
+       a forced break on a 390px phone pushes the page sideways. */
+    .sp-fold h1{font-family:'Playfair Display',Georgia,serif;font-weight:900;
+      letter-spacing:-.025em;line-height:1.04;font-size:clamp(1.92rem,4.3vw,2.92rem);margin:0}
+    .sp-fold h1 span{display:block}
+    .sp-fold h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--accent) 62%,var(--accent) 94%,transparent 94%)}
+    @media(max-width:760px){.sp-fold h1 span{display:inline}}
+    .sp-fold .lede{color:var(--ink-2);font-size:1.03rem;max-width:48ch;margin:15px 0 0;line-height:1.55}
+    /* The claim leads the paragraph and steps up to full ink. Not the yellow
+       highlight - that is already carrying "Montreal" in the H1 directly
+       above, and two highlights in one fold cancel each other out. */
+    .sp-fold .lede strong{color:var(--ink);font-weight:700}
+    .sp-fold .addr{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--ink-2);margin:0 0 12px}
+
+    /* Quote starter. Every control mirrors a control on /quote, option for
+       option: the ten product-type tiles plus Bring Your Own, the engine's own
+       quantity bands, and the three method cards. */
+    .sp-fold .ticket{margin-top:22px;background:var(--paper);border:1px solid var(--rule);
+      border-radius:14px;padding:18px 18px 16px;max-width:580px}
+    .sp-fold .ticket__head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding-bottom:12px;margin-bottom:14px;border-bottom:1px dashed var(--rule)}
+    .sp-fold .ticket__head b{font-family:var(--mono);font-size:.68rem;letter-spacing:.17em;
+      text-transform:uppercase;font-weight:500;color:var(--ink-2)}
+    .sp-fold .ticket__head span{font-family:var(--mono);font-size:.68rem;color:var(--ink-2)}
+    .sp-fold .fields{display:grid;grid-template-columns:1.15fr .85fr 1fr;gap:10px}
+    @media(max-width:620px){.sp-fold .fields{grid-template-columns:1fr 1fr}
+      .sp-fold .fields .f--full{grid-column:1/-1}}
+    .sp-fold .f{display:flex;flex-direction:column;gap:5px;min-width:0}
+    .sp-fold .f label{font-family:var(--mono);font-size:.63rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--ink-2)}
+    .sp-fold .f select{font-family:inherit;font-size:.95rem;font-weight:500;color:var(--ink);
+      background:#fcfcfa;border:1px solid var(--rule);border-radius:9px;padding:11px;width:100%}
+    .sp-fold .f select:focus-visible,.sp-fold .fold-cta:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+    .sp-fold .note{font-family:var(--mono);font-size:.72rem;color:var(--ink-2);margin:11px 0 0;
+      min-height:2.3em;line-height:1.6}
+    .sp-fold .note b{color:var(--ink);font-weight:500}
+    /* NOT .sp-cta -- that is the nav bar's Quote button, which components.js
+       injects with color:#fff !important. Reusing the name put white text on
+       #e8ff3c at 1.12:1, i.e. invisible. The ink is declared !important here
+       so no later global can take it back. */
+    .sp-fold .fold-cta{display:flex;align-items:center;justify-content:center;margin-top:10px;
+      width:100%;padding:15px 24px;border-radius:50px;background:var(--accent);
+      color:#1a1a1a !important;
+      font-weight:700;font-size:1rem;text-decoration:none;transition:transform .12s ease}
+    .sp-fold .fold-cta:hover{transform:translateY(-1px)}
+    .sp-fold .subbtn{font-size:.78rem;color:var(--ink-2);text-align:center;margin:9px 0 0}
+    .sp-fold .devnote{margin:12px 0 0;padding-top:11px;border-top:1px dashed var(--rule);
+      font-family:var(--mono);font-size:.68rem;color:var(--ink-2);line-height:1.6;overflow-wrap:anywhere}
+    .sp-fold .devnote b{display:block;letter-spacing:.14em;text-transform:uppercase;font-weight:500;
+      font-size:.62rem;margin-bottom:3px}
+    .sp-fold .devnote code{color:var(--ink);font-family:var(--mono)}
+
+    /* the hero video, unchanged - same two elements and posters as before */
+    .sp-fold .fold-visual{position:relative}
+    .sp-fold .hero-photo{position:relative;border-radius:16px;overflow:hidden;background:var(--sunk);
+      border:1px solid var(--rule);aspect-ratio:4/5}
+    /* The two toggles have to out-specify the `.sp-fold .hero-photo video`
+       rule above them, or BOTH videos render stacked - which is what happened
+       the first time these were written as `.sp-fold .hero-video--x`. */
+    .sp-fold .hero-photo video{width:100%;height:100%;object-fit:cover}
+    .sp-fold .hero-photo video.hero-video--desktop{display:block}
+    .sp-fold .hero-photo video.hero-video--mobile{display:none}
+    @media(max-width:940px){
+      .sp-fold .hero-photo{aspect-ratio:16/10}
+      .sp-fold .hero-photo video.hero-video--desktop{display:none}
+      .sp-fold .hero-photo video.hero-video--mobile{display:block}
+    }
+    /* The misprint pill keeps the site's own styling (centred, overhanging the
+       photo by 16px); the column just gets room for the overhang. */
+    .sp-fold .fold-visual{padding-bottom:20px}
+
+    /* Declared last on purpose: these have the same specificity as the
+       .sp-fold .ticket / .sp-fold .lede caps above, so source order is the
+       only thing that makes them win. Placed with the grid rule instead,
+       they were silently ignored and the card stayed 580px in a 620px
+       column. */
+    @media(max-width:940px){
+      .sp-fold .ticket{max-width:none}
+      .sp-fold .lede{max-width:none}
+    }
+
+    /* Declared last: .sp-fold .fold-grid and .sp-fold .addr are set further
+       up at the same specificity, so a media override placed above them is
+       silently ignored. Same trap as the one-column card width. These buy
+       ~10px so the phone's button is not sitting exactly on the fold line. */
+    @media(max-width:900px){
+      .sp-fold .fold-grid{padding-top:8px}
+      .sp-fold .addr{margin:0 0 8px}
+    }
+
   </style>
 
   <!-- SEO: Structured data (LocalBusiness + Service + FAQPage + WebSite). Generated by scripts/seo-schema-inject. Edit the generator, not this block. -->
-  <script type="application/ld+json" id="sp-schema-home-en">{"@context":"https://schema.org","@graph":[{"@type":"LocalBusiness","@id":"https://www.singhsprint.com/#business","name":"Singh's Print","legalName":"9555-8110 Québec Inc.","alternateName":["Singhs Print","Imprimerie Singhs Print"],"url":"https://www.singhsprint.com/","logo":"https://www.singhsprint.com/images/logo.png","image":["https://www.singhsprint.com/images/hero-duo.jpg","https://www.singhsprint.com/images/hero-poster.jpg"],"telephone":"+14385443800","email":"sales@singhsprint.com","priceRange":"$$","currenciesAccepted":"CAD","paymentAccepted":["Cash","Credit Card","E-Transfer","Stripe"],"address":{"@type":"PostalAddress","streetAddress":"83 rue Sainte-Anne","addressLocality":"Sainte-Anne-de-Bellevue","addressRegion":"QC","postalCode":"H9X 1L9","addressCountry":"CA"},"geo":{"@type":"GeoCoordinates","latitude":45.4034586,"longitude":-73.9535957},"areaServed":[{"@type":"AdministrativeArea","name":"West Island, Montreal"},{"@type":"City","name":"Montreal"},{"@type":"City","name":"Sainte-Anne-de-Bellevue"},{"@type":"City","name":"Pointe-Claire"},{"@type":"City","name":"Dorval"},{"@type":"City","name":"Kirkland"},{"@type":"City","name":"Beaconsfield"},{"@type":"City","name":"Pierrefonds"},{"@type":"City","name":"Laval"},{"@type":"AdministrativeArea","name":"Quebec"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"09:00","closes":"18:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue": "5.0","reviewCount": "23","bestRating":"5","worstRating":"1"},"sameAs":["https://maps.app.goo.gl/FX8o2QEvQzngxeiv7"],"identifier":[{"@type":"PropertyValue","propertyID":"NEQ","value":"1181573313"}],"knowsAbout":["DTG printing","Direct-to-Garment printing","DTF transfers","Direct-to-Film printing","Embroidery","Custom t-shirts","Custom hoodies","Custom polos","Custom caps","Corporate uniforms","Team apparel","Brand merch"]},{"@type":"Service","@id":"https://www.singhsprint.com/#service-dtg","name":"DTG Printing (Direct-to-Garment)","serviceType":"Direct-to-Garment Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Photo-quality full-color prints applied directly to cotton and blend garments. Soft hand-feel, unlimited colors, ideal for detailed artwork and gradients."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-dtf","name":"DTF Transfers (Direct-to-Film)","serviceType":"DTF Heat Transfer Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Vibrant prints on any fabric — polyester, nylon, cotton, blends. Durable, stretchy, and works on dark or light garments."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-embroidery","name":"Custom Embroidery","serviceType":"Machine Embroidery","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Stitched logos and text for a premium, tactile finish. Ideal for corporate wear, uniforms, hats, polos, and ongoing brand merch programs."},{"@type":"FAQPage","@id":"https://www.singhsprint.com/#faq","mainEntity":[{"@type":"Question","name":"What printing services do you offer?","acceptedAnswer":{"@type":"Answer","text":"We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film) and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more — all decorated to the same standard at our Sainte-Anne-de-Bellevue studio in Montreal's West Island."}},{"@type":"Question","name":"Is there a minimum order?","acceptedAnswer":{"@type":"Answer","text":"No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size."}},{"@type":"Question","name":"How fast can you complete an order?","acceptedAnswer":{"@type":"Answer","text":"Standard turnaround is 7-14 business days after your deposit clears. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage."}},{"@type":"Question","name":"Can you supply the blank apparel?","acceptedAnswer":{"@type":"Answer","text":"Yes — we carry Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes and dozens more. Or bring your own garments and we'll decorate yours at the same per-piece rate."}},{"@type":"Question","name":"What file types do you accept?","acceptedAnswer":{"@type":"Answer","text":"PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Free design help included if your art isn't print-ready."}},{"@type":"Question","name":"Can I see a sample first?","acceptedAnswer":{"@type":"Answer","text":"You approve a photoreal mockup before we print anything — colors, placement, sizing."}},{"@type":"Question","name":"Do you offer a misprint guarantee?","acceptedAnswer":{"@type":"Answer","text":"Yes. If there is a print quality issue or garment defect, we'll reprint or replace the item at no cost to you."}},{"@type":"Question","name":"Do you offer a first-order discount?","acceptedAnswer":{"@type":"Answer","text":"Yes — order 15 or more and we add a free tee in the same design, applied automatically when you request your quote. No code needed."}},{"@type":"Question","name":"What areas do you serve?","acceptedAnswer":{"@type":"Answer","text":"We decorate in Sainte-Anne-de-Bellevue and deliver across Montreal's West Island (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), greater Montreal, Laval, and the South Shore. Canada-wide shipping available for larger orders."}}]},{"@type":"WebSite","@id":"https://www.singhsprint.com/#website","url":"https://www.singhsprint.com/","name":"Singh's Print","inLanguage":["en-CA","fr-CA"],"publisher":{"@id":"https://www.singhsprint.com/#business"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.singhsprint.com/catalog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
+  <script type="application/ld+json" id="sp-schema-home-en">{"@context":"https://schema.org","@graph":[{"@type":"LocalBusiness","@id":"https://www.singhsprint.com/#business","name":"Singh's Print","legalName":"9555-8110 Québec Inc.","alternateName":["Singhs Print","Imprimerie Singhs Print"],"url":"https://www.singhsprint.com/","logo":"https://www.singhsprint.com/images/logo.png","image":["https://www.singhsprint.com/images/hero-duo.jpg","https://www.singhsprint.com/images/hero-poster.jpg"],"telephone":"+14385443800","email":"sales@singhsprint.com","priceRange":"$$","currenciesAccepted":"CAD","paymentAccepted":["Cash","Credit Card","E-Transfer","Stripe"],"address":{"@type":"PostalAddress","streetAddress":"83 rue Sainte-Anne","addressLocality":"Sainte-Anne-de-Bellevue","addressRegion":"QC","postalCode":"H9X 1L9","addressCountry":"CA"},"geo":{"@type":"GeoCoordinates","latitude":45.4034586,"longitude":-73.9535957},"areaServed":[{"@type":"AdministrativeArea","name":"West Island, Montreal"},{"@type":"City","name":"Montreal"},{"@type":"City","name":"Sainte-Anne-de-Bellevue"},{"@type":"City","name":"Pointe-Claire"},{"@type":"City","name":"Dorval"},{"@type":"City","name":"Kirkland"},{"@type":"City","name":"Beaconsfield"},{"@type":"City","name":"Pierrefonds"},{"@type":"City","name":"Laval"},{"@type":"AdministrativeArea","name":"Quebec"}],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"09:00","closes":"18:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue": "4.7","reviewCount": "37","bestRating":"5","worstRating":"1"},"sameAs":["https://maps.app.goo.gl/FX8o2QEvQzngxeiv7"],"identifier":[{"@type":"PropertyValue","propertyID":"NEQ","value":"1181573313"}],"knowsAbout":["DTG printing","Direct-to-Garment printing","DTF transfers","Direct-to-Film printing","Embroidery","Custom t-shirts","Custom hoodies","Custom polos","Custom caps","Corporate uniforms","Team apparel","Brand merch"]},{"@type":"Service","@id":"https://www.singhsprint.com/#service-dtg","name":"DTG Printing (Direct-to-Garment)","serviceType":"Direct-to-Garment Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Photo-quality full-color prints applied directly to cotton and blend garments. Soft hand-feel, unlimited colors, ideal for detailed artwork and gradients."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-dtf","name":"DTF Transfers (Direct-to-Film)","serviceType":"DTF Heat Transfer Printing","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Vibrant prints on any fabric — polyester, nylon, cotton, blends. Durable, stretchy, and works on dark or light garments."},{"@type":"Service","@id":"https://www.singhsprint.com/#service-embroidery","name":"Custom Embroidery","serviceType":"Machine Embroidery","provider":{"@id":"https://www.singhsprint.com/#business"},"areaServed":{"@type":"AdministrativeArea","name":"West Island, Montreal"},"description":"Stitched logos and text for a premium, tactile finish. Ideal for corporate wear, uniforms, hats, polos, and ongoing brand merch programs."},{"@type":"FAQPage","@id":"https://www.singhsprint.com/#faq","mainEntity":[{"@type":"Question","name":"What printing services do you offer?","acceptedAnswer":{"@type":"Answer","text":"We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film) and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more — all decorated to the same standard at our Sainte-Anne-de-Bellevue studio in Montreal's West Island."}},{"@type":"Question","name":"Is there a minimum order?","acceptedAnswer":{"@type":"Answer","text":"No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size."}},{"@type":"Question","name":"How fast can you complete an order?","acceptedAnswer":{"@type":"Answer","text":"Standard turnaround is 7-14 business days after your deposit clears. Rush options available for Montreal and West Island pickups. You'll get an exact timeline at the quote stage."}},{"@type":"Question","name":"Can you supply the blank apparel?","acceptedAnswer":{"@type":"Answer","text":"Yes — we carry Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes and dozens more. Or bring your own garments and we'll decorate yours at the same per-piece rate."}},{"@type":"Question","name":"What file types do you accept?","acceptedAnswer":{"@type":"Answer","text":"PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Free design help included if your art isn't print-ready."}},{"@type":"Question","name":"Can I see a sample first?","acceptedAnswer":{"@type":"Answer","text":"You approve a photoreal mockup before we print anything — colors, placement, sizing."}},{"@type":"Question","name":"Do you offer a misprint guarantee?","acceptedAnswer":{"@type":"Answer","text":"Yes. If there is a print quality issue or garment defect, we'll reprint or replace the item at no cost to you."}},{"@type":"Question","name":"Do you offer a first-order discount?","acceptedAnswer":{"@type":"Answer","text":"Yes — order 15 or more and we add a free tee in the same design, applied automatically when you request your quote. No code needed."}},{"@type":"Question","name":"What areas do you serve?","acceptedAnswer":{"@type":"Answer","text":"We decorate in Sainte-Anne-de-Bellevue and deliver across Montreal's West Island (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), greater Montreal, Laval, and the South Shore. Canada-wide shipping available for larger orders."}}]},{"@type":"WebSite","@id":"https://www.singhsprint.com/#website","url":"https://www.singhsprint.com/","name":"Singh's Print","inLanguage":["en-CA","fr-CA"],"publisher":{"@id":"https://www.singhsprint.com/#business"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.singhsprint.com/catalog?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}</script>
 </head>
 <body>
 
   <div id="nav-placeholder"></div>
 
-  <!-- ===== HERO ===== -->
-  <section class="hero">
+  <!-- ===== THE FOLD =====
+       Replaces the old hero AND the clients strip below it. Everything from
+       the social-proof bar down is the page exactly as it shipped.
+       Three changes from the hero it replaces:
+         1. "Printing for" moves above the headline and scrolls again.
+         2. The H1 is the SEO line, broken where the copy says to break it.
+         3. A working quote starter sits in the fold instead of two buttons.
+       The standards that used to sit in .stds here are NOT repeated: the
+       proof-bar directly below already carries them. -->
+  <section class="sp-fold">
     <div class="container">
-      <div class="hero-grid">
-        <div class="hero-content">
-          <!-- 2026-05-24 — Hero status STAMP. Replaces the previous
-               generic green-dot-in-a-rounded-pill (the most "AI-coded
-               landing page" component in tech). The new mark reads
-               like a hand-stamped sticker on a shopfront window:
-               slightly tilted black-on-yellow OPEN TODAY tag, with
-               inline plain text for the hours + Sainte-Anne address.
-               Time-aware: the status word + closing hint update via
-               the IIFE at the bottom of <head> so visitors after 9 pm
-               see "Opens 9 AM" instead of misleading "open till 9 pm". -->
-          <div class="hero-stamp">
-            <!-- 2026-09-20 — the open/closed badge and the hours beside it are
-                 removed. It was a live status stamp driven by setupHeroStamp()
-                 below, and it read "CLOSED NOW · Opens Monday 9 AM" to anyone
-                 landing on a Sunday. The address stays. -->
-            <span class="hero-stamp__detail">
-              <span data-i18n="home.stamp.addr">83 rue Sainte-Anne, West Island</span>
-            </span>
+
+      <div class="pf-row">
+        <span class="pf-lbl" id="tick-lbl" data-i18n="fold.printingfor">Printing for</span>
+        <div class="tick" tabindex="0" role="group" aria-labelledby="tick-lbl">
+          <div class="tick__track">
+            <div class="tick__grp"><span>Lamborghini Montréal</span><span>ALDO</span><span>McGill University</span><span>Silk Laundry</span><span>C4 Energy</span><span>Morgan Arboretum</span><span>Concordia Sikh Students</span><span>Artwood Construction</span><span>McGill Boxing Club</span><span>Modavie Nutrition</span><span>Old Soul</span><span>McGill Pizza</span><span>Durante Landscapers</span><span>Montreal Pinball</span><span>CUSEC</span><span>Sigma Chi</span><span>CANAUST</span></div>
+            <div class="tick__grp" aria-hidden="true"><span>Lamborghini Montréal</span><span>ALDO</span><span>McGill University</span><span>Silk Laundry</span><span>C4 Energy</span><span>Morgan Arboretum</span><span>Concordia Sikh Students</span><span>Artwood Construction</span><span>McGill Boxing Club</span><span>Modavie Nutrition</span><span>Old Soul</span><span>McGill Pizza</span><span>Durante Landscapers</span><span>Montreal Pinball</span><span>CUSEC</span><span>Sigma Chi</span><span>CANAUST</span></div>
           </div>
-          <h1 data-i18n="home.hero.h1">Custom T-Shirt &amp; Hoodie<br>Printing + Embroidery<br>in <span class="accent">Montreal</span></h1>
-          <p class="subhead" data-i18n="home.hero.sub">DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and a mockup you approve before we print.</p>
-          <div class="hero-buttons">
-            <a href="quote" class="btn btn-accent" data-i18n="home.hero.cta1">Get a Free Quote &rarr;</a>
-            <a href="portfolio" class="btn btn-ghost btn-outline" data-i18n="home.hero.cta2">See Our Work</a>
-          </div>
-          <!-- Inline social proof: one tight line of three signals,
-               replaces both the old hero-stats and gives users at-a-
-               glance trust without scrolling to the proof bar.
-               Pattern source: Stripe, Allbirds, Linear hero. -->
-          <!-- THIS LINE IS THE MOBILE PROOF BAR. Below 480px .proof-bar is
-               display:none (see MOBILE TRIM), so on a phone this is the only
-               version of it a visitor ever sees. It has to stand on its own.
-
-               It said "100+ orders" until 2026-10-05, which was the weakest
-               proof available and also false low: 130 fulfilled orders
-               measured that day. A count was the wrong instinct here for the
-               same reason it was wrong in the bar below -- a tally shrinks
-               next to Lamborghini Montréal and ALDO, which the client strip
-               names two sections down.
-
-               Before that, the middle signal was the Google review count:
-               last synced 2026-06-11, with a runtime patcher that could never
-               reach its endpoint because /api/google-reviews was not in the
-               CRM middleware allowlist. Four months stale with a repair
-               mechanism that had never run. The rating now appears once, in
-               the reviews section, beside the three named quotes that give it
-               substance.
-
-               WHY THIS LINE. It has to work on two readers at once. Someone
-               holding a logo screenshotted off Instagram is afraid of being
-               told the file is unusable, or being charged a setup fee to fix
-               it. A procurement buyer at McGill or ALDO has clean vector art
-               and reads "we fix bad logos" as down-market. "Send any file" is
-               permission to the first and capability to the second, and it is
-               true either way. "Free" stays because the fear is not only
-               whether it can be fixed but what that costs -- setup and
-               artwork fees are the standard print-shop surprise, and the
-               comparison block further down already calls that out.
-
-               It deliberately repeats the artwork line in .proof-bar below.
-               On a phone that is not a repeat, it is the only showing. -->
-          <div class="hero-proof" aria-label="Social proof">
-            <span data-i18n="home.heroproof.artwork"><strong>Send any file.</strong> We make it print-ready, free</span>
-            <span data-i18n="home.heroproof.local">West Island, Montreal</span>
-          </div>
-
         </div>
-        <div class="hero-visual">
-          <!-- 16s muted loop. Audio stripped at encode time so even
-               JS that tries to unmute() finds nothing to play. The
-               poster JPG keeps the slot filled during load + acts as
-               the LCP element so Lighthouse stays happy. Mobile gets
-               a 720×960 variant via <source media>. -->
-          <!-- Two separate <video> elements per viewport. The previous
-               single-video + <source media="…"> pattern is unreliable in
-               Safari iOS (media-attribute on <source> inside <video> is
-               not part of the spec and several WebKit builds either
-               ignore it or apply it inconsistently across reloads).
-               Splitting into two elements with CSS visibility is the
-               robust pattern. Each video has its own matching poster so
-               the still-frame aspect matches the video that swaps in. -->
+        <a class="pf-more" href="portfolio" data-i18n="home.trust.seework">See the work &rarr;</a>
+      </div>
+
+      <div class="fold-grid">
+        <div>
+          <p class="addr" data-i18n="fold.addr">83 rue Sainte-Anne &middot; West Island, Montreal</p>
+          <h1><span data-i18n="fold.h1a">Custom T&#8209;Shirt &amp; Hoodie</span> <span data-i18n="fold.h1b">Printing + Embroidery</span> <span data-i18n="fold.h1c">in <em>Montreal</em></span></h1>
+          <p class="lede" data-i18n="fold.lede"><strong>Retail&#8209;grade work.</strong> Send us your logo however you&rsquo;ve got it, and we&rsquo;ll get it print&#8209;ready. We&rsquo;ll help you pick blanks that match the look and feel you&rsquo;re going for.</p>
+
+          <form class="ticket" id="startquote" novalidate>
+            <div class="ticket__head"><b data-i18n="fold.start">Start a quote</b><span id="tix">No. SP&#8209;0000</span></div>
+            <div class="fields">
+              <div class="f f--full">
+                <label for="q-garment" data-i18n="fold.garment">Garment</label>
+                <select id="q-garment"><option value="T-Shirt" data-i18n="fold.opt.tshirt">T&#8209;shirts</option><option value="Hoodie" data-i18n="fold.opt.hoodie" selected>Hoodies</option><option value="Crewneck" data-i18n="fold.opt.crewneck">Crewnecks</option><option value="Polo" data-i18n="fold.opt.polo">Polo shirts</option><option value="Hat/Cap" data-i18n="fold.opt.hat">Hats &amp; caps</option><option value="Long Sleeve" data-i18n="fold.opt.longsleeve">Long sleeve</option><option value="Joggers/Sweatpants" data-i18n="fold.opt.joggers">Joggers / sweatpants</option><option value="Tote Bag" data-i18n="fold.opt.tote">Tote bags</option><option value="Hi-Vis Vest" data-i18n="fold.opt.hivis">Hi&#8209;vis vests</option><option value="Other" data-i18n="fold.opt.other">Something else</option><option value="Bring Your Own" data-i18n="fold.opt.byo">I already have the garments</option></select>
+              </div>
+              <div class="f">
+                <label for="q-qty" data-i18n="fold.pieces">Pieces</label>
+                <select id="q-qty"><option value="u5" data-i18n="fold.opt.u5">Under 5</option><option value="b5" data-i18n="fold.opt.b5">5&ndash;9</option><option value="b10" data-i18n="fold.opt.b10">10&ndash;24</option><option value="b25" data-i18n="fold.opt.b25" selected>25&ndash;49</option><option value="b50" data-i18n="fold.opt.b50">50&ndash;99</option><option value="b100" data-i18n="fold.opt.b100">100&ndash;199</option><option value="b200" data-i18n="fold.opt.b200">200+</option></select>
+              </div>
+              <div class="f">
+                <label for="q-method" data-i18n="fold.decoration">Decoration</label>
+                <select id="q-method">
+                  <!-- Labels are the customer's words; the VALUES stay DTG /
+                       Embroidery / Not Sure because that is what /quote's own
+                       method cards use and what the hand-off param carries. -->
+                  <option value="DTG" data-i18n="fold.opt.printed" selected>Printed</option>
+                  <option value="Embroidery" data-i18n="fold.opt.stitched">Stitched</option>
+                  <option value="Not Sure" data-i18n="fold.opt.notsure">Not sure yet</option>
+                </select>
+              </div>
+            </div>
+            <p class="note" id="q-note" aria-live="polite"></p>
+            <a class="fold-cta" id="q-go" href="quote" data-i18n="fold.cta">Start my quote</a>
+            <p class="subbtn" data-i18n="fold.subcta">No payment, no account. A real person replies within the hour, 9am&ndash;6pm.</p>
+          </form>
+        </div>
+
+        <div class="fold-visual">
           <div class="hero-photo">
             <video
               class="hero-video hero-video--desktop"
@@ -708,7 +860,6 @@
       </div>
     </div>
   </section>
-
   <!-- ===== SOCIAL PROOF BAR ===== -->
   <section class="proof-bar">
     <div class="container">
@@ -757,35 +908,6 @@
         <div class="proof-stat"><strong data-i18n="home.proof.oneshop">Every method, one shop</strong><span data-i18n="home.proof.methods">DTG &middot; DTF &middot; Embroidery</span></div>
         <div class="proof-stat"><strong data-i18n="home.proof.mockup">Mockup before we print</strong><span data-i18n="home.proof.mockup.sub">Every single order</span></div>
         <div class="proof-stat"><strong data-i18n="home.proof.artwork">Free artwork cleanup</strong><span data-i18n="home.proof.artwork.sub">Print-ready, not your problem</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CLIENTS ===== -->
-  <section class="trust-bar">
-    <div class="container">
-      <p class="trust-label" data-i18n="home.trust">Trusted by brands &amp; businesses across the West Island &amp; Montreal</p>
-      <!-- Five names. No count, and no second row.
-           The five come from the CRM: the first five published rows of
-           portfolio_clients, ordered by sort_index, so which names appear is
-           a decision made in /portfolio rather than a deploy. This markup is
-           the no-JS and crawler-visible copy and must be kept in step with
-           those first five — it is what Google reads, and what every visitor
-           sees until the fetch below lands.
-           A count came out because a tally shrinks next to ALDO; the second
-           row came out because the names on it were not in the same league as
-           the names on the first, and mixing them levelled both down. -->
-      <div class="trust-clients">
-        <ul class="trust-clients__hero" aria-label="Brands and businesses Singhs Print has served">
-          <li>Lamborghini Montréal</li>
-          <li>ALDO</li>
-          <li>McGill University</li>
-          <li>Silk Laundry</li>
-          <li>C4 Energy</li>
-        </ul>
-        <p class="trust-clients__more">
-          <a href="portfolio" data-i18n="home.trust.seework">See the work &rarr;</a>
-        </p>
       </div>
     </div>
   </section>
@@ -1314,7 +1436,7 @@
         <div>
           <span class="label" style="color:#e8ff3c" data-i18n="home.reviews.label">What Our Clients Say</span>
           <h2 data-i18n="home.reviews.h">Real reviews from real customers</h2>
-          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733; <span style="font-size:.9rem;color:#aaa;letter-spacing:0" data-i18n="home.reviews.avg">5.0/5 (23 reviews) average</span></div>
+          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733; <span style="font-size:.9rem;color:#aaa;letter-spacing:0" data-i18n="home.reviews.avg">4.7/5 (37 reviews) average</span></div>
         </div>
         <a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" class="btn btn-white btn-sm" style="color:#1a1a1a" data-i18n="home.reviews.readall">Read all reviews &rarr;</a>
       </div>
@@ -1398,9 +1520,6 @@
         <div class="faq-item"><button class="faq-q" data-i18n="home.faq.q8">Do you offer a first-order discount?</button><div class="faq-a"><p data-i18n="home.faq.a8">Yes &mdash; order 15 or more and we add a free tee in the same design, applied automatically when you request your quote. No code needed.</p></div></div>
         <div class="faq-item"><button class="faq-q" data-i18n="home.faq.q9">What areas do you serve?</button><div class="faq-a"><p data-i18n="home.faq.a9">We decorate in Sainte-Anne-de-Bellevue and deliver across Montreal&rsquo;s West Island (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d&rsquo;Urf&eacute;, L&rsquo;&Icirc;le-Bizard), greater Montreal, Laval, and the South Shore. Canada-wide shipping available for larger orders.</p></div></div>
       </div>
-      <!-- "See all questions" — only visible on mobile (via CSS), only
-           shown when the list is in its collapsed state. -->
-      <button type="button" class="faq-seeall" onclick="(function(b){var l=document.querySelector('.faq-list');l.classList.toggle('faq-list--expanded');b.style.display='none'})(this)" data-i18n="home.faq.seeall">See all questions →</button>
     </div>
   </section>
 
@@ -1526,5 +1645,111 @@
   })();
   </script>
 
+
+<script>
+(function(){
+  var g=document.getElementById('q-garment'), q=document.getElementById('q-qty'),
+      m=document.getElementById('q-method'), note=document.getElementById('q-note'),
+      go=document.getElementById('q-go'), url=document.getElementById('q-url'),
+      tix=document.getElementById('tix'), form=document.getElementById('startquote');
+  if(!g) return;
+  var d=new Date();
+  tix.textContent='No. SP-'+String(d.getFullYear()).slice(2)
+    +String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+
+  // Band id -> the lowest quantity it covers. These are the engine's own tier
+  // minimums (the same ones /quote probes each chip at), so every rule below
+  // is evaluated on the lowest quantity in the band and cannot over-promise.
+  var BAND_MIN={u5:1,b5:5,b10:10,b25:25,b50:50,b100:100,b200:200};
+  var BAND_MAX={u5:4,b5:9,b10:24,b25:49,b50:99,b100:199,b200:null};
+
+  function refresh(){
+    var band=q.value, lo=BAND_MIN[band], hi=BAND_MAX[band],
+        method=m.value, byo=(g.value==='Bring Your Own'), lines=[];
+    // Through SP_LANG so the rule line is French on /fr too. The English
+    // string stays as the fallback if lang.js has not loaded yet.
+    var T = function(k, fb){ try { return (window.SP_LANG && SP_LANG.t && SP_LANG.t(k)) || fb; } catch(e){ return fb; } };
+    if(method==='Embroidery'&&lo<10){
+      lines.push(T('fold.note.emb','Embroidery starts at <b>10 pieces</b>. Under that we\u2019d quote DTF, which sits closest on fleece.'));
+    }
+    if(lo>=15){ lines.push(T('fold.note.tee','<b>Free tee</b> included at this quantity \u2014 same design, added automatically.')); }
+    else if(hi!==null&&hi>=15){ lines.push(T('fold.note.tee15','Order <b>15 or more</b> and a free tee is added automatically.')); }
+    else if(method!=='Embroidery'){ lines.push(T('fold.note.nomin','No minimum on DTG or DTF.')); }
+    if(byo){ lines.push(T('fold.note.byo','You ship the garments \u2014 we quote decoration only.')); }
+    note.innerHTML=lines.join('<br>');
+
+    // THE HAND-OFF. quote.js already restores a part-filled form from a saved
+    // draft - restoreDraft() takes {product, qtyBand, service} and clicks the
+    // garment tile, lights the band chip and selects the method card. These
+    // three params feed that same path. The reader that maps them is the one
+    // piece not yet in quote.js.
+    var p=new URLSearchParams({garment:g.value, qty:band, method:method});
+    var href='quote?'+p.toString();
+    // url is the build annotation's <code>, which does not ship. Guarded so
+    // removing it cannot throw and take the ticker's handlers down with it.
+    go.setAttribute('href',href); if (url) url.textContent='/'+href;
+  }
+  [g,q,m].forEach(function(el){ el.addEventListener('change',refresh); });
+  refresh();
+  form.addEventListener('submit',function(e){ e.preventDefault(); go.click(); });
+
+  // The strip starts still. Hover (pointer) or the first page scroll (touch)
+  // sets it rolling; once started it keeps going. prefers-reduced-motion and
+  // a visitor who never engages both get the static five, which is the state
+  // that actually does the credibility work.
+  var tick = document.querySelector('.sp-fold .tick');
+  if (tick && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // One-way: whatever starts it, it keeps going. The strip has two states
+    // and only ever moves from still to rolling.
+    var started = false;
+    var roll = function(){
+      if (started) return;
+      started = true;
+      tick.classList.add('is-rolling');
+      tick.removeEventListener('mouseenter', roll);
+      tick.removeEventListener('focusin', roll);
+      window.removeEventListener('scroll', onReturn);
+    };
+    var onReturn = null;
+    var wentDownReset = function(){};
+
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      // POINTER: hover only. Scrolling the page must not start it -- a
+      // laptop visitor who scrolls past has not asked to see the roster.
+      tick.addEventListener('mouseenter', roll);
+      tick.addEventListener('focusin', roll);   // same affordance by keyboard
+    } else {
+      // TOUCH: not on the way down. The strip starts only once the visitor
+      // has gone down the page AND come back up to the top -- by then they
+      // have read it, and the longer roster is the thing worth showing on a
+      // second look. Landing and leaving never sees motion.
+      var wentDown = false;
+      wentDownReset = function(){ wentDown = false; };
+      onReturn = function(){
+        var y = window.scrollY || window.pageYOffset || 0;
+        if (!wentDown) { if (y > 240) wentDown = true; return; }
+        if (y <= 20) roll();
+      };
+      window.addEventListener('scroll', onReturn, {passive:true});
+    }
+
+    // REPLAY, for checking the trigger without reloading. Inert unless the
+    // URL carries ?replay, so a visitor can never reach it: with the flag,
+    // double-clicking the strip puts it back to the static five and re-arms
+    // whichever trigger this device uses.
+    if (/[?&]replay\b/.test(location.search)) {
+      tick.style.cursor = 'pointer';
+      tick.title = 'double-click to reset (?replay)';
+      tick.addEventListener('dblclick', function(){
+        tick.classList.remove('is-rolling');
+        started = false; wentDownReset();
+        tick.addEventListener('mouseenter', roll);
+        tick.addEventListener('focusin', roll);
+        if (onReturn) window.addEventListener('scroll', onReturn, {passive:true});
+      });
+    }
+  }
+})();
+</script>
 </body>
 </html>

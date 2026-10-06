@@ -13,12 +13,12 @@
  *   node scripts/sync-google-reviews.mjs --dry-run
  *
  * Targets the recurring patterns we know about:
- *   "(23 reviews)"                          → "(N reviews)"
- *   "5.0★ (23 reviews)"                     → "X.X★ (N reviews)"
- *   "5.0/5 (23 reviews)"                    → "X.X/5 (N reviews)"
- *   '"ratingValue": "5.0"'                   → '"ratingValue":"X.X"'
- *   '"reviewCount": "23"'                    → '"reviewCount":"N"'
- *   ratingValue: '5.0', reviewCount: '23'   → ratingValue: 'X.X', reviewCount: 'N'
+ *   "(37 reviews)"                          → "(N reviews)"
+ *   "4.7★ (37 reviews)"                     → "X.X★ (N reviews)"
+ *   "4.7/5 (37 reviews)"                    → "X.X/5 (N reviews)"
+ *   '"ratingValue": "4.7"'                   → '"ratingValue":"X.X"'
+ *   '"reviewCount": "37"'                    → '"reviewCount":"N"'
+ *   ratingValue: '4.7', reviewCount: '37'   → ratingValue: 'X.X', reviewCount: 'N'
  *
  * Everything else (real customer review bodies, the "5 stars" in star
  * glyphs, etc.) stays untouched.
@@ -71,7 +71,10 @@ function fmtRating(r) {
 
 async function walk(dir, hits = []) {
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') || entry.name === 'node_modules') continue
+    // _to_delete holds 7,142 orphaned pages. Rewriting them is pure churn:
+    // they are git-excluded, so nothing there can ever reach the site.
+    if (entry.name.startsWith('.') || entry.name === 'node_modules'
+        || entry.name === '_to_delete') continue
     const full = path.join(dir, entry.name)
     if (entry.isDirectory()) {
       await walk(full, hits)
@@ -103,7 +106,7 @@ async function run() {
     [/\b\d(?:\.\d)?★ \(\d+ reviews\)/g,              `${ratingStr}★ (${countStr} reviews)`],
     [/\b\d(?:\.\d)?\/5 \(\d+ reviews\)/g,            `${ratingStr}/5 (${countStr} reviews)`],
     [/\b\d(?:\.\d)?\/5 \(\d+ avis\)/g,               `${ratingStr}/5 (${countStr} avis)`],
-    // FR comma-decimal form: "5,5.0/5 (23 avis)"
+    // FR comma-decimal form: "5,4.7/5 (37 avis)"
     [/\b\d,\d\/5 \(\d+ avis\)/g,                     `${ratingStr.replace('.', ',')}/5 (${countStr} avis)`],
 
     // JSON-LD schema strings (in any quote style)

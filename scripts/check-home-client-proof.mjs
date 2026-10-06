@@ -92,7 +92,19 @@ function visibleText(html) {
 
 console.log('1. five names, and nothing that reads as a complete list');
 {
-  const shown = names(ulBody(EN, 'trust-clients__hero'));
+  // 2026-10-06 — the five moved. .trust-clients__hero was its own band under
+  // the hero; the fold's ticker carries them now, as the FIRST FIVE of a
+  // longer roster (the rest only appear once the strip is rolling). So this
+  // reads the first five spans of the first track, which is exactly what a
+  // visitor sees at rest.
+  const tickNames = (html) => {
+    const i = html.indexOf('class="tick__grp"');
+    if (i < 0) return [];
+    const grp = html.slice(i, html.indexOf('</div>', i));
+    return (grp.match(/<span[^>]*>([^<]+)<\/span>/g) || [])
+      .map((x) => x.replace(/<[^>]+>/g, '').trim()).slice(0, 5);
+  };
+  const shown = tickNames(EN);
   const missing = SHOWN.filter((n) => !shown.includes(n));
   ok('1a all five clients are on the strip', missing.length === 0, missing.join(', '));
   ok('1b the strip holds those five and nothing else',
@@ -112,9 +124,9 @@ console.log('1. five names, and nothing that reads as a complete list');
     && !/trust-logo/.test(EN),
     'an old tier row is still in the markup');
   ok('1d the French mirror shows the same five',
-    (() => { const f = names(ulBody(FR, 'trust-clients__hero'));
+    (() => { const f = tickNames(FR);
       return SHOWN.every((n) => f.includes(n)) && f.length === SHOWN.length; })(),
-    `fr has ${names(ulBody(FR, 'trust-clients__hero')).length}`);
+    `fr has ${tickNames(FR).length}`);
 
   // NO NUMBER ANYWHERE ON THE STRIP. A draft carried "a few of the 45+
   // businesses we print for" — true, measured, and the wrong instinct: a firm
@@ -125,17 +137,17 @@ console.log('1. five names, and nothing that reads as a complete list');
   // The COPY, not the names. "C4 Energy" is a client's own name and the
   // first version of this test flagged its digit — a check that cannot tell
   // a brand from a claim is not checking the claim.
-  const stripHtml = EN.slice(EN.indexOf('<section class="trust-bar">'),
-                             EN.indexOf('===== BROWSE PRODUCTS'));
+  const stripHtml = EN.slice(EN.indexOf('<div class="pf-row">'),
+                             EN.indexOf('</div>', EN.indexOf('class="tick__track"')));
   const copyOnly = stripHtml
     .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<ul[\s\S]*?<\/ul>/g, ' ')   // the client names are not a claim
+    .replace(/<div class="tick"[\s\S]*/g, ' ')   // the client names are not a claim
     .replace(/<[^>]+>/g, ' ');
   ok('1e the strip\'s own copy makes no numeric claim',
     !/\d/.test(copyOnly), `found "${(copyOnly.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
-  const more = (EN.match(/<p class="trust-clients__more">([\s\S]*?)<\/p>/) || [])[1] || '';
+  const more = (EN.match(/<a class="pf-more"[\s\S]*?<\/a>/) || [''])[0];
   ok('1f a link out to the work follows the names',
-    /<a href="portfolio"/.test(more), 'no link under the names');
+    /href="portfolio"/.test(more), 'no link under the names');
   ok('1g that link is translated, not hardcoded English',
     /data-i18n="home\.trust\.seework"/.test(more) && /'home\.trust\.seework'/.test(LANG));
 
@@ -517,46 +529,56 @@ console.log('8. the hero line is the phone version of the bar, and holds the sam
     hideAt < 0 ? 'nothing hides .proof-bar at all — if the bar now shows on phones, revisit this section'
                : 'the rule hiding .proof-bar is no longer inside a 480px media query');
 
-  const start = EN.indexOf('<div class="hero-proof"');
-  const line = EN.slice(start, EN.indexOf('</div>', start));
-  const copy = line.replace(/<[^>]+>/g, ' ');
-  ok('8b the hero line makes no numeric claim',
-    !/\d/.test(copy), `found "${(copy.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
+  // ---------------------------------------------------------------------
+  // 2026-10-06 — .hero-proof is gone. The hero it lived in was replaced by
+  // the fold (.sp-fold), so these assertions were checking an element that no
+  // longer exists and failed on correct code. They now check the SAME
+  // PROPERTIES on the thing that replaced it: the fold's lede carries the
+  // artwork promise, the address line carries the location signal, and the
+  // "free" half lives on the proof bar directly below. The intent is
+  // unchanged -- only where each claim is written has moved.
+  const foldStart = EN.indexOf('<section class="sp-fold">');
+  const fold = foldStart < 0 ? '' : EN.slice(foldStart, EN.indexOf('</section>', foldStart));
+  const foldCopy = fold.replace(/<[^>]+>/g, ' ');
+  // The headline and lede only. The client names ("C4 Energy") and the
+  // quantity picker ("25-49") legitimately carry digits; a check that cannot
+  // tell a brand or a band from a claim is not checking the claim.
+  // Entities first: &#8209; is a non-breaking hyphen and its digits are not a
+  // claim. The first version of this flagged "T&#8209;Shirt".
+  const pitch = (fold.match(/<h1>[\s\S]*?<\/p>/) || [''])[0]
+    .replace(/&#\d+;|&[a-z]+;/gi, '-')
+    .replace(/<[^>]+>/g, ' ');
+  ok('8b the headline and lede make no numeric claim',
+    !/\d/.test(pitch), `found "${(pitch.match(/[^\s]*\d[^\s]*/) || [''])[0]}"`);
   ok('8c and no claim about where the work happens',
-    !/\bin[-\s]house\b|\bunder one roof\b|\bour (?:own )?(?:machines?|presses?)\b/i.test(copy));
+    !/\bin[-\s]house\b|\bunder one roof\b|\bour (?:own )?(?:machines?|presses?)\b/i.test(foldCopy));
   ok('8d the artwork promise is there, worded as approved',
-    /<strong>Send any file\.<\/strong> We make it print-ready, free/.test(line));
+    /print&#8209;ready|print-ready/.test(fold) && /Send us your logo/.test(fold));
   ok('8e it is translated, not hardcoded English',
-    /data-i18n="home\.heroproof\.artwork"/.test(line)
-    && /'home\.heroproof\.artwork'/.test(LANG));
+    /data-i18n="fold\.lede"/.test(fold) && /'fold\.lede'/.test(LANG));
   ok('8f the location signal survives',
-    /data-i18n="home\.heroproof\.local"/.test(line));
-  // THE SEPARATOR DOT IS GONE, AND MUST STAY GONE. It only works while the
-  // row does not wrap. Measured 2026-10-05: English wraps below 970px and
-  // French wraps at EVERY width, 1440 included, because the French line is
-  // ~30% longer. There is no breakpoint that saves it, so the row stacks.
-  // Re-adding a separator here puts a dangling dot at the end of the first
-  // line for every French visitor at every screen size.
-  ok('8k the line stacks rather than wraps, so no separator can dangle',
-    /\.hero-proof\{[^}]*flex-direction:column/.test(EN)
-    && !/class="dot-sep"/.test(line),
-    'the hero line wraps again, or a separator came back');
-  ok('8l no orphaned separator styling left behind',
-    !/dot-sep/.test(EN) || /class="dot-sep"/.test(EN),
-    'a .dot-sep rule survives with nothing using it');
-  // "free" is the half of this that answers the cost fear, and it is the half
-  // most likely to be quietly dropped for brevity. It is also a real promise:
-  // the page says twice that cleanups are at no extra charge.
-  ok('8g the no-charge half is still in the line',
-    /\bfree\b/i.test(copy), 'the promise lost the part that removes the cost');
-  ok('8h the French says it too',
-    /gratuitement/.test(LANG.match(/'home\.heroproof\.artwork':[^\n]*/)[0]));
-  ok('8i the retired count key is gone, not just unused',
-    !LANG.includes("'home.heroproof.orders'") && !EN.includes('home.heroproof.orders')
-    && !FR.includes('home.heroproof.orders'));
-  const frStart = FR.indexOf('<div class="hero-proof"');
-  ok('8j the French mirror carries the French line',
-    /Envoyez n'importe quel fichier/.test(FR.slice(frStart, FR.indexOf('</div>', frStart))),
+    /data-i18n="fold\.addr"/.test(fold) && /West Island/.test(fold));
+  ok('8k the authored headline lines are each their own block',
+    /\.sp-fold h1 span\{display:block\}/.test(EN),
+    'the h1 lines are wrapping by column width again instead of breaking where the copy says');
+  ok('8l the build annotation never shipped',
+    !/HANDS OFF TO|class="devnote"/i.test(EN),
+    'the hand-off debug line is on the live page');
+  // "free" is the half that answers the cost fear and the half most likely to
+  // be dropped for brevity. It moved out of the hero line and onto the proof
+  // bar; it must still be SOMEWHERE on the page.
+  ok('8g the no-charge half is still on the page',
+    /Free artwork cleanup/i.test(EN), 'the promise lost the part that removes the cost');
+  ok('8h the French lede says it too, and is really French',
+    (() => { const m = LANG.match(/'fold\.lede':[\s\S]{0,1200}?\}/); if (!m) return false;
+      return /pr\\u00eat \\u00e0 imprimer|pr\u00eat \u00e0 imprimer/.test(m[0]); })(),
+    'fold.lede has no French, or it is still the English string');
+  ok('8i the retired hero-proof keys are gone, not just unused',
+    !LANG.includes("'home.heroproof.") && !EN.includes('home.heroproof.')
+    && !FR.includes('home.heroproof.'),
+    'the hero line is gone but its lang.js keys survive — a dead key reads exactly like a live one');
+  ok('8j the French mirror carries the French fold',
+    /On imprime pour/.test(FR) && /data-i18n="fold\.lede"/.test(FR),
     'FR mirror is stale — rerun scripts/generate-fr-mirror.mjs');
 }
 
