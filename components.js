@@ -847,7 +847,7 @@ function loadNav() {
     return head + children;
   }).join('');
 
-  var searchPlaceholder = t('Search 4,500+ blanks', 'Chercher parmi 4 500+ vêtements');
+  var searchPlaceholder = t('Search 4,600 blanks', 'Chercher parmi 4 600 vêtements');
   var searchOverlayPlaceholder = t('Search by brand, style, or fabric…', 'Cherchez par marque, style ou tissu…');
 
   // 2026-07-26 — the mobile category strip is eight links that all point
@@ -1382,7 +1382,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "Do you supply the blanks or can I bring my own?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 4,500+ blank styles including Gildan, Bella+Canvas and Comfort Colors, and we also decorate customer-supplied garments at a per-piece print rate." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 4,600 blank styles including Gildan, Bella+Canvas and Comfort Colors, and we also decorate customer-supplied garments at a per-piece print rate." }
           },
           {
             "@type": "Question",

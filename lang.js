@@ -214,7 +214,7 @@ var SP_LANG = (function() {
     'home.diff.h2': { en: "Most print shops make you pay to find out if they're any good.", fr: 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes.' },
     'home.diff.sub': { en: "If you've ordered shirts before, you know the drill. Here's how we made it obsolete.", fr: 'Si vous avez déjà commandé des chandails, vous connaissez le refrain. Voici comment on l\'a rendu obsolète.' },
     'home.diff.r1.them': { en: '&ldquo;Call for pricing&rdquo;', fr: '« Appelez pour les prix »' },
-    'home.diff.r1.us': { en: 'Live prices on 4,500+ products, before you talk to anyone', fr: 'Prix en direct sur 4 500+ produits, avant même de parler à quelqu\'un' },
+    'home.diff.r1.us': { en: 'Live prices on 4,600 products, before you talk to anyone', fr: 'Prix en direct sur 4 600 produits, avant même de parler à quelqu\'un' },
     'home.diff.r2.them': { en: '24-piece minimums', fr: 'Minimums de 24 pièces' },
     'home.diff.r2.us': { en: "No minimums. We'll print one.", fr: 'Aucun minimum. On en imprime un seul.' },
     'home.diff.r3.them': { en: 'First look at pickup, fingers crossed', fr: 'Premier aperçu au ramassage, on croise les doigts' },
@@ -285,7 +285,7 @@ var SP_LANG = (function() {
     'home.cat.polos':        { en: 'Polos',                  fr: 'Polos' },
     'home.cat.joggers':      { en: 'Joggers & Sweatpants',   fr: 'Joggers et pantalons molletonnés' },
     'home.products.bulknote':      { en: 'Bulk pricing available. The more you order, the less you pay per unit.', fr: 'Prix de volume disponibles. Plus vous commandez, moins vous payez à l\'unité.' },
-    'home.products.browsecatalog': { en: 'Browse the full catalog — 4,500+ blanks from Gildan, Bella+Canvas, Comfort Colors & more →', fr: 'Parcourez le catalogue complet — 4 500+ vêtements vierges de Gildan, Bella+Canvas, Comfort Colors et plus →' },
+    'home.products.browsecatalog': { en: 'Browse the full catalog — 4,600 blanks from Gildan, Bella+Canvas, Comfort Colors & more →', fr: 'Parcourez le catalogue complet — 4 600 vêtements vierges de Gildan, Bella+Canvas, Comfort Colors et plus →' },
     // Brand strip
     'home.brands.label': { en: 'The blanks we print on', fr: 'Les vêtements sur lesquels on imprime' },
     // Services
@@ -331,7 +331,7 @@ var SP_LANG = (function() {
     'whyus.cmp.them': { en: 'The usual experience', fr: 'L\'expérience habituelle' },
     'whyus.cmp.us': { en: 'At Singhs Print', fr: 'Chez Singhs Print' },
     'whyus.cmp.r1.them': { en: '&ldquo;Call for pricing.&rdquo; Two emails, four days, then a PDF you have to decode.', fr: '« Appelez pour les prix. » Deux courriels, quatre jours, puis un PDF à décoder.' },
-    'whyus.cmp.r1.us': { en: '<strong>Live prices on 4,500+ products.</strong> See your number before you ever talk to a human.', fr: '<strong>Prix en direct sur 4 500+ produits.</strong> Voyez votre chiffre avant même de parler à un humain.' },
+    'whyus.cmp.r1.us': { en: '<strong>Live prices on 4,600 products.</strong> See your number before you ever talk to a human.', fr: '<strong>Prix en direct sur 4 600 produits.</strong> Voyez votre chiffre avant même de parler à un humain.' },
     'whyus.cmp.r2.them': { en: "24-piece minimum before they'll even open your file.", fr: 'Minimum de 24 pièces avant même d\'ouvrir votre fichier.' },
     'whyus.cmp.r2.us': { en: "<strong>No minimums.</strong> We'll print one shirt with the same care as a thousand.", fr: '<strong>Aucun minimum.</strong> On imprime un seul chandail avec le même soin que mille.' },
     'whyus.cmp.r3.them': { en: 'The first time you see your shirt is at pickup. Fingers crossed.', fr: 'La première fois que vous voyez votre chandail, c\'est au ramassage. On croise les doigts.' },
@@ -351,12 +351,12 @@ var SP_LANG = (function() {
     'whyus.proof.days': { en: 'day standard turnaround', fr: 'jours de délai standard' },
     'whyus.proof.lang': { en: 'service in both languages', fr: 'service dans les deux langues' },
     'whyus.cta.h2': { en: 'Stop emailing print shops. Start seeing prices.', fr: 'Arrêtez d\'écrire aux imprimeries. Commencez à voir les prix.' },
-    'whyus.cta.p': { en: 'Browse 4,500+ blanks with live pricing, or send us your design and get a mockup within the hour.', fr: 'Parcourez 4 500+ vêtements avec prix en direct, ou envoyez-nous votre design et recevez une maquette en moins d\'une heure.' },
+    'whyus.cta.p': { en: 'Browse 4,600 blanks with live pricing, or send us your design and get a mockup within the hour.', fr: 'Parcourez 4 600 vêtements avec prix en direct, ou envoyez-nous votre design et recevez une maquette en moins d\'une heure.' },
     'whyus.cta.b1': { en: 'Get a Free Quote &rarr;', fr: 'Soumission gratuite &rarr;' },
     'whyus.cta.b2': { en: 'Browse the catalog', fr: 'Parcourir le catalogue' },
     'about.hero.h1': { en: 'Montreal\'s custom apparel studio,<br>built in Sainte-Anne-de-Bellevue.', fr: 'L\'imprimerie de vêtements personnalisés de Montréal,<br>née à Sainte-Anne-de-Bellevue.' },
     'about.hero.p': {
-      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts, with 4,500+ blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
+      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts, with 4,600 blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
       fr: 'Imprimerie Singhs Print est un décorateur de vêtements familial dans l\'Ouest-de-l\'Île de Montréal. DTG, DTF, broderie et sérigraphie pour les organisations étudiantes, les entreprises locales et les comptes corporatifs Net-30, avec plus de 1 100 styles de vêtements vierges, une soumission en 1 heure pendant les heures d\'ouverture et une vraie réponse humaine à chaque fois.'
     },
     'about.image.studio':  { en: 'The studio · Sainte-Anne-de-Bellevue', fr: 'Le studio · Sainte-Anne-de-Bellevue' },
@@ -390,7 +390,7 @@ var SP_LANG = (function() {
       fr: 'Avoir toutes les méthodes à notre disposition nous permet de recommander la bonne pour votre projet plutôt que de tout forcer à travers une seule machine. T-shirts en coton ? DTG. Athleisure en polyester et mélanges foncés ? DTF. Broderie de logos sur casquettes, polos et vestes ? Cousue selon vos specs.'
     },
     'about.what.p2': {
-      en: 'We carry 4,500+ blank styles from S&S Activewear, SanMar and AlphaBroder. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
+      en: 'We carry 4,600 blank styles from S&S Activewear, SanMar and AlphaBroder. Every major mill from Gildan and Bella+Canvas to Comfort Colors, Champion, Next Level, Independent and American Apparel. Bring your own garments if you\'d prefer, and we\'ll decorate yours at the same per-piece rate.',
       fr: 'Nous offrons plus de 1 100 styles vierges chez S&S Activewear, SanMar et AlphaBroder. Toutes les grandes marques, de Gildan et Bella+Canvas à Comfort Colors, Champion, Next Level, Independent et American Apparel. Apportez vos propres vêtements si vous préférez, et nous décorerons les vôtres au même tarif par pièce.'
     },
 
@@ -852,7 +852,7 @@ var SP_LANG = (function() {
     // Compact label on the mobile collapsed bar — "Quote" instead of "Get a Quote".
     'nav.quote.short':       { en: 'Quote',                  fr: 'Devis' },
     // Header search field placeholder.
-    'nav.search.placeholder':{ en: 'Search 4,500+ blanks',   fr: 'Chercher parmi 4 500+ vêtements' },
+    'nav.search.placeholder':{ en: 'Search 4,600 blanks',   fr: 'Chercher parmi 4 600 vêtements' },
 
     // ===== SHARED FR-ONLY NOTICE (industries + guides) =====
     'page.fr-notice': {
@@ -1029,7 +1029,7 @@ var SP_LANG = (function() {
     'cat.byo.title': { en: 'Bring your own blank', fr: 'Apportez votre propre vêtement' },
     'cat.byo.sub': { en: 'Got a SKU or tech pack? Send it over — we\'ll source and quote it.', fr: 'Vous avez un SKU ou un dossier technique ? Envoyez-le-nous — on le source et on vous fait une soumission.' },
     'cat.filter.refine': { en: 'Refine results', fr: 'Affiner les résultats' },
-    'cat.browseall':     { en: 'Browse all 4,500+ products alphabetically →', fr: 'Parcourir les 4 500+ produits par ordre alphabétique →' },
+    'cat.browseall':     { en: 'Browse all 4,600 products alphabetically →', fr: 'Parcourir les 4 600 produits par ordre alphabétique →' },
     'cat.filter.clear': { en: 'Clear all', fr: 'Tout effacer' },
     'cat.filter.apply': { en: 'Apply', fr: 'Appliquer' },
     'cat.filter.done': { en: 'Done', fr: 'Terminé' },
@@ -1175,7 +1175,7 @@ var SP_LANG = (function() {
       en: 'Pick your garment and we\'ll show the best-selling Bella+Canvas, Gildan, Berne and Adidas blanks in each tier, with live pricing as you change qty / sides — right here, no catalog trip needed.',
       fr: 'Choisissez votre vêtement et on affiche les meilleurs vendeurs Bella+Canvas, Gildan, Berne et Adidas dans chaque gamme, avec le prix en direct selon la quantité et les faces — ici même, sans passer par le catalogue.'
     },
-    'quote.cart.empty.cta': { en: 'or browse all 4,500+ styles', fr: 'ou parcourir les 4 500+ modèles' },
+    'quote.cart.empty.cta': { en: 'or browse all 4,600 styles', fr: 'ou parcourir les 4 600 modèles' },
     'quote.cart.item.color': { en: 'Color:', fr: 'Couleur :' },
     'quote.cart.item.pickcolor': { en: 'Choose a colour →', fr: 'Choisissez une couleur →' },
     'quote.color.choose': { en: 'Choose a colour', fr: 'Choisissez une couleur' },

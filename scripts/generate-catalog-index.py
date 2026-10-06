@@ -64,11 +64,11 @@ def render_page(products, lang):
     h1 = ("Complete product catalog — every blank we print on" if lang == 'en'
           else "Catalogue complet — tous les vêtements que nous décorons")
     sub = (
-        "All 1,000+ blanks we carry, organized alphabetically by brand. Click any "
+        "All 4,600 blanks we carry, organized alphabetically by brand. Click any "
         "product to see live pricing, color options, and request a quote. Every item "
         "ships with Free tee on orders of 15+."
         if lang == 'en' else
-        "Plus de 1 000 modèles que nous décorons, classés par marque. Cliquez sur un "
+        "Les 4 600 modèles que nous décorons, classés par marque. Cliquez sur un "
         "produit pour voir les prix, les couleurs et demander une soumission. 20 $ de "
         "rabais sur votre première commande de 100 $ et plus."
     )
