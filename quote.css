@@ -182,6 +182,18 @@
     .svc-btn strong{display:block;font-size:.9rem}
     .svc-btn span{font-size:.78rem;color:#888}
 
+    /* Placement chips on the bring-your-own panel. They are .svc-btn like the
+       method row, but there are five of them, and .svc-btn{flex:1} stretches a
+       lone wrapped chip across the whole row -- "Sleeve" came out full width
+       under the other four. A grid keeps every chip the same size, and the
+       mobile rule below overrides .service-row{flex-direction:column}, which
+       would otherwise stack five full-height boxes down a phone screen. */
+    #byoPlacementRow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    #byoPlacementRow .svc-btn{min-width:0;padding:11px 6px}
+    #byoPlacementRow .svc-btn strong{font-size:.8rem;line-height:1.25}
+    @media (max-width:860px){ #byoPlacementRow{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:420px){ #byoPlacementRow .svc-btn strong{font-size:.74rem} }
+
     /* Color picker */
     .color-section{margin-bottom:24px}
     .color-section label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:#555}

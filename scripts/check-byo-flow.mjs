@@ -26,8 +26,10 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-const SRC = join(dirname(fileURLToPath(import.meta.url)), '..', 'quote.js')
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+const SRC = join(ROOT, 'quote.js')
 const raw = readFileSync(SRC, 'utf8')
+const css = readFileSync(join(ROOT, 'quote.css'), 'utf8')
 const code = raw.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 
 const problems = []
@@ -75,6 +77,44 @@ ok('C3 the ceiling matches the input', /BYO_QTY_MAX = 10000/.test(add) && /max="
 ok('C4 the builder says why before you press it', /spByoMinNote\(/.test(code))
 ok('C5 the minimum comes from the engine here too',
    /spByoBelowEmbMin[\s\S]{0,220}SP_EMB_MIN\(\)/.test(code))
+
+// ── 4. sides, sizes, and no paying for what we have not seen ───────────────
+ok('D1 the builder offers placements', /SP_BYO_PLACEMENTS\s*=\s*\[/.test(code))
+ok('D2 the price call carries them', /placements=' \+ encodeURIComponent\(pl\.join\(','\)\)/.test(code))
+// Scoped to the BYO add: a catalog line's `sides: 1` is deliberate (its
+// read() migration derives a garment-aware default placement from it), so a
+// file-wide ban on that literal fails on correct code elsewhere.
+ok('D3 sides follows the placement count, never a hardcoded 1',
+   /sides:\s*Math\.max\(1, spByoPlacements\.length\)/.test(add) && !/sides:\s*1,/.test(add))
+ok('D4 the cart row re-prices with its own placements', /pls\.length \? '&placements='/.test(code))
+ok('D5 embroidery cannot be put somewhere we do not stitch',
+   /spByoPrunePlacements/.test(code) && /EMB_DISALLOWED\[d\.id\]/.test(code))
+ok('D6 a BYO row takes the same size grid as every other line',
+   /renderCartItemSizes\(idx, it\.sizes \|\| \{\}, qty, it\)/.test(code))
+ok('E1 Pay Now is switched off while the cart holds our customer\'s own garments',
+   /function spByoSyncPayButtons\(/.test(code))
+ok('E2 it runs on every cart render, not just when a total is drawn',
+   /function renderCartList\(\)\s*\{\s*\n\s*(?:\/\/[^\n]*\n\s*)*spByoSyncPayButtons\(\)/.test(code),
+   'updateCartTotal returns early on an empty cart, so removing the last BYO line left the button dead')
+ok('E3 the click guard is still there as the backstop',
+   /it\.is_byo[\s\S]{0,120}quote\.byoline\.nocheckout/.test(code))
+
+// ── F. the placement row has to lay out as a grid ──────────────────────────
+// .svc-btn carries flex:1, which is right for three method buttons and wrong
+// for five placements: measured in Chromium at 1280px, the four that fit came
+// out 152px each and the wrapped "Sleeve" stretched to 638px. And the mobile
+// rule .service-row{flex-direction:column} turned the five chips into five
+// full-width boxes stacked down a 390px screen. With the grid: 5 x 121px on
+// one row at 1280, 3 + 2 at 860, 3 + 2 at 390, every chip the same size.
+ok('F1 the placement row is a grid, not the method row\'s flex',
+   /#byoPlacementRow\{[^}]*display:grid/.test(css),
+   'flex:1 stretches the one wrapped chip across the full row')
+ok('F2 it names its own column count instead of letting chips wrap',
+   /#byoPlacementRow\{[^}]*grid-template-columns:repeat\(5,\s*1fr\)/.test(css))
+ok('F3 and narrow screens get fewer columns, not five stacked boxes',
+   /@media[^{]*max-width:\s*860px[^{]*\{\s*#byoPlacementRow\{[^}]*grid-template-columns:repeat\(3,\s*1fr\)/.test(css))
+ok('F4 the chips may shrink below .svc-btn\'s 120px floor',
+   /#byoPlacementRow \.svc-btn\{[^}]*min-width:0/.test(css))
 
 if (problems.length) {
   console.error(`\ncheck-byo-flow: ${problems.length} problem(s)\n`)

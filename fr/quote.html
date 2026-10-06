@@ -338,6 +338,16 @@
                 <div class="svc-btn" data-method="" onclick="spByoSelectMethod(this)"><strong  data-i18n="quote.byoline.unsure.l">Je ne sais pas</strong><span  data-i18n="quote.byoline.unsure.s">On vous conseille</span></div>
               </div>
 
+              <!-- Where the decoration goes. Each one the customer picks is a
+                   side the press runs, and the engine prices it that way:
+                   decoration-only reads num_sides straight off the placement
+                   count. Before this, BYO sent sides=1 always and a
+                   front-and-back job on a customer's own garments could not
+                   be expressed at all, let alone priced. -->
+              <div style="font-size:.7rem;color:#888;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px"  data-i18n="quote.byoline.where">Où ça va ?</div>
+              <div class="service-row" id="byoPlacementRow" style="margin-bottom:6px;flex-wrap:wrap"></div>
+              <div id="byoPlacementNote" style="font-size:.74rem;color:#8a6d3b;margin:0 0 12px;line-height:1.45;display:none"></div>
+
               <div id="byoLineEstimate" style="background:#1a1a1a;color:#fff;border-radius:12px;padding:13px 16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e8ff3c;flex-basis:100%"  data-i18n="quote.byoline.est">Décoration seulement · estimation</div>
                 <div style="font-size:1.35rem;font-weight:700;line-height:1.1"><span id="byoLineUnit">$&mdash;</span><span style="font-size:.76rem;font-weight:500;color:#aaa"  data-i18n="quote.byo.per">/vêtement</span></div>

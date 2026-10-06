@@ -153,6 +153,79 @@
     var spByoMethod = 'dtg';
     var spByoLineSeq = 0;
 
+    // WHERE THE DECORATION GOES, and therefore how many sides the press runs.
+    // /api/pricing/decoration-only reads num_sides off the placement count, so
+    // this is what turns a front-and-back job into a two-side price. BYO used
+    // to send sides=1 unconditionally: a customer sending 50 hoodies for a
+    // front and a back was quoted one print, and the rep found out later.
+    // Measured on the live engine at qty 50, DTG: 1 placement $9.95, 2 $14.95,
+    // 3 $18.95.
+    //
+    // Deliberately a short list. The customer is describing garments we have
+    // never seen, so the full per-garment placement map the catalog uses has
+    // nothing to key off; these five cover what people actually ask for, and
+    // anything stranger is what the description box and the call are for.
+    var SP_BYO_PLACEMENTS = [
+      { id: 'left-chest',  en: 'Left chest',  fr: 'C\u0153ur' },
+      { id: 'full-front',  en: 'Full front',  fr: 'Devant complet' },
+      { id: 'back-top',    en: 'Upper back',  fr: 'Haut du dos' },
+      { id: 'back-full',   en: 'Full back',   fr: 'Dos complet' },
+      { id: 'left-sleeve', en: 'Sleeve',      fr: 'Manche' },
+    ];
+    var spByoPlacements = ['left-chest'];
+
+    function spByoPlacementLabel(d) {
+      var k = 'quote.byoline.pl.' + d.id;
+      var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(k) : '';
+      return t || d.en;
+    }
+
+    function spByoRenderPlacements() {
+      var row = document.getElementById('byoPlacementRow');
+      if (!row) return;
+      var isEmb = spByoMethod === 'embroidery';
+      row.innerHTML = SP_BYO_PLACEMENTS.map(function (d) {
+        // EMB_DISALLOWED is the same map the catalog customizer and the
+        // per-item placement picker use -- full back and oversized fronts are
+        // not things we stitch. The engine will happily PRICE embroidery on a
+        // full back if asked, so the refusal has to be here.
+        var off = isEmb && EMB_DISALLOWED[d.id];
+        var on  = spByoPlacements.indexOf(d.id) >= 0;
+        return '<div class="svc-btn' + (on ? ' selected' : '') + '"' +
+               (off ? ' aria-disabled="true" style="opacity:.42;cursor:not-allowed"'
+                    : ' onclick="spByoTogglePlacement(\'' + d.id + '\')"') +
+               '><strong>' + spByoPlacementLabel(d) + '</strong></div>';
+      }).join('');
+      var note = document.getElementById('byoPlacementNote');
+      if (note) {
+        var dropped = isEmb && SP_BYO_PLACEMENTS.some(function (d) { return EMB_DISALLOWED[d.id]; });
+        var msg = dropped ? spByoT('quote.byoline.embplacement',
+          'A full back is printed, not stitched \u2014 pick an upper back for embroidery.') : '';
+        note.textContent = msg;
+        note.style.display = msg ? '' : 'none';
+      }
+    }
+
+    function spByoTogglePlacement(id) {
+      var i = spByoPlacements.indexOf(id);
+      if (i >= 0) {
+        // Never leave the line with nothing: a decoration with no location is
+        // not a thing we can price or produce.
+        if (spByoPlacements.length > 1) spByoPlacements.splice(i, 1);
+      } else {
+        spByoPlacements.push(id);
+      }
+      spByoRenderPlacements();
+      spByoLineRefreshPrice();
+    }
+
+    /** Drop anything this method cannot do, keeping at least one location. */
+    function spByoPrunePlacements() {
+      if (spByoMethod !== 'embroidery') return;
+      var kept = spByoPlacements.filter(function (id) { return !EMB_DISALLOWED[id]; });
+      spByoPlacements = kept.length ? kept : ['left-chest'];
+    }
+
     function spShowByoLineBuilder() {
       var sec = document.getElementById('byoLineSection');
       var qtyHost = document.getElementById('qtyBandSection');
@@ -161,6 +234,7 @@
       if (tierHost) { tierHost.style.display = 'none'; tierHost.innerHTML = ''; }
       if (sec) sec.style.display = '';
       spByoBlankFields(true);
+      spByoRenderPlacements();
       spByoLineRefreshPrice();
     }
 
@@ -194,6 +268,8 @@
       el.parentElement.querySelectorAll('.svc-btn').forEach(function (o) { o.classList.remove('selected'); });
       el.classList.add('selected');
       spByoMethod = el.dataset.method || '';
+      spByoPrunePlacements();
+      spByoRenderPlacements();
       spByoLineRefreshPrice();
     }
 
@@ -260,8 +336,11 @@
 
       var seq = ++spByoLineSeq;
       unitEl.textContent = '…'; totalEl.textContent = '…';
+      var pl = spByoPlacements.slice();
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only'
-              + '?qty=' + qty + '&method=' + encodeURIComponent(spByoMethod) + '&sides=1';
+              + '?qty=' + qty + '&method=' + encodeURIComponent(spByoMethod)
+              + '&sides=' + Math.max(1, pl.length)
+              + '&placements=' + encodeURIComponent(pl.join(','));
       fetch(url)
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -323,9 +402,12 @@
         garment_type:    null,
         hero_url:        '',
         qty:             qty,
-        sides:           1,
+        // The press runs one pass per location, and that is what the engine
+        // charges for. Both fields travel: sides is what the pricing call
+        // reads, placements is what the rep needs to know where it goes.
+        sides:           Math.max(1, spByoPlacements.length),
         sizes:           {},
-        placements:      [],
+        placements:      spByoPlacements.slice(),
         decoration_type: spByoMethod === 'embroidery' ? 'embroidery' : (spByoMethod ? 'dtf' : ''),
       });
       SinghsCart.write(cart);   // renders the row and flips the page into cart mode
@@ -5850,6 +5932,15 @@
         ? (_t('quote.byoline.emb.l') || 'Embroidery')
         : (it.decoration_type ? (_t('quote.byoline.dtg.l') || 'DTG / DTF')
                               : (_t('quote.byoline.unsure.l') || 'Not sure'));
+      // Where it goes, spelled out. A line that says "Embroidery" and nothing
+      // else is one the rep has to phone about.
+      var plNames = (it.placements || []).map(function (id) {
+        for (var i = 0; i < SP_BYO_PLACEMENTS.length; i++)
+          if (SP_BYO_PLACEMENTS[i].id === id) return spByoPlacementLabel(SP_BYO_PLACEMENTS[i]);
+        return id;
+      });
+      var plLabel = plNames.length ? ' \u00b7 ' + jEsc(plNames.join(', ')) : '';
+
       var priceHtml = (typeof it.byo_unit_price === 'number')
         ? '<strong style="color:#1a1a1a">$' + it.byo_unit_price.toFixed(2) + '</strong> /garment · '
           + (_t('quote.cart.jersey.subtotal') || 'subtotal')
@@ -5865,7 +5956,7 @@
         '    <div style="font-size:.66rem;color:#8a7a2a;background:#fbf6d9;display:inline-block;padding:2px 8px;border-radius:50px;font-weight:700;letter-spacing:.05em;text-transform:uppercase">' + (_t('quote.byoline.badge') || 'Your garments') + '</div>' +
         '    <div style="font-size:.95rem;font-weight:600;line-height:1.3;margin-top:5px">' + jEsc(it.byo_description || '') + '</div>' +
         (it.byo_material ? '    <div style="font-size:.78rem;color:#666;margin-top:3px">' + jEsc(it.byo_material) + '</div>' : '') +
-        '    <div style="font-size:.78rem;color:#666;margin-top:4px">' + jEsc(methodLabel) + '</div>' +
+        '    <div style="font-size:.78rem;color:#666;margin-top:4px">' + jEsc(methodLabel) + plLabel + '</div>' +
         '    <div class="cart-item-price" id="ci-price-' + idx + '" style="font-size:.82rem;color:#666;margin-top:6px">' + priceHtml + '</div>' +
         '  </div>' +
         '  <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">' +
@@ -5874,6 +5965,12 @@
         '    </label>' +
         '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
         '  </div>' +
+        // The same grid every other line gets. A BYO row used to have none, so
+        // a customer shipping 50 hoodies could not say how many were larges
+        // and the rep had to ask -- about garments already in a box on a van.
+        // renderCartItemSizes writes straight back through
+        // onCartItemSizeChange, which is generic and syncs qty to the total.
+        renderCartItemSizes(idx, it.sizes || {}, qty, it) +
         '</div>';
     }
 
@@ -5943,6 +6040,10 @@
     }
 
     function renderCartList() {
+      // Also here, not only from updateCartTotal: that one returns early on an
+      // empty cart, so removing the last BYO line left Pay Now switched off
+      // with nothing in the cart to explain why.
+      spByoSyncPayButtons();
       var host = document.getElementById('cartList');
       var addMore = document.getElementById('cartAddMore');
       var emptyCta = document.getElementById('catalogPickEmpty');
@@ -6185,9 +6286,11 @@
       if (spByoBelowEmbMin(qty, method)) { spByoRowUnpriced(idx, it); return; }
 
       var seq = (_spByoRowSeq[idx] = (_spByoRowSeq[idx] || 0) + 1);
-      var sides = Math.max(1, Number(it.sides) || 1);
+      var pls   = (it.placements || []).filter(Boolean);
+      var sides = Math.max(1, pls.length || Number(it.sides) || 1);
       var url = 'https://singhsprint-crm.vercel.app/api/pricing/decoration-only'
-              + '?qty=' + qty + '&method=' + encodeURIComponent(method) + '&sides=' + sides;
+              + '?qty=' + qty + '&method=' + encodeURIComponent(method) + '&sides=' + sides
+              + (pls.length ? '&placements=' + encodeURIComponent(pls.join(',')) : '');
       fetch(url)
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -6632,7 +6735,56 @@
       el.textContent = t || (partial ? 'Priced so far' : 'Total');
     }
 
+    // PAY NOW IS OFF WHILE THE CART HOLDS GARMENTS WE HAVE NOT SEEN.
+    //
+    // handlePayment() has refused these since 2026-09-08, but only after the
+    // click: the button sat there looking like the way to finish, and the
+    // customer found out by alert. A decoration-only line prices work on
+    // garments nobody has counted or inspected, so the answer is never "pay
+    // now" -- it is "send it to us and we will confirm". Say that where the
+    // button is, instead of behind it. The click guard stays as the backstop.
+    function spByoSyncPayButtons() {
+      var hasByo = false;
+      try { hasByo = SinghsCart.read().items.some(function (it) { return it.is_byo; }); } catch (e) { return; }
+      [document.getElementById('payButton'), document.getElementById('orderPayBtn')]
+        .filter(Boolean).forEach(function (b) {
+          if (hasByo) {
+            if (!b.dataset.byoOffLabel) b.dataset.byoOffLabel = b.textContent;
+            b.disabled = true;
+            b.style.opacity = '.45';
+            b.style.cursor = 'not-allowed';
+            b.title = spByoT('quote.byoline.nocheckout.short',
+              'Your own garments are quoted, not paid for up front \u2014 we confirm the count when the box arrives.');
+            b.setAttribute('aria-disabled', 'true');
+          } else if (b.dataset.byoOffLabel) {
+            b.disabled = false;
+            b.style.opacity = '';
+            b.style.cursor = '';
+            b.removeAttribute('title');
+            b.removeAttribute('aria-disabled');
+            delete b.dataset.byoOffLabel;
+          }
+        });
+      var note = document.getElementById('byoNoPayNote');
+      if (hasByo && !note) {
+        var host = document.getElementById('payButton') || document.getElementById('orderPayBtn');
+        if (host && host.parentNode) {
+          note = document.createElement('div');
+          note.id = 'byoNoPayNote';
+          note.setAttribute('data-i18n', 'quote.byoline.nocheckout.short');
+          note.style.cssText = 'font-size:.78rem;color:#8a6d3b;background:#fffdf6;border:1px solid #f0eee5;'
+                             + 'border-radius:10px;padding:9px 12px;margin-top:10px;line-height:1.45';
+          note.textContent = spByoT('quote.byoline.nocheckout.short',
+            'Your own garments are quoted, not paid for up front \u2014 we confirm the count when the box arrives.');
+          host.parentNode.insertBefore(note, host.nextSibling);
+        }
+      } else if (!hasByo && note) {
+        note.parentNode.removeChild(note);
+      }
+    }
+
     function updateCartTotal() {
+      spByoSyncPayButtons();
       var items = SinghsCart.read().items;
       spPaintFreeTee(items);
       if (items.length === 0) return;
