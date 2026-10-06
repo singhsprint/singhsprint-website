@@ -344,6 +344,14 @@
       /* On touch devices, always show the add button (no hover). */
       .card .add-cart{opacity:1}
     }
+
+    /* The one-line note on a page-one pick. Quiet on purpose: it sits between
+       the product name and the swatches, so it has to read as a caption, not
+       as a second headline competing with the name above it. */
+    .card .pick-note{font-size:.74rem;line-height:1.35;color:var(--soft);
+      margin:3px 0 7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+      overflow:hidden}
+    @media(max-width:600px){.card .pick-note{font-size:.72rem;-webkit-line-clamp:3}}
   </style>
   <!-- 2026-05-24 — Entire pill is now a single <a href> tap target.
        Earlier iteration kept the count/label as plain spans and only

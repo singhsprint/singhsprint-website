@@ -98,6 +98,11 @@
       has_csa_cert:     !!h.has_csa_cert,
       in_stock:         !!h.in_stock,
       color_count:      h.color_count,
+      // The one-line note on a page-one pick, both languages, straight off the
+      // Algolia record. _rank_pick itself is unretrievable by design -- the
+      // index has already ordered the hits by it, so the browser never needs
+      // the number, only the sentence.
+      pick_note:        h.pick_note || null,
       price_from:       p,
       prices_by_qty:    h.prices_by_qty || null,
       colors:           Array.isArray(h.colors) ? h.colors : [],

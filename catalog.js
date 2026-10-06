@@ -4070,6 +4070,7 @@
       <div class="body">
         <div class="brand-row">${esc((p.brand || '').toUpperCase())} · ${esc(p.style_number || '')}</div>
         <div class="name">${esc(p.name)}</div>
+        ${pickNoteHtml(p)}
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
         <div class="price">${priceCellHtml(p, state.qty)}</div>
@@ -4235,6 +4236,29 @@
   // =========================================================================
   // Sort
   // =========================================================================
+  // A page-one pick carries one line of copy under its name. The text is
+  // generated in the CRM from the product's OWN description (weight, fibre in
+  // the record's own words, yarn count, colour count) plus one short clause
+  // from a fixed vocabulary -- see src/lib/catalog/picks.ts there. Nothing is
+  // written by hand, so a note cannot claim a spec the catalogue does not
+  // carry. Unpicked products get nothing, which is most of them.
+  function pickNoteHtml(p) {
+    var n = p && p.pick_note;
+    if (!n) return '';
+    // SP_LANG is lang.js's module object, not a string -- getLang() is the
+    // accessor. Comparing the object to 'fr' silently left the French mirror
+    // showing English notes, which is exactly the failure the fold had.
+    var lang = 'en';
+    try {
+      if (typeof SP_LANG !== 'undefined' && SP_LANG && typeof SP_LANG.getLang === 'function') {
+        lang = SP_LANG.getLang() === 'fr' ? 'fr' : 'en';
+      } else if (/^\/fr(\/|$)/.test(location.pathname)) { lang = 'fr'; }
+    } catch (e) { lang = /^\/fr(\/|$)/.test(location.pathname) ? 'fr' : 'en'; }
+    var txt = n[lang] || n.en || '';
+    if (!txt) return '';
+    return '<div class="pick-note">' + esc(txt) + '</div>';
+  }
+
   function sortProducts(list, mode) {
     const arr = list.slice();
     switch (mode) {
@@ -4262,6 +4286,14 @@
         // 15 of 253 A1845 size rows, always in the optimistic direction — so
         // this key gets sharper for free once the per-size stock sync lands.
         return arr.sort((a, b) => {
+          // The 25 curated picks for this category first, in the order they
+          // were chosen. Algolia already does this server-side via
+          // desc(_rank_pick); doing it here too means the API fallback path
+          // draws the SAME first page instead of a different one. 0 for the
+          // ~4,150 products that are not picked, so they fall through to the
+          // keys below exactly as before.
+          const pa = a.pick_rank || 0, pb = b.pick_rank || 0;
+          if (pa !== pb) return pb - pa;
           const sa = a.in_stock === false ? 1 : 0;
           const sb = b.in_stock === false ? 1 : 0;
           if (sa !== sb) return sa - sb;
