@@ -9276,6 +9276,47 @@
         el.remove();
       }
 
+      // ---- started on the home page --------------------------------------
+      // The fold's quote starter links here as
+      //     /quote?garment=Hoodie&qty=b25&method=DTG
+      // and this opens the form already on those answers. It does NOT invent
+      // a new restore path: it hands restoreDraft() exactly the shape it
+      // already takes from a saved draft -- product card value, quantity band
+      // id, method card value -- so the three controls light up through the
+      // same code the Resume button uses.
+      //
+      // Every value is checked against what is actually ON the page rather
+      // than trusted: an unknown garment or band is dropped, not applied, so
+      // a mangled or hand-edited link degrades to a normal empty form.
+      var URL_BANDS = ['u5', 'b5', 'b10', 'b25', 'b50', 'b100', 'b200'];
+      function startFromUrl() {
+        var sp;
+        try { sp = new URLSearchParams(location.search); } catch (e) { return false; }
+        var garment = sp.get('garment');
+        var qty     = sp.get('qty');
+        var method  = sp.get('method');
+        if (!garment && !qty && !method) return false;
+        // ?product= (a catalog deep link) and a live cart both out-rank this.
+        if (bypass()) return false;
+
+        var cards = [].slice.call(document.querySelectorAll('[onclick="selectProduct(this)"]'));
+        var product = cards.filter(function (el) { return el.dataset.value === garment; })[0]
+          ? garment : '';
+        var band = (qty && URL_BANDS.indexOf(qty) >= 0) ? qty : null;
+        var svcCards = [].slice.call(document.querySelectorAll('[onclick="selectService(this)"]'));
+        var service = svcCards.filter(function (el) {
+          return (el.dataset.value || '') === method; })[0] ? method : '';
+
+        if (!product && !band && !service) return false;
+        restoreDraft({ product: product, qtyBand: band, service: service,
+                       sizes: {}, fields: {} });
+        try {
+          if (window.gtag) window.gtag('event', 'quote_started_from_home',
+            { garment: product || '(none)', qty: band || '(none)', method: service || '(none)' });
+        } catch (e) {}
+        return true;
+      }
+
       // ---- boot -----------------------------------------------------------
       window.addEventListener('load', function () {
         // Social proof helps every path — catalog deep-links and cart
@@ -9283,7 +9324,9 @@
         insertSocial();
         if (bypass()) return;
         syncReveal();
-        restoreBanner();
+        // A quote started on the home page wins over the saved-draft banner:
+        // the visitor just told us what they want, in this click.
+        if (!startFromUrl()) restoreBanner();
         var form = document.getElementById('quoteForm');
         if (form) {
           form.addEventListener('input', saveDraftSoon);
