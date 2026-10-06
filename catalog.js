@@ -3143,11 +3143,11 @@
     document.addEventListener('DOMContentLoaded', function () {
       var h1 = document.querySelector('.cat-hero h1'),
           p  = document.querySelector('.cat-hero p');
-      if (h1) { h1.setAttribute('data-i18n', 'pop.hero.h1'); h1.textContent = 'What people actually order'; }
-      if (p)  { p.setAttribute('data-i18n', 'pop.hero.p');   p.innerHTML = 'The 25 blanks that come back on order after order, most-ordered first.'; }
+      if (h1) { h1.setAttribute('data-i18n', 'pop.hero.h1'); h1.textContent = 'What people order most'; }
+      if (p)  { p.setAttribute('data-i18n', 'pop.hero.p');   p.innerHTML = 'One or two of everything we print, each category led by the blank that comes back most.'; }
       var meta = document.querySelectorAll('.cat-hero .meta span');
       if (meta.length >= 5) {
-        meta[0].setAttribute('data-i18n', 'pop.hero.meta1'); meta[0].innerHTML = 'Counted from <strong>real orders</strong>, not picked by us';
+        meta[0].setAttribute('data-i18n', 'pop.hero.meta1'); meta[0].innerHTML = 'Ordered by <strong>what actually sells</strong>';
         meta[2].setAttribute('data-i18n', 'cat.hero.meta2');
         meta[4].setAttribute('data-i18n', 'cat.hero.meta3');
       }

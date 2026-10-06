@@ -867,13 +867,13 @@ var SP_LANG = (function() {
       fr: '<strong id="catCount">4 600</strong> modèles, au prix réel de votre quantité.'
     },
     // ===== POPULAR (/popular) =====
-    'pop.hero.h1': { en: 'What people actually order', fr: 'Ce que les gens commandent vraiment' },
+    'pop.hero.h1': { en: 'What people order most', fr: 'Ce qu\u2019on commande le plus' },
     'pop.hero.p': {
-      en: 'The 25 blanks that come back on order after order, most&#8209;ordered first.',
-      fr: 'Les 25 v\u00eatements qui reviennent commande apr\u00e8s commande, du plus command\u00e9 au moins.'
+      en: 'One or two of everything we print, each category led by the blank that comes back most.',
+      fr: 'Un ou deux de chaque chose qu\u2019on imprime, chaque cat\u00e9gorie men\u00e9e par le v\u00eatement qui revient le plus.'
     },
-    'pop.hero.meta1': { en: 'Counted from <strong>real orders</strong>, not picked by us',
-                        fr: 'Compt\u00e9 \u00e0 partir de <strong>vraies commandes</strong>, pas choisi par nous' },
+    'pop.hero.meta1': { en: 'Ordered by <strong>what actually sells</strong>',
+                        fr: 'Class\u00e9 selon <strong>ce qui se vend vraiment</strong>' },
     'pop.nav': { en: 'Popular', fr: 'Populaires' },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
     'cat.hero.meta2': { en: '<strong>7–14 day</strong> typical turnaround', fr: 'Délai habituel de <strong>7 à 14 jours</strong>' },
