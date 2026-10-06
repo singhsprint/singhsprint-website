@@ -1321,7 +1321,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "Do you supply the blanks or can I bring my own?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 4,500+ blank styles from S&S, AlphaBroder, and SanMar, and we also decorate customer-supplied garments at a per-piece print rate." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Both. We carry 4,500+ blank styles including Gildan, Bella+Canvas and Comfort Colors, and we also decorate customer-supplied garments at a per-piece print rate." }
           },
           {
             "@type": "Question",

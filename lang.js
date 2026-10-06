@@ -204,7 +204,7 @@ var SP_LANG = (function() {
     'home.faq.q3': { en: 'How fast can you complete an order?', fr: 'En combien de temps pouvez-vous compléter une commande ?' },
     'home.faq.a3': { en: "Standard turnaround is 7–14 business days from approved artwork, with rush to 3–5 days available for a surcharge. You'll get an exact timeline at the quote stage.", fr: "Le délai standard est de 7 à 14 jours ouvrables après l'approbation du visuel, avec un service accéléré de 3 à 5 jours moyennant un supplément. On vous donne un échéancier précis à l'étape de la soumission." },
     'home.faq.q4': { en: 'Can you supply the blank apparel?', fr: 'Pouvez-vous fournir les vêtements vierges ?' },
-    'home.faq.a4': { en: "Yes! We source from S&amp;S Activewear and SanMar, which means access to Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On s\'approvisionne chez S&amp;S Activewear et SanMar — accès à Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
+    'home.faq.a4': { en: "Yes! We carry Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On offre Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
     'home.faq.a5': { en: "PNG, JPG, PDF, AI, PSD, SVG. Transparent PNG or vector recommended. Don't have print-ready art? We offer free design help.", fr: 'PNG, JPG, PDF, AI, PSD, SVG. PNG transparent ou vectoriel recommandé. Pas de visuel prêt pour l\'impression ? Notre studio de design vous aide gratuitement.' },
     'home.faq.q6': { en: 'Can I see a sample first?', fr: 'Puis-je voir un échantillon d\'abord ?' },
@@ -253,7 +253,7 @@ var SP_LANG = (function() {
     'home.cat.polos':        { en: 'Polos',                  fr: 'Polos' },
     'home.cat.joggers':      { en: 'Joggers & Sweatpants',   fr: 'Joggers et pantalons molletonnés' },
     'home.products.bulknote':      { en: 'Bulk pricing available. The more you order, the less you pay per unit.', fr: 'Prix de volume disponibles. Plus vous commandez, moins vous payez à l\'unité.' },
-    'home.products.browsecatalog': { en: 'Browse the full catalog — 4,500+ blanks across S&amp;S, SanMar & more →', fr: 'Parcourez le catalogue complet — 4 500+ vêtements vierges chez S&amp;S, SanMar et plus →' },
+    'home.products.browsecatalog': { en: 'Browse the full catalog — 4,500+ blanks from Gildan, Bella+Canvas, Comfort Colors & more →', fr: 'Parcourez le catalogue complet — 4 500+ vêtements vierges de Gildan, Bella+Canvas, Comfort Colors et plus →' },
     // Brand strip
     'home.brands.label': { en: 'We print on premium blanks from top suppliers', fr: 'On imprime sur des vêtements de qualité des meilleurs fournisseurs' },
     // Services
