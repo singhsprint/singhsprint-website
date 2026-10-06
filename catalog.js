@@ -3112,6 +3112,49 @@
     }
   }
 
+  // ===========================================================================
+  // /popular — the blanks customers actually reorder.
+  //
+  // Not a filter and not a curation: /api/catalog?popular=1 counts how many
+  // PLACED orders each product appears in (shipped, delivered, in production,
+  // accepted quote) and returns the top 25. Quotes that went cold do not
+  // count. If the measured set is ever shorter than 25 the page is shorter
+  // than 25 -- it never pads, because the only thing this page has to offer
+  // is that the order is true.
+  //
+  // It reuses the catalog's cards, prices, colour swatches, detail modal and
+  // add-to-quote wholesale. The only differences are where the products come
+  // from, that there is one page of them, and that the filter and sort
+  // controls are hidden: filtering a 25-item page down to nothing is not a
+  // feature.
+  // ===========================================================================
+  // /popular, /fr/popular and /fr/populaires all land on this file via the
+  // rewrites in vercel.json. The first version matched only /popular, so the
+  // French page would have rendered the ordinary catalog under a French
+  // "most ordered" nav link.
+  const POPULAR = getQueryParam('popular') === '1'
+               || /^\/(?:fr\/)?(?:popular|populaires)(?:\/|$)/.test(location.pathname);
+
+  if (POPULAR) {
+    document.documentElement.classList.add('is-popular');
+    // The hero copy is swapped here rather than in a second HTML file so the
+    // two pages cannot drift apart. lang.js owns the strings; data-i18n is
+    // rewritten before it runs, so the French mirror gets French.
+    document.addEventListener('DOMContentLoaded', function () {
+      var h1 = document.querySelector('.cat-hero h1'),
+          p  = document.querySelector('.cat-hero p');
+      if (h1) { h1.setAttribute('data-i18n', 'pop.hero.h1'); h1.textContent = 'What people actually order'; }
+      if (p)  { p.setAttribute('data-i18n', 'pop.hero.p');   p.innerHTML = 'The 25 blanks that come back on order after order, most-ordered first.'; }
+      var meta = document.querySelectorAll('.cat-hero .meta span');
+      if (meta.length >= 5) {
+        meta[0].setAttribute('data-i18n', 'pop.hero.meta1'); meta[0].innerHTML = 'Counted from <strong>real orders</strong>, not picked by us';
+        meta[2].setAttribute('data-i18n', 'cat.hero.meta2');
+        meta[4].setAttribute('data-i18n', 'cat.hero.meta3');
+      }
+      document.title = 'Popular blanks \u00b7 Singhs Print';
+    });
+  }
+
   const state = {
     pageIndex: Math.max(0, (parseInt(getQueryParam('page'), 10) || 1) - 1),
     totalPages: 1,
@@ -3297,6 +3340,30 @@
     if (state.loading || state.done) return;
     state.loading = true;
     document.getElementById('catLoading').style.display = state.products.length ? 'block' : 'none';
+
+    // POPULAR PATH. One call, 25 products, already in order. Deliberately not
+    // routed through Algolia: order history is not in the index, and putting
+    // it there would mean the page could only be as fresh as the last reindex.
+    if (POPULAR) {
+      try {
+        const r  = await fetch(CATALOG_API + '?popular=1&limit=25&qty=' + encodeURIComponent(state.qty));
+        const j  = await r.json();
+        state.products    = Array.isArray(j.products) ? j.products : [];
+        state.serverPaged = true;   // the server decided the order and the length
+        state.totalPages  = 1;
+        state.pageIndex   = 0;
+        state.done        = true;
+        render();
+      } catch (e) {
+        console.error('popular fetch failed:', e);
+        state.products = [];
+        render();
+      } finally {
+        state.loading = false;
+        document.getElementById('catLoading').style.display = 'none';
+      }
+      return;
+    }
 
     // ----------------------------------------------------------------------
     // ALGOLIA PATH — when /catalog-algolia.js has loaded with valid config,
@@ -3576,7 +3643,11 @@
     let visible = state.filters.inStockOnly
       ? state.products.filter(p => p.in_stock !== false)
       : state.products.slice();
-    visible = sortProducts(visible, state.sort);
+    // POPULAR arrives already ordered by how many orders each blank appears
+    // in, and that order IS the page. Running the default sort over it put
+    // the curated picks back on top and quietly turned the most-ordered page
+    // into a second copy of the catalog's first page.
+    if (!POPULAR) visible = sortProducts(visible, state.sort);
 
     // The Algolia path already asked for exactly this page. The API fallback
     // holds the whole filtered set in memory, so it is sliced here. Both end

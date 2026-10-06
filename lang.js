@@ -861,14 +861,23 @@ var SP_LANG = (function() {
     },
 
     // ===== CATALOG =====
-    'cat.hero.h1': { en: 'Our blanks catalog', fr: 'Notre catalogue de vêtements' },
+    'cat.hero.h1': { en: 'Shop blanks', fr: 'Vêtements vierges' },
     'cat.hero.p': {
-      en: 'Browse <strong id="catCount">4,500+</strong> blanks from S&amp;S Activewear, SanMar Canada &amp; Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.',
-      fr: 'Parcourez <strong id="catCount">4 500+</strong> vêtements de S&amp;S Activewear, SanMar Canada et Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, style Carhartt et plus. Filtrez par marque, coupe, tissu ou certification. Choisissez un modèle et obtenez une soumission imprimée en moins d\'une minute.'
+      en: '<strong id="catCount">4,600</strong> styles, priced live at your quantity.',
+      fr: '<strong id="catCount">4 600</strong> modèles, au prix réel de votre quantité.'
     },
+    // ===== POPULAR (/popular) =====
+    'pop.hero.h1': { en: 'What people actually order', fr: 'Ce que les gens commandent vraiment' },
+    'pop.hero.p': {
+      en: 'The 25 blanks that come back on order after order, most&#8209;ordered first.',
+      fr: 'Les 25 v\u00eatements qui reviennent commande apr\u00e8s commande, du plus command\u00e9 au moins.'
+    },
+    'pop.hero.meta1': { en: 'Counted from <strong>real orders</strong>, not picked by us',
+                        fr: 'Compt\u00e9 \u00e0 partir de <strong>vraies commandes</strong>, pas choisi par nous' },
+    'pop.nav': { en: 'Popular', fr: 'Populaires' },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
     'cat.hero.meta2': { en: '<strong>7–14 day</strong> typical turnaround', fr: 'Délai habituel de <strong>7 à 14 jours</strong>' },
-    'cat.hero.meta3': { en: 'Montreal-designed blanks available', fr: 'Vêtements conçus à Montréal disponibles' },
+    'cat.hero.meta3': { en: '<strong>No minimum</strong> — 1 piece or 1,000', fr: '<strong>Aucun minimum</strong> — 1 pièce ou 1 000' },
 
     // ===== SPORTS JERSEYS HUB (jerseys.html) =====
     'jersey.title':   { en: 'Custom Team Jerseys', fr: 'Maillots d\'équipe personnalisés' },

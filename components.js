@@ -530,6 +530,15 @@ function loadNav() {
   // Category dropdowns — sub-counts in comments come from the live /api/catalog
   // facet probe so any future editor knows what they're working with.
   var CATS = [
+    // Popular leads the row. It is the only item here that is not a category:
+    // /popular is the measured most-ordered list, and it is first because a
+    // stranger with no idea what blank they want needs somewhere to start
+    // that is not a 4,600-product grid.
+    {
+      en: 'Popular', fr: 'Populaires', i18n: 'pop.nav',
+      href: BASE + '/popular',
+      subs: [],
+    },
     // 2026-06-10 catalog re-tag: the whole catalog was reclassified into a
     // corrected `category` taxonomy (gpt-4o-mini backfill; ~1,520 'other' rows
     // resolved, ~1,000 jackets surfaced). These ?type= values now resolve
@@ -739,7 +748,10 @@ function loadNav() {
     hat:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17c0-5 3.5-9 8-9s8 4 8 9"/><path d="M2 17h20"/></svg>',
     // Sports jersey — sleeveless/short-sleeve athletic top with a number.
     jersey:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4 5 6 3 9l2.5 2L7 9v11h10V9l1.5 2L21 9l-2-3-3-2-1.5 2c-.9.9-2 1.4-2.5 1.4S9.4 6.9 8.5 6L8 4z"/><path d="M11 13h2"/></svg>',
-    grid:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
+    grid:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+    // Same line weight as the rest of the set, drawn open rather than filled
+    // so it reads as a mark, not a rating.
+    star:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.3 5.8.85-4.2 4.1 1 5.75L12 16.9l-5.2 2.7 1-5.75-4.2-4.1 5.8-.85z"/></svg>'
   };
 
   var path = window.location.pathname.replace(/\/+$/, '');
@@ -853,6 +865,7 @@ function loadNav() {
   // circle so they match the editorial b/w aesthetic.
   var mobileCatsHTML = _catsSkip ? '' : (''
     + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/popular">' + ICON.star + '<span>' + t('Popular', 'Populaires') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'

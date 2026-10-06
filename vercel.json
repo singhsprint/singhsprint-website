@@ -172,6 +172,30 @@
   ],
   "rewrites": [
     {
+      "source": "/fr/popular",
+      "destination": "/fr/catalog"
+    },
+    {
+      "source": "/fr/popular/",
+      "destination": "/fr/catalog"
+    },
+    {
+      "source": "/popular",
+      "destination": "/catalog"
+    },
+    {
+      "source": "/popular/",
+      "destination": "/catalog"
+    },
+    {
+      "source": "/fr/populaires",
+      "destination": "/fr/catalog"
+    },
+    {
+      "source": "/fr/populaires/",
+      "destination": "/fr/catalog"
+    },
+    {
       "source": "/fr/images/:path*",
       "destination": "/images/:path*"
     },

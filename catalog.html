@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalog | Singhs Print — Custom Apparel Montreal</title>
-  <meta name="description" content="Browse 4,500+ printable blanks from S&S Activewear, SanMar Canada & Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors and more. Filter by brand, fit, fabric, Canadian-made, or Hi-Vis. Pick a SKU and get a printed-garment quote in under a minute.">
+  <meta name="description" content="Shop 4,600 printable blanks — Bella+Canvas, Gildan, Comfort Colors, Next Level, Champion, Independent, ATC and more. Live pricing at your quantity, every colour and size, no minimum.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,14 +27,14 @@
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/catalog">
   <meta property="og:title" content="Apparel Catalog — Singhs Print">
-  <meta property="og:description" content="Browse 4,500+ blanks from S&S Activewear, SanMar Canada & Blanks.ca — ready to decorate. Live pricing, stock status, all colors.">
+  <meta property="og:description" content="4,600 blanks ready to decorate. Live pricing at your quantity, stock status, every colour.">
   <meta property="og:locale" content="en_CA">
   <meta property="og:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Apparel Catalog — Singhs Print">
-  <meta name="twitter:description" content="Browse 4,500+ blanks from S&S Activewear, SanMar Canada & Blanks.ca — ready to decorate. Live pricing, stock status, all colors.">
+  <meta name="twitter:description" content="4,600 blanks ready to decorate. Live pricing at your quantity, stock status, every colour.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <script>
   // Early-fire the catalog fetch so it overlaps with the rest of
@@ -82,8 +82,13 @@
   <div id="nav-placeholder"></div>
 
   <section class="cat-hero">
-    <h1 data-i18n="cat.hero.h1">Our blanks catalog</h1>
-    <p data-i18n="cat.hero.p">Browse <strong id="catCount">4,500+</strong> blanks from S&amp;S Activewear, SanMar Canada &amp; Blanks.ca — Bella+Canvas, Gildan, Port Authority, ATC, OGIO, Comfort Colors, Champion, Carhartt-style, and more. Filter by brand, fit, fabric, or certification. Pick a SKU and get a printed-garment quote in under a minute.</p>
+    <h1 data-i18n="cat.hero.h1">Shop blanks</h1>
+    <!-- One line. The paragraph this replaces listed three distributors by
+         name, five mills, and three sentences of instructions, which is a
+         spec sheet, not a shop front. The supplier names went for the same
+         reason they went from the home page: a customer does not know who
+         S&S Activewear is, so the name buys no trust and costs a line. -->
+    <p data-i18n="cat.hero.p"><strong id="catCount">4,600</strong> styles, priced live at your quantity.</p>
     <!-- Auto-translation badge — only visible when FR is active. The
          supplier feeds (S&S Activewear) only provide English copy, so we
          machine-translate product/color/spec text on the fly. -->
@@ -93,9 +98,14 @@
     <div class="meta">
       <span data-i18n="cat.hero.meta1"><strong>Stock + prices</strong> refresh daily</span>
       <span>·</span>
-      <span data-i18n="cat.hero.meta2"><strong>5–10 day</strong> typical turnaround</span>
+      <span data-i18n="cat.hero.meta2"><strong>7–14 day</strong> typical turnaround</span>
       <span>·</span>
-      <span data-i18n="cat.hero.meta3">Canadian-made supplier integration coming soon</span>
+      <!-- Was "Montreal-designed blanks available". Every is_canadian_made
+           product came from rue Saint-Patrick, which is delisted, so that
+           line is no longer true of anything in the catalogue. "No minimum"
+           is true, is in the FAQ, and is the thing a first-time buyer is
+           actually scanning for. -->
+      <span data-i18n="cat.hero.meta3"><strong>No minimum</strong> — 1 piece or 1,000</span>
     </div>
   </section>
 
@@ -352,6 +362,16 @@
       margin:3px 0 7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
       overflow:hidden}
     @media(max-width:600px){.card .pick-note{font-size:.72rem;-webkit-line-clamp:3}}
+
+    /* /popular — the measured most-ordered page. Same cards, same prices,
+       same modal; the controls that only make sense on 4,600 products are
+       hidden. The class is set by catalog.js before first paint. */
+    .is-popular .cat-toolbar,
+    .is-popular .cat-chips,
+    .is-popular .cat-meta-row,
+    .is-popular .cat-pager,
+    .is-popular #catSeoBlock{display:none}
+    .is-popular .cat-grid{margin-top:18px}
   </style>
   <!-- 2026-05-24 — Entire pill is now a single <a href> tap target.
        Earlier iteration kept the count/label as plain spans and only
