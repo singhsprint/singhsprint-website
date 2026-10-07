@@ -1214,6 +1214,20 @@ function loadFooter() {
       +   '.footer-col a{font-size:.86rem;padding:5px 0}'
       +   '.footer-bottom{margin-top:24px;padding-top:18px;font-size:.7rem;flex-direction:column;align-items:flex-start;gap:6px}'
       + '}'
+      // Mailing list sign-up strip (above footer-bottom).
+      + '.footer-news{display:flex;gap:28px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-top:40px;padding:24px;border:1px solid #2a2a2a;border-radius:14px;background:#111}'
+      + '.footer-news h4{font-family:"Inter",sans-serif;font-size:1rem;font-weight:700;margin:0 0 4px;color:#fff}'
+      + '.footer-news p{margin:0;color:#999;font-size:.85rem}'
+      + '.footer-news form{flex:1;min-width:260px;max-width:520px}'
+      + '.footer-news .fn-row{display:flex;gap:8px}'
+      + '.footer-news input[type=email]{flex:1;min-width:0;padding:12px 14px;border-radius:10px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:.95rem;font-family:inherit}'
+      + '.footer-news input[type=email]:focus{outline:none;border-color:#e8ff3c}'
+      + '.footer-news button{padding:12px 18px;border-radius:10px;border:none;background:#e8ff3c;color:#1a1a1a;font-weight:700;font-size:.92rem;cursor:pointer;font-family:inherit;white-space:nowrap}'
+      + '.footer-news button[disabled]{opacity:.6;cursor:progress}'
+      + '.footer-news .fn-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}'
+      + '.footer-news .fn-msg{font-size:.82rem;margin-top:8px;color:#999;min-height:1em}'
+      + '.footer-news .fn-msg.ok{color:#e8ff3c}'
+      + '@media(max-width:560px){.footer-news{margin-top:24px;padding:18px;gap:14px}.footer-news .fn-row{flex-direction:column}}'
       // Bilingual notice block — shown only when html lang is set to FR.
       // Industry + guide pages use this to flag that the long-form body
       // hasn't been translated yet.
@@ -1238,6 +1252,17 @@ function loadFooter() {
     + '      <div class="footer-col" data-mobile-hide><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/procurement-checklist">Procurement checklist</a><a href="/guides/charity-run-timeline">Charity run timeline</a><a href="/guides/construction-crew-cost">Crew cost analysis</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:4385443800" aria-label="Call us at 438-544-3800">Call 438-544-3800</a><a href="mailto:sales@singhsprint.com" aria-label="Email sales@singhsprint.com">Email sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank" rel="noopener" aria-label="Follow on Instagram">Instagram @singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener" data-i18n="footer.location">West Island, Montreal</a></div>'
     + '    </div>'
+    + '    <div class="footer-news">'
+    + '      <div><h4 data-i18n="footer.news.h">Deals and new drops</h4><p data-i18n="footer.news.p">A couple of emails a month. Unsubscribe anytime.</p></div>'
+    + '      <form class="fn-form" novalidate>'
+    + '        <div class="fn-row">'
+    + '          <input type="email" name="email" required maxlength="200" autocomplete="email" placeholder="you@example.com" aria-label="Email">'
+    + '          <button type="submit" data-i18n="footer.news.cta">Sign up</button>'
+    + '        </div>'
+    + '        <input class="fn-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
+    + '        <div class="fn-msg" role="status" aria-live="polite"></div>'
+    + '      </form>'
+    + '    </div>'
     + '    <div class="footer-bottom">'
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Imprimerie Singhs Print &middot; NEQ 1181573313</span></span>'
     + '      <span class="footer-legal" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center"><a href="/privacy" data-i18n="footer.privacy">Privacy</a><a href="/cookies" data-i18n="footer.cookies">Cookies</a><a href="/terms" data-i18n="footer.terms">Terms</a><a href="/accessibility" data-i18n="footer.accessibility">Accessibility</a><a href="#" onclick="if(window.SP_CONSENT){SP_CONSENT.reopen();}return false;" data-i18n="footer.cookieprefs">Cookie preferences</a></span>'
@@ -1246,7 +1271,82 @@ function loadFooter() {
     + '    </div>'
     + '  </div>'
     + '</footer>';
+
+  // Footer sign-up. Submitting this form IS the opt-in: its only purpose is
+  // the list, and the line above the button says so, which is what CASL asks
+  // of express consent. The sentence sent along is that line plus the
+  // unsubscribe promise, so the record shows what they saw.
+  var fnForm = el.querySelector('.fn-form');
+  if (fnForm) fnForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = fnForm.querySelector('input[name="email"]');
+    var msg = fnForm.querySelector('.fn-msg');
+    var btn = fnForm.querySelector('button');
+    var email = ((input && input.value) || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if (fnForm.reportValidity) fnForm.reportValidity(); return; }
+    btn.disabled = true;
+    msg.className = 'fn-msg'; msg.textContent = '';
+    SP_MAILING.subscribe({
+      source: 'footer',
+      email: email,
+      email_optin: true,
+      website: (fnForm.querySelector('.fn-hp') || {}).value || ''
+    }).then(function (ok) {
+      btn.disabled = false;
+      msg.className = 'fn-msg' + (ok ? ' ok' : '');
+      msg.textContent = SP_MAILING.t(ok ? 'footer.news.ok' : 'footer.news.err',
+        ok ? "You're in. Check your inbox soon." : "That didn't go through. Try again?");
+      if (ok) { input.value = ''; if (typeof window.spTrack === 'function') window.spTrack('newsletter_signup', { source: 'footer' }); }
+    });
+  });
 }
+
+// SP_MAILING — the one client for the CRM's /api/subscribe, shared by the
+// footer form, the offer popup and the quote form. Sends the consent
+// sentence the visitor actually saw (from lang.js) as the CASL record.
+var SP_MAILING = window.SP_MAILING || (function () {
+  var API = 'https://singhsprint-crm.vercel.app/api/subscribe';
+  function lang() {
+    try { if (window.SP_LANG && SP_LANG.getLang) return SP_LANG.getLang() === 'fr' ? 'fr' : 'en'; } catch (_) {}
+    return (document.documentElement.lang || '').indexOf('fr') === 0 ? 'fr' : 'en';
+  }
+  function t(key, fallback) {
+    try { if (window.SP_LANG && SP_LANG.t) { var v = SP_LANG.t(key); if (v) return v; } } catch (_) {}
+    return fallback;
+  }
+  var EMAIL_TEXT = "Yes, email me deals and new drops from Singh's Print. Unsubscribe anytime.";
+  var SMS_TEXT = "Yes, text me deals from Singh's Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.";
+  function consentText(channel) {
+    return channel === 'sms' ? t('mail.optin.sms', SMS_TEXT) : t('mail.optin.email', EMAIL_TEXT);
+  }
+  // Resolves true/false, never rejects: a sign-up must not break the page it sits on.
+  function subscribe(p) {
+    var body = {
+      source: p.source,
+      email: p.email || null,
+      phone: p.phone || null,
+      email_optin: !!p.email_optin,
+      sms_optin: !!p.sms_optin,
+      lang: lang(),
+      path: location.pathname,
+      website: p.website || '',
+      consent_text_email: p.email_optin ? (p.source === 'footer'
+        ? t('footer.news.h', 'Deals and new drops') + ' \u2014 ' + t('footer.news.p', 'A couple of emails a month. Unsubscribe anytime.')
+        : consentText('email')) : null,
+      consent_text_sms: p.sms_optin ? consentText('sms') : null
+    };
+    try {
+      return fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        keepalive: true
+      }).then(function (r) { return r.ok; }).catch(function () { return false; });
+    } catch (_) { return Promise.resolve(false); }
+  }
+  return { subscribe: subscribe, consentText: consentText, lang: lang, t: t };
+})();
+window.SP_MAILING = SP_MAILING;
 
 // Inject sitewide LocalBusiness + Service schema for SEO + rich-result eligibility.
 // Real values pulled from Imprimerie Singhs Print GBP listing + legal entity records.

@@ -58,6 +58,9 @@
     + '.sp-op input{width:100%;padding:14px 16px;border:1.5px solid #e0e0e0;border-radius:12px;font-size:1rem;margin-bottom:12px;font-family:inherit;box-sizing:border-box}'
     + '.sp-op input:focus{outline:none;border-color:#1a1a1a}'
     + '.sp-op-cta{display:block;width:100%;text-align:center;padding:15px 24px;font-size:1.02rem;font-weight:700;border:none;border-radius:12px;background:#e8ff3c;color:#1a1a1a;cursor:pointer;font-family:inherit}'
+    + '.sp-op-optin{display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:.8rem;line-height:1.4;color:#555;margin:0 0 12px;cursor:pointer}'
+    + '.sp-op-optin input{width:18px;height:18px;margin:1px 0 0;padding:0;flex:none;accent-color:#1a1a1a}'
+    + '.sp-op-optin[hidden]{display:none}'
     + '.sp-op-skip{display:block;margin:12px auto 0;font-size:.85rem;color:#aaa;cursor:pointer;background:none;border:none;font-family:inherit}'
     + '@media(max-width:520px){.sp-op{padding:36px 22px}.sp-op h3{font-size:1.42rem}}';
 
@@ -80,6 +83,9 @@
       +   '<p data-i18n="home.popup.p">Drop your email and we lock it to your quote &mdash; orders of 15+, same design. No spam, no code, nothing to retype.</p>'
       +   '<form class="sp-op-form" novalidate>'
       +     '<input type="email" name="email" placeholder="you@example.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">'
+      +     '<input type="tel" name="phone" placeholder="Mobile number (optional)" data-i18n-placeholder="mail.phone.ph" maxlength="40" autocomplete="tel" inputmode="tel">'
+      +     '<label class="sp-op-optin"><input type="checkbox" name="email_optin"><span data-i18n="mail.optin.email">Yes, email me deals and new drops from Singh&#39;s Print. Unsubscribe anytime.</span></label>'
+      +     '<label class="sp-op-optin sp-op-optin-sms" hidden><input type="checkbox" name="sms_optin"><span data-i18n="mail.optin.sms">Yes, text me deals from Singh&#39;s Print. A few texts a month. Reply STOP to opt out. Msg &amp; data rates may apply.</span></label>'
       +     '<button type="submit" class="sp-op-cta" data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Claim my free tee &rarr;</button>'
       +   '</form>'
       +   '<button class="sp-op-skip" type="button" data-i18n="home.popup.skip">Maybe later</button>'
@@ -89,6 +95,14 @@
     overlay.querySelector('.sp-op-close').addEventListener('click', close);
     overlay.querySelector('.sp-op-skip').addEventListener('click', skip);
     overlay.querySelector('.sp-op-form').addEventListener('submit', submit);
+    // The text box only makes sense once there is a number to text.
+    var phoneIn = overlay.querySelector('input[name="phone"]');
+    var smsRow  = overlay.querySelector('.sp-op-optin-sms');
+    phoneIn.addEventListener('input', function () {
+      var has = phoneIn.value.replace(/\D/g, '').length >= 10;
+      smsRow.hidden = !has;
+      if (!has) smsRow.querySelector('input').checked = false;
+    });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('show')) close();
@@ -138,6 +152,9 @@
       if (form.reportValidity) form.reportValidity();
       return;
     }
+    var phone      = ((form.querySelector('input[name="phone"]') || {}).value || '').trim();
+    var emailOptin = !!(form.querySelector('input[name="email_optin"]') || {}).checked;
+    var smsOptin   = !!(form.querySelector('input[name="sms_optin"]') || {}).checked && phone.replace(/\D/g, '').length >= 10;
     try {
       sessionStorage.setItem('sp_lead_email', email);
       sessionStorage.setItem('sp_promo_slug', PROMO_SLUG);
@@ -149,6 +166,7 @@
         body: JSON.stringify({
           kind: 'other',
           email: email,
+          phone: phone || null,
           notes: 'Popup capture — visitor opted into the free-tee offer (15+).',
           cart_items: [],
           size_breakdown: {},
@@ -165,8 +183,18 @@
         keepalive: true
       }).catch(function () {});
     } catch (_) {}
+    // Mailing list: only what they ticked. The free tee never depends on it.
+    if ((emailOptin || smsOptin) && window.SP_MAILING) {
+      window.SP_MAILING.subscribe({
+        source: 'popup',
+        email: email,
+        phone: smsOptin ? phone : null,
+        email_optin: emailOptin,
+        sms_optin: smsOptin
+      });
+    }
     if (typeof window.spTrack === 'function') {
-      window.spTrack('popup_submit', { promo_slug: PROMO_SLUG, path: path });
+      window.spTrack('popup_submit', { promo_slug: PROMO_SLUG, path: path, email_optin: emailOptin, sms_optin: smsOptin });
     }
     try { sessionStorage.setItem('popupClosed', '1'); } catch (_) {}
 
