@@ -3482,6 +3482,15 @@
       Object.keys(moved).forEach(function(k) { cartItemFiles[k] = moved[k]; });
     }
 
+    // Mailing list boxes under the contact fields (both unticked by default).
+    // Pay-now sends them on the checkout body so the opt-in survives the
+    // redirect to Stripe; request-a-quote posts them to /api/subscribe.
+    function spOptins() {
+      var e = document.getElementById('email_optin');
+      var t = document.getElementById('sms_optin');
+      return { email: !!(e && e.checked), sms: !!(t && t.checked) };
+    }
+
     function handlePayment() {
       var nameEl    = document.getElementById('name');
       var emailEl   = document.getElementById('email');
@@ -3703,7 +3712,12 @@
             size_breakdown: sizeBreakdown,
             deposit_choice: 'full',
             source_url:     location.href,
-            meta:           utm
+            meta:           utm,
+            marketing_optin:    spOptins().email,
+            sms_optin:          spOptins().sms,
+            consent_text_email: spOptins().email && window.SP_MAILING ? SP_MAILING.consentText('email') : null,
+            consent_text_sms:   spOptins().sms   && window.SP_MAILING ? SP_MAILING.consentText('sms')   : null,
+            lang:               window.SP_MAILING ? SP_MAILING.lang() : 'en'
           })
         }).then(function(r) {
           return r.json().then(function(j) { return { ok: r.ok, body: j }; })
@@ -8366,6 +8380,19 @@
           //                      writing the row in the background
           //                      (keepalive: true), so duplicate-detect
           //                      on the inbox handles the rare double.
+          // Mailing list boxes, independent of the quote request itself.
+          try {
+            var opt = { email: !!(document.getElementById('email_optin') || {}).checked, sms: !!(document.getElementById('sms_optin') || {}).checked };
+            if ((opt.email || opt.sms) && window.SP_MAILING) {
+              window.SP_MAILING.subscribe({
+                source: 'quote_form',
+                email: payload.email,
+                phone: opt.sms ? payload.phone : null,
+                email_optin: opt.email && !!payload.email,
+                sms_optin: opt.sms && !!payload.phone
+              });
+            }
+          } catch (e) {}
           fetch(INBOUND_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
