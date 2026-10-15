@@ -3139,9 +3139,15 @@
         return;
       }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
+      // Placements, colour AND method. This one was missing the method too,
+      // so an embroidery quote's strip quoted the print ladder — and it is
+      // the strip that updates the instant a placement is clicked, because
+      // togglePlacementPreset() calls straight into here.
       fetch(PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(catalogPick.product_id) +
-        '&qty=200&sides=' + sides
+        '&qty=200&sides=' + sides +
+        '&decoration_method=' + currentDecorationMethod() +
+        spQuotePricingParams().qs
       ).then(function(r){ return r.ok ? r.json() : null; })
        .then(function(d){
          if (d && typeof d.unit_price === 'number') updateLivePriceStrip(0, d.unit_price, true, true, 200);
@@ -7178,6 +7184,54 @@
     // is selected, hit /api/pricing for the real engine number instead of
     // the legacy hardcoded b2bPricing table.
     // -----------------------------------------------------------------
+    // ── What is this quote actually FOR? ──────────────────────────────────
+    //
+    // Reported 2026-10-15 as "the price doesn't change based on the size of
+    // the print". It did not. Measured on the live site, Gildan 64000, 25
+    // pieces, DTF, by clicking through the presets and capturing every
+    // request the page made:
+    //
+    //     placement      the engine says   the page showed
+    //     Left Chest        $14.95            $14.95
+    //     Full Front        $17.95            $14.95
+    //     Oversized         $18.95            $14.95
+    //     Full Back         $18.95            $14.95
+    //
+    // Every outgoing request was ?product_id=…&qty=25&sides=1&decoration_
+    // method=dtf. No placements. The engine prices them correctly — the
+    // surcharges are per piece and qty-banded (full front +$3 under 50, +$2
+    // at 50+; oversized +$4 / +$3) — this page simply never asked.
+    //
+    // $100 light on 25 oversized pieces, and it is the number Pay & Order Now
+    // runs on. liveUnitPrice() has sent embroidery_placements for the cart
+    // rows all along, so the cart row and the headline could already disagree
+    // on one screen; the table's own fallback copy says "Pricing on the right
+    // is still accurate", pointing the customer at the wrong one.
+    //
+    // COLOUR, the same shape. /api/pricing's own header says colourways of
+    // one style routinely differ at the supplier, and this page never sent
+    // color_id either. Measured across the 40 Gildan 64000 colourways the
+    // catalogue exposes: 39 price at $14.95 and Garnet at $22.95. A Garnet
+    // order was quoted $8/piece under — $200 on 25 — and omitting the colour
+    // is what let the engine pick one and answer color_assumed: true.
+    //
+    // One helper, because the three callers that were missing this are the
+    // three that drifted from liveUnitPrice() by each writing their own URL.
+    function spQuotePricingParams() {
+      var placements = [];
+      try { placements = Object.values(presetByLocation || {}).filter(Boolean); } catch (e) {}
+      // spSingleColor() returns cid null until the customer actually picks a
+      // colour — it refuses to stand in the first colourway, deliberately.
+      // Null means "we do not know yet", and omitting the parameter is the
+      // honest version of that: the engine answers color_assumed: true.
+      var cid = null;
+      try { cid = (spSingleColor() || {}).cid || null; } catch (e) {}
+      var qs = '';
+      if (placements.length) qs += '&embroidery_placements=' + encodeURIComponent(placements.join(','));
+      if (cid) qs += '&color_id=' + encodeURIComponent(cid);
+      return { placements: placements, colorId: cid, qs: qs };
+    }
+
     var _livePriceAbort = null;
     function fetchLiveUnitPrice(cb) {
       if (!catalogPick || !catalogPick.product_id) { cb(null); return; }
@@ -7192,7 +7246,8 @@
         '?product_id=' + encodeURIComponent(catalogPick.product_id) +
         '&qty='   + qty +
         '&sides=' + sides +
-        '&decoration_method=' + currentDecorationMethod();
+        '&decoration_method=' + currentDecorationMethod() +
+        spQuotePricingParams().qs;
       fetch(url, { signal: _livePriceAbort.signal })
         .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(d) { cb(d && typeof d.unit_price === 'number' ? d.unit_price : null); })
