@@ -68,7 +68,7 @@ const MARKETING = [
   { path: '/custom-t-shirts-montreal',                  priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/custom-hoodies-montreal',                   priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/custom-hats-caps-montreal',                 priority: 0.8,  changefreq: 'monthly', hreflang: true },
-  { path: '/bulk-apparel-printing-montreal',            priority: 0.85, changefreq: 'monthly', hreflang: true },
+  // 2026-10-07 — /bulk-apparel-printing-montreal retired, 301 to /businesses.
   { path: '/dtg-printing-montreal',                     priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/dtf-printing-montreal',                     priority: 0.85, changefreq: 'monthly', hreflang: true },
   { path: '/embroidery-montreal',                       priority: 0.85, changefreq: 'monthly', hreflang: true },
@@ -80,17 +80,17 @@ const MARKETING = [
   { path: '/order',                                     priority: 0.7,  changefreq: 'monthly', hreflang: true },
   { path: '/businesses/rfp',                            priority: 0.8,  changefreq: 'monthly', hreflang: true },
   { path: '/guides',                                    priority: 0.7,  changefreq: 'weekly',  hreflang: true },
+  // 2026-10-07 — retired: construction-crew-cost, procurement-checklist,
+  // charity-run-timeline (301s in vercel.json).
   { path: '/guides/brand-colour-matching',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/branded-winter-outerwear',           priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/bulk-order-size-run',                priority: 0.6,  changefreq: 'monthly', hreflang: true },
-  { path: '/guides/charity-run-timeline',               priority: 0.6,  changefreq: 'monthly', hreflang: true },
-  { path: '/guides/construction-crew-cost',             priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/custom-embroidered-caps-ordering-guide', priority: 0.6, changefreq: 'monthly', hreflang: true },
   { path: '/guides/decoration-method-durability',       priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/fabric-cotton-polyester-blends',     priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/logo-file-requirements',             priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/logo-placement-print-sizes',         priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/minimum-order-price-breaks',         priority: 0.6,  changefreq: 'monthly', hreflang: true },
-  { path: '/guides/procurement-checklist',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/team-jersey-ordering',               priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/wash-care-printed-embroidered-apparel', priority: 0.6, changefreq: 'monthly', hreflang: true },
 ]
@@ -192,13 +192,23 @@ function deployableMarketing(tracked) {
   return kept
 }
 
+// 2026-10-07 — product pages outside p/indexable.json carry noindex,follow,
+// so they are not submitted. No list on disk = every page, the old behaviour.
+async function loadIndexable() {
+  try {
+    return new Set(JSON.parse(await fs.readFile(path.join(ROOT, 'p', 'indexable.json'), 'utf8')).slugs)
+  } catch { return null }
+}
+
 async function listProductSlugs() {
+  const indexable = await loadIndexable()
   const p = path.join(ROOT, 'p')
   let entries = []
   try { entries = await fs.readdir(p, { withFileTypes: true }) } catch { return [] }
   const slugs = []
   for (const e of entries) {
     if (!e.isDirectory()) continue
+    if (indexable && !indexable.has(e.name)) continue
     // Sanity: only include slugs that actually have an index.html
     try {
       await fs.access(path.join(p, e.name, 'index.html'))
@@ -209,12 +219,14 @@ async function listProductSlugs() {
 }
 
 async function listFrProductSlugs() {
+  const indexable = await loadIndexable()
   const p = path.join(ROOT, 'fr', 'p')
   let entries = []
   try { entries = await fs.readdir(p, { withFileTypes: true }) } catch { return [] }
   const slugs = []
   for (const e of entries) {
     if (!e.isDirectory()) continue
+    if (indexable && !indexable.has(e.name)) continue
     try {
       await fs.access(path.join(p, e.name, 'index.html'))
       slugs.push(e.name)

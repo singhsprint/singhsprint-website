@@ -2,6 +2,50 @@
 // Edit these once, changes apply everywhere.
 
 // ---------------------------------------------------------------------
+// THE ORDER MINIMUM. One number, one place.
+//
+// Shop decision 2026-10-16: the site sells custom decoration in runs of 5
+// or more, counted across the WHOLE order — a cart of 2 tees and 3 hoodies
+// is 5 and goes through. It replaces "no minimum", which the site advertised
+// on fifteen pages, two <title> tags and its LocalBusiness schema.
+//
+// WHAT THIS IS NOT. It is not an engine limit. The pricing config still
+// carries the 1-4 micro-run tier added on 2026-05-24, deliberately, so a
+// three-piece job can still be quoted by a human at micro-run rates. The
+// engine will happily price 3; the SITE will not sell 3. Keeping those two
+// apart is what lets the shop say yes to a walk-in without a code change,
+// and it is why this number lives here and not in /api/v1/registry — the
+// registry serves what the ENGINE knows, and the engine does not know this.
+//
+// It is also not the embroidery minimum. That one IS an engine property
+// (the lowest rung of embroidery_qty_tiers), it is served by the registry,
+// and SP_EMB_MIN() in quote.js reads it live. The two happen to both be 5
+// today and must not be collapsed into one constant: embroidery's can move
+// when the pricing config moves, this one moves when the owner says so.
+//
+// DROPS ARE EXEMPT. /shop sells finished, limited pieces one at a time
+// through its own endpoint (api/shop/checkout.js, which takes a drop_id and
+// never an items[]). Nothing here is on that path.
+//
+// Every gate and every piece of copy reads this. Copy carries a {min}
+// placeholder that spFillMin() fills, so the number cannot drift between
+// what the page promises and what checkout enforces.
+// ---------------------------------------------------------------------
+window.SP_MIN_ORDER = 5;
+
+/** Fill {min} in a string with the order minimum. */
+window.spFillMin = function (s) {
+  return String(s == null ? '' : s).replace(/\{min\}/g, String(window.SP_MIN_ORDER));
+};
+
+/** Pieces still needed, or 0 when the order already clears the floor. */
+window.spMinShortfall = function (totalQty) {
+  var n = Number(totalQty) || 0;
+  var min = Number(window.SP_MIN_ORDER) || 0;
+  return n > 0 && n < min ? min - n : 0;
+};
+
+// ---------------------------------------------------------------------
 // Google measurement (GA4 + Google Ads) bootstrap.
 // Mirrors the inline Meta Pixel pattern on the HTML pages: pulls IDs from
 // /gtag-config.js so rotation lives in one place. Runs immediately at
@@ -711,8 +755,8 @@ function loadNav() {
         // offer it. The landing pages are 301'd to DTF in vercel.json so the SEO
         // equity is kept rather than thrown away. Guide + product-page mentions
         // are a separate pass.
-        { en: 'Hats & Caps',      fr: 'Chapeaux et casquettes',    href: BASE + '/custom-hats-caps-montreal' },
-        { en: 'Bulk Apparel',     fr: 'Vêtements en gros',         href: BASE + '/bulk-apparel-printing-montreal' }
+        { en: 'Hats & Caps',      fr: 'Chapeaux et casquettes',    href: BASE + '/custom-hats-caps-montreal' }
+        // 2026-10-07 — Bulk Apparel removed: page retired, 301 to /businesses.
       ]
     },
     // 2026-05-25 — Drops added to the editorial rail so customers
@@ -1214,20 +1258,6 @@ function loadFooter() {
       +   '.footer-col a{font-size:.86rem;padding:5px 0}'
       +   '.footer-bottom{margin-top:24px;padding-top:18px;font-size:.7rem;flex-direction:column;align-items:flex-start;gap:6px}'
       + '}'
-      // Mailing list sign-up strip (above footer-bottom).
-      + '.footer-news{display:flex;gap:28px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-top:40px;padding:24px;border:1px solid #2a2a2a;border-radius:14px;background:#111}'
-      + '.footer-news h4{font-family:"Inter",sans-serif;font-size:1rem;font-weight:700;margin:0 0 4px;color:#fff}'
-      + '.footer-news p{margin:0;color:#999;font-size:.85rem}'
-      + '.footer-news form{flex:1;min-width:260px;max-width:520px}'
-      + '.footer-news .fn-row{display:flex;gap:8px}'
-      + '.footer-news input[type=email]{flex:1;min-width:0;padding:12px 14px;border-radius:10px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:.95rem;font-family:inherit}'
-      + '.footer-news input[type=email]:focus{outline:none;border-color:#e8ff3c}'
-      + '.footer-news button{padding:12px 18px;border-radius:10px;border:none;background:#e8ff3c;color:#1a1a1a;font-weight:700;font-size:.92rem;cursor:pointer;font-family:inherit;white-space:nowrap}'
-      + '.footer-news button[disabled]{opacity:.6;cursor:progress}'
-      + '.footer-news .fn-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}'
-      + '.footer-news .fn-msg{font-size:.82rem;margin-top:8px;color:#999;min-height:1em}'
-      + '.footer-news .fn-msg.ok{color:#e8ff3c}'
-      + '@media(max-width:560px){.footer-news{margin-top:24px;padding:18px;gap:14px}.footer-news .fn-row{flex-direction:column}}'
       // Bilingual notice block — shown only when html lang is set to FR.
       // Industry + guide pages use this to flag that the long-form body
       // hasn't been translated yet.
@@ -1249,19 +1279,8 @@ function loadFooter() {
     + '      </div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/youth-initiative" data-i18n="footer.youth">Youth Initiative</a><a href="/about" data-i18n="footer.about">About</a><a href="/why-us" data-i18n="footer.whyus">Why us</a></div>'
     + '      <div class="footer-col" data-mobile-hide><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
-    + '      <div class="footer-col" data-mobile-hide><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/procurement-checklist">Procurement checklist</a><a href="/guides/charity-run-timeline">Charity run timeline</a><a href="/guides/construction-crew-cost">Crew cost analysis</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
+    + '      <div class="footer-col" data-mobile-hide><h4>Guides</h4><a href="/guides/decoration-method-durability">Decoration durability</a><a href="/guides/logo-file-requirements">Logo file requirements</a><a href="/guides/minimum-order-price-breaks">Minimums &amp; price breaks</a><a href="/guides/custom-embroidered-caps-ordering-guide">Ordering embroidered caps</a><a href="/#services" data-i18n="footer.dtg">DTG, DTF &amp; embroidery</a></div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.contact">Contact</h4><a href="tel:4385443800" aria-label="Call us at 438-544-3800">Call 438-544-3800</a><a href="mailto:sales@singhsprint.com" aria-label="Email sales@singhsprint.com">Email sales@singhsprint.com</a><a href="https://instagram.com/singhsprint" target="_blank" rel="noopener" aria-label="Follow on Instagram">Instagram @singhsprint</a><a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener" data-i18n="footer.location">West Island, Montreal</a></div>'
-    + '    </div>'
-    + '    <div class="footer-news">'
-    + '      <div><h4 data-i18n="footer.news.h">Deals and new drops</h4><p data-i18n="footer.news.p">A couple of emails a month. Unsubscribe anytime.</p></div>'
-    + '      <form class="fn-form" novalidate>'
-    + '        <div class="fn-row">'
-    + '          <input type="email" name="email" required maxlength="200" autocomplete="email" placeholder="you@example.com" aria-label="Email">'
-    + '          <button type="submit" data-i18n="footer.news.cta">Sign up</button>'
-    + '        </div>'
-    + '        <input class="fn-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
-    + '        <div class="fn-msg" role="status" aria-live="polite"></div>'
-    + '      </form>'
     + '    </div>'
     + '    <div class="footer-bottom">'
     + '      <span>&copy; <span data-i18n="footer.rights">2026 Imprimerie Singhs Print &middot; NEQ 1181573313</span></span>'
@@ -1271,82 +1290,7 @@ function loadFooter() {
     + '    </div>'
     + '  </div>'
     + '</footer>';
-
-  // Footer sign-up. Submitting this form IS the opt-in: its only purpose is
-  // the list, and the line above the button says so, which is what CASL asks
-  // of express consent. The sentence sent along is that line plus the
-  // unsubscribe promise, so the record shows what they saw.
-  var fnForm = el.querySelector('.fn-form');
-  if (fnForm) fnForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var input = fnForm.querySelector('input[name="email"]');
-    var msg = fnForm.querySelector('.fn-msg');
-    var btn = fnForm.querySelector('button');
-    var email = ((input && input.value) || '').trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if (fnForm.reportValidity) fnForm.reportValidity(); return; }
-    btn.disabled = true;
-    msg.className = 'fn-msg'; msg.textContent = '';
-    SP_MAILING.subscribe({
-      source: 'footer',
-      email: email,
-      email_optin: true,
-      website: (fnForm.querySelector('.fn-hp') || {}).value || ''
-    }).then(function (ok) {
-      btn.disabled = false;
-      msg.className = 'fn-msg' + (ok ? ' ok' : '');
-      msg.textContent = SP_MAILING.t(ok ? 'footer.news.ok' : 'footer.news.err',
-        ok ? "You're in. Check your inbox soon." : "That didn't go through. Try again?");
-      if (ok) { input.value = ''; if (typeof window.spTrack === 'function') window.spTrack('newsletter_signup', { source: 'footer' }); }
-    });
-  });
 }
-
-// SP_MAILING — the one client for the CRM's /api/subscribe, shared by the
-// footer form, the offer popup and the quote form. Sends the consent
-// sentence the visitor actually saw (from lang.js) as the CASL record.
-var SP_MAILING = window.SP_MAILING || (function () {
-  var API = 'https://singhsprint-crm.vercel.app/api/subscribe';
-  function lang() {
-    try { if (window.SP_LANG && SP_LANG.getLang) return SP_LANG.getLang() === 'fr' ? 'fr' : 'en'; } catch (_) {}
-    return (document.documentElement.lang || '').indexOf('fr') === 0 ? 'fr' : 'en';
-  }
-  function t(key, fallback) {
-    try { if (window.SP_LANG && SP_LANG.t) { var v = SP_LANG.t(key); if (v) return v; } } catch (_) {}
-    return fallback;
-  }
-  var EMAIL_TEXT = "Yes, email me deals and new drops from Singh's Print. Unsubscribe anytime.";
-  var SMS_TEXT = "Yes, text me deals from Singh's Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.";
-  function consentText(channel) {
-    return channel === 'sms' ? t('mail.optin.sms', SMS_TEXT) : t('mail.optin.email', EMAIL_TEXT);
-  }
-  // Resolves true/false, never rejects: a sign-up must not break the page it sits on.
-  function subscribe(p) {
-    var body = {
-      source: p.source,
-      email: p.email || null,
-      phone: p.phone || null,
-      email_optin: !!p.email_optin,
-      sms_optin: !!p.sms_optin,
-      lang: lang(),
-      path: location.pathname,
-      website: p.website || '',
-      consent_text_email: p.email_optin ? (p.source === 'footer'
-        ? t('footer.news.h', 'Deals and new drops') + ' \u2014 ' + t('footer.news.p', 'A couple of emails a month. Unsubscribe anytime.')
-        : consentText('email')) : null,
-      consent_text_sms: p.sms_optin ? consentText('sms') : null
-    };
-    try {
-      return fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        keepalive: true
-      }).then(function (r) { return r.ok; }).catch(function () { return false; });
-    } catch (_) { return Promise.resolve(false); }
-  }
-  return { subscribe: subscribe, consentText: consentText, lang: lang, t: t };
-})();
-window.SP_MAILING = SP_MAILING;
 
 // Inject sitewide LocalBusiness + Service schema for SEO + rich-result eligibility.
 // Real values pulled from Imprimerie Singhs Print GBP listing + legal entity records.
@@ -1472,12 +1416,12 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "What is the minimum order quantity?",
-            "acceptedAnswer": { "@type": "Answer", "text": "We start at 5 units for DTG/DTF and 10 units for embroidery. Embroidery has a hard 10-piece minimum; below that we can still print the same design in DTG." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Our minimum is 5 pieces on any decoration, counted across the whole order. Embroidery starts at 5 pieces too; below that we can print the same design in DTG." }
           },
           {
             "@type": "Question",
             "name": "How long does a typical order take?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Printed orders (DTG/DTF) are 3–5 business days from approved artwork, and rush (2–3 days) is available with a small surcharge. Embroidery takes 7–11 days; talk to us before ordering." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Standard turnaround is 5-10 business days from approved artwork, and rush in 3 days is available for 25% extra." }
           },
           {
             "@type": "Question",
@@ -1733,7 +1677,7 @@ function loadStickyCTA() {
   bar.innerHTML = ''
     + '<div>'
     +   '<div class="sp-sticky-cta__label" data-i18n="sticky.label">Ready when you are</div>'
-    +   '<div class="sp-sticky-cta__sub" data-i18n="sticky.sub">No minimums · 2–4 day turnaround</div>'
+    +   '<div class="sp-sticky-cta__sub" data-i18n="sticky.sub">From 5 pieces · 5-10 day turnaround</div>'
     + '</div>'
     + '<a href="/quote" class="sp-sticky-cta__btn" data-i18n="sticky.cta">Get a Quote →</a>';
   document.body.appendChild(bar);

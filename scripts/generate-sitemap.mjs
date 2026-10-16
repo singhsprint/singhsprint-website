@@ -28,9 +28,6 @@ const CORE = [
   ['/industries/charity-events-fundraisers',            0.9,  'monthly'],
   ['/industries/schools-sports-teams',                  0.9,  'monthly'],
   ['/guides/decoration-method-durability',              0.8,  'monthly'],
-  ['/guides/procurement-checklist',                     0.8,  'monthly'],
-  ['/guides/charity-run-timeline',                      0.8,  'monthly'],
-  ['/guides/construction-crew-cost',                    0.8,  'monthly'],
 ];
 
 async function listProductSlugs() {

@@ -1,0 +1,393 @@
+{
+  "_note": "Product pages Google may index. Everything else under /p/ and /fr/p/ carries noindex,follow and is left out of sitemap.xml. Source: the CRM /api/catalog?popular=1 list (blanks with placed orders, plus a few curated picks per category). Rebuild with tmp/cleanup-20261007/indexable_products.py.",
+  "generated": "2026-10-07",
+  "slugs": [
+    "ajm-international-0530m",
+    "allpro-41800l",
+    "american-apparel-1301",
+    "american-apparel-rf497",
+    "atc-everyday-collection-atc1000",
+    "atc-everyday-collection-c100",
+    "atc-s3526",
+    "athletic-knit-b1710",
+    "athletic-knit-h550b",
+    "athletic-knit-h6100",
+    "augusta-161",
+    "augusta-257",
+    "augusta-710",
+    "bella-canvas-3001",
+    "bella-canvas-3719",
+    "bella-canvas-4711",
+    "coal-harbour-s365",
+    "comfort-colors-1566",
+    "comfort-colors-1717",
+    "comfort-colors-6014",
+    "core365-88181",
+    "core365-ce10",
+    "core365-ce112",
+    "csw-24-7-s05670",
+    "devon-jones-dg150",
+    "flexfit-6277",
+    "gildan-18500",
+    "gildan-64000",
+    "gildan-sf000",
+    "holloway-222818",
+    "independent-trading-co-ss1000",
+    "independent-trading-co-ss3000",
+    "independent-trading-co-ss4500",
+    "m-o-3542",
+    "new-era-ne400",
+    "next-level-3600",
+    "next-level-3600sw",
+    "next-level-3604",
+    "pacific-headwear-641k",
+    "q-tees-q4250",
+    "q-tees-q600",
+    "q-tees-qtb",
+    "rabbit-skins-3321",
+    "rabbit-skins-4400",
+    "rabbit-skins-4424",
+    "richardson-112",
+    "sportsman-sp12",
+    "team-365-tt11wl",
+    "team-365-tt51",
+    "valucap-8869",
+    "valucap-vc300a",
+    "valucap-vc400",
+    "yp-classics-6245cm",
+    "yp-classics-6606",
+    "yupoong-6606"
+  ],
+  "detail": {
+    "ajm-international-0530m": {
+      "product_id": "6d5fa428-ba2b-4557-a2f8-e2c10a7e44cc",
+      "brand": "AJM International",
+      "style": "0530M",
+      "orders": 1
+    },
+    "allpro-41800l": {
+      "product_id": "58db4d6f-ac43-4895-ac51-48070e431f4d",
+      "brand": "AllPro",
+      "style": "41800L",
+      "orders": 1
+    },
+    "american-apparel-1301": {
+      "product_id": "f212de1f-344b-455b-84cc-5792eb85f472",
+      "brand": "American Apparel",
+      "style": "1301",
+      "orders": 8
+    },
+    "american-apparel-rf497": {
+      "product_id": "397c5ab1-78b1-4e6a-89fd-4754cd5c9d50",
+      "brand": "American Apparel",
+      "style": "RF497",
+      "orders": 1
+    },
+    "atc-everyday-collection-atc1000": {
+      "product_id": "15e37840-05d8-40f6-80a1-baa99ecf63fe",
+      "brand": "ATC™ Everyday Collection®",
+      "style": "ATC1000",
+      "orders": 3
+    },
+    "atc-everyday-collection-c100": {
+      "product_id": "44a8c56d-9127-4ea7-897b-f21c9c329f2c",
+      "brand": "ATC™ Everyday Collection®",
+      "style": "C100",
+      "orders": 1
+    },
+    "atc-s3526": {
+      "product_id": "40a9a517-da67-4eb7-8ab0-2792922da332",
+      "brand": "ATC™",
+      "style": "S3526",
+      "orders": 1
+    },
+    "athletic-knit-b1710": {
+      "product_id": "50af77df-fd9a-4ac4-a928-a032ab2aeac9",
+      "brand": "Athletic Knit",
+      "style": "B1710",
+      "orders": 1
+    },
+    "athletic-knit-h550b": {
+      "product_id": "3f20cf00-3e9e-479b-8504-c5e1be6b760d",
+      "brand": "Athletic Knit",
+      "style": "H550B",
+      "orders": 0
+    },
+    "athletic-knit-h6100": {
+      "product_id": "97760809-da6e-4716-838d-27e266fd0af9",
+      "brand": "Athletic Knit",
+      "style": "H6100",
+      "orders": 0
+    },
+    "augusta-161": {
+      "product_id": "2e3640dd-41f9-4350-95cc-6676b207fd3f",
+      "brand": "Augusta",
+      "style": "161",
+      "orders": 0
+    },
+    "augusta-257": {
+      "product_id": "ca09a384-a3e5-45cc-b788-42f9cd153c31",
+      "brand": "Augusta",
+      "style": "257",
+      "orders": 1
+    },
+    "augusta-710": {
+      "product_id": "724f511f-d270-49af-b2ad-ee7a47323c73",
+      "brand": "Augusta",
+      "style": "710",
+      "orders": 1
+    },
+    "bella-canvas-3001": {
+      "product_id": "ad36e774-7f6f-4d10-a4f6-09155f6ea946",
+      "brand": "BELLA + CANVAS",
+      "style": "3001",
+      "orders": 1
+    },
+    "bella-canvas-3719": {
+      "product_id": "ac8b1592-6174-403c-9a7c-374d35b62056",
+      "brand": "BELLA + CANVAS",
+      "style": "3719",
+      "orders": 1
+    },
+    "bella-canvas-4711": {
+      "product_id": "83debe10-101e-4613-a257-2cf0623aca7b",
+      "brand": "BELLA + CANVAS",
+      "style": "4711",
+      "orders": 1
+    },
+    "coal-harbour-s365": {
+      "product_id": "6aee56bc-a864-4d29-92f2-c43b641d61be",
+      "brand": "Coal Harbour®",
+      "style": "S365",
+      "orders": 1
+    },
+    "comfort-colors-1566": {
+      "product_id": "51cf69bd-76c0-4182-86ef-c68760a80109",
+      "brand": "Comfort Colors",
+      "style": "1566",
+      "orders": 0
+    },
+    "comfort-colors-1717": {
+      "product_id": "680f9019-ce9d-4f0b-93b2-ca5f4f6f5ce4",
+      "brand": "Comfort Colors",
+      "style": "1717",
+      "orders": 7
+    },
+    "comfort-colors-6014": {
+      "product_id": "b507ca66-76c8-40b9-9cbd-4ec83a59afaf",
+      "brand": "Comfort Colors",
+      "style": "6014",
+      "orders": 1
+    },
+    "core365-88181": {
+      "product_id": "e74e694f-040d-4429-8c12-a1ae309e4d3e",
+      "brand": "CORE365",
+      "style": "88181",
+      "orders": 1
+    },
+    "core365-ce10": {
+      "product_id": "76f3cc97-ad1e-4b32-80c8-254296bc43c5",
+      "brand": "CORE365",
+      "style": "CE10",
+      "orders": 1
+    },
+    "core365-ce112": {
+      "product_id": "9f75102d-58fd-48e3-9d90-c65f8ae616ee",
+      "brand": "CORE365",
+      "style": "CE112",
+      "orders": 0
+    },
+    "csw-24-7-s05670": {
+      "product_id": "45e4df04-54c2-4992-8073-609fc477c63a",
+      "brand": "CSW 24/7",
+      "style": "S05670",
+      "orders": 1
+    },
+    "devon-jones-dg150": {
+      "product_id": "cb5a1688-8576-41e3-91b1-908678bfd68f",
+      "brand": "Devon & Jones",
+      "style": "DG150",
+      "orders": 0
+    },
+    "flexfit-6277": {
+      "product_id": "90605bd4-0cd7-4f42-a5d9-a75a626bf0af",
+      "brand": "Flexfit",
+      "style": "6277",
+      "orders": 0
+    },
+    "gildan-18500": {
+      "product_id": "062eb3bf-211a-4095-8773-9d3d60a4e41a",
+      "brand": "Gildan",
+      "style": "18500",
+      "orders": 9
+    },
+    "gildan-64000": {
+      "product_id": "505a33c1-278e-4bc0-a8c6-97a502dac03b",
+      "brand": "Gildan",
+      "style": "64000",
+      "orders": 36
+    },
+    "gildan-sf000": {
+      "product_id": "1067eff4-d7d6-49bc-829e-4219c2346824",
+      "brand": "Gildan",
+      "style": "SF000",
+      "orders": 2
+    },
+    "holloway-222818": {
+      "product_id": "c9c6ce02-91e1-4df8-b381-6346d6cfebc0",
+      "brand": "Holloway",
+      "style": "222818",
+      "orders": 1
+    },
+    "independent-trading-co-ss1000": {
+      "product_id": "9262f8b4-a3fe-467f-8cc1-b837326194b2",
+      "brand": "Independent Trading Co.",
+      "style": "SS1000",
+      "orders": 1
+    },
+    "independent-trading-co-ss3000": {
+      "product_id": "3559694f-825e-4a5c-a548-4786b3924211",
+      "brand": "Independent Trading Co.",
+      "style": "SS3000",
+      "orders": 1
+    },
+    "independent-trading-co-ss4500": {
+      "product_id": "049e3f63-4174-4327-bd7f-bba9318d17a9",
+      "brand": "Independent Trading Co.",
+      "style": "SS4500",
+      "orders": 1
+    },
+    "m-o-3542": {
+      "product_id": "0e28e4b7-de4b-45fd-995c-d5482f0a0014",
+      "brand": "M&O",
+      "style": "3542",
+      "orders": 1
+    },
+    "new-era-ne400": {
+      "product_id": "c1706917-8b81-4beb-9e96-7c1088ae43df",
+      "brand": "New Era®",
+      "style": "NE400",
+      "orders": 0
+    },
+    "next-level-3600": {
+      "product_id": "cd8a51ed-394a-49a2-9f37-57badce56f9a",
+      "brand": "Next Level",
+      "style": "3600",
+      "orders": 2
+    },
+    "next-level-3600sw": {
+      "product_id": "ca31498c-d267-4fc4-93de-2a1f2d86383d",
+      "brand": "Next Level",
+      "style": "3600SW",
+      "orders": 1
+    },
+    "next-level-3604": {
+      "product_id": "c9af96b4-65bc-4b93-9584-250ec7d6c236",
+      "brand": "Next Level",
+      "style": "3604",
+      "orders": 1
+    },
+    "pacific-headwear-641k": {
+      "product_id": "bcf7ccc5-a32c-421e-8753-a57b4a40fce7",
+      "brand": "Pacific Headwear",
+      "style": "641K",
+      "orders": 0
+    },
+    "q-tees-q4250": {
+      "product_id": "77b03163-8ac4-4fef-858b-af1d8ca1c21c",
+      "brand": "Q-Tees",
+      "style": "Q4250",
+      "orders": 2
+    },
+    "q-tees-q600": {
+      "product_id": "0d9adaa0-4cec-433d-9cb4-a18903e24cd7",
+      "brand": "Q-Tees",
+      "style": "Q600",
+      "orders": 2
+    },
+    "q-tees-qtb": {
+      "product_id": "c0914c41-3d1d-4bea-9389-19b9e80564e7",
+      "brand": "Q-Tees",
+      "style": "QTB",
+      "orders": 2
+    },
+    "rabbit-skins-3321": {
+      "product_id": "f8bb96f9-fe2c-40b9-b2d5-413047823e8a",
+      "brand": "Rabbit Skins",
+      "style": "3321",
+      "orders": 1
+    },
+    "rabbit-skins-4400": {
+      "product_id": "4e458da4-1fb6-4d7b-91bb-14526a20d902",
+      "brand": "Rabbit Skins",
+      "style": "4400",
+      "orders": 2
+    },
+    "rabbit-skins-4424": {
+      "product_id": "8805dbab-6823-4296-a60a-c6eec19496de",
+      "brand": "Rabbit Skins",
+      "style": "4424",
+      "orders": 1
+    },
+    "richardson-112": {
+      "product_id": "3269ef37-3963-43e7-b502-6f10d2566423",
+      "brand": "Richardson",
+      "style": "112",
+      "orders": 0
+    },
+    "sportsman-sp12": {
+      "product_id": "9196d0c5-cafa-4016-8ae6-95051d8f7d5a",
+      "brand": "Sportsman",
+      "style": "SP12",
+      "orders": 0
+    },
+    "team-365-tt11wl": {
+      "product_id": "b066e3b5-37f3-4c7e-ae85-683ebe3aacce",
+      "brand": "Team 365",
+      "style": "TT11WL",
+      "orders": 1
+    },
+    "team-365-tt51": {
+      "product_id": "6466bb3d-026e-492b-8ad1-2e46affbe02f",
+      "brand": "Team 365",
+      "style": "TT51",
+      "orders": 1
+    },
+    "valucap-8869": {
+      "product_id": "5c97e501-c664-43e5-aa69-15c2bf4fd720",
+      "brand": "Valucap",
+      "style": "8869",
+      "orders": 2
+    },
+    "valucap-vc300a": {
+      "product_id": "4fb6d710-e802-48e3-a24e-cec773ffd9e5",
+      "brand": "Valucap",
+      "style": "VC300A",
+      "orders": 5
+    },
+    "valucap-vc400": {
+      "product_id": "58ac27b1-36a5-4dcf-9c9c-d8b1b7ec15ed",
+      "brand": "Valucap",
+      "style": "VC400",
+      "orders": 1
+    },
+    "yp-classics-6245cm": {
+      "product_id": "a0faad95-ee36-4faf-8129-48f09fd3118b",
+      "brand": "YP Classics",
+      "style": "6245CM",
+      "orders": 0
+    },
+    "yp-classics-6606": {
+      "product_id": "51d05c80-9df8-4d1d-a769-1701684f659a",
+      "brand": "YP Classics",
+      "style": "6606",
+      "orders": 1
+    },
+    "yupoong-6606": {
+      "product_id": "2beadae0-d2bd-43a1-9dcf-c0a433e6bb9b",
+      "brand": "Yupoong",
+      "style": "6606",
+      "orders": 2
+    }
+  }
+}

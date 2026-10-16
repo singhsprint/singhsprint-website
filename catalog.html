@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalog | Singhs Print — Custom Apparel Montreal</title>
-  <meta name="description" content="Shop 4,600 printable blanks — Bella+Canvas, Gildan, Comfort Colors, Next Level, Champion, Independent, ATC and more. Live pricing at your quantity, every colour and size, no minimum.">
+  <meta name="description" content="Shop 4,600 printable blanks — Bella+Canvas, Gildan, Comfort Colors, Next Level, Champion, Independent, ATC and more. Live pricing at your quantity, every colour and size, from 5 pieces.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,14 +98,15 @@
     <div class="meta">
       <span data-i18n="cat.hero.meta1"><strong>Stock + prices</strong> refresh daily</span>
       <span>·</span>
-      <span data-i18n="cat.hero.meta2"><strong>7–14 day</strong> typical turnaround</span>
+      <span data-i18n="cat.hero.meta2"><strong>5-10 day</strong> typical turnaround</span>
       <span>·</span>
       <!-- Was "Montreal-designed blanks available". Every is_canadian_made
            product came from rue Saint-Patrick, which is delisted, so that
-           line is no longer true of anything in the catalogue. "No minimum"
-           is true, is in the FAQ, and is the thing a first-time buyer is
-           actually scanning for. -->
-      <span data-i18n="cat.hero.meta3"><strong>No minimum</strong> — 1 piece or 1,000</span>
+           line is no longer true of anything in the catalogue. The slot now
+           carries the order minimum, which is the thing a first-time buyer
+           is actually scanning for — it was "No minimum" until the
+           5-piece minimum landed on 2026-10-16. -->
+      <span data-i18n="cat.hero.meta3"><strong>From 5 pieces</strong> — 5 or 1,000</span>
     </div>
   </section>
 
@@ -215,7 +216,11 @@
   <div id="qtyPricingBar" class="qty-bar">
     <span class="qty-bar__lede" data-i18n="cat.qty.label">Pricing for</span>
     <div class="qty-ladder" id="qtyLadder" role="group" aria-label="Quantity">
-      <button type="button" class="qty-tier" data-qty="1" aria-pressed="false" onclick="setQty(1)">1&ndash;4</button>
+      <!-- The 1-4 rung came out on 2026-10-16 with the 5-piece order
+           minimum. The engine can still price 1-4 — the micro-run tier is
+           deliberately still in the pricing config so a human can quote a
+           three-piece job — but a button that sets a quantity checkout
+           will refuse is a dead end with a price on it. -->
       <span class="qty-ladder__sep" aria-hidden="true"></span>
       <button type="button" class="qty-tier" data-qty="5"   aria-pressed="false" onclick="setQty(5)">5</button>
       <button type="button" class="qty-tier" data-qty="10"  aria-pressed="false" onclick="setQty(10)">10</button>
@@ -227,7 +232,7 @@
     </div>
     <span class="qty-bar__note" id="qtyNote" data-i18n="cat.qty.note.bulk">Per-unit price &middot; 1 print side</span>
     <label class="qty-bar__custom">
-      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" inputmode="numeric" min="5" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 
@@ -470,7 +475,7 @@
         <div class="detail-modal__qty">
           <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700" data-i18n="cat.detail.qty">Qty</span>
           <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
-          <input type="number" inputmode="numeric" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
+          <input type="number" inputmode="numeric" id="detailModalQtyInput" min="5" max="10000" value="25" class="detail-modal__qty-input" />
           <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
         </div>
         <div class="detail-modal__actions">

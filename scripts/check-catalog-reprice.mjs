@@ -175,15 +175,23 @@ ok('reconcileGrid refreshes a node when it reuses one',
 ok('…unconditionally, so a missing hook is loud rather than silent',
   !/if\s*\(\s*opts\.updateCard\s*\)/.test(src))
 ok('renderOpts supplies updateCard', /updateCard\s*:/.test(src))
+// The order minimum joined the signature on 2026-10-16: priceLockup is
+// extracted and eval'd by this file and check-price-lockup, which forbid it
+// reaching for window., so the floor has to arrive as an argument like the
+// quantity does. Both are still required to be the CURRENT ones.
 ok('…wired to repriceCard at the current catalogue quantity',
-  /updateCard\s*:[^\n]*repriceCard\(\s*node\s*,\s*p\s*,\s*state\.qty\s*\)/.test(src))
+  /updateCard\s*:[^\n]*repriceCard\(\s*node\s*,\s*p\s*,\s*state\.qty\s*[,)]/.test(src))
+ok('…and at the current order minimum, not a literal',
+  /updateCard\s*:[^\n]*repriceCard\([^)]*catMinOrder\(\)\s*\)/.test(src))
 
 // One definition of the price cell. The bug was survivable only because the
 // markup existed in exactly one place; two would have drifted instead.
 const cellUses = (src.match(/priceCellHtml\(/g) || []).length
 ok(`priceCellHtml is used by both the build and the update path (found ${cellUses})`, cellUses >= 3)
 ok('productCard builds its price cell through priceCellHtml',
-  /<div class="price">\$\{priceCellHtml\(p, state\.qty\)\}<\/div>/.test(src))
+  /<div class="price">\$\{priceCellHtml\(p, state\.qty[^}]*\)\}<\/div>/.test(src))
+ok('…passing the order minimum from the one place that owns it',
+  /<div class="price">\$\{priceCellHtml\([^}]*catMinOrder\(\)[^}]*\)\}<\/div>/.test(src))
 ok('the price-cell markup is not spelled out a second time inside productCard',
   !/<div class="price">\$\{priceLockup\(/.test(src))
 

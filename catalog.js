@@ -3233,14 +3233,25 @@
   // catalog.html from before this deploy would still have the inline
   // oninput handler and would throw on first drag.
   function onQtySliderChanged() { /* slider removed 2026-08-01 */ }
+  /** The order minimum, from the one place that owns it. */
+  function catMinOrder() {
+    return (typeof window !== 'undefined' && typeof window.SP_MIN_ORDER === 'number'
+            && window.SP_MIN_ORDER > 0) ? window.SP_MIN_ORDER : 5;
+  }
+
   function onQtyInputChanged(val) {
     const n = parseInt(val, 10);
     if (!Number.isFinite(n) || n < 1) return;
-    setQty(Math.min(10000, n));
+    // Clamp UP to the order minimum rather than refusing the keystroke. A
+    // customer typing "3" gets the price of the smallest run we will actually
+    // sell, not a price for a quantity checkout then rejects. min="5" on the
+    // input only governs the spinner and native validation; a typed or pasted
+    // 3 still arrives here, which is the whole reason this clamp exists.
+    setQty(Math.min(10000, Math.max(catMinOrder(), n)));
   }
   function setQty(n, opts) {
     state.qty = n;
-    const few = n < 5;
+    const few = n < catMinOrder();
 
     // Ladder: mark the active tier. A custom number that isn't a tier lands
     // on the tier it actually prices at (largest tier <= n), which is the
@@ -3258,7 +3269,7 @@
     if (note) {
       note.setAttribute('data-i18n', few ? 'cat.qty.note.few' : 'cat.qty.note.bulk');
       note.innerHTML = few
-        ? 'One flat price \u00b7 no minimum'
+        ? '5-piece minimum'
         : 'Per-unit price \u00b7 1 print side';
     }
 
@@ -3674,7 +3685,7 @@
       keyOfProduct: function (p) { return p.product_id; },
       mountedCards: function (grid) { return Array.prototype.slice.call(grid.querySelectorAll('[data-product-id]')); },
       makeCard:     function (p, i) { return productCard(p, { eager: i < 6 }); },
-      updateCard:   function (node, p) { repriceCard(node, p, state.qty); },
+      updateCard:   function (node, p) { repriceCard(node, p, state.qty, catMinOrder()); },
       makeTailCard: function () { return byoCard(); },
       isTailCard:   function (node) { return node.classList && node.classList.contains('card-byo'); },
       initialCount: INITIAL_RENDER,
@@ -3916,7 +3927,7 @@
    * multi-quantity price, and shoppers abandon rather than do the arithmetic.
    * So the selected tier is the headline and the single-item price sits under
    * it permanently - no mode, no hover, nothing hidden. Wherever the ladder is
-   * set, someone who wants one shirt can always see what one shirt costs.
+   * set, someone ordering the minimum can always see what the minimum costs.
    *
    * Hierarchy is size + weight only, never colour: colour here would read as a
    * discount badge and cheapen the card.
@@ -3962,26 +3973,54 @@
    * `qty` is a parameter rather than a read of state.qty so
    * scripts/check-price-lockup.mjs can exercise every branch.
    */
-  function priceLockup(p, qty) {
+  function priceLockup(p, qty, minOrder) {
     if (!(typeof p.price_from === 'number' && p.price_from > 0)) {
       return `<strong data-i18n="cat.card.quote-on-request">Quote on request</strong>`;
     }
-    const few  = qty < 5;
+    // The order minimum arrives as an ARGUMENT, not from window. This block
+    // is extracted and eval'd on its own by check-price-lockup.mjs and
+    // check-catalog-reprice.mjs, which forbid it reaching for state., window.
+    // or document. — a rule worth keeping: "two places deciding what quantity
+    // means" is the exact bug those checkers exist to prevent. The fallback
+    // mirrors SP_EMB_MIN's: a number the caller forgot to pass must not become
+    // zero and silently make every quantity look like a short run.
+    const few  = qty < (minOrder || 5);
     const from = `<span class="price-from" data-i18n="cat.card.from">From</span> `;
     const main = from + `<strong>$${p.price_from.toFixed(2)}</strong>` +
       (few ? `<span data-i18n="cat.card.pereach">/each</span>`
            : `<span data-i18n="cat.card.perunit">/unit</span>`);
 
+    // The SMALLEST QUANTITY WE SELL, not the smallest the engine can price.
+    // This read ladder[1] and the card said "Just one from $X" on every one
+    // of 4,600 products — a single-unit price advertised beside a checkout
+    // that refuses anything under the minimum. The engine still publishes a
+    // qty-1 rung (PRICE_TIERS starts at 1 and the micro-run tier is still in
+    // the pricing config on purpose), so the fix is to stop reading it here
+    // rather than to remove it there.
+    //
+    // Exact key first, then the lowest rung at or above the minimum, so this
+    // survives the minimum moving to a quantity that is not a tier boundary.
     const ladder = p.prices_by_qty || null;
-    const single = ladder ? (ladder[1] != null ? ladder[1] : ladder['1']) : null;
+    const floor  = minOrder || 5;
+    let single = null;
+    if (ladder) {
+      single = ladder[floor] != null ? ladder[floor] : ladder[String(floor)];
+      if (!(typeof single === 'number' && single > 0)) {
+        const rungs = Object.keys(ladder)
+          .map(Number)
+          .filter((k) => Number.isFinite(k) && k >= floor && ladder[k] > 0)
+          .sort((a, b) => a - b);
+        single = rungs.length ? ladder[rungs[0]] : null;
+      }
+    }
 
     let sub;
     if (few) {
-      sub = `<span data-i18n="cat.card.flat-no-min">Flat price · no minimum</span>`;
+      sub = `<span data-i18n="cat.card.flat-no-min">Flat price at this tier</span>`;
     } else if (typeof single === 'number' && single > 0 && single !== p.price_from) {
-      // Same floor, same caveat: prices_by_qty[1] is the cheapest colourway's
-      // single-unit price, so it gets the same word rather than a bare figure.
-      sub = `<span data-i18n="cat.card.justone-from">Just one from</span> <b>$${single.toFixed(2)}</b>`;
+      // Same caveat as the headline: this rung is the cheapest colourway's
+      // price, so it keeps the "from" wording rather than a bare figure.
+      sub = `<span data-i18n="cat.card.justone-from">${floor} from</span> <b>$${single.toFixed(2)}</b>`;
     } else {
       sub = `<span data-i18n="cat.card.oneside">1-side print</span>`;
     }
@@ -3996,8 +4035,8 @@
    * way a card could get a new price was to be rebuilt from scratch — and
    * stopped being fine the moment reconcileGrid started reusing nodes.
    */
-  function priceCellHtml(p, qty) {
-    return priceLockup(p, qty) +
+  function priceCellHtml(p, qty, minOrder) {
+    return priceLockup(p, qty, minOrder) +
       (p.weight_oz ? ' \u00b7 <span class="price-meta">' + p.weight_oz + ' oz</span>' : '');
   }
 
@@ -4024,10 +4063,10 @@
    * Reusing a node is only sound if the node is then made to say what a
    * freshly built one would. reconcileGrid calls this on EVERY reuse.
    */
-  function repriceCard(node, p, qty) {
+  function repriceCard(node, p, qty, minOrder) {
     var cell = node.querySelector && node.querySelector('.price');
     if (!cell) return;
-    cell.innerHTML = priceCellHtml(p, qty);
+    cell.innerHTML = priceCellHtml(p, qty, minOrder);
     // setQty() painted this on to say "a new number is coming". The number
     // has arrived, so the dimming comes off here — never on a timer, which
     // would clear it whether or not the price actually updated.
@@ -4144,11 +4183,11 @@
         ${pickNoteHtml(p)}
         <div class="swatches">${renderSwatches()}${extra}</div>
         <div class="selected-color-name" style="font-size:.72rem;color:var(--soft);min-height:1em;margin-bottom:6px">${esc((heroColor.color_name || '').replace(/_\d+$/, ''))}</div>
-        <div class="price">${priceCellHtml(p, state.qty)}</div>
+        <div class="price">${priceCellHtml(p, state.qty, catMinOrder())}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
-          <span class="card-cta__sub">${state.qty < 5
-            ? '<span data-i18n="cat.card.few-at-tier">1&ndash;4 items · no minimum</span>'
+          <span class="card-cta__sub">${state.qty < catMinOrder()
+            ? '<span data-i18n="cat.card.few-at-tier">5-piece minimum</span>'
             : '<span class="card-cta__qty">' + state.qty + '</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span>'}</span>
         </div>
       </div>

@@ -142,7 +142,9 @@ const rel = (p) => path.relative(ROOT, p);
 const sitemap = readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
 {
   const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
-  ok('C1 the sitemap still has its URLs', locs.length > 10000);
+  // 2026-10-07 — the sitemap was cut to the indexable product pages on purpose
+  // (~184 URLs), so this guards against an empty or truncated file, not size.
+  ok('C1 the sitemap still has its URLs', locs.length > 100);
   eq('C2 no removed URL is still advertised to Google',
     locs.filter((u) => /rue-saint-patrick|designed-in-montreal/i.test(u)), []);
   eq('C3 no hreflang alternate points at one either',

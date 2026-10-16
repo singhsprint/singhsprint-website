@@ -177,7 +177,7 @@ const META_DESC_FR = {
   'inkwear.html': 'Programme partenaire Inkwear · vêtements co-brandés pour les créateurs et les marques de mode établies au Québec.',
   'portfolio.html': 'Découvrez les commandes récentes décorées par Imprimerie Singhs Print pour des clubs McGill, des entreprises de l\'Ouest-de-l\'Île et des comptes corporatifs.',
   'order.html': 'Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.',
-  'why-us.html': 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes. Prix en direct, aucun minimum, une maquette que vous approuvez avant l\'impression et une garantie contre les erreurs d\'impression — voici la différence Singhs Print.'
+  'why-us.html': 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes. Prix en direct, un minimum de 5 pièces, une maquette que vous approuvez avant l\'impression et une garantie contre les erreurs d\'impression — voici la différence Singhs Print.'
 };
 
 // Pre-translated OG/Twitter titles + descriptions for the highest-traffic

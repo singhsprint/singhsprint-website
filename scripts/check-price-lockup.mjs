@@ -113,15 +113,30 @@ function main() {
 
   // ── The headline specifically ───────────────────────────────────────────
   {
-    const html = priceLockup({ price_from: 16.95, prices_by_qty: { 1: 26.95 } }, 50)
+    // The sub-figure is the price of the SMALLEST RUN WE SELL. It used to be
+    // prices_by_qty[1] and the card read "Just one from $X" beside a checkout
+    // that refuses anything under the order minimum (2026-10-16), so the
+    // fixture carries a 5 rung and the card is expected to quote that one.
+    const html = priceLockup({ price_from: 16.95, prices_by_qty: { 1: 29.95, 5: 26.95 } }, 50, 5)
     eq('the headline is "From $16.95/unit"',
        /cat\.card\.from[^$]*\$16\.95<\/strong><span data-i18n="cat\.card\.perunit"/.test(html), true)
-    eq('…and the single-unit figure carries its own qualifier',
+    eq('…and the minimum-run figure carries its own qualifier',
        /cat\.card\.justone-from[^$]*\$26\.95/.test(html), true)
+    eq('…and it is NOT the single-unit price', /\$29\.95/.test(html), false)
     // The old wording must be gone, or a stale build could still ship a bare
     // "Just one $26.95" beside a qualified headline.
     eq('…and the unqualified "justone" key is no longer used',
        /data-i18n="cat\.card\.justone"/.test(html), false)
+  }
+
+  // ── A ladder that only prices below the minimum quotes nothing ──────────
+  // Not a fallback to the qty-1 rung: that rung is a quantity the site will
+  // not sell, and a price beside it is an offer.
+  {
+    const html = priceLockup({ price_from: 16.95, prices_by_qty: { 1: 29.95 } }, 50, 5)
+    eq('a sub-minimum-only ladder prints no second figure', /\$29\.95/.test(html), false)
+    eq('…and falls back to the print-side line instead',
+       /cat\.card\.oneside/.test(html), true)
   }
 
   // ── /each branch is qualified too ───────────────────────────────────────
@@ -143,7 +158,9 @@ function main() {
   // A data-i18n pointing at a missing key renders the English fallback in
   // French, which is how a translated site quietly stops being translated.
   for (const key of ['cat.card.from', 'cat.card.justone-from']) {
-    const row = new RegExp(`'${key.replace(/\./g, '\\.')}':\\s*\\{([^}]*)\\}`).exec(lang)
+    // [^}]* stopped at the '}' of a '{ordermin}' placeholder, so the row came
+    // back empty and both language assertions failed on correct strings.
+    const row = new RegExp(`'${key.replace(/\./g, '\\.')}':\\s*\\{((?:[^{}]|\\{[a-z]+\\})*)\\}`).exec(lang)
     eq(`${key} is defined in lang.js`, !!row, true)
     if (row) {
       eq(`…with an en string`, /en:\s*'[^']+'/.test(row[1]), true)

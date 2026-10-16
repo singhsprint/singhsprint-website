@@ -39,6 +39,17 @@ const SITE      = 'https://www.singhsprint.com';
 // TOP_N=N to generate just the first N for a quick test run.
 const TOP_N     = parseInt(process.env.TOP_N || '10000', 10);
 
+// 2026-10-07 — only the blanks people actually order stay in Google. The list
+// lives in p/indexable.json (built from the CRM's ?popular=1 by
+// tmp/cleanup-20261007/indexable_products.py); every other page is generated
+// with noindex,follow, and regenerate-sitemap.mjs reads the same file.
+let INDEXABLE = null;
+try {
+  INDEXABLE = new Set(JSON.parse(await fs.readFile(path.join(ROOT, 'p', 'indexable.json'), 'utf8')).slugs);
+} catch { /* no list yet: index everything, the old behaviour */ }
+const robotsTag = (slug) => (INDEXABLE && !INDEXABLE.has(slug))
+  ? '\n  <meta name="robots" content="noindex,follow">' : '';
+
 // ---------------------------------------------------------------------------
 // SEO structured-data constants. Used by every generated Product entity to
 // satisfy Google's "Product snippet" + "Merchant listing" enrichment fields
@@ -324,6 +335,10 @@ const I18N = {
                      fr: 'pour des impressions éclatantes sur polyesters et tissus foncés,' },
   bodyP1Emb:       { en: 'for logos and corporate identity.',
                      fr: 'pour les logos et l\'identité corporative.' },
+  // TURNAROUND, corrected again 2026-10-07: the owner set the standard at
+  // 5-10 business days with a 3-day rush for 25% extra, and the embroidery
+  // minimum is 5 pieces. Everything below this line is the 2026-10-05 history.
+  //
   // TURNAROUND, corrected 2026-10-05. This said "Standard turnaround is 3-5
   // business days ... rush options (2-3 days) ... embroidery takes 7-11 days"
   // on 6,899 pages, inside FAQPage structured data, i.e. the figure Google
@@ -336,8 +351,8 @@ const I18N = {
   // The separate embroidery figure is gone rather than corrected: at 7-11 it
   // sat INSIDE the 7-14 standard, so it read as embroidery being the fast
   // option, and nobody has given a measured embroidery window.
-  bodyP2:          { en: 'Minimum order on this blank is 5 units for DTG/DTF, 10 units for embroidery. Standard turnaround is 7–14 business days from approved artwork, and rush to 3–5 days is available on most jobs for a small surcharge — ask when you request your quote. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
-                     fr: 'Minimums : 5 unités pour DTG/DTF, 10 unités pour la broderie. Délai standard : 7 à 14 jours ouvrables à partir de l\'approbation du visuel, et un service accéléré de 3 à 5 jours est offert sur la plupart des commandes moyennant un léger supplément — demandez-le avec votre soumission. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
+  bodyP2:          { en: 'Minimum order is 5 pieces, counted across the whole order, whether it is DTG/DTF or embroidery. Standard turnaround is 5-10 business days from approved artwork, and rush in 3 days is available for 25% extra - ask when you request your quote. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
+                     fr: 'Commande minimum de 5 pièces, comptées sur la commande entière, en DTG/DTF comme en broderie. Délai standard : 5 à 10 jours ouvrables à partir de l\'approbation du visuel, et un service accéléré en 3 jours est offert pour 25 % de plus - demandez-le avec votre soumission. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
 
   specsH2:         { en: 'Specifications', fr: 'Spécifications' },
   specBrand:       { en: 'Brand:',         fr: 'Marque :' },
@@ -447,7 +462,7 @@ function buildPage(p, lang = 'en') {
   <meta charset="UTF-8">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/favicon-180.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">${robotsTag(slug)}
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(meta)}">
   <link rel="canonical" href="${url}">

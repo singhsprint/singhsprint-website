@@ -80,17 +80,6 @@ var SP_LANG = (function() {
     'footer.location': { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'footer.rights': { en: '2026 Singhs Print. All rights reserved.', fr: '2026 Singhs Print. Tous droits réservés.' },
     'footer.tagline': { en: 'Custom Apparel Printing | Montreal, QC', fr: 'Impression de vêtements personnalisés | Montréal, QC' },
-    // Mailing list (popup, footer form, quote/checkout boxes). The opt-in
-    // sentences are sent to the CRM verbatim as the CASL consent record, so
-    // keep them in step with CONSENT_TEXT in the CRM's lib/mailing/optin.ts.
-    'mail.optin.email': { en: "Yes, email me deals and new drops from Singh's Print. Unsubscribe anytime.", fr: "Oui, envoyez-moi les promos et nouveautés de Singh's Print par courriel. Désabonnement en tout temps." },
-    'mail.optin.sms':   { en: "Yes, text me deals from Singh's Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.", fr: "Oui, envoyez-moi les promos de Singh's Print par texto. Quelques textos par mois. Répondez STOP pour vous désabonner. Des frais peuvent s'appliquer." },
-    'mail.phone.ph':    { en: 'Mobile number (optional)', fr: 'Cellulaire (facultatif)' },
-    'footer.news.h':    { en: 'Deals and new drops', fr: 'Promos et nouveautés' },
-    'footer.news.p':    { en: 'A couple of emails a month. Unsubscribe anytime.', fr: 'Quelques courriels par mois. Désabonnement en tout temps.' },
-    'footer.news.cta':  { en: 'Sign up', fr: "S'inscrire" },
-    'footer.news.ok':   { en: "You're in. Check your inbox soon.", fr: 'Vous êtes inscrit. À bientôt dans votre boîte.' },
-    'footer.news.err':  { en: "That didn't go through. Try again?", fr: "Ça n'a pas fonctionné. Réessayer ?" },
     'footer.privacy': { en: 'Privacy', fr: 'Confidentialité' },
     'footer.cookies': { en: 'Cookies', fr: 'Témoins' },
     'footer.terms': { en: 'Terms', fr: 'Conditions' },
@@ -108,8 +97,8 @@ var SP_LANG = (function() {
     'home.hero.h1a': { en: "West Island's", fr: "L'Ouest-de-l'Île," },
     'home.hero.h1b': { en: 'custom apparel printing studio.', fr: 'votre studio d\'impression personnalisée.' },
     'home.hero.sub': {
-      en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. No minimums, fast turnaround, local pickup, and a mockup you approve before we print.",
-      fr: "DTG, DTF et broderie depuis notre studio de Sainte-Anne-de-Bellevue. Faibles minimums, ramassage local, et une maquette que vous approuvez avant l'impression. T-shirt gratuit dès 15 articles."
+      en: "DTG, DTF, embroidery, and bulk apparel printing from our Sainte-Anne-de-Bellevue studio. From {ordermin} pieces, fast turnaround, local pickup, and a mockup you approve before we print.",
+      fr: "DTG, DTF et broderie depuis notre studio de Sainte-Anne-de-Bellevue. \u00c0 partir de {ordermin} pi\u00e8ces, ramassage local, et une maquette que vous approuvez avant l'impression. T-shirt gratuit d\u00e8s 15 articles."
     },
     'home.hero.cta1': { en: 'Get a Free Quote', fr: 'Soumission gratuite' },
     'home.hero.cta2': { en: 'See Our Work', fr: 'Voir nos réalisations' },
@@ -163,7 +152,7 @@ var SP_LANG = (function() {
                           fr: '<b>T&#8209;shirt gratuit</b> inclus \u00e0 cette quantit\u00e9 \u2014 m\u00eame design, ajout\u00e9 automatiquement.' },
     'fold.note.tee15':  { en: 'Order <b>15 or more</b> and a free tee is added automatically.',
                           fr: 'Commandez <b>15 ou plus</b> et un t&#8209;shirt gratuit est ajout\u00e9 automatiquement.' },
-    'fold.note.nomin':  { en: 'No minimum on DTG or DTF.', fr: 'Aucun minimum en DTG ou DTF.' },
+    'fold.note.nomin':  { en: 'From {ordermin} pieces on DTG or DTF.', fr: '\u00c0 partir de {ordermin} pi\u00e8ces en DTG ou DTF.' },
     'fold.note.byo':    { en: 'You ship the garments \u2014 we quote decoration only.',
                           fr: 'Vous fournissez les v\u00eatements \u2014 on cote la d\u00e9coration seulement.' },
     'home.trust.seework': { en: 'See the work \u2192', fr: 'Voir nos r\u00e9alisations \u2192' },
@@ -202,8 +191,8 @@ var SP_LANG = (function() {
     },
     'home.hiw.step4.h': { en: 'Pick up or get it shipped', fr: 'Ramassage ou expédition' },
     'home.hiw.step4.p': {
-      en: 'Local West Island pickup or Canada-wide shipping. Most orders in 7–14 business days.',
-      fr: 'Ramassage local dans l\'Ouest-de-l\'Île ou expédition partout au Canada. La plupart des commandes en 7 à 14 jours ouvrables.'
+      en: 'Local West Island pickup or Canada-wide shipping. Most orders in 5-10 business days.',
+      fr: 'Ramassage local dans l\'Ouest-de-l\'Île ou expédition partout au Canada. La plupart des commandes en 5 à 10 jours ouvrables.'
     },
     'home.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'home.cta.p': {
@@ -227,7 +216,7 @@ var SP_LANG = (function() {
     'home.diff.r1.them': { en: '&ldquo;Call for pricing&rdquo;', fr: '« Appelez pour les prix »' },
     'home.diff.r1.us': { en: 'Live prices on 4,600 products, before you talk to anyone', fr: 'Prix en direct sur 4 600 produits, avant même de parler à quelqu\'un' },
     'home.diff.r2.them': { en: '24-piece minimums', fr: 'Minimums de 24 pièces' },
-    'home.diff.r2.us': { en: "No minimums. We'll print one.", fr: 'Aucun minimum. On en imprime un seul.' },
+    'home.diff.r2.us': { en: '{ordermin}-piece minimum. Not 24.', fr: 'Minimum de {ordermin} pi\u00e8ces. Pas 24.' },
     'home.diff.r3.them': { en: 'First look at pickup, fingers crossed', fr: 'Premier aperçu au ramassage, on croise les doigts' },
     'home.diff.r3.us': { en: 'Mockup in ~1 hour you approve before the run', fr: 'Maquette en ~1 heure que vous approuvez avant la production' },
     'home.diff.r4.them': { en: 'Setup fees discovered on the invoice', fr: 'Frais de montage découverts sur la facture' },
@@ -245,9 +234,9 @@ var SP_LANG = (function() {
     'home.faq.q1': { en: 'What printing services do you offer?', fr: 'Quels services d\'impression offrez-vous ?' },
     'home.faq.a1': { en: 'We specialize in DTG (Direct-to-Garment), DTF (Direct-to-Film), and embroidery. Custom t-shirts, hoodies, crewnecks, uniforms, hats, and more, all decorated to the same standard in Montreal.', fr: 'On se spécialise en DTG (impression directe sur vêtement), DTF (transfert sur film) et broderie. T-shirts, hoodies, crewnecks, uniformes, casquettes et plus — tout décoré selon la même norme à Montréal.' },
     'home.faq.q2': { en: 'Is there a minimum order?', fr: 'Y a-t-il une commande minimum ?' },
-    'home.faq.a2': { en: 'No minimums. We print 1 item or 1,000+. Ideal for small brands, creators, schools, gyms, cafes, and businesses of any size.', fr: 'Aucun minimum. On imprime 1 article ou 1 000+. Idéal pour les petites marques, créateurs, écoles, gyms, cafés et entreprises de toute taille.' },
+    'home.faq.a2': { en: '{ordermin} pieces, counted across the whole order \u2014 mix garments and colours however you like. Most shops start at 24. We print {ordermin} items or 1,000+, for small brands, creators, schools, gyms, cafes, and businesses of any size.', fr: '{ordermin} pi\u00e8ces, compt\u00e9es sur la commande enti\u00e8re \u2014 m\u00e9langez les v\u00eatements et les couleurs comme vous voulez. La plupart des ateliers commencent \u00e0 24. On imprime {ordermin} articles ou 1 000+, pour les petites marques, cr\u00e9ateurs, \u00e9coles, gyms, caf\u00e9s et entreprises de toute taille.' },
     'home.faq.q3': { en: 'How fast can you complete an order?', fr: 'En combien de temps pouvez-vous compléter une commande ?' },
-    'home.faq.a3': { en: "Standard turnaround is 7–14 business days from approved artwork, with rush to 3–5 days available for a surcharge. You'll get an exact timeline at the quote stage.", fr: "Le délai standard est de 7 à 14 jours ouvrables après l'approbation du visuel, avec un service accéléré de 3 à 5 jours moyennant un supplément. On vous donne un échéancier précis à l'étape de la soumission." },
+    'home.faq.a3': { en: "Standard turnaround is 5-10 business days from approved artwork, and rush in 3 days is available for 25% extra. You'll get an exact timeline at the quote stage.", fr: "Le délai standard est de 5 à 10 jours ouvrables après l'approbation du visuel, avec un service accéléré en 3 jours pour 25 % de plus. On vous donne un échéancier précis à l'étape de la soumission." },
     'home.faq.q4': { en: 'Can you supply the blank apparel?', fr: 'Pouvez-vous fournir les vêtements vierges ?' },
     'home.faq.a4': { en: "Yes! We carry Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes, and dozens more. Or bring your own garments and we'll print on anything.", fr: 'Oui ! On offre Gildan, Bella+Canvas, Comfort Colors, Champion, Next Level, Independent, American Apparel, Hanes et des dizaines d\'autres. Ou apportez vos propres vêtements et on imprime sur n\'importe quoi.' },
     'home.faq.q5': { en: 'What file types do you accept?', fr: 'Quels formats de fichier acceptez-vous ?' },
@@ -274,7 +263,7 @@ var SP_LANG = (function() {
     'home.sticky.cta':   { en: 'Get Quote →', fr: 'Soumission →' },
     // Sitewide sticky CTA (injected by components.js on every page except /quote and /order)
     'sticky.label': { en: 'Ready when you are', fr: 'On est prêts' },
-    'sticky.sub':   { en: 'No minimums · 7–14 day turnaround', fr: 'Aucun minimum · délai de 7 à 14 jours' },
+    'sticky.sub':   { en: 'From {ordermin} pieces \u00b7 5-10 day turnaround', fr: '\u00c0 partir de {ordermin} pi\u00e8ces \u00b7 d\u00e9lai de 5 \u00e0 10 jours' },
     'sticky.cta':   { en: 'Get a Quote →', fr: 'Soumission →' },
     // Mid-page CTA injected by components.js on long-form pages
     'midcta.eyebrow': { en: 'Quick check',                                       fr: 'Petite question' },
@@ -344,7 +333,7 @@ var SP_LANG = (function() {
     'whyus.cmp.r1.them': { en: '&ldquo;Call for pricing.&rdquo; Two emails, four days, then a PDF you have to decode.', fr: '« Appelez pour les prix. » Deux courriels, quatre jours, puis un PDF à décoder.' },
     'whyus.cmp.r1.us': { en: '<strong>Live prices on 4,600 products.</strong> See your number before you ever talk to a human.', fr: '<strong>Prix en direct sur 4 600 produits.</strong> Voyez votre chiffre avant même de parler à un humain.' },
     'whyus.cmp.r2.them': { en: "24-piece minimum before they'll even open your file.", fr: 'Minimum de 24 pièces avant même d\'ouvrir votre fichier.' },
-    'whyus.cmp.r2.us': { en: "<strong>No minimums.</strong> We'll print one shirt with the same care as a thousand.", fr: '<strong>Aucun minimum.</strong> On imprime un seul chandail avec le même soin que mille.' },
+    'whyus.cmp.r2.us': { en: '<strong>{ordermin} pieces.</strong> Not 24, not 48 \u2014 and five get the same care as a thousand.', fr: '<strong>{ordermin} pi\u00e8ces.</strong> Pas 24, pas 48 \u2014 et cinq re\u00e7oivent le m\u00eame soin que mille.' },
     'whyus.cmp.r3.them': { en: 'The first time you see your shirt is at pickup. Fingers crossed.', fr: 'La première fois que vous voyez votre chandail, c\'est au ramassage. On croise les doigts.' },
     'whyus.cmp.r3.us': { en: '<strong>Photoreal mockup in about an hour</strong> that you approve before we print.', fr: '<strong>Maquette photoréaliste en environ une heure</strong> que vous approuvez avant l\'impression.' },
     'whyus.cmp.r4.them': { en: 'Setup fee. Art fee. Rush fee. All discovered on the invoice.', fr: 'Frais de montage. Frais de graphisme. Frais d\'urgence. Tous découverts sur la facture.' },
@@ -367,8 +356,8 @@ var SP_LANG = (function() {
     'whyus.cta.b2': { en: 'Browse the catalog', fr: 'Parcourir le catalogue' },
     'about.hero.h1': { en: 'Montreal\'s custom apparel studio,<br>built in Sainte-Anne-de-Bellevue.', fr: 'L\'imprimerie de vêtements personnalisés de Montréal,<br>née à Sainte-Anne-de-Bellevue.' },
     'about.hero.p': {
-      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF, embroidery and screen printing for student organizations, local businesses, and Net-30 corporate accounts, with 4,600 blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
-      fr: 'Imprimerie Singhs Print est un décorateur de vêtements familial dans l\'Ouest-de-l\'Île de Montréal. DTG, DTF, broderie et sérigraphie pour les organisations étudiantes, les entreprises locales et les comptes corporatifs Net-30, avec plus de 1 100 styles de vêtements vierges, une soumission en 1 heure pendant les heures d\'ouverture et une vraie réponse humaine à chaque fois.'
+      en: 'Imprimerie Singhs Print is a family-run apparel decorator on the West Island of Montreal. DTG, DTF and embroidery for student organizations, local businesses, and Net-30 corporate accounts, with 4,600 blank styles, a 1-hour quote turnaround during business hours, and a real human reply every time.',
+      fr: 'Imprimerie Singhs Print est un décorateur de vêtements familial dans l\'Ouest-de-l\'Île de Montréal. DTG, DTF et broderie pour les organisations étudiantes, les entreprises locales et les comptes corporatifs Net-30, avec 4 600 styles de vêtements vierges, une soumission en 1 heure pendant les heures d\'ouverture et une vraie réponse humaine à chaque fois.'
     },
     'about.image.studio':  { en: 'The studio · Sainte-Anne-de-Bellevue', fr: 'Le studio · Sainte-Anne-de-Bellevue' },
     'about.image.methods': { en: 'DTG · DTF · Embroidery',                fr: 'DTG · DTF · Broderie' },
@@ -390,7 +379,7 @@ var SP_LANG = (function() {
     },
 
     'about.stats.orders':  { en: 'Orders decorated',                fr: 'Commandes décorées' },
-    'about.stats.rating':  { en: 'Google rating · 23 reviews',      fr: 'Note Google · 23 avis' },
+    'about.stats.rating':  { en: 'Google rating · 37 reviews',      fr: 'Note Google · 37 avis' },
     'about.stats.blanks':  { en: 'Blank styles in catalog',         fr: 'Styles vierges au catalogue' },
     'about.stats.quote':   { en: 'Typical quote turnaround',        fr: 'Délai typique de soumission' },
 
@@ -412,8 +401,8 @@ var SP_LANG = (function() {
       fr: 'Notre travail part vers des organisations étudiantes de McGill (sororités, fraternités, clubs sportifs), des associations de Concordia, des restaurants et gyms de l\'Ouest-de-l\'Île, des entreprises de construction et d\'aménagement paysager, des institutions québécoises comme l\'Arboretum Morgan, et des créateurs de contenu qui lancent des drops merch. Sigma Chi, McGill Pizza, Old Soul, Montreal Pinball, CUSEC, Artwood Construction, Durante Landscapers, CANAUST et des dizaines d\'autres.'
     },
     'about.clients.p2': {
-      en: 'Minimums are 5 units for DTG/DTF and 12 for embroidery, lower than most decorators in the city. No judgment for first-timers, no extra friction for repeat clients. Standing accounts move onto Net-30 terms after a couple of clean orders, and procurement-led organizations can sign an MSA and submit RFPs through our intake form.',
-      fr: 'Les minimums sont de 5 unités pour DTG/DTF et de 12 pour la broderie, plus bas que la plupart des décorateurs de la ville. Pas de jugement pour les nouveaux clients, pas de friction supplémentaire pour les habitués. Les comptes récurrents passent aux modalités Net-30 après quelques commandes propres, et les organisations pilotées par les achats peuvent signer une entente-cadre et soumettre des appels d\'offres via notre formulaire d\'admission.'
+      en: 'Our minimum is {ordermin} pieces on any decoration, counted across the whole order, which is lower than most decorators in the city. No judgment for first-timers, no extra friction for repeat clients. Standing accounts move onto Net-30 terms after a couple of clean orders, and procurement-led organizations can sign an MSA and submit RFPs through our intake form.',
+      fr: 'Notre minimum est de {ordermin} pi\u00e8ces pour toute d\u00e9coration, compt\u00e9es sur la commande enti\u00e8re, ce qui est plus bas que la plupart des d\u00e9corateurs de la ville. Pas de jugement pour les nouveaux clients, pas de friction supplémentaire pour les habitués. Les comptes récurrents passent aux modalités Net-30 après quelques commandes propres, et les organisations pilotées par les achats peuvent signer une entente-cadre et soumettre des appels d\'offres via notre formulaire d\'admission.'
     },
 
     'about.values.h2': { en: 'How we work', fr: 'Comment on travaille' },
@@ -433,8 +422,8 @@ var SP_LANG = (function() {
     },
     'about.values.turnaround.h': { en: 'Real turnaround times', fr: 'De vrais délais de livraison' },
     'about.values.turnaround.p': {
-      en: 'Orders run 7–14 business days from approved artwork, with rush (3–5 days) available for a small surcharge. We don\'t quote timelines we can\'t hit.',
-      fr: 'Les commandes prennent de 7 à 14 jours ouvrables après l\'approbation du visuel, avec une option accélérée (3 à 5 jours) moyennant un léger supplément. On ne promet pas de délais qu\'on ne peut pas tenir.'
+      en: 'Orders run 5-10 business days from approved artwork, with a 3-day rush available for 25% extra. We don\'t quote timelines we can\'t hit.',
+      fr: 'Les commandes prennent de 5 à 10 jours ouvrables après l\'approbation du visuel, avec une option accélérée en 3 jours pour 25 % de plus. On ne promet pas de délais qu\'on ne peut pas tenir.'
     },
     'about.values.qc.h': { en: 'Quality control', fr: 'Contrôle de qualité' },
     'about.values.qc.p': {
@@ -568,8 +557,8 @@ var SP_LANG = (function() {
     'inkwear.cta.tagline': { en: 'Let\'s start small. One design. One product.', fr: 'Commencons petit. Un design. Un produit.' },
     'inkwear.cta.h2': { en: 'If it works, we scale.', fr: 'Si ça marché, on grandit.' },
     'inkwear.cta.sub': {
-      en: 'Get in touch to set up your first sample run. No commitment, no minimums.',
-      fr: 'Contactez-nous pour votre premier échantillon. Aucun engagement, aucun minimum.'
+      en: 'Get in touch to set up your first sample run. No commitment, and {min} pieces is enough.',
+      fr: 'Contactez-nous pour votre premier \u00e9chantillon. Aucun engagement, et {min} pi\u00e8ces suffisent.'
     },
     'inkwear.cta.email': { en: 'Email sales@singhsprint.com', fr: 'Écrire à sales@singhsprint.com' },
     'inkwear.cta.or': { en: '— or —', fr: '— ou —' },
@@ -625,10 +614,10 @@ var SP_LANG = (function() {
       en: 'You approve a photoreal mockup before we print the full run.',
       fr: 'Vous approuvez une maquette photoréaliste avant la production complète.'
     },
-    'biz.why.turnaround.h': { en: '7–14 Day Turnaround', fr: 'Délai de 7 à 14 jours' },
+    'biz.why.turnaround.h': { en: '5-10 Day Turnaround', fr: 'Délai de 5 à 10 jours' },
     'biz.why.turnaround.p': {
-      en: 'Most orders ready in 7–14 business days. Rush to 3–5 days available when deadlines are tight.',
-      fr: 'La plupart des commandes prêtes en 7 à 14 jours ouvrables. Service accéléré de 3 à 5 jours offert quand les échéances sont serrées.'
+      en: 'Most orders ready in 5-10 business days. A 3-day rush is available for 25% extra when deadlines are tight.',
+      fr: 'La plupart des commandes prêtes en 5 à 10 jours ouvrables. Service accéléré en 3 jours (+25 %) quand les échéances sont serrées.'
     },
     'biz.why.design.h': { en: 'Free Design Help', fr: 'Aide au design gratuite' },
     'biz.why.design.p': {
@@ -673,13 +662,13 @@ var SP_LANG = (function() {
     },
     'biz.hiw.step4.h': { en: 'We deliver', fr: 'On livre' },
     'biz.hiw.step4.p': {
-      en: 'Full order ready in 7–14 business days. Free delivery across Montreal for 25+ units.',
-      fr: 'Commande complète prête en 7 à 14 jours ouvrables. Livraison gratuite à Montréal pour 25+ unités.'
+      en: 'Full order ready in 5-10 business days. Free delivery across Montreal for 25+ units.',
+      fr: 'Commande complète prête en 5 à 10 jours ouvrables. Livraison gratuite à Montréal pour 25+ unités.'
     },
     'biz.cta.h2': { en: 'Ready to outfit your team?', fr: 'Prêt à habiller votre équipe ?' },
     'biz.cta.sub': {
-      en: 'Get a volume quote in hours, not days. No minimums, no commitments.',
-      fr: 'Obtenez une soumission de volume en heures, pas en jours. Aucun minimum, aucun engagement.'
+      en: 'Get a volume quote in hours, not days. From {min} pieces, no commitments.',
+      fr: 'Obtenez une soumission de volume en heures, pas en jours. \u00c0 partir de {min} pi\u00e8ces, aucun engagement.'
     },
     'biz.cta.btn': { en: 'Get a Business Quote', fr: 'Soumission entreprise' },
 
@@ -773,8 +762,8 @@ var SP_LANG = (function() {
     'quote.quantity': { en: 'Quantity', fr: 'Quantité' },
     'quote.sizes': { en: 'Sizes Needed', fr: 'Tailles requises' },
     'quote.timeline': { en: 'Timeline', fr: 'Délai' },
-    'quote.timeline.standard': { en: 'Standard (7–14 business days)', fr: 'Standard (7 à 14 jours ouvrables)' },
-    'quote.timeline.rush': { en: 'Rush (3–5 business days)', fr: 'Accéléré (3 à 5 jours ouvrables)' },
+    'quote.timeline.standard': { en: 'Standard (5-10 business days)', fr: 'Standard (5 à 10 jours ouvrables)' },
+    'quote.timeline.rush': { en: 'Rush (3 business days, +25%)', fr: 'Accéléré (3 jours ouvrables, +25 %)' },
     'quote.timeline.flexible': { en: 'Flexible / No rush', fr: 'Flexible / Pas presse' },
     'quote.upload': { en: 'Upload Your Design', fr: 'Téléversez votre design' },
     'quote.notes': { en: 'Additional Notes', fr: 'Notes supplémentaires' },
@@ -887,8 +876,8 @@ var SP_LANG = (function() {
                         fr: 'Class\u00e9 selon <strong>ce qui se vend vraiment</strong>' },
     'pop.nav': { en: 'Popular', fr: 'Populaires' },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
-    'cat.hero.meta2': { en: '<strong>7–14 day</strong> typical turnaround', fr: 'Délai habituel de <strong>7 à 14 jours</strong>' },
-    'cat.hero.meta3': { en: '<strong>No minimum</strong> — 1 piece or 1,000', fr: '<strong>Aucun minimum</strong> — 1 pièce ou 1 000' },
+    'cat.hero.meta2': { en: '<strong>5-10 day</strong> typical turnaround', fr: 'Délai habituel de <strong>5 à 10 jours</strong>' },
+    'cat.hero.meta3': { en: '<strong>From {ordermin} pieces</strong> \u2014 {ordermin} or 1,000', fr: '<strong>\u00c0 partir de {ordermin} pi\u00e8ces</strong> \u2014 {ordermin} ou 1 000' },
 
     // ===== SPORTS JERSEYS HUB (jerseys.html) =====
     'jersey.title':   { en: 'Custom Team Jerseys', fr: 'Maillots d\'équipe personnalisés' },
@@ -1015,7 +1004,7 @@ var SP_LANG = (function() {
     'cat.qty.label': { en: 'Pricing for', fr: 'Prix pour' },
     'cat.qty.units': { en: 'units', fr: 'unités' },
     'cat.qty.note.bulk': { en: 'Per-unit price · 1 print side', fr: 'Prix unitaire · 1 côté imprimé' },
-    'cat.qty.note.few': { en: 'One flat price · no minimum', fr: 'Prix fixe · aucun minimum' },
+    'cat.qty.note.few': { en: '{ordermin}-piece minimum', fr: 'Minimum {ordermin} pi\u00e8ces' },
     'cat.qty.oneside': { en: '· 1 print side', fr: '· 1 côté imprimé' },
     'cat.qty.custom': { en: 'Custom', fr: 'Personnalisé' },
     'cat.results.products': { en: 'products', fr: 'produits' },
@@ -1067,12 +1056,12 @@ var SP_LANG = (function() {
     'cat.card.from': { en: 'From', fr: 'À partir de' },
     'cat.card.perunit': { en: '/unit', fr: '/unité' },
     'cat.card.pereach': { en: '/each', fr: '/chacun' },
-    'cat.card.justone': { en: 'Just one', fr: 'À l\u2019unité' },
-    'cat.card.justone-from': { en: 'Just one from', fr: 'À l\u2019unité à partir de' },
-    'cat.card.flat-no-min': { en: 'Flat price · no minimum', fr: 'Prix fixe · aucun minimum' },
+    'cat.card.justone': { en: '{ordermin} pieces', fr: '{ordermin} pi\u00e8ces' },
+    'cat.card.justone-from': { en: '{ordermin} from', fr: '{ordermin} \u00e0 partir de' },
+    'cat.card.flat-no-min': { en: 'Flat price at this tier', fr: 'Prix fixe \u00e0 ce palier' },
     'cat.detail.embmin': { en: 'Needs {min}+ · add {n} more', fr: 'Minimum {min} · ajoutez-en {n}' },
     'cat.detail.embminprice': { en: 'Embroidery needs {min}+ · add {n} more', fr: 'Broderie : minimum {min} · ajoutez-en {n}' },
-    'cat.card.few-at-tier': { en: '1&ndash;4 items · no minimum', fr: '1&ndash;4 articles · aucun minimum' },
+    'cat.card.few-at-tier': { en: '{ordermin}-piece minimum', fr: 'Minimum {ordermin} pi\u00e8ces' },
     'cat.card.quote-on-request': { en: 'Quote on request', fr: 'Sur demande' },
     'cat.card.oos': { en: 'Out of stock', fr: 'En rupture' },
     'cat.card.low': { en: 'Low stock', fr: 'Stock faible' },
@@ -1284,6 +1273,9 @@ var SP_LANG = (function() {
     'quote.liveprice.sofar':    { en: 'Priced so far', fr: 'Chiffr\u00e9 jusqu\u2019ici' },
     'quote.byoline.err.desc':     { en: 'Tell us what the garments are so we can price the decoration.', fr: 'Dites-nous de quels vêtements il s’agit pour chiffrer la décoration.' },
     'quote.byoline.err.qty':      { en: 'How many garments are you sending?', fr: 'Combien de vêtements envoyez-vous ?' },
+    'quote.min.order': {
+      en: 'Our minimum is {ordermin} pieces per order and you have {n}. Add {short} more and you can check out \u2014 or tap \u201cRequest a quote instead\u201d and we will price the smaller run by hand.',
+      fr: 'Notre minimum est de {ordermin} pi\u00e8ces par commande et vous en avez {n}. Ajoutez-en {short} et vous pourrez payer \u2014 ou touchez \u00ab Demander une soumission \u00bb et on chiffrera la petite s\u00e9rie \u00e0 la main.' },
     'quote.byoline.nocheckout':   { en: 'Orders with your own garments are quoted, not checked out — we confirm the count and the blanks when they arrive. Tap “Get my free quote” and we\'ll come back within the hour.', fr: 'Les commandes avec vos propres vêtements sont chiffrées, pas payées en ligne — nous confirmons la quantité et les vêtements à leur arrivée. Touchez « Obtenir ma soumission gratuite » et nous revenons vers vous dans l’heure.' },
     'quote.byo.sides1': { en: '1 side', fr: '1 côté' },
     'quote.byo.qty': { en: 'Qty', fr: 'Qté' },
@@ -1306,8 +1298,8 @@ var SP_LANG = (function() {
     'quote.bulk.product': { en: 'your product', fr: 'votre produit' },
     'quote.bulk.expand': { en: 'tap to expand ⌄', fr: 'cliquez pour développer ⌄' },
     'quote.bulk.note': {
-      en: 'Prices are per unit and include standard blank + printing. Bulk pricing kicks in at 5+ units; smaller orders use retail pricing.',
-      fr: 'Les prix sont par unité et incluent vêtement standard + impression. Le prix en gros s\'applique à partir de 5 unités; les commandes plus petites utilisent le prix de détail.'
+      en: 'Prices are per unit and include standard blank + printing. {ordermin} pieces is our minimum, and the per-unit price drops as the quantity rises.',
+      fr: 'Les prix sont par unité et incluent vêtement standard + impression. Notre minimum est de {ordermin} pièces, et le prix unitaire baisse quand la quantité monte.'
     },
     'quote.bulk.canadianadd': { en: 'Montreal-designed blanks add $2/unit on T-shirts and Long Sleeves.', fr: 'Les vêtements conçus à Montréal ajoutent 2 $/unité sur les T-shirts et manches longues.' },
     'quote.purpose.label': { en: 'What\'s this for?', fr: 'Pour quoi est-ce ?' },
@@ -1334,7 +1326,7 @@ var SP_LANG = (function() {
     'quote.contact.delivery.opt2': { en: 'Montreal delivery', fr: 'Livraison à Montréal' },
     'quote.contact.delivery.opt3': { en: 'Shipping (Canada-wide)', fr: 'Expédition (partout au Canada)' },
     'quote.contact.needby': { en: 'When do you need these by? <span style="color:#888;font-weight:400">(optional)</span>', fr: 'Pour quand en avez-vous besoin ? <span style="color:#888;font-weight:400">(facultatif)</span>' },
-    'quote.contact.needby.hint': { en: 'Standard turnaround is 7–14 business days from approval. Earlier dates may incur a rush fee, quoted on your reply.', fr: 'Le délai standard est de 7 à 14 jours ouvrables après l\'approbation. Une date plus rapprochée peut entraîner des frais d\'urgence, précisés dans notre réponse.' },
+    'quote.contact.needby.hint': { en: 'Standard turnaround is 5-10 business days from approval. Need it sooner? Rush in 3 days is 25% extra.', fr: 'Le délai standard est de 5 à 10 jours ouvrables après l\'approbation. Besoin plus tôt? Le service accéléré en 3 jours coûte 25 % de plus.' },
     'quote.contact.rushlabel': { en: 'Rush?', fr: 'Urgent ?' },
     'quote.contact.rush': { en: 'This is a rush order — please prioritize', fr: 'Commande urgente — veuillez prioriser' },
     'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG and embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG et broderie librement.' },
@@ -1452,7 +1444,7 @@ var SP_LANG = (function() {
     'rfp.label.garments': { en: 'What are you ordering?', fr: 'Que commandez-vous ?' },
     'rfp.ph.garments': { en: 'E.g. 80 hi-vis t-shirts (cotton blend, embroidered logo left chest), 40 fleece hoodies for winter. Include any spec you have.', fr: 'Ex. 80 t-shirts hi-vis (coton mélangé, logo brodé poitrine gauche), 40 hoodies en molleton pour l\'hiver. Incluez toute spécification utile.' },
     'rfp.label.needed': { en: 'Needed by', fr: 'Requis pour le' },
-    'rfp.hint.turnaround': { en: 'Standard turnaround is 7–14 business days from mockup approval. Faster possible with rush surcharge.', fr: 'Délai standard de 7 à 14 jours ouvrables après l\'approbation de la maquette. Plus rapide possible avec supplément urgent.' },
+    'rfp.hint.turnaround': { en: 'Standard turnaround is 5-10 business days from mockup approval. Rush in 3 days is 25% extra.', fr: 'Délai standard de 5 à 10 jours ouvrables après l\'approbation de la maquette. Service accéléré en 3 jours pour 25 % de plus.' },
     'rfp.label.terms': { en: 'Preferred payment terms', fr: 'Modalités de paiement souhaitées' },
     'rfp.terms.prepaid': { en: 'Prepaid (2% discount)', fr: 'Prépayé (rabais de 2 %)' },
     'rfp.terms.deposit30': { en: '50% deposit + Net 30 balance', fr: 'Dépôt 50 % + solde Net 30' },
@@ -1477,15 +1469,15 @@ var SP_LANG = (function() {
     'rfp.rail.next.h': { en: 'What happens after you submit', fr: 'Et la suite après votre envoi' },
     'rfp.rail.next.li1': { en: 'We reply within the hour during business hours with quoted bulk pricing.', fr: 'On répond en moins d\'une heure pendant les heures d\'ouverture avec des prix de gros.' },
     'rfp.rail.next.li2': { en: 'You approve a photoreal mockup before any production run.', fr: 'Vous approuvez une maquette photoréaliste avant toute production.' },
-    'rfp.rail.next.li3': { en: 'An approved mockup kicks off production. Standard turnaround is 7–14 business days.', fr: 'Une maquette approuvée lance la production. Délai standard de 7 à 14 jours ouvrables.' },
+    'rfp.rail.next.li3': { en: 'An approved mockup kicks off production. Standard turnaround is 5-10 business days.', fr: 'Une maquette approuvée lance la production. Délai standard de 5 à 10 jours ouvrables.' },
     'rfp.rail.next.li4': { en: 'Reorders for new hires or program refreshes go through your dedicated account manager.', fr: 'Les recommandes pour nouveaux employés ou renouvellements passent par votre gestionnaire de compte attitré.' },
     'rfp.rail.terms.h': { en: 'Standard terms', fr: 'Modalités standards' },
     'rfp.rail.terms.li1': { en: '50% deposit to start production, balance Net 30 from invoice date.', fr: 'Dépôt 50 % pour démarrer la production, solde Net 30 à partir de la date de facture.' },
     'rfp.rail.terms.li2': { en: 'Custom terms available for repeat accounts and standing programs.', fr: 'Modalités sur mesure pour les comptes habituels et les programmes permanents.' },
     'rfp.rail.terms.li3': { en: 'Free quote — no obligation, no commitment until you approve the mockup.', fr: 'Soumission gratuite — sans obligation, aucun engagement avant l\'approbation de la maquette.' },
-    'rfp.rail.terms.li4': { en: '5.0 stars on Google from 25 verified Montreal clients.', fr: '5,0 étoiles sur Google par 25 clients montréalais vérifiés.' },
+    'rfp.rail.terms.li4': { en: '4.7 stars on Google from 37 Montreal reviews.', fr: '4,7 étoiles sur Google, 37 avis de clients montréalais.' },
     'rfp.rail.quote.body': { en: 'Perfect quality and excellent service. Definitely worth checking out!', fr: 'Qualité parfaite et excellent service. Vaut vraiment la peine d\'essayer !' },
-    'rfp.rail.quote.attr': { en: '— Bavneet Kaur, verified Google review (5.0 / 23 on Google)', fr: '— Bavneet Kaur, avis Google vérifié (5,0 / 23 sur Google)' },
+    'rfp.rail.quote.attr': { en: '— Bavneet Kaur, verified Google review (4.7 / 37 on Google)', fr: '— Bavneet Kaur, avis Google vérifié (4,7 / 37 sur Google)' },
 
     // ===== INDUSTRIES =====
     // Construction
@@ -1724,7 +1716,18 @@ var SP_LANG = (function() {
   function t(key) {
     var entry = translations[key];
     if (!entry) return '';
-    return entry[currentLang] || entry['en'] || '';
+    var v = entry[currentLang] || entry['en'] || '';
+    // {ordermin} is the shop's order minimum, filled here so no page can
+    // promise a number that checkout does not enforce. It is deliberately
+    // NOT {min}: that token belongs to the EMBROIDERY minimum, which comes
+    // from the pricing engine, is a different number whenever the config
+    // moves, and is filled by its own caller. Two minimums, two tokens.
+    if (v.indexOf('{ordermin}') !== -1) {
+      var m = (typeof window !== 'undefined' && typeof window.SP_MIN_ORDER === 'number'
+               && window.SP_MIN_ORDER > 0) ? window.SP_MIN_ORDER : 5;
+      v = v.replace(/\{ordermin\}/g, String(m));
+    }
+    return v;
   }
 
   function applyLang() {

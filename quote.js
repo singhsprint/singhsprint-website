@@ -3531,6 +3531,42 @@
         return;
       }
 
+      // ── The order minimum ──────────────────────────────────────────────
+      // Shop decision 2026-10-16: custom decoration sells in runs of
+      // SP_MIN_ORDER or more. Counted across the WHOLE order, not per line,
+      // so 2 tees and 3 hoodies is five pieces and goes through — which is
+      // also why this sits here, after items[] is assembled, rather than on
+      // the quantity field of any one row.
+      //
+      // This is the gate that makes the number real. The copy says five and
+      // the qty controls start at five, but a customer who edits a cart in
+      // another tab, restores an older cart from storage, or arrives on a
+      // link with ?qty=3 reaches this function with three pieces, and the
+      // engine would price it quite happily — the 1-4 micro-run tier is
+      // still in the pricing config on purpose.
+      //
+      // Only the PAID path. "Request a quote" still goes through at any
+      // quantity: it reaches a human who can take a three-piece job at
+      // micro-run rates, and refusing it at the form would throw away work
+      // the shop can actually do.
+      var spMinOrder = (typeof window.SP_MIN_ORDER === 'number' && window.SP_MIN_ORDER > 0)
+        ? window.SP_MIN_ORDER : 5;
+      var spOrderPieces = items.reduce(function (n, i) { return n + (parseInt(i.qty, 10) || 0); }, 0);
+      if (spOrderPieces < spMinOrder) {
+        var _short = spMinOrder - spOrderPieces;
+        // {ordermin} is already filled by SP_LANG.t(); only the two numbers
+        // that belong to THIS cart are filled here.
+        alert(spByoT('quote.min.order',
+              'Our minimum is ' + spMinOrder + ' pieces per order and you have {n}. '
+              + 'Add {short} more and you can check out, or tap \u201cRequest a quote instead\u201d '
+              + 'and we will price the smaller run by hand.')
+          .replace(/\{ordermin\}/g, spMinOrder)
+          .replace(/\{n\}/g,        spOrderPieces)
+          .replace(/\{short\}/g,    _short));
+        try { if (typeof goToStep === 'function') goToStep(1); } catch (e) {}
+        return;
+      }
+
       // A colour is a hard requirement for a paid order -- we can't pull a
       // blank without knowing which one. Nothing auto-assigns a colour any
       // more (see spApplyTierPick / applyCatalogProduct / paintProductColors),

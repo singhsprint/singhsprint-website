@@ -57,13 +57,17 @@ function ownCopy(html) {
 }
 const metaDesc = (html) => (html.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
 
+// 2026-10-07 — the owner reset the standard to 5-10 business days with a 3-day
+// rush for 25% extra, and the product pages outside p/indexable.json now carry
+// noindex and stay out of the sitemap. The 7-14 / 3-5 checks below were
+// rewritten to that; the history in the comments is left as written.
 console.log('1. the generator states one turnaround, and it is the owner-confirmed one');
 {
   const body = (GEN.match(/bodyP2:\s*\{\s*en:\s*'([^']*)'/) || [])[1] || '';
-  ok('1a the generator says the standard is 7-14 business days',
-    /Standard turnaround is 7–14 business days/.test(body), body.slice(0, 90));
-  ok('1b and that 3-5 is the rush path, not the standard',
-    /rush to 3–5 days/.test(body) && !/Standard turnaround is 3/.test(body));
+  ok('1a the generator says the standard is 5-10 business days',
+    /Standard turnaround is 5-10 business days/.test(body), body.slice(0, 90));
+  ok('1b and that 3 days is the rush path, not the standard',
+    /rush in 3 days/.test(body) && !/Standard turnaround is 3/.test(body));
   // The figure it replaced, and the one that came with it. 2-3 days was a
   // rush floor faster than the fastest supplier handling window in this
   // file's own table (3 days), so it could not be met even in principle.
@@ -92,13 +96,13 @@ console.log('3. every generated page agrees, and there are no orphans');
     const html = read(`p/${slug}/index.html`);
     if (!html) continue;
     const copy = ownCopy(html);
-    if (!/Standard turnaround is 7–14 business days/.test(copy)) badTurn.push(slug);
+    if (!/Standard turnaround is 5-10 business days/.test(copy)) badTurn.push(slug);
     if (/Standard turnaround is 3/.test(copy) || /2–3 days/.test(copy)) badTurn.push(slug);
     if (/all four of our methods/.test(copy) || /<strong>screen printing<\/strong>/.test(copy)) badMethod.push(slug);
     if (/screen printing/i.test(metaDesc(html))) badMeta.push(slug);
     if (!FR_SLUGS.has(slug)) noFr.push(slug);
   }
-  ok('3b every page states the 7-14 standard in its own copy',
+  ok('3b every page states the 5-10 standard in its own copy',
     badTurn.length === 0, `${badTurn.length} pages, e.g. ${badTurn.slice(0, 3).join(', ')}`);
   ok('3c no page offers screen printing in its own copy',
     badMethod.length === 0, `${badMethod.length} pages, e.g. ${badMethod.slice(0, 3).join(', ')}`);
@@ -114,12 +118,31 @@ console.log('3. every generated page agrees, and there are no orphans');
   // cheap proxy: if it lists exactly what is on disk, nothing was stranded.
   const sitemap = read('sitemap.xml');
   const listed = new Set([...sitemap.matchAll(/<loc>https:\/\/www\.singhsprint\.com\/p\/([^/]+)\/<\/loc>/g)].map((m) => m[1]));
-  const onDiskNotListed = EN_SLUGS.filter((s) => !listed.has(s));
+  // Since 2026-10-07 only p/indexable.json is submitted; the rest are noindex.
+  let INDEXABLE = null;
+  try { INDEXABLE = new Set(JSON.parse(read('p/indexable.json')).slugs); } catch { /* no list: every page */ }
+  const shouldList = INDEXABLE ? EN_SLUGS.filter((s) => INDEXABLE.has(s)) : EN_SLUGS;
+  const onDiskNotListed = shouldList.filter((s) => !listed.has(s));
   const listedNotOnDisk = [...listed].filter((s) => !EN_SLUGS.includes(s));
-  ok('3f the sitemap lists every page on disk',
+  ok('3f the sitemap lists every indexable page on disk',
     onDiskNotListed.length === 0, `${onDiskNotListed.length} unlisted, e.g. ${onDiskNotListed.slice(0, 3).join(', ')}`);
   ok('3g the sitemap lists nothing that is not on disk',
     listedNotOnDisk.length === 0, `${listedNotOnDisk.length} would 404, e.g. ${listedNotOnDisk.slice(0, 3).join(', ')}`);
+  if (INDEXABLE) {
+    const NOINDEX = /<meta name="robots" content="noindex,follow">/;
+    const wrong = [];
+    for (const slug of EN_SLUGS) {
+      for (const p of [`p/${slug}/index.html`, `fr/p/${slug}/index.html`]) {
+        const h = read(p); if (!h) continue;
+        if (INDEXABLE.has(slug) === NOINDEX.test(h)) wrong.push(p);
+      }
+    }
+    ok('3h noindex is on exactly the pages outside p/indexable.json, EN and FR',
+      wrong.length === 0, `${wrong.length} wrong, e.g. ${wrong.slice(0, 3).join(', ')}`);
+    const listedNotIndexable = [...listed].filter((s) => !INDEXABLE.has(s));
+    ok('3i the sitemap submits no noindex page',
+      listedNotIndexable.length === 0, listedNotIndexable.slice(0, 3).join(', '));
+  }
 }
 
 console.log('4. the invariant the generator claims is enforced');
@@ -244,7 +267,7 @@ console.log('6. one turnaround standard, in the layer visitors actually see');
   // said 5-10.
   const LANG = read('lang.js');
   const FIGURE = /\d{1,2}\s*(?:-|–|&ndash;|to|à)\s*\d{1,2}\s*(?:business\s+|jours?\s+)?(?:days?|jours?|weeks?|semaines?)|same[-\s]day|jour même/gi;
-  const ALLOWED = /^(?:7\s*(?:–|-|à)\s*14|3\s*(?:–|-|à)\s*5)/;
+  const ALLOWED = /^(?:5\s*(?:–|-|à)\s*10)/;
 
   // The one key that may say "same day" is about how fast a QUOTE comes back,
   // not how fast an order ships. Named explicitly so it cannot become a
@@ -260,7 +283,7 @@ console.log('6. one turnaround standard, in the layer visitors actually see');
     const found = (body.match(FIGURE) || []).filter((f) => !ALLOWED.test(f.trim()));
     if (found.length) offenders.push(`${key} (${[...new Set(found)].join(', ')})`);
   }
-  ok('6b every lead-time figure in lang.js is the 7-14 standard or the 3-5 rush',
+  ok('6b every lead-time figure in lang.js is the 5-10 standard',
     offenders.length === 0, offenders.slice(0, 6).join('; '));
 
   // "Same-day Montreal pickup" was the most specific promise on the page and
