@@ -117,13 +117,20 @@ ok('B5 the free-quote path is deliberately NOT gated',
      quote.slice(quote.indexOf("getElementById('quoteForm')"),
                  quote.indexOf("getElementById('quoteForm')") + 4000)),
    'a short run still reaches a human who can price it by hand')
-ok('B6 the catalogue cannot set a quantity checkout would refuse',
-   /Math\.max\(catMinOrder\(\), n\)/.test(catalog))
-ok('B7 ...and its qty inputs start there too',
-   !/id="qtyInput"[^>]*min="1"/.test(read('catalog.html'))
-   && /id="qtyInput"[^>]*min="5"/.test(read('catalog.html')))
-ok('B8 the 1-4 rung is gone from the ladder',
-   !/onclick="setQty\(1\)"/.test(read('catalog.html')))
+// B6-B8 used to assert the opposite: that the catalogue clamped every
+// quantity UP to five, hid the 1 rung and started its input at min="5". That
+// was the per-ITEM reading of a per-ORDER minimum, and it left a customer who
+// wanted one of five different things with no way to see the price of one.
+// The minimum is enforced at the cart (B1-B4, H); the catalogue prices
+// whatever quantity is asked and says "per order" beside it.
+ok('B6 the catalogue prices a typed 1 as 1 — it does not clamp up to the minimum',
+   /Math\.max\(1, n\)/.test(catalog) && !/Math\.max\(catMinOrder\(\), n\)/.test(catalog))
+ok('B7 ...and its qty input starts at one',
+   /id="qtyInput"[^>]*min="1"/.test(read('catalog.html')) && /id="qtyInput"[^>]*min="1"/.test(read('fr/catalog.html')))
+ok('B8 the ladder offers a 1 rung, on both pages',
+   /onclick="setQty\(1\)"/.test(read('catalog.html')) && /onclick="setQty\(1\)"/.test(read('fr/catalog.html')))
+ok('B9 below five, the slider note says PER ORDER, through the translator',
+   /note\.innerHTML = few\s*\?\s*\(_t\('cat\.qty\.note\.few'\)/.test(catalog) && !/'5-piece minimum'/.test(catalog))
 
 // ── C. the claim ───────────────────────────────────────────────────────────
 console.log('\nC. nothing still advertises no minimum')
@@ -232,9 +239,11 @@ for (const page of LIVE) {
 ok('E1 no live page offers a one-off or a sub-minimum tier',
    offers.length === 0, offers.length ? offers.slice(0, 3).join(' | ') : 'swept clean')
 ok('E2 nor any translation string', !OFFERS.test(langRaw.replace(/\/\/[^\n]*/g, ' ')))
-ok('E3 the catalogue card prices the MINIMUM, not a single unit',
+ok('E3 the "N from $X" sub-line on a card quotes the order minimum, never a single unit',
    /ladder\[floor\]/.test(catalog) && !/ladder\[1\]/.test(catalog),
    'it read prices_by_qty[1] and printed "Just one from $X" on every card')
+ok('E3b ...and below five the card says per order beside the price',
+   /cat\.card\.few-at-tier/.test(catalog))
 ok('E4 ...and the rung it quotes is never below the floor',
    /k >= floor/.test(catalog))
 

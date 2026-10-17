@@ -3384,12 +3384,12 @@
   function onQtyInputChanged(val) {
     const n = parseInt(val, 10);
     if (!Number.isFinite(n) || n < 1) return;
-    // Clamp UP to the order minimum rather than refusing the keystroke. A
-    // customer typing "3" gets the price of the smallest run we will actually
-    // sell, not a price for a quantity checkout then rejects. min="5" on the
-    // input only governs the spinner and native validation; a typed or pasted
-    // 3 still arrives here, which is the whole reason this clamp exists.
-    setQty(Math.min(10000, Math.max(catMinOrder(), n)));
+    // A typed 1 stays 1. This used to clamp UP to the order minimum, which
+    // read the minimum as five OF THIS ONE; it is five per ORDER, and the
+    // customer buying one of five different things needs the price of one.
+    // The per-order rule is said beside the number (cat.qty.note.few,
+    // cat.card.few-at-tier) and enforced where it belongs, at the cart.
+    setQty(Math.min(10000, Math.max(1, n)));
   }
   function setQty(n, opts) {
     state.qty = n;
@@ -3409,10 +3409,14 @@
     // minimum; above it, that the price shown is per unit.
     const note = document.getElementById('qtyNote');
     if (note) {
+      const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function () { return ''; };
       note.setAttribute('data-i18n', few ? 'cat.qty.note.few' : 'cat.qty.note.bulk');
+      // Through the translator, not a literal: this wrote "5-piece minimum"
+      // straight into the node and applyLang() only runs on a language
+      // switch, so the per-item wording survived the per-order rewrite.
       note.innerHTML = few
-        ? '5-piece minimum'
-        : 'Per-unit price \u00b7 1 print side';
+        ? (_t('cat.qty.note.few') || (catMinOrder() + ' pieces per order \u2014 mix any items'))
+        : (_t('cat.qty.note.bulk') || 'Per-unit price \u00b7 1 print side');
     }
 
     const input = document.getElementById('qtyInput');
@@ -4205,10 +4209,26 @@
    * Reusing a node is only sound if the node is then made to say what a
    * freshly built one would. reconcileGrid calls this on EVERY reuse.
    */
+  /**
+   * The line under "View details & add": the quantity the card is priced at,
+   * or, below the order minimum, the per-order rule. One definition, used by
+   * productCard() on build and by repriceCard() on reuse — it used to live
+   * only in productCard, so a card reused across a quantity change kept
+   * saying "50 units" over a price computed for 1.
+   */
+  function ctaSubHtml(qty, minOrder) {
+    var floor = minOrder || 5;
+    return qty < floor
+      ? '<span data-i18n="cat.card.few-at-tier">' + floor + ' per order \u00b7 mix items</span>'
+      : '<span class="card-cta__qty">' + qty + '</span> <span data-i18n="cat.card.units-at-tier">units \u00b7 adjust qty later</span>';
+  }
+
   function repriceCard(node, p, qty, minOrder) {
     var cell = node.querySelector && node.querySelector('.price');
     if (!cell) return;
     cell.innerHTML = priceCellHtml(p, qty, minOrder);
+    var sub = node.querySelector('.card-cta__sub');
+    if (sub) sub.innerHTML = ctaSubHtml(qty, minOrder);
     // setQty() painted this on to say "a new number is coming". The number
     // has arrived, so the dimming comes off here — never on a timer, which
     // would clear it whether or not the price actually updated.
@@ -4328,9 +4348,7 @@
         <div class="price">${priceCellHtml(p, state.qty, catMinOrder())}</div>
         <div class="card-cta">
           <span class="card-cta__main" data-i18n="cat.card.view-details-cta">View details &amp; add</span>
-          <span class="card-cta__sub">${state.qty < catMinOrder()
-            ? '<span data-i18n="cat.card.few-at-tier">5-piece minimum</span>'
-            : '<span class="card-cta__qty">' + state.qty + '</span> <span data-i18n="cat.card.units-at-tier">units · adjust qty later</span>'}</span>
+          <span class="card-cta__sub">${ctaSubHtml(state.qty, catMinOrder())}</span>
         </div>
       </div>
     `;

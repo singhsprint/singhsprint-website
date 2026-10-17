@@ -222,6 +222,11 @@
            three-piece job — but a button that sets a quantity checkout
            will refuse is a dead end with a price on it. -->
       <span class="qty-ladder__sep" aria-hidden="true"></span>
+      <!-- The 1 rung is back (2026-10-17). It was removed when the minimum
+           landed, which read the minimum as five OF THIS ONE; it is five per
+           ORDER, and a customer buying one of five different things needs the
+           price of one. -->
+      <button type="button" class="qty-tier" data-qty="1"   aria-pressed="false" onclick="setQty(1)">1</button>
       <button type="button" class="qty-tier" data-qty="5"   aria-pressed="false" onclick="setQty(5)">5</button>
       <button type="button" class="qty-tier" data-qty="10"  aria-pressed="false" onclick="setQty(10)">10</button>
       <button type="button" class="qty-tier" data-qty="25"  aria-pressed="false" onclick="setQty(25)">25</button>
@@ -232,7 +237,7 @@
     </div>
     <span class="qty-bar__note" id="qtyNote" data-i18n="cat.qty.note.bulk">Per-unit price &middot; 1 print side</span>
     <label class="qty-bar__custom">
-      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" inputmode="numeric" min="5" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span data-i18n="cat.qty.custom">Custom</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
     </label>
   </div>
 

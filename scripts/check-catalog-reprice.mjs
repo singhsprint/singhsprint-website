@@ -79,10 +79,10 @@ function loadLockup() {
   for (const forbidden of ['state.', 'document.', 'window.']) {
     if (code.includes(forbidden)) problems.push(`the price block reaches outside its arguments: ${forbidden}`)
   }
-  return new Function(body + '\n; return { priceLockup, priceCellHtml, repriceCard };')()
+  return new Function(body + '\n; return { priceLockup, priceCellHtml, repriceCard, ctaSubHtml };')()
 }
 
-const { priceCellHtml, repriceCard } = loadLockup()
+const { priceCellHtml, repriceCard, ctaSubHtml } = loadLockup()
 
 // The three products measured on production, at both quantities.
 const AT_50  = [
@@ -99,7 +99,10 @@ const AT_100 = [
 /** A card just real enough: one `.price` cell with an innerHTML and a style. */
 function fakeCard(product, qty) {
   const cell = { innerHTML: priceCellHtml(product, qty), style: { opacity: '' } }
-  return { querySelector: (sel) => (sel === '.price' ? cell : null), cell }
+  // The sub-line under the CTA is built from the same quantity on a fresh
+  // card; a reused card has to carry it too (it did not — see below).
+  const sub = { innerHTML: ctaSubHtml(qty) }
+  return { querySelector: (sel) => (sel === '.price' ? cell : sel === '.card-cta__sub' ? sub : null), cell, sub }
 }
 
 /** The figures a card is actually showing. */
@@ -137,7 +140,12 @@ for (const qty of [1, 4, 5, 10, 25, 50, 100, 200, 500]) {
   const fresh = fakeCard(AT_100[0], qty)
   eq(`a reused card at qty ${qty} renders exactly what a fresh one does`,
     reused.cell.innerHTML, fresh.cell.innerHTML)
+  // Measured on the page 2026-10-17: slider to 1, every card's price said
+  // "$30.95/each" and its sub-line still said "50 units · adjust qty later".
+  eq(`…and its sub-line too`, reused.sub.innerHTML, fresh.sub.innerHTML)
 }
+eq('below the minimum the sub-line says per order', /per order/.test(ctaSubHtml(1, 5)), true)
+eq('at or above it, the quantity', /card-cta__qty">5</.test(ctaSubHtml(5, 5)), true)
 
 // A product whose price the engine will not give still has to stop being dim,
 // or an unpriced card is frozen at .4 forever.
