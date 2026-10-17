@@ -4210,7 +4210,12 @@
     // engine would refuse. The floor is the embroidery minimum, which equals
     // the order minimum today; both are five.
     const embOnly = !!SP_EMBROIDERY_ONLY[String(p.garment_type || '').toLowerCase()];
-    const embShort = embOnly && few;
+    // The server says so too: /api/catalog sets price_min_qty when the price
+    // it returned is for a larger quantity than was asked (the Popular page,
+    // which has no per-tier ladder to read). Either signal tags the card.
+    const serverMin = Number(p.price_min_qty) || 0;
+    const embShort = few && (embOnly || serverMin > qty);
+    const tagQty = serverMin > qty ? serverMin : (minOrder || 5);
     const from = `<span class="price-from" data-i18n="cat.card.from">From</span> `;
 
     // The SMALLEST QUANTITY WE SELL, not the smallest the engine can price.
@@ -4244,7 +4249,7 @@
 
     let sub;
     if (embShort) {
-      sub = `<span class="price-tag price-tag--min" data-i18n="cat.card.embmin">Minimum ${floor} \u00b7 embroidery</span>`;
+      sub = `<span class="price-tag price-tag--min" data-i18n="cat.card.embmin">Minimum ${tagQty} \u00b7 embroidery</span>`;
     } else if (few) {
       sub = `<span data-i18n="cat.card.flat-no-min">Flat price at this tier</span>`;
     } else if (typeof single === 'number' && single > 0 && single !== p.price_from) {

@@ -190,6 +190,14 @@ function main() {
     // own price_from rather than printing nothing or NaN.
     const bare = { garment_type: 'cap', price_from: 30.95 }
     eq('cap with no ladder: still prints a price', figures(priceLockup(bare, 1, 5))[0]?.amount, '30.95')
+    // The server's word is enough on its own: /api/catalog sets price_min_qty
+    // on the Popular page, where no per-tier ladder exists and the card has
+    // only the garment type to go on — and the garment type can be wrong.
+    const flagged = { garment_type: 'other', price_from: 28.95, price_min_qty: 5 }
+    const hf = priceLockup(flagged, 1, 5)
+    eq('server-flagged at 1: tagged with the server\'s minimum', /Minimum 5/.test(hf) && /cat\.card\.embmin/.test(hf) && /cat\.card\.perunit/.test(hf), true)
+    eq('server-flagged: the tag carries the server\'s number, not the page\'s', /Minimum 10/.test(priceLockup({ ...flagged, price_min_qty: 10 }, 1, 5)), true)
+    eq('server-flagged at 5: no tag', /cat\.card\.embmin/.test(priceLockup(flagged, 5, 5)), false)
   }
 
   if (problems.length) {
