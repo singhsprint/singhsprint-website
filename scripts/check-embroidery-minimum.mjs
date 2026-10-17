@@ -204,6 +204,24 @@ ok('C4 …and refuses a switch to print on one',
    /function dmczSelectMethod\(id\)\s*\{\s*if \(id !== 'Embroidery' && dmczEmbroideryOnly\(_detailProduct\)\) id = 'Embroidery';/.test(cat))
 ok('C5 …and a shared design cannot reopen it on print',
    /dmczEmbroideryOnly\(_detailProduct\)\s*\?\s*'Embroidery'\s*:\s*\(share\.decoration_method/.test(cat))
+// The modal opens an embroidery-only garment AT the floor and will not go
+// under it (owner, 2026-10-17: "the hat should still open at 5 and it
+// shouldn't let us go lower"). The floor is the embroidery minimum less what
+// of the same run is already in the cart, so three black caps in the cart
+// open a white one at two.
+ok('C12 the modal seeds an embroidery-only garment at its line floor',
+   /initDmczCustomizer\(p\);[\s\S]{0,400}const lineFloor = dmczMinLineQty\(p\);\s*const seeded = Math\.max\(lineFloor, state\.qty \|\| 25\);[\s\S]{0,200}qtyInput\.value = seeded;\s*qtyInput\.min = String\(lineFloor\);/.test(cat))
+ok('C12b …and re-prices when the floor lifted the slider\'s number',
+   /if \(lifted\) \{\s*try \{ refreshDmczPrice\(\); \} catch \(_\) \{\}/.test(cat))
+ok('C13 …the stepper cannot go under it',
+   /qtyInp\.value = Math\.max\(dmczMinLineQty\(_detailProduct\), \(parseInt\(qtyInp\.value, 10\) \|\| 1\) - 1\);/.test(cat))
+ok('C14 …nor a typed number on blur or Add',
+   /const floor = dmczMinLineQty\(_detailProduct\);\s*if \(!n \|\| n < floor\) n = floor;/.test(cat) && /const n = clampDetailQty\(\);/.test(cat))
+ok('C15 …and the floor counts what of the run is already in the cart',
+   /function dmczMinLineQty[\s\S]{0,700}spCartRunQty\(SinghsCart\.read\(\)\.items, p\.product_id, 'embroidery', pl, 0\)\.inCart;[\s\S]{0,80}return Math\.max\(1, min - inCart\);/.test(cat))
+ok('C16 …and reads the minimum from the engine\'s registry, five until it answers',
+   /api\/v1\/registry/.test(cat) && /embroidery_min_qty_by_garment/.test(cat) && /_spEmbMin = \{ overall: 5, by: \{\} \}/.test(cat))
+ok('C17 a printed garment keeps a floor of one', /if \(!p \|\| !dmczEmbroideryOnly\(p\)\) return 1;/.test(cat))
 ok('C6 the print card on a cap is blocked, with the same sentence the quote page uses',
    /dmczEmbroideryOnly\(_detailProduct\)\)\s*\{\s*blocked = true;/.test(cat) && /capembonly/.test(cat))
 

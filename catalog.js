@@ -691,6 +691,42 @@
     return !!SP_EMBROIDERY_ONLY[gt];
   }
 
+  // The embroidery minimum, per garment, from the engine (GET /api/v1/
+  // registry: the lowest rung of each ladder). Fetched once per page; five
+  // until it answers, which is what every ladder reads today. quote.js
+  // reads the same endpoint for the same reason.
+  var _spEmbMin = { overall: 5, by: {} };
+  (function () {
+    try {
+      fetch('https://singhsprint-crm.vercel.app/api/v1/registry', { cache: 'force-cache' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j) return;
+          if (typeof j.embroidery_min_qty === 'number' && j.embroidery_min_qty > 0) _spEmbMin.overall = j.embroidery_min_qty;
+          if (j.embroidery_min_qty_by_garment && typeof j.embroidery_min_qty_by_garment === 'object') _spEmbMin.by = j.embroidery_min_qty_by_garment;
+        }).catch(function () {});
+    } catch (_) {}
+  })();
+  function dmczEmbMinFor(p) {
+    var gt = String((p && p.garment_type) || '').toLowerCase();
+    return _dmczEmbMinQty || _spEmbMin.by[gt] || _spEmbMin.overall || 5;
+  }
+  // The smallest quantity this modal will let the line be. For an
+  // embroidery-only garment that is the embroidery minimum less whatever of
+  // the same run is already in the cart — the owner's rule, 2026-10-17: open
+  // a cap at five and do not let it go lower. For everything else, one; the
+  // ORDER minimum is counted across the cart, not on a line.
+  function dmczMinLineQty(p) {
+    if (!p || !dmczEmbroideryOnly(p)) return 1;
+    var min = dmczEmbMinFor(p);
+    var inCart = 0;
+    try {
+      var pl = dmczPricingPlacements(_dmczState.placements).slice().sort().join(',');
+      inCart = spCartRunQty(SinghsCart.read().items, p.product_id, 'embroidery', pl, 0).inCart;
+    } catch (_) {}
+    return Math.max(1, min - inCart);
+  }
+
   function initDmczCustomizer(p) {
     var gt = (p && p.garment_type) || 'tshirt';
     _dmczState = {
@@ -2673,6 +2709,10 @@
     renderDetailModalSpecs();
 
     // Seed the qty stepper from the catalog page's current slider value.
+    // The floor is computed AFTER initDmczCustomizer() below has set this
+    // product's placements, or the run lookup compares against the previous
+    // product's and three black caps in the cart seed a white one at five
+    // instead of two (measured 2026-10-17). See the seed after the init call.
     const qtyInput = document.getElementById('detailModalQtyInput');
     qtyInput.value = state.qty || 25;
     syncDetailAddBtn();
@@ -2691,6 +2731,24 @@
     // uploads, then render the method picker + placements + upload zones
     // and fetch the live all-in price.
     initDmczCustomizer(p);
+    // Seed the quantity at this line's floor now that the customizer knows
+    // the product's placements (see the note above).
+    {
+      const lineFloor = dmczMinLineQty(p);
+      const seeded = Math.max(lineFloor, state.qty || 25);
+      const lifted = seeded !== (parseInt(qtyInput.value, 10) || 0);
+      qtyInput.value = seeded;
+      qtyInput.min = String(lineFloor);
+      syncDetailAddBtn();
+      // initDmczCustomizer() already asked the engine for a price at the
+      // slider's quantity. If the floor lifted it, ask again — otherwise a
+      // cap opened from a slider at 1 sits on "Embroidery needs 5+" with the
+      // box reading 5 until something else nudges it (measured 2026-10-17).
+      if (lifted) {
+        try { refreshDmczPrice(); } catch (_) {}
+        try { renderDmczMethods(); } catch (_) {}
+      }
+    }
     document.getElementById('detailOverlay').classList.add('open');
     document.getElementById('detailModal').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -2962,11 +3020,20 @@
   function clampDetailQty() {
     const inp = document.getElementById('detailModalQtyInput');
     if (!inp) return 1;
-    let n = parseInt(inp.value, 10);
-    if (!n || n < 1) n = 1;
+    const typed = parseInt(inp.value, 10);
+    let n = typed;
+    const floor = dmczMinLineQty(_detailProduct);
+    if (!n || n < floor) n = floor;
     if (n > 10000) n = 10000;
     inp.value = n;
     syncDetailAddBtn();
+    // A clamp is a quantity change the input listener never saw: re-price,
+    // or a cap typed to 1 and blurred would sit at "Embroidery needs 5+"
+    // with the box reading 5.
+    if (n !== typed) {
+      try { if (typeof refreshDmczPrice === 'function') refreshDmczPrice(); } catch (_) {}
+      try { if (typeof renderDmczMethods === 'function') renderDmczMethods(); } catch (_) {}
+    }
     return n;
   }
 
@@ -2977,7 +3044,7 @@
     const qtyMinus = document.getElementById('detailModalQtyMinus');
     const qtyPlus  = document.getElementById('detailModalQtyPlus');
     if (qtyMinus) qtyMinus.addEventListener('click', () => {
-      qtyInp.value = Math.max(1, (parseInt(qtyInp.value, 10) || 1) - 1);
+      qtyInp.value = Math.max(dmczMinLineQty(_detailProduct), (parseInt(qtyInp.value, 10) || 1) - 1);
       syncDetailAddBtn();
       if (typeof dmczLoadDeltas === 'function') dmczLoadDeltas();  // refresh chip $ hints across the qty-50 break
       if (typeof refreshDmczPrice === 'function') refreshDmczPrice();
@@ -3058,7 +3125,9 @@
     if (addBtn) addBtn.addEventListener('click', () => {
       const p = _detailProduct; if (!p) return;
       const c = (p.colors || [])[_detailColorIdx] || {};
-      const n = Math.max(1, parseInt(qtyInp.value, 10) || 1);
+      // The line floor applies on Add too: a typed 2 on a cap is clamped
+      // here, not carried into the cart to be refused at checkout.
+      const n = clampDetailQty();
 
       // Pull the customizer state. Default placement + DTF still apply
       // even if the customer skipped customizing entirely.
