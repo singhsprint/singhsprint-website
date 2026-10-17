@@ -2403,14 +2403,20 @@
       return el ? (parseInt(el.value, 10) || 0) : 0;
     }
 
+    // "Under the minimum" — and ZERO is under it. This used to be
+    // `q >= 1 && q < 5`, so an untouched quantity sailed straight through:
+    // on 2026-10-17 a paid-ad lead on an iPhone submitted a T-shirt quote
+    // with no quantity at all and reached the inbox as "? × 1 side". The
+    // checkout never accepted it, the quote gate never looked at it.
+    //
+    // The name is kept because three listeners call it; the meaning is now
+    // "the form cannot go out at this quantity". BYO lines are quote-only
+    // at any count — they are decoration on garments the customer brings.
     function spIsMicroRun() {
-      // Bring-your-own is decoration-only with no checkout path, so quote
-      // requests stay open at ANY quantity — the 5-piece checkout-only
-      // rule protects our blanks' economics, not walk-in decoration jobs.
       var gs = document.getElementById('garmentSourceInput');
       if (gs && gs.value === 'BYOG') return false;
       var q = spLiveTotalQty();
-      return q >= 1 && q < QUOTE_MIN_QTY;
+      return q < QUOTE_MIN_QTY;
     }
 
     // Show/hide the secondary "Request a quote instead" CTA and swap the
@@ -2444,21 +2450,24 @@
       var payNoteOn = document.getElementById('quoteOrderNote');
       if (payNoteOn) payNoteOn.style.display = '';
 
-      // CTA hierarchy (2026-07-26). "Get my free quote" is normally the primary
-      // accent button — it is the action the lead ads promise and the only one
-      // that fires the Meta `Lead` event. A micro-run (1-4 pieces) hides it, so
-      // promote "Order & Pay Now" back to accent and drop the now-dangling "or"
-      // divider + quote sub-note, otherwise the step is left with no primary.
+      // CTA hierarchy. "Get my free quote" is the primary accent button — the
+      // action the lead ads promise and the only one that fires the Meta
+      // `Lead` event. Until 2026-10-17 a 1-4 piece run hid it and promoted
+      // "Order & Pay Now" instead, while checkout refused the same 1-4 pieces
+      // with "add {short} more or request a quote": each button sent the
+      // customer to the other and both said no. The order minimum is five on
+      // every path now, so under it the hierarchy stays as it is and the
+      // submit shows what to do: pick a quantity, or add the missing pieces.
       var leadNote = document.getElementById('quoteLeadNote');
       var divider  = document.getElementById('quoteCtaDivider');
-      if (leadNote) leadNote.style.display = micro ? 'none' : '';
-      if (divider)  divider.style.display  = micro ? 'none' : '';
+      if (leadNote) leadNote.style.display = '';
+      if (divider)  divider.style.display  = '';
       var pay = document.getElementById('orderPayBtn');
       if (pay) {
-        pay.classList.toggle('btn-accent',  micro);
-        pay.classList.toggle('btn-outline', !micro);
-        pay.style.padding  = micro ? '18px 28px' : '15px 28px';
-        pay.style.fontSize = micro ? '1.05rem'   : '.98rem';
+        pay.classList.remove('btn-accent');
+        pay.classList.add('btn-outline');
+        pay.style.padding  = '15px 28px';
+        pay.style.fontSize = '.98rem';
       }
 
       // BYO mode owns the CTA copy (no checkout path) — leave its note alone.
@@ -2495,9 +2504,19 @@
           if (form) form.appendChild(warn);
         }
       }
-      warn.innerHTML = (typeof SP_LANG !== 'undefined' && SP_LANG.t && SP_LANG.t('quote.order.minqty.alert'))
-        || '<strong>Quotes start at 5 pieces.</strong> For smaller runs, order directly with the secure Order &amp; Pay Now checkout above.';
-      if (anchor) { try { anchor.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+      // Two different gaps. No quantity at all means the customer never got
+      // to the question; 1-4 means they answered it and the answer is short.
+      var q = spLiveTotalQty();
+      var short = Math.max(0, QUOTE_MIN_QTY - q);
+      var T = function (k, fb) { return (typeof SP_LANG !== 'undefined' && SP_LANG.t && SP_LANG.t(k)) || fb; };
+      warn.innerHTML = q <= 0
+        ? T('quote.order.noqty.alert', '<strong>How many do you need?</strong> Pick a quantity above \u2014 orders start at {ordermin} pieces.').replace(/\{ordermin\}/g, QUOTE_MIN_QTY)
+        : T('quote.order.minqty.alert', '<strong>Orders start at {ordermin} pieces</strong> and you have {n}. Add {short} more of anything \u2014 mixing items is fine.')
+            .replace(/\{ordermin\}/g, QUOTE_MIN_QTY).replace(/\{n\}/g, q).replace(/\{short\}/g, short);
+      // With no quantity the fix is up at the quantity chips, not down at the
+      // button: take them there.
+      var target = q <= 0 ? (document.getElementById('qtyBandSection') || anchor) : anchor;
+      if (target) { try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
     }
 
     // Registered BEFORE the analytics/CRM submit listener below and the
@@ -3573,10 +3592,9 @@
       // engine would price it quite happily — the 1-4 micro-run tier is
       // still in the pricing config on purpose.
       //
-      // Only the PAID path. "Request a quote" still goes through at any
-      // quantity: it reaches a human who can take a three-piece job at
-      // micro-run rates, and refusing it at the form would throw away work
-      // the shop can actually do.
+      // The quote path has the same floor (spIsMicroRun, 2026-10-17): the
+      // minimum is five for anything, and a form that sent a customer from
+      // one button to the other was a dead end with two doors.
       var spMinOrder = (typeof window.SP_MIN_ORDER === 'number' && window.SP_MIN_ORDER > 0)
         ? window.SP_MIN_ORDER : 5;
       var spOrderPieces = items.reduce(function (n, i) { return n + (parseInt(i.qty, 10) || 0); }, 0);
@@ -3586,8 +3604,7 @@
         // that belong to THIS cart are filled here.
         alert(spByoT('quote.min.order',
               'Our minimum is ' + spMinOrder + ' pieces per order and you have {n}. '
-              + 'Add {short} more and you can check out, or tap \u201cRequest a quote instead\u201d '
-              + 'and we will price the smaller run by hand.')
+              + 'Add {short} more of anything \u2014 mixing items is fine \u2014 and you can check out.')
           .replace(/\{ordermin\}/g, spMinOrder)
           .replace(/\{n\}/g,        spOrderPieces)
           .replace(/\{short\}/g,    _short));

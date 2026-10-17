@@ -73,7 +73,7 @@ ok('A5 so does the catalogue',
    + 'then returning a literal is the same drift wearing a helper')
 // Named, because "the token appears somewhere" survives any one string being
 // retyped with a bare 5 — which is exactly how copy and gate drift apart.
-const MIN_KEYS = ['fold.note.nomin', 'cat.cart.met', 'home.diff.r2.us', 'home.faq.a2', 'sticky.sub',
+const MIN_KEYS = ['fold.note.nomin', 'cat.cart.met', 'quote.order.minqty.note', 'quote.order.minqty.alert', 'quote.order.noqty.alert', 'home.diff.r2.us', 'home.faq.a2', 'sticky.sub',
                   'whyus.cmp.r2.us', 'cat.hero.meta3', 'about.clients.p2', 'home.hero.sub']
 const typed = MIN_KEYS.filter((k) => {
   const m = langRaw.match(new RegExp("'" + k.replace(/\./g, '\\.') + "':[\\s\\S]{0,2600}?\\},?\\n"))
@@ -448,6 +448,25 @@ if (!process.argv.includes('--skip-live')) {
      /else \{ lines\.push\(T\('fold\.note\.nomin'/.test(home) && !/method!=='Embroidery'/.test(home))
   ok('I12 the under-5 strings are gone from lang.js, the BYO one is in',
      !/quote\.qty\.under5/.test(langRaw) && !/fold\.opt\.u5/.test(langRaw) && /quote\.byoline\.err\.ordmin/.test(langRaw))
+}
+
+// ── J. zero is under the minimum ──────────────────────────────────────────
+// 2026-10-17 — a paid-ad lead on an iPhone submitted a T-shirt quote with no
+// quantity at all and reached the inbox as "? × 1 side". The quote gate was
+// `q >= 1 && q < 5`: it stopped a run of three and waved through a run of
+// nothing. Meanwhile a 1-4 run was sent from the quote button to the pay
+// button and back, each refusing it.
+{
+  const quote = read('quote.js')
+  const gate = quote.slice(quote.indexOf('function spIsMicroRun'), quote.indexOf('function spIsMicroRun') + 600)
+  ok('J1 the quote gate treats no quantity as under the minimum', /return q < QUOTE_MIN_QTY;/.test(gate) && !/q >= 1 &&/.test(gate))
+  ok('J2 BYO lines stay quote-only at any count', /gs\.value === 'BYOG'\) return false/.test(gate))
+  ok('J3 no quantity → "how many", short → "add {short} more", both from lang.js',
+     /q <= 0\s*\n?\s*\? T\('quote\.order\.noqty\.alert'/.test(quote) && /T\('quote\.order\.minqty\.alert'[\s\S]{0,300}\{short\}/.test(quote))
+  ok('J4 with no quantity the warning scrolls to the quantity chips', /q <= 0 \? \(document\.getElementById\('qtyBandSection'\)/.test(quote))
+  ok('J5 the pay button is no longer promoted for a short run', !/pay\.classList\.toggle\('btn-accent',\s*micro\)/.test(quote))
+  ok('J6 nothing sends a 1-4 customer to the other button',
+     !/Request a quote instead\u201d and we will price/.test(quote) && !/checkout-only/.test(langRaw) && !/price the smaller run/.test(langRaw) && !/Request a quote instead\u201d/.test(langRaw))
 }
 
 if (problems.length) {
