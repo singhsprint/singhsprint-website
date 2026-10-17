@@ -2163,6 +2163,13 @@
           // carry per-row decoration_type (defaulting to empty/'not-sure'
           // is fine; the rep recommends the right one at quote-reply).
           if (!cartHasItems && !state.service) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.method')) || 'Please select a printing method.'); return; }
+          // The quantity question cannot be skipped (owner, 2026-10-17). The
+          // reveal hid every section below the chips until a band was picked,
+          // but the Continue button was never hidden, and state.service
+          // defaults to DTG — so a customer who tapped a product card and
+          // scrolled past the chips walked straight into the contact form.
+          // One did, from a paid ad, and the request arrived with qty 0.
+          if (!spRequireQuantity()) return;
         }
       }
 
@@ -2419,6 +2426,71 @@
       return q < QUOTE_MIN_QTY;
     }
 
+    // The quantity gate on Continue. True when the step may advance.
+    //   • cart mode: the cart carries the quantity; the under-minimum check
+    //     on submit covers a short cart.
+    //   • legacy mode with the chips on screen and none picked: refuse, say
+    //     "how many", and take the customer back to the chips.
+    //   • a band picked but no blank converted yet: the band IS the answer —
+    //     write it into the size total so the request carries it instead of
+    //     a zero.
+    //   • 1-4 typed into the sizes: refuse with "add {short} more".
+    //   • BYO: quote-only at any count, as everywhere else on this page.
+    function spRequireQuantity() {
+      try { if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) return true; } catch (e) {}
+      var gs = document.getElementById('garmentSourceInput');
+      if (gs && gs.value === 'BYOG') return true;
+      var host = document.getElementById('qtyBandSection');
+      var chipsOpen = !!(host && host.style.display !== 'none' && host.querySelector('.qty-band'));
+      if (chipsOpen && !spQtyBand) { spShowQtyBandWarn(); return false; }
+      if (spQtyBand && spQtyBand.qty > 0 && spLiveTotalQty() === 0) {
+        var tq = document.getElementById('totalQtyInput');
+        if (tq) tq.value = String(spQtyBand.qty);
+      }
+      if (spIsMicroRun()) { spShowQtyBandWarn(); return false; }
+      spClearQtyBandWarn();
+      return true;
+    }
+    // Inline, under the chips — the step-3 warning box sits beside a button
+    // that is not on screen yet.
+    function spQtyBandWarn() {
+      var host = document.getElementById('qtyBandSection');
+      var warn = document.getElementById('qtyBandWarn');
+      if (!warn) {
+        warn = document.createElement('div');
+        warn.id = 'qtyBandWarn';
+        warn.setAttribute('role', 'alert');
+        warn.style.cssText = 'background:#fff9db;border:1px solid #e6c200;border-radius:12px;padding:12px 16px;font-size:.88rem;line-height:1.5;color:#1a1a1a;text-align:left;margin:10px 0 0';
+        if (host && host.parentNode) host.parentNode.insertBefore(warn, host.nextSibling);
+        else return null;
+      }
+      return warn;
+    }
+    function spShowQtyBandWarn() {
+      var warn = spQtyBandWarn();
+      if (!warn) return;
+      warn.innerHTML = spQtyGateMessage();
+      warn.style.display = '';
+      var host = document.getElementById('qtyBandSection');
+      // The chips may be collapsed behind their summary bar after a pick —
+      // open them, then go there.
+      if (host) { host.classList.remove('sp-collapsed'); try { host.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+    }
+    function spClearQtyBandWarn() {
+      var warn = document.getElementById('qtyBandWarn');
+      if (warn) warn.style.display = 'none';
+    }
+    // One sentence for both warning boxes, by the size of the gap.
+    function spQtyGateMessage() {
+      var q = spLiveTotalQty();
+      var short = Math.max(0, QUOTE_MIN_QTY - q);
+      var T = function (k, fb) { return (typeof SP_LANG !== 'undefined' && SP_LANG.t && SP_LANG.t(k)) || fb; };
+      return q <= 0
+        ? T('quote.order.noqty.alert', '<strong>How many do you need?</strong> Pick a quantity above \u2014 orders start at {ordermin} pieces.').replace(/\{ordermin\}/g, QUOTE_MIN_QTY)
+        : T('quote.order.minqty.alert', '<strong>Orders start at {ordermin} pieces</strong> and you have {n}. Add {short} more of anything \u2014 mixing items is fine.')
+            .replace(/\{ordermin\}/g, QUOTE_MIN_QTY).replace(/\{n\}/g, q).replace(/\{short\}/g, short);
+    }
+
     // Show/hide the secondary "Request a quote instead" CTA and swap the
     // note under the Order button. Called from updateSizeTotal(), every
     // cart write, and on boot — so the CTA tracks the live quantity.
@@ -2507,12 +2579,7 @@
       // Two different gaps. No quantity at all means the customer never got
       // to the question; 1-4 means they answered it and the answer is short.
       var q = spLiveTotalQty();
-      var short = Math.max(0, QUOTE_MIN_QTY - q);
-      var T = function (k, fb) { return (typeof SP_LANG !== 'undefined' && SP_LANG.t && SP_LANG.t(k)) || fb; };
-      warn.innerHTML = q <= 0
-        ? T('quote.order.noqty.alert', '<strong>How many do you need?</strong> Pick a quantity above \u2014 orders start at {ordermin} pieces.').replace(/\{ordermin\}/g, QUOTE_MIN_QTY)
-        : T('quote.order.minqty.alert', '<strong>Orders start at {ordermin} pieces</strong> and you have {n}. Add {short} more of anything \u2014 mixing items is fine.')
-            .replace(/\{ordermin\}/g, QUOTE_MIN_QTY).replace(/\{n\}/g, q).replace(/\{short\}/g, short);
+      warn.innerHTML = spQtyGateMessage();
       // With no quantity the fix is up at the quantity chips, not down at the
       // button: take them there.
       var target = q <= 0 ? (document.getElementById('qtyBandSection') || anchor) : anchor;
@@ -7891,6 +7958,7 @@
       }
       if (!band) return;
       spQtyBand = band;
+      if (typeof spClearQtyBandWarn === 'function') spClearQtyBandWarn();
       // A blank chosen before the quantity was held back rather than converted
       // (see spApplyTierPick). The band now exists, so finish that pick — with
       // the real quantity instead of the 50 the prefill would have invented.

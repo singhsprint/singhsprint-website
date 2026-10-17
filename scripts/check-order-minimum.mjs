@@ -465,6 +465,11 @@ if (!process.argv.includes('--skip-live')) {
      /q <= 0\s*\n?\s*\? T\('quote\.order\.noqty\.alert'/.test(quote) && /T\('quote\.order\.minqty\.alert'[\s\S]{0,300}\{short\}/.test(quote))
   ok('J4 with no quantity the warning scrolls to the quantity chips', /q <= 0 \? \(document\.getElementById\('qtyBandSection'\)/.test(quote))
   ok('J5 the pay button is no longer promoted for a short run', !/pay\.classList\.toggle\('btn-accent',\s*micro\)/.test(quote))
+  ok('J7 Continue refuses to leave step 1 without a quantity, and the chips get the warning',
+     /if \(!spRequireQuantity\(\)\) return;/.test(quote) && /function spRequireQuantity\(\)[\s\S]{0,900}if \(chipsOpen && !spQtyBand\) \{ spShowQtyBandWarn\(\); return false; \}/.test(quote))
+  ok('J8 a picked band with no blank yet is written into the size total, so the request carries it',
+     /if \(spQtyBand && spQtyBand\.qty > 0 && spLiveTotalQty\(\) === 0\)[\s\S]{0,200}tq\.value = String\(spQtyBand\.qty\)/.test(quote))
+  ok('J9 one sentence for both warning boxes', (quote.match(/spQtyGateMessage\(\)/g) || []).length >= 3)
   ok('J6 nothing sends a 1-4 customer to the other button',
      !/Request a quote instead\u201d and we will price/.test(quote) && !/checkout-only/.test(langRaw) && !/price the smaller run/.test(langRaw) && !/Request a quote instead\u201d/.test(langRaw))
 }
