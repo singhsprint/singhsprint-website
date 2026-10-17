@@ -259,6 +259,23 @@ if (!process.argv.includes('--skip-live')) {
   const reg = await (await fetch('https://singhsprint-crm.vercel.app/api/v1/registry')).json().catch(() => ({}))
   ok('C11 the registry lists the hat minimum beside the others',
      reg && reg.embroidery_min_qty_by_garment && reg.embroidery_min_qty_by_garment.hat === 5)
+  // The floor is ONE number for every garment. The apron's ladder took the
+  // "layered embroidery" path, which promoted a short run to five instead of
+  // refusing it: two embroidered Augusta 4350s priced at $65.95 on
+  // 2026-10-17 while two embroidered tees were refused. Same stitching, two
+  // minimums. Red until the CRM that decides this at its root is deployed.
+  const APRON = 'e296d349-7817-40c5-ab17-8362bab03021' // Augusta 4350, garment_type apron
+  const apron = async (q) => {
+    const r = await fetch(`https://singhsprint-crm.vercel.app/api/pricing?product_id=${APRON}&qty=${q}&sides=1&decoration_method=embroidery&embroidery_placements=left-chest`)
+    const d = await r.json().catch(() => ({}))
+    return { status: r.status, reason: d.reason, unit: d.unit_price }
+  }
+  const [a2, a5] = await Promise.all([apron(2), apron(5)])
+  ok('C18 two embroidered aprons are refused, like two embroidered tees', a2.status === 400 && a2.reason === 'below_embroidery_minimum')
+  ok('C19 …and five are priced', a5.status === 200 && typeof a5.unit === 'number')
+  if (!(a2.status === 400 && a5.status === 200)) problems.push(`C18-19 detail: qty2 ${JSON.stringify(a2)}, qty5 ${JSON.stringify(a5)}`)
+  ok('C20 no garment in the registry reports an embroidery minimum under five',
+     reg && reg.embroidery_min_qty_by_garment && Object.values(reg.embroidery_min_qty_by_garment).every((n) => n >= 5))
 }
 
 if (problems.length) {
