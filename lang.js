@@ -888,7 +888,7 @@ var SP_LANG = (function() {
     'pop.nav': { en: 'Popular', fr: 'Populaires' },
     'cat.hero.meta1': { en: '<strong>Stock + prices</strong> refresh daily', fr: '<strong>Stock et prix</strong> mis à jour chaque jour' },
     'cat.hero.meta2': { en: '<strong>5-10 day</strong> typical turnaround', fr: 'Délai habituel de <strong>5 à 10 jours</strong>' },
-    'cat.hero.meta3': { en: '<strong>From {ordermin} pieces</strong> \u2014 {ordermin} or 1,000', fr: '<strong>\u00c0 partir de {ordermin} pi\u00e8ces</strong> \u2014 {ordermin} ou 1 000' },
+    'cat.hero.meta3': { en: '<strong>From {ordermin} pieces per order</strong> \u2014 mix items, {ordermin} or 1,000', fr: '<strong>\u00c0 partir de {ordermin} pi\u00e8ces par commande</strong> \u2014 m\u00e9langez, {ordermin} ou 1 000' },
 
     // ===== SPORTS JERSEYS HUB (jerseys.html) =====
     'jersey.title':   { en: 'Custom Team Jerseys', fr: 'Maillots d\'équipe personnalisés' },
@@ -1015,7 +1015,7 @@ var SP_LANG = (function() {
     'cat.qty.label': { en: 'Pricing for', fr: 'Prix pour' },
     'cat.qty.units': { en: 'units', fr: 'unités' },
     'cat.qty.note.bulk': { en: 'Per-unit price · 1 print side', fr: 'Prix unitaire · 1 côté imprimé' },
-    'cat.qty.note.few': { en: '{ordermin}-piece minimum', fr: 'Minimum {ordermin} pi\u00e8ces' },
+    'cat.qty.note.few': { en: '{ordermin} pieces per order \u2014 mix any items', fr: '{ordermin} pi\u00e8ces par commande \u2014 m\u00e9langez les articles' },
     'cat.qty.oneside': { en: '· 1 print side', fr: '· 1 côté imprimé' },
     'cat.qty.custom': { en: 'Custom', fr: 'Personnalisé' },
     'cat.results.products': { en: 'products', fr: 'produits' },
@@ -1072,7 +1072,19 @@ var SP_LANG = (function() {
     'cat.card.flat-no-min': { en: 'Flat price at this tier', fr: 'Prix fixe \u00e0 ce palier' },
     'cat.detail.embmin': { en: 'Needs {min}+ · add {n} more', fr: 'Minimum {min} · ajoutez-en {n}' },
     'cat.detail.embminprice': { en: 'Embroidery needs {min}+ · add {n} more', fr: 'Broderie : minimum {min} · ajoutez-en {n}' },
-    'cat.card.few-at-tier': { en: '{ordermin}-piece minimum', fr: 'Minimum {ordermin} pi\u00e8ces' },
+    'cat.card.few-at-tier': { en: '{ordermin} per order \u00b7 mix items', fr: '{ordermin} par commande \u00b7 m\u00e9langez' },
+    // The floating cart bar while the order is still under the floor. The CTA
+    // keeps navigating to /quote; only the words change.
+    'cat.cart.meter': { en: '<strong>{n}</strong> of {ordermin} pieces \u00b7 any items count', fr: '<strong>{n}</strong> pi\u00e8ces sur {ordermin} \u00b7 tous les articles comptent' },
+    'cat.cart.meter.short': { en: 'Add {short} more', fr: 'Ajoutez-en {short}' },
+    'cat.cart.meter.phone': { en: '<strong>{n}</strong>/{ordermin} pieces \u00b7 mix items', fr: '<strong>{n}</strong>/{ordermin} pi\u00e8ces \u00b7 m\u00e9langez' },
+    'cat.cart.meter.cta': { en: 'Add {short} more of anything \u2192', fr: 'Ajoutez {short} de plus, n\u2019importe quoi \u2192' },
+    // The detail modal's meter: the order as it would stand AFTER this add.
+    'cat.detail.meter.short': { en: 'Your order would be <strong>{n} of {ordermin}</strong> pieces \u2014 add {short} more of this or anything else to reach the minimum.', fr: 'Votre commande serait de <strong>{n} pi\u00e8ces sur {ordermin}</strong> \u2014 ajoutez-en {short}, de ceci ou de n\u2019importe quoi d\u2019autre, pour atteindre le minimum.' },
+    'cat.detail.meter.met': { en: 'Order minimum met \u2014 <strong>{n}</strong> pieces across your order.', fr: 'Minimum atteint \u2014 <strong>{n}</strong> pi\u00e8ces dans votre commande.' },
+    // Said next to the meter only while THIS line is under five: the two
+    // fives are different rules and the customer deserves both in one breath.
+    'cat.detail.meter.bulk': { en: '{bulk}+ of this item with one design gets the bulk rate.', fr: '{bulk} et plus de cet article avec un seul visuel : tarif de volume.' },
     'cat.card.quote-on-request': { en: 'Quote on request', fr: 'Sur demande' },
     'cat.card.oos': { en: 'Out of stock', fr: 'En rupture' },
     'cat.card.low': { en: 'Low stock', fr: 'Stock faible' },

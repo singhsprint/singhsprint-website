@@ -321,6 +321,17 @@
     .cart-bar.open{display:flex}
     .cart-bar__count{background:var(--hi);color:var(--ink);font-weight:700;border-radius:50px;padding:3px 9px;font-size:.78rem;font-variant-numeric:tabular-nums;flex-shrink:0}
     .cart-bar__label{font-size:.86rem;white-space:nowrap}
+    .cart-bar__pips,.dm-order-meter__pips{display:inline-flex;gap:3px;vertical-align:middle;margin-left:6px}
+    .cart-bar__pips .pip,.dm-order-meter__pips .pip{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.22);display:inline-block}
+    .cart-bar__pips .pip.on{background:var(--hi)}
+    .dm-order-meter{flex-basis:100%;display:flex;align-items:center;gap:10px;font-size:.82rem;line-height:1.4;color:#444;padding:8px 12px;border-radius:10px;background:#f6f5f0}
+    .dm-order-meter:empty{display:none}
+    .dm-order-meter.is-met{background:#eefaf1;color:#155c33}
+    .dm-order-meter__pips{margin-left:0;flex-shrink:0}
+    .dm-order-meter__pips .pip{background:#ddd}
+    .dm-order-meter.is-short .dm-order-meter__pips .pip.on{background:#1a1a1a}
+    .dm-order-meter.is-met .dm-order-meter__pips .pip.on{background:#1f9d55}
+    .dm-order-meter__bulk{color:#777}
     .cart-bar__label strong{font-weight:600}
     .cart-bar__label-suffix-short{display:none}
     /* 2026-05-24 — CTA is now an <a> (was a <button> with onclick).
@@ -336,6 +347,13 @@
        Hide the verbose suffix on narrow screens and show the short
        version ("in cart"), keep the CTA label as a single arrow icon
        so the whole pill stays tight and one-line. */
+    /* The phone-only variants default to hidden HERE, before the media block.
+       These two rules used to sit after it, and with equal specificity the
+       later rule wins, so the media query's display:inline was overridden and
+       the phone CTA was an empty 28px yellow pill — "Quote →" never rendered
+       on a phone. Measured on production 2026-10-17 at 390px: CTA text "". */
+    .cart-bar__cta .cta-short{display:none}
+    .cart-bar__meter-short{display:none}
     @media (max-width:520px){
       .cart-bar{gap:8px;padding:8px 10px 8px 14px;max-width:calc(100vw - 16px)}
       .cart-bar__label{font-size:.82rem}
@@ -345,8 +363,9 @@
       /* Shorter CTA copy on phones via the data-attr — same href, lighter chrome. */
       .cart-bar__cta .cta-long{display:none}
       .cart-bar__cta .cta-short{display:inline}
+      .cart-bar__meter-long,.cart-bar__pips{display:none}
+      .cart-bar__meter-short{display:inline}
     }
-    .cart-bar__cta .cta-short{display:none}
     .cart-toast{position:fixed;top:84px;right:18px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-size:.85rem;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:70;transform:translateY(-12px);opacity:0;transition:transform .25s,opacity .25s;pointer-events:none}
     .cart-toast.show{transform:translateY(0);opacity:1}
     .cart-toast strong{color:var(--hi)}
@@ -472,10 +491,11 @@
         </div>
       </div>
       <div class="detail-modal__foot">
+        <div id="dmOrderMeter" class="dm-order-meter" role="status" aria-live="polite"></div>
         <div class="detail-modal__qty">
           <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700" data-i18n="cat.detail.qty">Qty</span>
           <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
-          <input type="number" inputmode="numeric" id="detailModalQtyInput" min="5" max="10000" value="25" class="detail-modal__qty-input" />
+          <input type="number" inputmode="numeric" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
           <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
         </div>
         <div class="detail-modal__actions">

@@ -172,8 +172,81 @@
     if (n === 0) { bar.classList.remove('open'); return; }
     bar.classList.add('open');
     document.getElementById('cartCount').textContent = n;
-    document.getElementById('cartUnits').textContent = SinghsCart.totalUnits();
+    const units = SinghsCart.totalUnits();
+    // #cartUnits lives inside the label and is rewritten below, so it is not
+    // written here: after one pass through the under-floor branch it does
+    // not exist, and a bare .textContent on null would stop the bar dead.
+    // Under the floor, the bar stops saying "units in your quote" and says
+    // how far from five the ORDER is — any item closes the gap. The minimum
+    // is per order; a bar that only counts this product would re-teach the
+    // per-item reading the card copy just stopped giving.
+    const meter = (typeof window.spOrderMeter === 'function') ? window.spOrderMeter(units, 0) : null;
+    const label = bar.querySelector('.cart-bar__label');
+    const ctaLong = bar.querySelector('.cta-long');
+    const ctaShort = bar.querySelector('.cta-short');
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    if (meter && !meter.met) {
+      bar.classList.add('is-short');
+      bar.dataset.short = String(meter.short);
+      if (label) label.innerHTML =
+        '<span class="cart-bar__meter-long">' +
+          (_t('cat.cart.meter') || '<strong>{n}</strong> of {ordermin} pieces · any items count')
+            .replace(/\{n\}/g, meter.total).replace(/\{ordermin\}/g, meter.min) +
+        '</span><span class="cart-bar__meter-short">' +
+          (_t('cat.cart.meter.phone') || '<strong>{n}</strong>/{ordermin} pieces · mix items')
+            .replace(/\{n\}/g, meter.total).replace(/\{ordermin\}/g, meter.min) +
+        '</span>' +
+        ' <span class="cart-bar__pips" aria-hidden="true">' + pipsHtml(meter) + '</span>';
+      if (ctaLong)  ctaLong.textContent  = (_t('cat.cart.meter.cta') || 'Add {short} more of anything →').replace(/\{short\}/g, meter.short);
+      if (ctaShort) ctaShort.textContent = (_t('cat.cart.meter.short') || 'Add {short} more').replace(/\{short\}/g, meter.short);
+    } else {
+      bar.classList.remove('is-short');
+      delete bar.dataset.short;
+      if (label) label.innerHTML =
+        '<strong id="cartUnits">' + units + '</strong> ' +
+        '<span class="cart-bar__label-suffix" data-i18n="cat.cart.units">' + (_t('cat.cart.units') || 'units in your quote') + '</span>' +
+        '<span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">' + (_t('cat.cart.units.short') || 'in cart') + '</span>';
+      if (ctaLong)  ctaLong.textContent  = _t('cat.cart.cta') || 'Continue to quote →';
+      if (ctaShort) ctaShort.textContent = _t('cat.cart.cta.short') || 'Quote →';
+    }
   }
+  function pipsHtml(meter) {
+    let s = '';
+    for (let i = 0; i < meter.min; i++) s += '<i class="pip' + (i < meter.filled ? ' on' : '') + '"></i>';
+    return s;
+  }
+
+  // The detail modal's meter: the order as it would stand AFTER this add.
+  // Reads the modal's own qty (never state.qty — see dmczCurrentQty).
+  function renderOrderMeter() {
+    const host = document.getElementById('dmOrderMeter');
+    if (!host || typeof window.spOrderMeter !== 'function') return;
+    const inp = document.getElementById('detailModalQtyInput');
+    const adding = Math.max(0, parseInt(inp && inp.value, 10) || 0);
+    const meter = window.spOrderMeter(SinghsCart.totalUnits(), adding);
+    const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    let msg;
+    if (meter.met) {
+      msg = (_t('cat.detail.meter.met') || 'Order minimum met — <strong>{n}</strong> pieces across your order.')
+        .replace(/\{n\}/g, meter.total);
+    } else {
+      msg = (_t('cat.detail.meter.short') || 'Your order would be <strong>{n} of {ordermin}</strong> pieces — add {short} more of this or anything else to reach the minimum.')
+        .replace(/\{n\}/g, meter.total).replace(/\{ordermin\}/g, meter.min).replace(/\{short\}/g, meter.short);
+    }
+    // The OTHER five. Only while this line is under it, and only for a
+    // product the engine prices by run — not the per-order rule above.
+    let bulk = '';
+    if (adding > 0 && adding < 5) {
+      bulk = ' <span class="dm-order-meter__bulk">' +
+        (_t('cat.detail.meter.bulk') || '{bulk}+ of this item with one design gets the bulk rate.').replace(/\{bulk\}/g, 5) + '</span>';
+    }
+    host.className = 'dm-order-meter' + (meter.met ? ' is-met' : ' is-short');
+    host.innerHTML = '<span class="dm-order-meter__pips" aria-hidden="true">' + pipsHtml(meter) + '</span><span>' + msg + bulk + '</span>';
+  }
+  window.addEventListener('singhsCartChange', renderOrderMeter);
+  // Both surfaces build their sentences in code, so a language switch has to
+  // re-run them; applyLang() only re-fills data-i18n nodes.
+  document.addEventListener('sp-lang-change', function () { renderCartBar(); renderOrderMeter(); });
 
   function showCartToast(item) {
     const t = document.getElementById('cartToast');
@@ -2791,6 +2864,7 @@
     // Label shows the typed value (or blank if mid-edit / invalid).
     const label = document.getElementById('detailModalAddQty');
     if (label) label.textContent = (raw === '' || isNaN(n)) ? '' : String(n);
+    if (typeof renderOrderMeter === 'function') renderOrderMeter();
   }
   // Final clamp — called on blur and on Add click.
   function clampDetailQty() {

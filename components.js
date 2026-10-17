@@ -45,6 +45,35 @@ window.spMinShortfall = function (totalQty) {
   return n > 0 && n < min ? min - n : 0;
 };
 
+// ===== SP_ORDER_METER_START — extracted and executed by
+// scripts/check-order-minimum.mjs; keep it pure (no DOM, no window reads
+// beyond the two arguments it is handed).
+//
+// THE MINIMUM IS PER ORDER, NOT PER ITEM. Five pieces of five different
+// garments is a valid order. The catalogue used to say "5-piece minimum" on
+// every card and clamp its quantity input up to five, which read as "five of
+// this one" and quietly turned away the customer who wanted one tee, one
+// hoodie, one cap, one polo and one crew. This is the arithmetic behind
+// every surface that guides them: the floating cart bar, the detail modal's
+// meter, the quote page's gate. `cartUnits` is what is already in the cart,
+// `adding` is what the surface is about to add (0 for the bar).
+window.spOrderMeter = function (cartUnits, adding, min) {
+  var have = Math.max(0, Math.trunc(Number(cartUnits) || 0));
+  var add  = Math.max(0, Math.trunc(Number(adding) || 0));
+  var floor = Math.max(1, Math.trunc(Number(min) || 0) || Number(window.SP_MIN_ORDER) || 5);
+  var total = have + add;
+  var short = total < floor ? floor - total : 0;
+  return {
+    total: total,          // pieces the order would have
+    min: floor,
+    short: short,          // pieces still needed, 0 once met
+    met: short === 0 && total > 0,
+    // 0..floor, for a pip meter: never more than floor pips lit.
+    filled: Math.min(floor, total)
+  };
+};
+// ===== SP_ORDER_METER_END
+
 // ---------------------------------------------------------------------
 // Google measurement (GA4 + Google Ads) bootstrap.
 // Mirrors the inline Meta Pixel pattern on the HTML pages: pulls IDs from
@@ -1722,7 +1751,11 @@ function loadMobileTrim() {
 // =====================================================================
 function loadStickyCTA() {
   if (document.getElementById('sp-sticky-cta')) return;
-  var path = (location.pathname || '/').toLowerCase();
+  // Vercel's cleanUrls redirects /catalog.html to /catalog, so the suffix is
+  // never seen in production; it IS seen when the page is served some other
+  // way (a local file, a test harness), and then the skips below missed and
+  // this bar sat on top of the catalogue's own cart bar.
+  var path = (location.pathname || '/').toLowerCase().replace(/\.html$/, '');
   // Skip if user is already on the quote flow or post-conversion pages.
   if (path === '/quote' || path === '/quote/' || path.indexOf('/quote/') === 0) return;
   if (path === '/order' || path === '/order/' || path.indexOf('/order/') === 0) return;

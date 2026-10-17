@@ -274,6 +274,74 @@ ok('F5 supplier descriptions are still reproduced verbatim',
    /description/i.test(gen),
    '"No minimum quantity" inside an ATC or EuroSpun blurb is their sentence, not ours')
 
+// ── G. the catalogue guides toward five of ANYTHING ───────────────────────
+// The minimum is per order. The catalogue used to say "5-piece minimum" on
+// every card and clamp the modal's quantity to five, which read as five OF
+// THIS ONE and quietly turned away the customer who wanted one tee, one
+// hoodie, one cap, one polo and one crew. Behaviour, numerically:
+console.log('\nG. the catalogue guides toward five of anything')
+{
+  const a = componentsRaw.indexOf('// ===== SP_ORDER_METER_START')
+  const b = componentsRaw.indexOf('// ===== SP_ORDER_METER_END')
+  ok('G1 components.js carries the order meter between markers', a >= 0 && b > a)
+  const body = componentsRaw.slice(a, b)
+  const code = strip(body)
+  ok('G2 the meter is pure — no document, no sessionStorage, no DOM',
+     !/document\.|sessionStorage|localStorage|getElementById/.test(code))
+  // Execute it with a stand-in window carrying only the policy number.
+  const win = { SP_MIN_ORDER: MIN }
+  const meter = new Function('window', body + '\n; return window.spOrderMeter;')(win)
+  const m = (have, add) => { const r = meter(have, add); return [r.total, r.short, r.met, r.filled] }
+  ok('G3 an empty cart adding one is four short', JSON.stringify(m(0, 1)) === JSON.stringify([1, 4, false, 1]), JSON.stringify(m(0, 1)))
+  ok('G4 three in the cart plus one more is one short', JSON.stringify(m(3, 1)) === JSON.stringify([4, 1, false, 4]), JSON.stringify(m(3, 1)))
+  ok('G5 three plus two meets it — any items, no product in the arithmetic', JSON.stringify(m(3, 2)) === JSON.stringify([5, 0, true, 5]), JSON.stringify(m(3, 2)))
+  ok('G6 over the floor the pips never exceed the floor', JSON.stringify(m(6, 1)) === JSON.stringify([7, 0, true, MIN]), JSON.stringify(m(6, 1)))
+  ok('G7 nothing in the cart and nothing being added is not "met"', m(0, 0)[2] === false && m(0, 0)[1] === MIN, JSON.stringify(m(0, 0)))
+  ok('G8 a negative or junk quantity counts as zero', JSON.stringify(m(-3, 'x')) === JSON.stringify([0, MIN, false, 0]), JSON.stringify(m(-3, 'x')))
+  ok('G9 the floor it uses IS the policy number, not a literal', meter(0, 1, 7).short === 6 && meter(0, 1).short === MIN - 1)
+
+  // The surfaces that read it.
+  const cat = strip(read('catalog.js'))
+  ok('G10 the floating cart bar reads the meter', /function renderCartBar[\s\S]{0,1500}spOrderMeter\(/.test(cat))
+  ok('G11 the detail modal reads the meter from ITS OWN quantity, not the page slider',
+     /function renderOrderMeter[\s\S]{0,600}detailModalQtyInput[\s\S]{0,300}spOrderMeter\(/.test(cat)
+     && !/function renderOrderMeter[\s\S]{0,900}state\.qty/.test(cat))
+  ok('G12 the modal re-renders the meter on every quantity change',
+     /function syncDetailAddBtn[\s\S]{0,600}renderOrderMeter\(\)/.test(cat))
+  const catHtml = read('catalog.html')
+  ok('G13 the modal lets a customer add ONE — the floor is on the order, not the line',
+     /id="detailModalQtyInput"[^>]*\bmin="1"/.test(catHtml))
+  ok('G14 the modal has the meter element', /id="dmOrderMeter"/.test(catHtml))
+  const fr = read('fr/catalog.html')
+  ok('G15 …and the French mirror carries both', /id="detailModalQtyInput"[^>]*\bmin="1"/.test(fr) && /id="dmOrderMeter"/.test(fr))
+
+  // Copy: no card may say "N-piece minimum" bare — that is the per-item reading.
+  const langStr = read('lang.js')
+  for (const key of ['cat.card.few-at-tier', 'cat.qty.note.few']) {
+    // Whole line, not [^}]* — the {ordermin} token's own brace ends that
+    // match ten characters in. (That exact slip has bitten this file before.)
+    const row = langStr.match(new RegExp("^\\s*'" + key.replace(/\./g, '\\.') + "'\\s*:.*$", 'm'))
+    ok(`G16 ${key} says per ORDER, not a bare minimum`,
+       !!row && /per order|par commande/.test(row[0]) && !/-piece minimum|Minimum \{ordermin\} pi/.test(row[0]),
+       row ? row[0].slice(0, 120) : 'row not found')
+  }
+
+  // The phone-only CTA and label must actually render on a phone. Their
+  // default display:none has to sit BEFORE the max-width media block; placed
+  // after it, equal specificity means the later rule wins and the phone CTA
+  // was an empty 28px pill on production (measured 2026-10-17 at 390px).
+  const css = catHtml
+  const mediaAt = css.indexOf('@media (max-width:520px){\n      .cart-bar{')
+  const ctaDefault = css.indexOf('.cart-bar__cta .cta-short{display:none}')
+  const meterDefault = css.indexOf('.cart-bar__meter-short{display:none}')
+  ok('G17 the phone CTA default is declared before the phone media block',
+     mediaAt > 0 && ctaDefault > 0 && ctaDefault < mediaAt, `cta default @${ctaDefault}, media @${mediaAt}`)
+  ok('G18 …and so is the phone meter label', meterDefault > 0 && meterDefault < mediaAt)
+  ok('G19 the phone block shows the short label and hides the pips',
+     /@media \(max-width:520px\)\{[\s\S]*?\.cart-bar__meter-short\{display:inline\}[\s\S]*?\n    \}/.test(css)
+     && /@media \(max-width:520px\)\{[\s\S]*?\.cart-bar__pips\{display:none\}/.test(css))
+}
+
 if (problems.length) {
   console.error(`\ncheck-order-minimum: ${problems.length} problem(s)\n`)
   for (const p of problems) console.error('  - ' + p + '\n')
