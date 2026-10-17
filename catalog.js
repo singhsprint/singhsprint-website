@@ -101,6 +101,32 @@
     return M[g] || 'center-chest';
   }
 
+  // ===== SP_CART_LINE_KEY_START — extracted by
+  // scripts/check-bulk-qualification.mjs. Pure: no DOM, no state.
+  // Line identity for the cart. Mirrors quote.js's spDesignKey so the two
+  // files agree on what "the same design" means; keep them in step.
+  function spCartDesignKey(it) {
+    const pd = it && it.placement_designs;
+    if (pd && typeof pd === 'object') {
+      const ks = Object.keys(pd).filter(k => pd[k] && pd[k].path);
+      if (ks.length) { ks.sort(); return ks.map(k => k + ':' + pd[k].path).join('+'); }
+    }
+    if (it && it.design_path) return 'd:' + it.design_path;
+    return 'noart';
+  }
+  function spCartLineKey(it) {
+    const pl = Array.isArray(it && it.placements) ? it.placements.slice().sort().join(',') : '';
+    const m  = String((it && it.decoration_type) || '').toLowerCase();
+    return [
+      String((it && it.product_id) || ''),
+      String((it && it.color_id) || ''),
+      m, pl,
+      spCartDesignKey(it),
+      (it && it.neck_tag) ? 'nt' : ''
+    ].join('|');
+  }
+  // ===== SP_CART_LINE_KEY_END
+
   const SinghsCart = {
     key: 'singhsCart_v1',
     read() { try { return JSON.parse(sessionStorage.getItem(this.key) || '{"items":[]}'); } catch(e){ return {items:[]}; } },
@@ -114,7 +140,23 @@
         item.placements = [_defaultPlacementForGarment(item.garment_type)];
       }
       item.sides = item.placements.length;
-      const dup = c.items.find(x => x.product_id === item.product_id && x.color_id === item.color_id);
+      // A cart LINE is one garment in one colour carrying one print. The key
+      // used to be product + colour alone, and on a hit only `qty` was
+      // incremented, so a second add silently (a) threw away the incoming
+      // placements, design_url and design_path, and (b) merged two different
+      // prints into one line that then cleared the 5-piece bulk floor.
+      //
+      // Measured on the live engine 2026-10-17 (Gildan 64000, DTF, left
+      // chest): 3 white of design A then 2 white of design B merged to one
+      // line of 5 and billed 5 x $18.95 = $94.75, where two runs of 3 and 2
+      // price at $24.95 = $124.75. $30 under, and production received one
+      // file and would have printed five of it.
+      //
+      // Colour stays in the key so each colourway keeps its own line and its
+      // own mockup. It is deliberately NOT in the bulk-qualification key over
+      // in quote.js (spBulkGroupKey): three white and two black of one print
+      // are two lines but one five-piece run.
+      const dup = c.items.find(x => spCartLineKey(x) === spCartLineKey(item));
       if (dup) dup.qty = (dup.qty || 0) + (item.qty || 0);
       else c.items.push(item);
       this.write(c);

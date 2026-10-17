@@ -1185,6 +1185,10 @@ var SP_LANG = (function() {
     'quote.cart.item.priceloading': { en: 'Price loading…', fr: 'Chargement du prix…' },
     'quote.cart.combo': { en: 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.', fr: 'Prix de volume débloqué : {n} pièces combinées dans votre commande — chaque article obtient le tarif de {n} pièces.' },
     'quote.cart.item.comborate': { en: '{n}-pc rate', fr: 'tarif {n} pcs' },
+    // Shown when a line's own pieces are under the bulk floor but the same
+    // item + design reaches it across colours — the customer needs to see
+    // WHY a 3-piece line is priced at the 5-piece rate.
+    'quote.cart.item.grouprate': { en: '{n}-pc rate', fr: 'tarif {n} pcs' },
     'quote.cart.item.swatches.more': { en: '+ {n} more ▾', fr: '+ {n} autres ▾' },
     'quote.cart.item.swatches.fewer': { en: 'Show fewer ▴', fr: 'Voir moins ▴' },
     'quote.product.type': { en: 'Product type', fr: 'Type de produit' },

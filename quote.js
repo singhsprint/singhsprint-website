@@ -3344,6 +3344,17 @@
             // row, so omitting it would quote the customer one number and
             // charge them another.
             neck_tag:          !!it.neck_tag,
+            // The server measures the 5-piece bulk floor over one item + one
+            // design across colours, and it has to see the same artwork this
+            // page did. Paths only — the signed URLs are short-lived and the
+            // server resolves its own.
+            placement_designs: (function () {
+              var out = {}, pd = it.placement_designs || {};
+              Object.keys(pd).forEach(function (k) {
+                if (pd[k] && pd[k].path) out[k] = { path: pd[k].path };
+              });
+              return out;
+            })(),
             // Jerseys carry their sizes per player on `roster[].size`, never
             // in the `sizes` map. The server's size check needs to know that
             // or it would reject every jersey order; without this flag a
@@ -5798,33 +5809,118 @@
     // would miss → headline shows $— even though the API returned a
     // real price. Legacy callers omitting the param fall back to the
     // global current method (unchanged behavior).
-    // Combined-order volume pricing: every cart line with 5+ pieces pools
-    // into one quantity and each pooled line prices at that combined tier
-    // (10 hats + 15 shirts → both at the 25-pc rate). Sub-5 lines keep
-    // their own qty. The server's checkout pricer applies the identical
-    // rule, so the charge always matches what the cart showed.
-    // Pooled quantity behind the combined-order volume tier. BYO lines are
-    // EXCLUDED (2026-09-08): pooling exists because a bigger run of OUR blanks
-    // earns a better blank price, and a garment the customer supplies buys us
-    // no such leverage. Counting them would discount the blanks we sell on the
-    // strength of goods we never purchased — 40 of their hoodies would drag 50
-    // of our tees into the 90-piece tier for free.
+    // Combined-order volume pricing lives below, in spBulkContext. The
+    // comment that used to sit here claimed "10 hats + 15 shirts → both at
+    // the 25-pc rate" and "the server's checkout pricer applies the identical
+    // rule". Neither was true any more: the hats are embroidered and the
+    // shirts printed, and the server has scoped pooling to the press since
+    // poolingKey() landed. A stale claim about agreement reads exactly like a
+    // live one, which is how the cart came to show $14.95 on a tee the
+    // checkout charged $18.95 for.
+    // ===== SP_BULK_RULE_START — extracted and executed by
+    // scripts/check-bulk-qualification.mjs. Everything between the markers
+    // must stay pure: no window, no document, no state, no DOM. The whole
+    // point is that the rule can be driven numerically off the page.
+    // ---- Bulk qualification (shop rule, 2026-10-17) --------------------
+    // FIVE OR MORE pieces of the SAME ITEM carrying the SAME DESIGN is what
+    // reaches the bulk band. Colour is NOT part of it: three white tees and
+    // two black tees carrying one print are one five-piece run off one gang
+    // sheet, and the shop quotes them as five. Two different prints across
+    // five white tees are two runs, of three and of two, and price as such.
     //
-    // Their decoration is still priced by its own qty through
-    // /api/pricing/decoration-only, so a large BYO run keeps its own volume
-    // break. It just does not subsidise the catalog lines beside it.
-    function spCartPoolQty(items) {
-      var pool = 0;
+    // This was decided per CART LINE, and catalog.js merged lines on
+    // product + colour alone, so both cases came out backwards. Measured on
+    // the live engine 2026-10-17 (Gildan 64000, DTF, left chest, 1-4 $24.95
+    // / 5-9 $18.95):
+    //   3 white design A + 2 white design B -> merged to one line of 5
+    //     -> $94.75, where the rule says 3 + 2 at micro-run = $124.75.
+    //   3 white + 2 black of ONE design     -> two lines of 3 and 2
+    //     -> $124.75, where the rule says one run of 5 = $94.75.
+    // Both off by exactly $30 on a five-piece cart, in opposite directions.
+    //
+    // A short group must keep its OWN qty. The engine floors a sub-5 request
+    // whatever tier_qty says (measured: qty=3&tier_qty=10 still returns
+    // $24.95), so lifting a short group here would only disagree with the
+    // server that actually charges the card.
+    function spDesignKey(it) {
+      var pd = it && it.placement_designs;
+      if (pd && typeof pd === 'object') {
+        var ks = Object.keys(pd).filter(function (k) { return pd[k] && pd[k].path; });
+        if (ks.length) {
+          ks.sort();
+          return ks.map(function (k) { return k + ':' + pd[k].path; }).join('+');
+        }
+      }
+      if (it && it.design_path) return 'd:' + it.design_path;
+      // No artwork yet (whole-card add, or art to follow). Lines like these
+      // group together deliberately: one design is coming, and the customer
+      // picking two colours of one tee has not thereby ordered two prints.
+      return 'noart';
+    }
+    // dtg and dtf are one press and one pool; embroidery is its own. Same
+    // collapse the engine does in pricingMethod()/poolingKey().
+    function spBulkMethodKey(it) {
+      return String((it && it.decoration_type) || '').toLowerCase() === 'embroidery'
+        ? 'embroidery' : 'dtf';
+    }
+    function spBulkGroupKey(it) {
+      var pl = Array.isArray(it && it.placements)
+        ? it.placements.filter(function (p) { return p !== 'neck-tag'; }).slice().sort().join(',')
+        : '';
+      return [String((it && it.product_id) || ''), spBulkMethodKey(it), pl, spDesignKey(it)].join('|');
+    }
+    function spLineQty(it) {
+      return Number(it && it.qty) || ((it && it.roster && it.roster.length) || 0);
+    }
+    // Everything the rule decides, computed once per cart. `groups` maps an
+    // item+design key to its piece count across every colour; `pools` maps a
+    // press to the combined pieces of every group that has already qualified.
+    //
+    // Cross-product pooling is kept, and scoped to the press: once a run
+    // clears five it pools with every other qualified run that shares a
+    // press, and each prices at the combined tier. It used to be method
+    // BLIND here while the CRM's checkout pricer (lib/shop/pricing.ts,
+    // pooledByMethod) has scoped by method for a while — five printed tees
+    // beside twenty embroidered hoodies showed $14.95/tee in the cart and
+    // charged $18.95 at checkout.
+    //
+    // BYO lines are excluded from both (2026-09-08): pooling exists because a
+    // bigger run of OUR blanks earns a better blank price, and a garment the
+    // customer supplies buys us no such leverage. Their decoration is still
+    // priced by its own qty through /api/pricing/decoration-only.
+    function spBulkContext(items) {
+      var groups = {}, pools = {}, methodOf = {};
       (items || []).forEach(function (it) {
-        if (it.is_byo) return;
-        var q = Number(it.qty) || ((it.roster && it.roster.length) || 0);
-        if (q >= 5) pool += q;
+        if (it && it.is_byo) return;
+        var k = spBulkGroupKey(it);
+        groups[k] = (groups[k] || 0) + spLineQty(it);
+        methodOf[k] = spBulkMethodKey(it);
       });
-      return pool;
+      Object.keys(groups).forEach(function (k) {
+        if (groups[k] < 5) return;
+        var m = methodOf[k];
+        pools[m] = (pools[m] || 0) + groups[k];
+      });
+      return { groups: groups, pools: pools };
+    }
+    // The qty a line is PRICED at, and the tier it pools into. One function,
+    // so a caller cannot pick up half the rule: renderCartList, the per-item
+    // matrix and updateCartTotal all read the price out of _priceCache under
+    // a key built from these two numbers, and a caller computing one of them
+    // its own way is a silent cache miss and a "Price loading..." that never
+    // resolves.
+    function spLinePricing(it, ctx) {
+      var own = spLineQty(it);
+      if (!ctx || (it && it.is_byo)) return { qty: own, tier_qty: 0, group_qty: own };
+      var g = ctx.groups[spBulkGroupKey(it)] || 0;
+      var pq = g >= 5 ? g : own;
+      var pool = ctx.pools[spBulkMethodKey(it)] || 0;
+      return { qty: pq, tier_qty: spItemTierQty(pq, pool), group_qty: g };
     }
     function spItemTierQty(q, pool) {
       return (q >= 5 && pool > q) ? pool : 0;
     }
+    // ===== SP_BULK_RULE_END
 
     // ---- Free-tee promo (2026-09-09) -----------------------------------
     // "Order 15+ and the 16th tee is on us." The threshold is the whole
@@ -6182,11 +6278,15 @@
       var lblRemove = _t('quote.cart.item.remove') || 'Remove';
       // Combined-order volume banner: when two or more 5+ lines pool, say
       // so plainly — it's a real discount and the reason to add more items.
-      var comboPool = spCartPoolQty(items);
-      var comboLines = items.filter(function (it) {
-        if (it.is_byo) return false;   // excluded from the pool, so not counted here either
-        return (Number(it.qty) || ((it.roster && it.roster.length) || 0)) >= 5;
-      }).length;
+      var _bulkCtx = spBulkContext(items);
+      // Count qualified GROUPS, not lines: two colours of one print are one
+      // run and must not read as two pooled items.
+      var comboGroups = Object.keys(_bulkCtx.groups).filter(function (k) {
+        return _bulkCtx.groups[k] >= 5;
+      });
+      var comboPool = 0;
+      Object.keys(_bulkCtx.pools).forEach(function (m) { comboPool += _bulkCtx.pools[m]; });
+      var comboLines = comboGroups.length;
       var comboStrip = '';
       if (comboLines >= 2 && comboPool >= 5) {
         var comboMsg = (_t('quote.cart.combo') || 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.')
@@ -6289,14 +6389,19 @@
         // Without it, an embroidered hat would cache under 'dtf' (the
         // global current method) and miss the 'embroidery' lookup
         // below, showing $— in the right-panel headline.
-        liveUnitPrice(it.product_id, it.qty || 50, it.sides || 1, it.placements || [], function(price) {
+        // Priced at the design group's qty (see spLinePricing); the SUBTOTAL
+        // is still this line's own pieces times that unit.
+        var _lp = spLinePricing(it, _bulkCtx);
+        liveUnitPrice(it.product_id, _lp.qty, it.sides || 1, it.placements || [], function(price) {
           var el = document.getElementById('ci-price-' + idx);
           if (!el) return;
           if (price != null) {
-            var qty = it.qty || 50;
-            var comboNote = spItemTierQty(qty, comboPool)
-              ? ' <span style="color:#155c33;font-weight:600">· ' + ((_t('quote.cart.item.comborate') || '{n}-pc rate').replace(/\{n\}/g, comboPool)) + '</span>'
-              : '';
+            var qty = spLineQty(it);
+            var comboNote = _lp.tier_qty
+              ? ' <span style="color:#155c33;font-weight:600">· ' + ((_t('quote.cart.item.comborate') || '{n}-pc rate').replace(/\{n\}/g, _lp.tier_qty)) + '</span>'
+              : (_lp.group_qty > qty && _lp.group_qty >= 5
+                  ? ' <span style="color:#155c33;font-weight:600">· ' + ((_t('quote.cart.item.grouprate') || '{n}-pc rate').replace(/\{n\}/g, _lp.group_qty)) + '</span>'
+                  : '');
             var tagNote = it.neck_tag
               ? ' <span style="color:#666">· ' + ((_t('quote.cart.item.necktag') || 'incl. inside-neck tag')) + '</span>'
               : '';
@@ -6305,7 +6410,7 @@
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        }, it.decoration_type, comboPool, !!it.neck_tag);
+        }, it.decoration_type, _lp.tier_qty, !!it.neck_tag);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
         // Hits /api/pricing/live-matrix which returns engine-derived prices
@@ -6452,9 +6557,8 @@
         };
         // Highlight the tier the line is actually PRICED at — with combined-
         // order pricing that's the pooled quantity, not just this row's qty.
-        var _mxPool = spCartPoolQty(SinghsCart.read().items);
-        var _mxOwn  = Number(it.qty) || 50;
-        var activeQty = spItemTierQty(_mxOwn, _mxPool) || _mxOwn;
+        var _mxLp   = spLinePricing(it, spBulkContext(SinghsCart.read().items));
+        var activeQty = _mxLp.tier_qty || _mxLp.qty || 50;
 
         // Render a single method's table (DTF or Embroidery). `accessor` is
         // the property name on each row ('dtf' or 'embroidery'); `label` is
@@ -6854,7 +6958,7 @@
       // fall back to the legacy global state.service for items that
       // predate the per-item picker.
       var cartUnitSum = 0, cartUnits = 0, cartLineTotal = 0, knownAll = true;
-      var _cartPool = spCartPoolQty(items);
+      var _cartCtx = spBulkContext(items);
       items.forEach(function (it) {
         var qty = Number(it.qty) || ((it.roster && it.roster.length) || 0);
         cartUnits += qty;
@@ -6884,8 +6988,8 @@
           }
           return;
         }
-        var _ctq  = spItemTierQty(qty, _cartPool);
-        var p     = _priceCache[spPriceCacheKey(it.product_id, qty, sides, method, pk, _ctq, !!it.neck_tag)];
+        var _clp  = spLinePricing(it, _cartCtx);
+        var p     = _priceCache[spPriceCacheKey(it.product_id, _clp.qty, sides, method, pk, _clp.tier_qty, !!it.neck_tag)];
         if (typeof p === 'number') {
           cartUnitSum  += p;
           cartLineTotal += p * qty;
@@ -6975,9 +7079,9 @@
           var _pk = (it.placements || []).join(',');
           var _rm = (it.decoration_type || '').toLowerCase();
           var _m  = _rm === 'embroidery' ? 'embroidery' : (_rm ? 'dtf' : currentDecorationMethod());
-          var _q  = Number(it.qty) || 0;
-          if (typeof _priceCache[spPriceCacheKey(it.product_id, _q, _s, _m, _pk,
-                spItemTierQty(_q, _cartPool), !!it.neck_tag)] !== 'number') pendingLines++;
+          var _plp = spLinePricing(it, _cartCtx);
+          if (typeof _priceCache[spPriceCacheKey(it.product_id, _plp.qty, _s, _m, _pk,
+                _plp.tier_qty, !!it.neck_tag)] !== 'number') pendingLines++;
         });
         document.getElementById('livePriceUnit').textContent = items.length + ' items';
         if (suf) suf.style.display = 'none';
