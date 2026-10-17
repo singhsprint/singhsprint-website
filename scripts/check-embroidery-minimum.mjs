@@ -221,6 +221,24 @@ if (!process.argv.includes('--skip-live')) {
   const [dtf, dtg, emb] = await Promise.all([price('dtf'), price('dtg'), price('embroidery')])
   ok('C7 the engine prices a cap the same whatever method is asked', dtf != null && dtf === emb && dtg === emb)
   if (!(dtf != null && dtf === emb && dtg === emb)) problems.push(`C7 detail: dtf ${dtf}, dtg ${dtg}, embroidery ${emb} — a customer who sees the print number pays the stitched one`)
+
+  // The embroidery minimum is five on EVERY garment (owner, 2026-10-17). The
+  // engine refused one embroidered tee and sold one embroidered cap at a
+  // premium — two minimums for one process. Live, red until the CRM deploys.
+  const refusal = async (q) => {
+    const r = await fetch(`https://singhsprint-crm.vercel.app/api/pricing?product_id=${CAP}&qty=${q}&sides=1&decoration_method=embroidery&embroidery_placements=cap-front`)
+    const d = await r.json().catch(() => ({}))
+    return { status: r.status, reason: d.reason, min: d.min_qty, unit: d.unit_price }
+  }
+  const [c1, c4, c5] = await Promise.all([refusal(1), refusal(4), refusal(5)])
+  ok('C8 one embroidered cap is refused, and the refusal names five',
+     c1.status === 400 && c1.reason === 'below_embroidery_minimum' && c1.min === 5)
+  ok('C9 …so are four', c4.status === 400 && c4.reason === 'below_embroidery_minimum')
+  ok('C10 …and five is priced', c5.status === 200 && typeof c5.unit === 'number')
+  if (!(c1.status === 400 && c4.status === 400 && c5.status === 200)) problems.push(`C8-10 detail: qty1 ${JSON.stringify(c1)}, qty4 ${JSON.stringify(c4)}, qty5 ${JSON.stringify(c5)}`)
+  const reg = await (await fetch('https://singhsprint-crm.vercel.app/api/v1/registry')).json().catch(() => ({}))
+  ok('C11 the registry lists the hat minimum beside the others',
+     reg && reg.embroidery_min_qty_by_garment && reg.embroidery_min_qty_by_garment.hat === 5)
 }
 
 if (problems.length) {

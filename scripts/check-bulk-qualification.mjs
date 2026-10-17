@@ -332,6 +332,23 @@ function blockC(lineKey) {
     else cart2.push({ ...it })
   }
   eq('C12 a true duplicate still merges', [cart2.length, cart2[0].qty], [1, 5])
+
+  // The modal prices its line as part of the RUN it would join. Three black
+  // caps already in the cart plus two white ones here is a five-piece
+  // embroidery run — what the engine charges and the quote page shows — not
+  // a two-piece line the engine refuses.
+  const r = lineKey.spCartRunQty
+  const capA = { product_id: 'cap', color_id: 'black', qty: 3, placements: ['cap-front'], decoration_type: 'embroidery' }
+  eq('C13 the run counts the same item on the same press across colours',
+    r([capA], 'cap', 'embroidery', 'cap-front', 2), { inCart: 3, run: 5 })
+  eq('C14 a different product is not in the run', r([capA], 'tee', 'embroidery', 'cap-front', 2).run, 2)
+  eq('C15 a different press is not in the run', r([capA], 'cap', 'dtf', 'cap-front', 2).run, 2)
+  eq('C16 a different placement is not in the run', r([capA], 'cap', 'embroidery', 'back-across', 2).run, 2)
+  eq('C17 dtg and dtf are one press here too',
+    r([{ ...capA, decoration_type: 'dtg' }], 'cap', 'dtf', 'cap-front', 2).run, 5)
+  eq('C18 BYO lines never join a run', r([{ ...capA, is_byo: true }], 'cap', 'embroidery', 'cap-front', 2).run, 2)
+  eq('C19 the neck tag does not split a run',
+    r([{ ...capA, placements: ['cap-front', 'neck-tag'] }], 'cap', 'embroidery', 'cap-front', 2).run, 5)
 }
 
 // ── D. plan x engine = the cart total ─────────────────────────────────────
@@ -406,7 +423,7 @@ const rule = loadBlock(QUOTE, '// ===== SP_BULK_RULE_START', '// ===== SP_BULK_R
   ['spDesignKey', 'spBulkMethodKey', 'spBulkGroupKey', 'spLineQty', 'spBulkContext', 'spLinePricing', 'spItemTierQty', 'spPooledPresses'],
   'the bulk rule in quote.js')
 const lineKey = loadBlock(CATALOG, '// ===== SP_CART_LINE_KEY_START', '// ===== SP_CART_LINE_KEY_END',
-  ['spCartDesignKey', 'spCartLineKey'], 'the cart line key in catalog.js')
+  ['spCartDesignKey', 'spCartLineKey', 'spCartRunQty'], 'the cart line key in catalog.js')
 
 await blockA()
 blockB(rule)

@@ -125,6 +125,28 @@
       (it && it.neck_tag) ? 'nt' : ''
     ].join('|');
   }
+  // The RUN this modal's line would join: pieces of the same product on the
+  // same press with the same placements already in the cart, any colour,
+  // plus what is being added. Mirrors quote.js's spBulkGroupKey minus the
+  // design — the modal cannot know its artwork until it is uploaded, and a
+  // line with no artwork groups with the others there too. This is what the
+  // modal PRICES at once the run clears five, so three black caps already in
+  // the cart and two white ones here read as one five-piece embroidery run,
+  // which is what the engine will charge and what the quote page will show.
+  function spCartRunQty(items, productId, method, placementsKey, adding) {
+    var press = String(method || 'dtf').toLowerCase() === 'embroidery' ? 'embroidery' : 'dtf';
+    var inCart = 0;
+    (items || []).forEach(function (it) {
+      if (!it || it.is_byo) return;
+      if (String(it.product_id || '') !== String(productId || '')) return;
+      var m = String(it.decoration_type || '').toLowerCase() === 'embroidery' ? 'embroidery' : 'dtf';
+      if (m !== press) return;
+      var pl = Array.isArray(it.placements) ? it.placements.filter(function (p) { return p !== 'neck-tag'; }).slice().sort().join(',') : '';
+      if (pl !== placementsKey) return;
+      inCart += Number(it.qty) || 0;
+    });
+    return { inCart: inCart, run: inCart + (Number(adding) || 0) };
+  }
   // ===== SP_CART_LINE_KEY_END
 
   const SinghsCart = {
@@ -680,6 +702,8 @@
       garmentView: 'front'  // which blank-garment photo to show (front/back/side)
     };
     _dmczNeckTagPerUnit = null;
+    _dmczRunNote = null;
+    dmczSetAddBlocked(false);   // a refusal on the last product must not follow this one
     // Opening any product is a fresh, unlocked session. spApplySharedDesign
     // re-arms the lock ~700ms later when the modal was opened from a share.
     _dmczSharedLock = false;
@@ -699,6 +723,19 @@
   // (it comes from embroidery_qty_tiers), so what the customer is told cannot
   // drift from what is enforced.
   var _dmczEmbMinQty = null;
+  var _dmczRunNote = null;   // { inCart, run } when the line is priced as part of a run
+  var _dmczAddBlocked = false;
+  function dmczSetAddBlocked(blocked, why) {
+    _dmczAddBlocked = !!blocked;
+    var btn = document.getElementById('detailModalAddBtn');
+    if (!btn) return;
+    // Never fight the mockup composer, which disables the button itself
+    // while it works and re-enables through this same flag when done.
+    if (btn.dataset.composing === '1') return;
+    btn.disabled = _dmczAddBlocked;
+    btn.style.opacity = _dmczAddBlocked ? '0.5' : '';
+    btn.title = _dmczAddBlocked ? (why || '') : '';
+  }
 
   function dmczCurrentQty() {
     // MUST be the modal's own input. Falling back to state.qty here would
@@ -715,6 +752,12 @@
     if (!host) return;
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     var qty = dmczCurrentQty();
+    // The embroidery minimum is judged against the RUN (same item, same
+    // placements, any colour, across the cart), not this line alone.
+    try {
+      var _pl = dmczPricingPlacements(_dmczState.placements).slice().sort().join(',');
+      qty = spCartRunQty(SinghsCart.read().items, _detailProduct && _detailProduct.product_id, 'embroidery', _pl, qty).run;
+    } catch (_) {}
     host.innerHTML = DMCZ_METHODS.map(function(m){
       var on = (_dmczState.method === m.id);
       var name = t('cat.detail.method.' + m.id.toLowerCase()) || m.name;
@@ -2066,11 +2109,19 @@
     if (!priceEl) return;
     var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     var qtyInput = document.getElementById('detailModalQtyInput');
-    var qty = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || (state && state.qty) || 25);
+    var ownQty = Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || (state && state.qty) || 25);
     var placements = dmczPricingPlacements(_dmczState.placements);
     var addonParams = dmczAddonParams(_dmczState.placements);
     var sides = placements.length || 1;
     var method = dmczMethodApi(_dmczState.method);
+    // Price the RUN, not the line, once the run clears five — the same rule
+    // the quote page and checkout apply (five of one item and one design
+    // across colours). Two white caps here with three black ones already in
+    // the cart are a five-piece embroidery run, not a two-piece refusal.
+    var run = { inCart: 0, run: ownQty };
+    try { run = spCartRunQty(SinghsCart.read().items, p.product_id, method, placements.slice().sort().join(','), ownQty); } catch (_) {}
+    var qty = run.run >= 5 ? run.run : ownQty;
+    _dmczRunNote = (qty > ownQty) ? { inCart: run.inCart, run: run.run } : null;
     // Send placements for EVERY method, not just embroidery (2026-06-11).
     // Despite its name, embroidery_placements is /api/pricing's generic
     // placements channel: for dtf/dtg it drives the per-placement matrix
@@ -2108,6 +2159,10 @@
         msg = t('cat.card.quote-on-request') || 'Quote on request';
       }
       priceEl.innerHTML = '<strong class="dmcz-price--blocked">' + msg + '</strong>';
+      // Nothing to add at a quantity the engine will not price. Until now
+      // the card went red and the Add button stayed live, so one embroidered
+      // cap could be put in the cart and refused at checkout instead.
+      dmczSetAddBlocked(true, msg);
     };
 
     // Combined-order volume pricing: the cart pools lines of 5+ pieces into one
@@ -2136,6 +2191,10 @@
           // bigger blank purchase, and we buy nothing on a BYO line.
           // quote.js/spCartPoolQty makes the same exclusion for the cart total.
           if (it.is_byo) return acc;
+          // Lines in THIS line's run are already inside `qty` (spCartRunQty
+          // above); counting them again would pool a five-piece run as ten.
+          if (_dmczRunNote && String(it.product_id || '') === String(p.product_id || '')
+              && poolKey(it.decoration_type || it.decoration_method) === mine) return acc;
           var q = Number(it.qty) || 0;
           if (q < 5) return acc;
           return poolKey(it.decoration_type || it.decoration_method) === mine ? acc + q : acc;
@@ -2230,6 +2289,11 @@
         var sideWord = sides === 1
           ? (_emb ? (t('cat.detail.oneloc.emb') || '1 embroidered location') : (t('cat.card.oneside') || '1-side print'))
           : sides + (_emb ? (t('cat.detail.locs.emb') || ' embroidered locations') : (t('cat.detail.sideprint') || '-side print'));
+        dmczSetAddBlocked(false);
+        if (_dmczRunNote) {
+          sideWord += ' \u00b7 ' + (t('cat.detail.runnote') || 'run of {run} with the {n} already in your order')
+            .replace('{run}', _dmczRunNote.run).replace('{n}', _dmczRunNote.inCart);
+        }
         priceEl.innerHTML = dmczPriceMarkup(unit, t('cat.card.perunit') || '/unit', sideWord);
         // Say what the number is doing, so an unchanged price still reads as
         // a live control rather than a broken one.
@@ -3087,6 +3151,7 @@
       const _origAddHTML = addBtn.innerHTML;
       const _generatingTxt = _tAdd('cat.detail.adding') || 'Generating mockup…';
       if (composeJobs.length) {
+        addBtn.dataset.composing = '1';
         addBtn.disabled = true;
         addBtn.style.opacity = '0.7';
         addBtn.style.cursor = 'wait';
@@ -3096,8 +3161,9 @@
       Promise.all(composeJobs).then(function(results) {
         const mockups = results.filter(Boolean);
         if (composeJobs.length) {
-          addBtn.disabled = false;
-          addBtn.style.opacity = '';
+          delete addBtn.dataset.composing;
+          addBtn.disabled = _dmczAddBlocked;
+          addBtn.style.opacity = _dmczAddBlocked ? '0.5' : '';
           addBtn.style.cursor = '';
           addBtn.innerHTML = _origAddHTML;
         }

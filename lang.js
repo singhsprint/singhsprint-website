@@ -1076,6 +1076,7 @@ var SP_LANG = (function() {
     'cat.card.justone-from': { en: '{ordermin} from', fr: '{ordermin} \u00e0 partir de' },
     'cat.card.flat-no-min': { en: 'Flat price at this tier', fr: 'Prix fixe \u00e0 ce palier' },
     'cat.detail.embmin': { en: 'Needs {min}+ · add {n} more', fr: 'Minimum {min} · ajoutez-en {n}' },
+    'cat.detail.runnote': { en: 'run of {run} with the {n} already in your order', fr: 's\u00e9rie de {run} avec les {n} d\u00e9j\u00e0 dans votre commande' },
     'cat.detail.capembonly': { en: 'Caps are embroidery-only on our press', fr: 'Les casquettes sont brod\u00e9es seulement sur notre presse' },
     'cat.detail.embminprice': { en: 'Embroidery needs {min}+ · add {n} more', fr: 'Broderie : minimum {min} · ajoutez-en {n}' },
     'cat.card.few-at-tier': { en: '{ordermin} per order \u00b7 mix items', fr: '{ordermin} par commande \u00b7 m\u00e9langez' },
