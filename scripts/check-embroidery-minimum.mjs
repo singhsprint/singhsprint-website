@@ -182,6 +182,47 @@ ok('B9 the registry endpoint is what supplies it',
   /REGISTRY_API_FOR_QUOTE\s*=\s*'[^']*\/api\/v1\/registry'/.test(code) &&
   /fetch\(REGISTRY_API_FOR_QUOTE\)/.test(code))
 
+// ── C. caps are embroidery-only, on EVERY surface ──────────────────────────
+// The owner's call, 2026-10-17. quote.js had snapped a cap to embroidery
+// since May; the catalogue modal, the card ladder and the "From" price all
+// priced the same cap as a print job, so a Richardson 112 read $36.95 in
+// the catalogue and $40.95 on the quote page. One list, read by both pages
+// and by the engine's root.
+const catRaw = readFileSync(join(HERE, '..', 'catalog.js'), 'utf8')
+const cat = strip(catRaw)
+const listOf = (src, name) => {
+  const m = src.match(new RegExp(name + '\\s*=\\s*\\{([^}]*)\\}'))
+  return m ? m[1].split(',').map((x) => x.split(':')[0].trim()).filter(Boolean).sort() : null
+}
+const quoteList = listOf(code, 'EMBROIDERY_ONLY_GARMENTS')
+const catList = listOf(cat, 'DMCZ_EMBROIDERY_ONLY')
+eq('C1 the catalogue and the quote page agree on which garments are embroidery-only', catList, quoteList)
+ok('C2 …and the list is not empty', Array.isArray(quoteList) && quoteList.length > 0)
+ok('C3 the catalogue modal opens an embroidery-only garment on Embroidery',
+   /method:\s*dmczEmbroideryOnly\(p\)\s*\?\s*'Embroidery'\s*:\s*'DTG'/.test(cat))
+ok('C4 …and refuses a switch to print on one',
+   /function dmczSelectMethod\(id\)\s*\{\s*if \(id !== 'Embroidery' && dmczEmbroideryOnly\(_detailProduct\)\) id = 'Embroidery';/.test(cat))
+ok('C5 …and a shared design cannot reopen it on print',
+   /dmczEmbroideryOnly\(_detailProduct\)\s*\?\s*'Embroidery'\s*:\s*\(share\.decoration_method/.test(cat))
+ok('C6 the print card on a cap is blocked, with the same sentence the quote page uses',
+   /dmczEmbroideryOnly\(_detailProduct\)\)\s*\{\s*blocked = true;/.test(cat) && /capembonly/.test(cat))
+
+// The ENGINE: asked for print on a cap, it answers with the embroidery
+// price. Live, so it is red until the CRM that decides this at its root is
+// deployed — and it is the assertion that matters, because it covers the
+// card ladder, the "From" price and checkout at once.
+if (!process.argv.includes('--skip-live')) {
+  const CAP = '3269ef37-3963-43e7-b502-6f10d2566423' // Richardson 112, garment_type hat
+  const price = async (m) => {
+    const r = await fetch(`https://singhsprint-crm.vercel.app/api/pricing?product_id=${CAP}&qty=1&sides=1&decoration_method=${m}&embroidery_placements=cap-front`)
+    const d = await r.json().catch(() => ({}))
+    return typeof d.unit_price === 'number' ? d.unit_price : null
+  }
+  const [dtf, dtg, emb] = await Promise.all([price('dtf'), price('dtg'), price('embroidery')])
+  ok('C7 the engine prices a cap the same whatever method is asked', dtf != null && dtf === emb && dtg === emb)
+  if (!(dtf != null && dtf === emb && dtg === emb)) problems.push(`C7 detail: dtf ${dtf}, dtg ${dtg}, embroidery ${emb} — a customer who sees the print number pays the stitched one`)
+}
+
 if (problems.length) {
   console.error(`check-embroidery-minimum: ${problems.length} problem(s)\n`)
   for (const p of problems) console.error(`  - ${p}\n`)

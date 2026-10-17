@@ -651,10 +651,26 @@
     if (bar) { bar.classList.remove('open'); bar.setAttribute('aria-expanded', 'false'); }
   }
 
+  // Caps and hats are embroidery-only on the shop's press. quote.js has said
+  // so since the method picker landed there (EMBROIDERY_ONLY_GARMENTS, "Caps
+  // are embroidery-only on our press") and snaps a cap to embroidery the
+  // moment it reaches the cart — but this modal still opened every cap on
+  // DTG and priced it as print. Measured on production 2026-10-17, Richardson
+  // 112 at one piece: modal $36.95 (DTF), quote page $40.95 (embroidery). The
+  // customer saw one number and was asked for another four dollars on the
+  // next page. The list is the same two words as quote.js's; keep them in
+  // step, and keep them in step with EMBROIDERY_ONLY_GARMENTS in the CRM's
+  // lib/domain/registry.
+  var DMCZ_EMBROIDERY_ONLY = { hat: 1, cap: 1 };
+  function dmczEmbroideryOnly(p) {
+    var gt = String((p && p.garment_type) || '').toLowerCase();
+    return !!DMCZ_EMBROIDERY_ONLY[gt];
+  }
+
   function initDmczCustomizer(p) {
     var gt = (p && p.garment_type) || 'tshirt';
     _dmczState = {
-      method: 'DTG',
+      method: dmczEmbroideryOnly(p) ? 'Embroidery' : 'DTG',
       placements: [dmczDefaultPlacementFor(gt)],
       uploads: {},          // { placementId: { path, signed_url, filename } }
       priceSeq: 0,
@@ -714,6 +730,12 @@
         desc = (t('cat.detail.embmin') || 'Needs {min}+ · add {n} more')
                  .replace('{min}', _dmczEmbMinQty).replace('{n}', need);
       }
+      // The print card on a cap: shown, so the customer learns why, never
+      // selectable. Same sentence the quote page uses.
+      if (m.id !== 'Embroidery' && dmczEmbroideryOnly(_detailProduct)) {
+        blocked = true;
+        desc = t('cat.detail.capembonly') || 'Caps are embroidery-only on our press';
+      }
       return '<button type="button" class="dmcz__method' + (blocked ? ' is-blocked' : '') + '"' +
              ' data-method="' + m.id + '" aria-pressed="' + (on && !blocked) + '"' +
              (blocked ? ' disabled aria-disabled="true"' : '') + '>' +
@@ -728,6 +750,7 @@
   }
 
   function dmczSelectMethod(id) {
+    if (id !== 'Embroidery' && dmczEmbroideryOnly(_detailProduct)) id = 'Embroidery';
     _dmczState.method = id;
     try { if (window.spShowTurnaround) window.spShowTurnaround(id); } catch (e) {}
     // Embroidery: drop disallowed placements from the current selection.
@@ -2201,9 +2224,12 @@
           _dmczNeckTagPerUnit = d.neck_tag_rate;
           try { renderDmczPlacements(); } catch (_) {}
         }
+        // "print" on a stitched cap is the wrong word in the one place the
+        // customer reads the number. Say what is being made.
+        var _emb = (_dmczState.method === 'Embroidery');
         var sideWord = sides === 1
-          ? (t('cat.card.oneside') || '1-side print')
-          : sides + (t('cat.detail.sideprint') || '-side print');
+          ? (_emb ? (t('cat.detail.oneloc.emb') || '1 embroidered location') : (t('cat.card.oneside') || '1-side print'))
+          : sides + (_emb ? (t('cat.detail.locs.emb') || ' embroidered locations') : (t('cat.detail.sideprint') || '-side print'));
         priceEl.innerHTML = dmczPriceMarkup(unit, t('cat.card.perunit') || '/unit', sideWord);
         // Say what the number is doing, so an unchanged price still reads as
         // a live control rather than a broken one.
@@ -5428,7 +5454,7 @@
     // or by spExitSharedDesign (the recipient chose to start their own).
     _dmczSharedLock = true;
     var label = spShareT('cat.share.shareddesign', 'Shared design');
-    _dmczState.method = share.decoration_method || 'DTG';
+    _dmczState.method = dmczEmbroideryOnly(_detailProduct) ? 'Embroidery' : (share.decoration_method || 'DTG');
     _dmczState.placements = (share.placements || []).slice();
     _dmczState.bgKeys = {};
     share.designs.forEach(function (d) {

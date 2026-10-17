@@ -214,18 +214,48 @@
   function arm() {
     build();
     var fired = false;
-    function fire() { if (fired) return; fired = true; teardown(); show(); }
+    // Someone with a product open, or with pieces already in the cart, is
+    // mid-build exactly as much as someone on /quote — and /quote is
+    // exit-intent only for that reason. Measured on production 2026-10-17:
+    // the 7s dwell fired over an open product modal on the fourth add of a
+    // five-piece order, and the customer had to find "Maybe later" before
+    // they could press "Add to quote". So: with a product modal open, the
+    // dwell and scroll triggers wait and try again; with anything in the
+    // cart, they stand down and only exit intent remains.
+    function midBuild() {
+      try {
+        var m = document.getElementById('detailModal');
+        if (m && m.classList.contains('open')) return 'modal';
+        var c = JSON.parse(sessionStorage.getItem('singhsCart_v1') || '{"items":[]}');
+        if (c && c.items && c.items.length) return 'cart';
+      } catch (_) {}
+      return '';
+    }
+    function fire(viaExit) {
+      if (fired) return;
+      if (!viaExit) {
+        var why = midBuild();
+        if (why === 'cart') { teardownSoft(); return; }
+        if (why === 'modal') { if (timer) clearTimeout(timer); timer = setTimeout(fire, DWELL_MS); return; }
+      }
+      fired = true; teardown(); show();
+    }
 
     var timer = null;
     function onScroll() {
       var h = document.documentElement.scrollHeight - window.innerHeight;
       if (h > 0 && (window.scrollY / h) >= SCROLL_PCT) fire();
     }
-    function onExit(e) { if (e.clientY <= 0) fire(); }
+    function onExit(e) { if (e.clientY <= 0) fire(true); }
     function teardown() {
-      if (timer) clearTimeout(timer);
-      window.removeEventListener('scroll', onScroll);
+      teardownSoft();
       document.removeEventListener('mouseout', onExit);
+    }
+    // Drop dwell and scroll, keep exit intent.
+    function teardownSoft() {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      window.removeEventListener('scroll', onScroll);
     }
 
     // Exit intent everywhere it exists; on /quote it is the ONLY trigger.

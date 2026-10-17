@@ -1067,6 +1067,8 @@ var SP_LANG = (function() {
     'cat.card.add-to-quote': { en: '+ Add to quote', fr: '+ Ajouter à la soumission' },
     'cat.card.units-at-tier': { en: 'units · adjust qty later', fr: 'unités · qté ajustable ensuite' },
     'cat.card.oneside': { en: '1-side print', fr: 'Impression 1 côté' },
+    'cat.detail.oneloc.emb': { en: '1 embroidered location', fr: '1 emplacement brod\u00e9' },
+    'cat.detail.locs.emb': { en: ' embroidered locations', fr: ' emplacements brod\u00e9s' },
     'cat.card.from': { en: 'From', fr: 'À partir de' },
     'cat.card.perunit': { en: '/unit', fr: '/unité' },
     'cat.card.pereach': { en: '/each', fr: '/chacun' },
@@ -1074,6 +1076,7 @@ var SP_LANG = (function() {
     'cat.card.justone-from': { en: '{ordermin} from', fr: '{ordermin} \u00e0 partir de' },
     'cat.card.flat-no-min': { en: 'Flat price at this tier', fr: 'Prix fixe \u00e0 ce palier' },
     'cat.detail.embmin': { en: 'Needs {min}+ · add {n} more', fr: 'Minimum {min} · ajoutez-en {n}' },
+    'cat.detail.capembonly': { en: 'Caps are embroidery-only on our press', fr: 'Les casquettes sont brod\u00e9es seulement sur notre presse' },
     'cat.detail.embminprice': { en: 'Embroidery needs {min}+ · add {n} more', fr: 'Broderie : minimum {min} · ajoutez-en {n}' },
     'cat.card.few-at-tier': { en: '{ordermin} per order \u00b7 mix items', fr: '{ordermin} par commande \u00b7 m\u00e9langez' },
     // The floating cart bar while the order is still under the floor. The CTA
