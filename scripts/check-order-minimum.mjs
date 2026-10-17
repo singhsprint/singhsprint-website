@@ -342,6 +342,55 @@ console.log('\nG. the catalogue guides toward five of anything')
      && /@media \(max-width:520px\)\{[\s\S]*?\.cart-bar__pips\{display:none\}/.test(css))
 }
 
+// ── H. the server enforces the same floor ────────────────────────────────
+// Everything above is the page. A stale client, a cached quote.js or a
+// hand-made POST reaches /api/shop/checkout directly, and until 2026-10-17
+// a three-piece cart went straight through to Stripe. These hit the DEPLOYED
+// CRM, so they go red the moment the two copies of the number disagree, and
+// stay red until the CRM is deployed. Skip with --skip-live.
+console.log('\nH. the server enforces the same floor')
+if (!process.argv.includes('--skip-live')) {
+  const CRM = 'https://singhsprint-crm.vercel.app'
+  let serverFloor = null
+  try {
+    const reg = await (await fetch(`${CRM}/api/v1/registry`)).json()
+    serverFloor = typeof reg.shop_min_order_pieces === 'number' ? reg.shop_min_order_pieces : null
+    ok('H1 /api/v1/registry serves the order floor', serverFloor !== null, JSON.stringify(reg.shop_min_order_pieces))
+    ok('H2 …and it is the same number this site gates on', serverFloor === MIN, `server ${serverFloor}, site ${MIN}`)
+  } catch (e) {
+    ok('H1 /api/v1/registry reachable', false, String(e && e.message))
+  }
+  // A three-piece cart, sizes consistent, real product, nothing else wrong
+  // with it. The ONLY acceptable answer is a refusal naming the minimum — any
+  // other 4xx means the gate sits behind another check and a cart that passes
+  // that check would reach Stripe; a 200 means it did.
+  //
+  // ONLY probed once the server advertises a floor. Against a CRM that does
+  // not, this POST is not a test, it is an order: the first run of this block
+  // on 2026-10-17 came back 200 with a live Stripe Checkout session and an
+  // inbound_requests row for "checker", because that is exactly the hole. A
+  // checker that opens a Stripe session to prove Stripe sessions can be
+  // opened has proved it once already.
+  if (serverFloor === null) {
+    ok('H3 a 3-piece checkout is refused', false, 'not probed — the deployed CRM serves no order floor yet, and a POST would open a real Stripe session')
+  } else try {
+    const r = await fetch(`${CRM}/api/shop/checkout`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_email: 'check-order-minimum@example.invalid', customer_name: 'checker',
+        items: [{ product_id: '505a33c1-278e-4bc0-a8c6-97a502dac03b', qty: MIN - 2, sizes: { M: MIN - 2 },
+                  placements: ['left-chest'], decoration_method: 'dtf', garment_type: 'tshirt' }],
+      }),
+    })
+    const body = await r.json().catch(() => ({}))
+    ok(`H3 a ${MIN - 2}-piece checkout is refused`, r.status === 400, `HTTP ${r.status} ${JSON.stringify(body).slice(0, 160)}`)
+    ok('H4 …for being under the minimum, not for some other reason', body && body.reason === 'below_order_minimum' && body.min_pieces === MIN, JSON.stringify(body).slice(0, 160))
+    ok('H5 …and the refusal tells the customer what to do', typeof body.error === 'string' && /request a quote/i.test(body.error), body.error)
+  } catch (e) {
+    ok('H3 /api/shop/checkout reachable', false, String(e && e.message))
+  }
+}
+
 if (problems.length) {
   console.error(`\ncheck-order-minimum: ${problems.length} problem(s)\n`)
   for (const p of problems) console.error('  - ' + p + '\n')

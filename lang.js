@@ -423,8 +423,8 @@ var SP_LANG = (function() {
     },
     'about.values.transparent.h': { en: 'Transparent pricing', fr: 'Prix transparents' },
     'about.values.transparent.p': {
-      en: 'A firm written quote upfront with no hidden fees. Bulk tiers kick in at 5+ units, Net-30 terms for approved repeat accounts.',
-      fr: 'Une soumission écrite ferme dès le départ, sans frais cachés. Les paliers volume commencent à 5+ unités, Net-30 pour les comptes récurrents approuvés.'
+      en: 'A firm written quote upfront with no hidden fees. Bulk tiers kick in at 5+ of the same item and design, any colours. Net-30 terms for approved repeat accounts.',
+      fr: 'Une soumission écrite ferme dès le départ, sans frais cachés. Les paliers volume commencent à 5 pièces et plus du même article avec le même visuel, toutes couleurs confondues. Net-30 pour les comptes récurrents approuvés.'
     },
     'about.values.sample.h': { en: 'Mockup-first approach', fr: 'Approche maquette d\'abord' },
     'about.values.sample.p': {
@@ -815,7 +815,10 @@ var SP_LANG = (function() {
     'quote.pricing.shipping.prompt': { en: 'Enter postal code below to get shipping estimate', fr: 'Entrez votre code postal ci-dessous pour une estimation' },
     'quote.pricing.discount': { en: 'Volume discount!', fr: 'Rabais de volume !' },
     'quote.pricing.note': { en: 'Estimated price \u2022 Final quote may vary', fr: 'Prix estime \u2022 La soumission finale peut varier' },
-    'quote.pricing.b2bnote': { en: 'Bulk pricing starts at 5+ units', fr: 'Les prix en gros commencent à 5+ unites' },
+    // Says WHICH five: the order minimum is five of anything, the bulk band is
+    // five of one item with one design. Written as "5+ units" it read as the
+    // former, and a five-single cart expected the latter.
+    'quote.pricing.b2bnote': { en: 'Bulk pricing starts at 5+ of the same item and design', fr: 'Les prix en gros commencent à 5 pièces et plus du même article, même visuel' },
 
     // Payment section
     'quote.payment.button': { en: 'Pay & Order Now', fr: 'Payer et commander' },
