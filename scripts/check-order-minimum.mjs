@@ -402,6 +402,42 @@ if (!process.argv.includes('--skip-live')) {
   }
 }
 
+// ── I. the quote page offers nothing under the minimum ─────────────────────
+// 2026-10-17 — the quantity picker on /quote still had an "Under 5" pill that
+// prefilled a run of three, and the homepage fold's quantity select offered the
+// same band with a note that embroidery "starts at 10". The order minimum is
+// five, the embroidery minimum is five, and the checkout refuses less; a chip
+// offering a quantity the shop will not sell is a promise the gate breaks.
+{
+  const quote = read('quote.js')
+  const home = read('index.html'), homeFr = read('fr/index.html')
+  const qhtml = read('quote.html'), qhtmlFr = read('fr/quote.html')
+  ok('I1 no band object is built with id u5 or qty under the minimum',
+     !/\{\s*id:\s*'u5'/.test(quote) && !/qty:\s*[1-4]\s*\}/.test(quote.slice(quote.indexOf('SP_QTY_BANDS_FALLBACK'), quote.indexOf('SP_QTY_BANDS_FALLBACK') + 1200)))
+  ok('I2 the live ladder drops any rung under the order minimum',
+     /if \(t\.min < spOrderMinimum\(\)\) return;/.test(quote))
+  ok('I3 …and that minimum is the policy constant, not a literal',
+     /function spOrderMinimum\(\)[\s\S]{0,200}window\.SP_MIN_ORDER\s*:\s*5/.test(quote))
+  ok('I4 no "Under 5" pill is rendered', !/qty-band--pill/.test(quote) && !/quote\.qty\.under5/.test(quote))
+  ok('I5 an old ?qty=u5 link lands on the smallest real band, not nowhere',
+     /String\(bandId \|\| ''\) === 'u5'\)[\s\S]{0,400}band = smallest/.test(quote) && /URL_BANDS = \['u5'/.test(quote))
+  ok('I6 the BYO line refuses under the minimum where the number is typed',
+     /if \(qty < ordMin\)[\s\S]{0,300}quote\.byoline\.err\.ordmin/.test(quote)
+     && /if \(qty < spOrderMinimum\(\)\)[\s\S]{0,300}quote\.byoline\.err\.ordmin/.test(quote))
+  ok('I7 the BYO price panel never prices under it',
+     /Math\.max\(spOrderMinimum\(\), parseInt\(document\.getElementById\('byoQty'\)/.test(quote))
+  ok('I8 both BYO inputs carry min="5" in both languages',
+     [qhtml, qhtmlFr].every((h) => /id="byoLineQty"[^>]*min="5"/.test(h) && /id="byoQty"[^>]*min="5"/.test(h)))
+  ok('I9 the homepage quantity select has no under-5 option, either language',
+     !/value="u5"/.test(home) && !/value="u5"/.test(homeFr) && !/u5:/.test(home) && !/u5:/.test(homeFr))
+  ok('I10 the homepage no longer says embroidery starts at 10',
+     !/fold\.note\.emb\b/.test(home) && !/fold\.note\.emb\b/.test(homeFr) && !/'fold\.note\.emb'/.test(langRaw) && !/starts at <b>10/.test(home))
+  ok('I11 the "from 5" fold line shows for every method',
+     /else \{ lines\.push\(T\('fold\.note\.nomin'/.test(home) && !/method!=='Embroidery'/.test(home))
+  ok('I12 the under-5 strings are gone from lang.js, the BYO one is in',
+     !/quote\.qty\.under5/.test(langRaw) && !/fold\.opt\.u5/.test(langRaw) && /quote\.byoline\.err\.ordmin/.test(langRaw))
+}
+
 if (problems.length) {
   console.error(`\ncheck-order-minimum: ${problems.length} problem(s)\n`)
   for (const p of problems) console.error('  - ' + p + '\n')

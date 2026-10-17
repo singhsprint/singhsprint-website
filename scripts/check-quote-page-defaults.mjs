@@ -123,8 +123,10 @@ const unsafe = body.split('\n')
   .map(l => l.trim())
 ok('2g every spQtyBand dereference in the renderer is guarded', unsafe.length === 0,
    `unguarded: ${JSON.stringify(unsafe)}`)
-ok('2h the under-5 note is null-guarded',
-   /if \(spQtyBand && spQtyBand\.id === 'u5'\)/.test(js))
+// 2026-10-17 — the under-5 band and its note are gone: the order minimum is
+// five, so the smallest chip is five. check-order-minimum block I owns this.
+ok('2h no under-5 note remains to guard',
+   !/quote\.qty\.under5note/.test(js))
 // The reveal walk must follow the new DOM order or it scrolls past the cards.
 ok('2i the scroll walk goes to the tier cards first',
    /spScrollTo\(tierChoicePending\(\) \? secEl\('tier'\)/.test(js))
@@ -307,10 +309,10 @@ ok('11a no band object is built with id ns',
    !/\{\s*id:\s*'ns'/.test(js))
 ok('11b the fallback array has no ns entry',
    !/id:\s*'ns'[\s\S]{0,60}qty:\s*null/.test(js))
-ok('11c the secondary pill row renders under-5 only',
-   /\['u5'\]\.forEach\(function \(id\) \{/.test(js) && !/\['u5',\s*'ns'\]/.test(js))
-ok('11d the main grid skips only under-5',
-   /if \(b\.id === 'u5'\) return;/.test(js) && !/b\.id === 'u5' \|\| b\.id === 'ns'/.test(js))
+ok('11c no secondary pill row at all — neither ns nor u5',
+   !/\['u5'(,\s*'ns')?\]\.forEach/.test(js) && !/qty-band--pill/.test(js))
+ok('11d the main grid renders every band (nothing is skipped into a pill)',
+   !/if \(b\.id === '(u5|ns)'\) return;/.test(js))
 ok('11e spQtyBandLabel has no ns branch',
    !/if \(b\.id === 'ns'\) return/.test(js))
 ok('11f the translation key is gone with it',

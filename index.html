@@ -822,7 +822,7 @@
               </div>
               <div class="f">
                 <label for="q-qty" data-i18n="fold.pieces">Pieces</label>
-                <select id="q-qty"><option value="u5" data-i18n="fold.opt.u5">Under 5</option><option value="b5" data-i18n="fold.opt.b5">5&ndash;9</option><option value="b10" data-i18n="fold.opt.b10">10&ndash;24</option><option value="b25" data-i18n="fold.opt.b25" selected>25&ndash;49</option><option value="b50" data-i18n="fold.opt.b50">50&ndash;99</option><option value="b100" data-i18n="fold.opt.b100">100&ndash;199</option><option value="b200" data-i18n="fold.opt.b200">200+</option></select>
+                <select id="q-qty"><option value="b5" data-i18n="fold.opt.b5">5&ndash;9</option><option value="b10" data-i18n="fold.opt.b10">10&ndash;24</option><option value="b25" data-i18n="fold.opt.b25" selected>25&ndash;49</option><option value="b50" data-i18n="fold.opt.b50">50&ndash;99</option><option value="b100" data-i18n="fold.opt.b100">100&ndash;199</option><option value="b200" data-i18n="fold.opt.b200">200+</option></select>
               </div>
               <div class="f">
                 <label for="q-method" data-i18n="fold.decoration">Decoration</label>
@@ -1680,8 +1680,8 @@
   // Band id -> the lowest quantity it covers. These are the engine's own tier
   // minimums (the same ones /quote probes each chip at), so every rule below
   // is evaluated on the lowest quantity in the band and cannot over-promise.
-  var BAND_MIN={u5:1,b5:5,b10:10,b25:25,b50:50,b100:100,b200:200};
-  var BAND_MAX={u5:4,b5:9,b10:24,b25:49,b50:99,b100:199,b200:null};
+  var BAND_MIN={b5:5,b10:10,b25:25,b50:50,b100:100,b200:200};
+  var BAND_MAX={b5:9,b10:24,b25:49,b50:99,b100:199,b200:null};
 
   function refresh(){
     var band=q.value, lo=BAND_MIN[band], hi=BAND_MAX[band],
@@ -1689,12 +1689,11 @@
     // Through SP_LANG so the rule line is French on /fr too. The English
     // string stays as the fallback if lang.js has not loaded yet.
     var T = function(k, fb){ try { return (window.SP_LANG && SP_LANG.t && SP_LANG.t(k)) || fb; } catch(e){ return fb; } };
-    if(method==='Embroidery'&&lo<10){
-      lines.push(T('fold.note.emb','Embroidery starts at <b>10 pieces</b>. Under that we\u2019d quote DTF, which sits closest on fleece.'));
-    }
+    // No embroidery note: the embroidery minimum is the order minimum (five
+    // on every garment, 2026-10-17), and the smallest band is five.
     if(lo>=15){ lines.push(T('fold.note.tee','<b>Free tee</b> included at this quantity \u2014 same design, added automatically.')); }
     else if(hi!==null&&hi>=15){ lines.push(T('fold.note.tee15','Order <b>15 or more</b> and a free tee is added automatically.')); }
-    else if(method!=='Embroidery'){ lines.push(T('fold.note.nomin','From 5 pieces on DTG or DTF.')); }
+    else { lines.push(T('fold.note.nomin','From 5 pieces, any method.')); }
     if(byo){ lines.push(T('fold.note.byo','You ship the garments \u2014 we quote decoration only.')); }
     note.innerHTML=lines.join('<br>');
 

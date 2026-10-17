@@ -318,6 +318,16 @@
         return;
       }
       if (qty < 1) { unitEl.textContent = '$—'; totalEl.textContent = '$—'; spByoMinNote(''); return; }
+      // The order minimum applies to garments the customer sends in too: the
+      // checkout counts them, so a two-piece BYO line priced here would be
+      // refused three screens later. Say it where the number is typed.
+      var ordMin = spOrderMinimum();
+      if (qty < ordMin) {
+        unitEl.textContent = '$—'; totalEl.textContent = '$—';
+        spByoMinNote(spByoT('quote.byoline.err.ordmin', 'Orders start at {min} pieces — add {n} more')
+          .replace('{min}', ordMin).replace('{n}', Math.max(0, ordMin - qty)));
+        return;
+      }
 
       // The embroidery minimum, said out loud. Under it the engine returns a
       // flat 400 and this panel used to show "$—" with no reason given, while
@@ -371,6 +381,11 @@
       // nothing to quote against. Everything else can be sorted out on the call.
       if (!desc) { fail(spByoT('quote.byoline.err.desc', 'Tell us what the garments are so we can price the decoration.')); return; }
       if (qty < 1) { fail(spByoT('quote.byoline.err.qty', 'How many garments are you sending?')); return; }
+      if (qty < spOrderMinimum()) {
+        fail(spByoT('quote.byoline.err.ordmin', 'Orders start at {min} pieces — add {n} more')
+          .replace('{min}', spOrderMinimum()).replace('{n}', Math.max(0, spOrderMinimum() - qty)));
+        return;
+      }
       // The input carries max="10000" and nothing enforced it: a number input
       // only blocks a bad value on native form validation, which this button
       // does not use. 99,999 garments went into a quote unchallenged.
@@ -509,7 +524,9 @@
       var panel = document.getElementById('byoPricePanel');
       if (!panel || panel.style.display === 'none') return;
       var seq = ++byoPriceSeq;
-      var qty   = parseInt(document.getElementById('byoQty')?.value || '50', 10) || 50;
+      // Never priced under the order minimum: the input's min is 5 and a typed
+      // 2 is read as 5, which is the smallest run the shop sells.
+      var qty   = Math.max(spOrderMinimum(), parseInt(document.getElementById('byoQty')?.value || '50', 10) || 50);
       var sides = parseInt(document.getElementById('printCountInput')?.value || '1', 10) || 1;
       var method = (state.service || 'DTG').toLowerCase();
       // Map service labels → API methods
@@ -7620,8 +7637,11 @@
     // spQtyBandsFor() below derives the real bands from /api/v1/price-table,
     // which the page already fetches and caches. This array only shows in the
     // gap before that resolves.
+    //
+    // 2026-10-17 — no "Under 5" band. The order minimum is five pieces (owner),
+    // the checkout refuses less, and a chip offering a quantity the shop will
+    // not sell was the one thing on this page still saying otherwise.
     var SP_QTY_BANDS_FALLBACK = [
-      { id: 'u5',   label: 'Under 5',  qty: 3 },
       { id: 'b5',   label: '5–9',      qty: 5 },
       { id: 'b10',  label: '10–24',    qty: 10 },
       { id: 'b25',  label: '25–49',    qty: 25 },
@@ -7644,8 +7664,12 @@
       var asc = tiers.slice().filter(function (t) { return t && isFinite(t.min); })
                      .sort(function (a, b) { return a.min - b.min; });
       if (!asc.length) return SP_QTY_BANDS_FALLBACK.slice();
-      var out = [{ id: 'u5', label: spTierT('quote.qty.under5', 'Under 5'), qty: 3 }];
+      var out = [];
       asc.forEach(function (t) {
+        // The ladder starts where the shop does. A rung under the order
+        // minimum (an engine config that still carries a 1-4 band) is not a
+        // quantity this page offers.
+        if (t.min < spOrderMinimum()) return;
         var open = (t.max == null || !isFinite(t.max));
         out.push({
           id:    'b' + t.min,
@@ -7662,15 +7686,19 @@
     var spQtyPriceSeq = 0;
 
     function spQtyBandLabel(b) {
-      if (b.id === 'u5') return spTierT('quote.qty.under5', 'Under 5');
       return b.label;
+    }
+    // The one order minimum, read from the policy constant components.js
+    // sets, never a literal here.
+    function spOrderMinimum() {
+      return (typeof window.SP_MIN_ORDER === 'number' && window.SP_MIN_ORDER > 0) ? window.SP_MIN_ORDER : 5;
     }
 
     // The selector doubles as a pricing ladder ("order more, pay less per
     // piece" SHOWN, not told): each numeric band is a card carrying the
     // live per-unit price of the garment's Standard blank at that qty,
-    // plus savings vs. the smallest run. Under-5 steps back into a quiet
-    // secondary pill — it's routing, not pricing.
+    // plus savings vs. the smallest run. There is no under-minimum pill:
+    // the smallest chip IS the order minimum.
     function spRenderQtyBands(garmentKey, productLabel, tiers) {
       var host = document.getElementById('qtyBandSection');
       if (!host) return;
@@ -7703,7 +7731,6 @@
         spTierT('quote.qty.sub', 'A rough count is fine — you’ll fine-tune exact sizes later. Quantity drives your per-unit price.') + '</p>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin-bottom:10px">';
       SP_QTY_BANDS.forEach(function (b) {
-        if (b.id === 'u5') return;   // secondary row below
         var on = spQtyBand && spQtyBand.id === b.id;
         // Pinned by VALUE, not by a literal id: band ids are derived from the
         // engine's minimums now, so a hardcoded 'b25' would quietly stop
@@ -7715,15 +7742,6 @@
           '<div class="qty-band__label">' + b.label + (on ? ' ✓' : '') + '</div>' +
           '<div id="sp-qb-' + b.id + '" class="qty-band__price">…</div>' +
           '</button>';
-      });
-      html += '</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
-      ['u5'].forEach(function (id) {
-        var b = null;
-        SP_QTY_BANDS.forEach(function (x) { if (x.id === id) b = x; });
-        var on = spQtyBand && spQtyBand.id === id;
-        html += '<button type="button" class="qty-band qty-band--pill' + (on ? ' is-selected' : '') +
-          '" aria-pressed="' + (on ? 'true' : 'false') + '" data-band="' + id + '">' +
-          spQtyBandLabel(b) + (on ? ' ✓' : '') + '</button>';
       });
       html += '</div>';
       host.innerHTML = html;
@@ -7737,7 +7755,7 @@
       // savings vs. the 5–9 run once its baseline price is known. All
       // hits go through liveUnitPrice's cache — repeat renders are free.
       if (priced && priced.product_id) {
-        var numeric = SP_QTY_BANDS.filter(function (b) { return b.qty && b.id !== 'u5'; });
+        var numeric = SP_QTY_BANDS.filter(function (b) { return b.qty; });
         // "Save X%" is measured against the cheapest real band, whichever it is.
         var baselineId = numeric.length ? numeric[0].id : null;
         var seq = ++spQtyPriceSeq;
@@ -7834,7 +7852,7 @@
       // that quantity.
       if (!band && /^b\d+$/.test(String(bandId || ''))) {
         var q = parseInt(String(bandId).slice(1), 10);
-        var numeric = SP_QTY_BANDS.filter(function (b) { return typeof b.qty === 'number' && b.qty > 0 && b.id !== 'u5'; })
+        var numeric = SP_QTY_BANDS.filter(function (b) { return typeof b.qty === 'number' && b.qty > 0; })
                                   .sort(function (a, b) { return a.qty - b.qty; });
         for (var j = numeric.length - 1; j >= 0; j--) {
           if (q >= numeric[j].qty) { band = numeric[j]; break; }
@@ -7847,6 +7865,13 @@
       // restore: the chips stay on screen, unselected, and the reveal gate
       // keeps the downstream sections shut until a real band is picked.
       if (!band && String(bandId || '') === 'ns') return;
+      // A draft or link saved when "Under 5" was still a band: the order
+      // minimum is five now, so the smallest real band is the honest landing.
+      if (!band && String(bandId || '') === 'u5') {
+        var smallest = SP_QTY_BANDS.filter(function (b) { return typeof b.qty === 'number' && b.qty > 0; })
+                                   .sort(function (a, b) { return a.qty - b.qty; })[0];
+        if (smallest) band = smallest;
+      }
       if (!band) return;
       spQtyBand = band;
       // A blank chosen before the quantity was held back rather than converted
@@ -7900,10 +7925,6 @@
         var html = '<label style="display:block">' + spTierT('quote.tiers.h', 'Blank quality') + '</label>' +
           '<p style="font-size:.82rem;color:#888;margin:2px 0 10px">' +
           spTierT('quote.tiers.sub', 'Pick a quality tier — we handle the blank. Price updates live; you can order right away.') + '</p>';
-        if (spQtyBand && spQtyBand.id === 'u5') {
-          html += '<div style="font-size:.82rem;background:#fafaf6;border:1px dashed #ccc;border-radius:10px;padding:10px 14px;margin:0 0 10px">' +
-            spTierT('quote.qty.under5note', 'Under 5 pieces is checkout-only — order in a couple of clicks. Quote requests start at 5.') + '</div>';
-        }
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">';
         tiers.forEach(function(t) {
           var from = (typeof t.price_from === 'number') ? ('$' + t.price_from.toFixed(2)) : '';
@@ -9811,6 +9832,8 @@
       // Every value is checked against what is actually ON the page rather
       // than trusted: an unknown garment or band is dropped, not applied, so
       // a mangled or hand-edited link degrades to a normal empty form.
+      // 'u5' stays accepted so an old homepage link still lands somewhere:
+      // spSetQtyBandById maps it onto the smallest real band.
       var URL_BANDS = ['u5', 'b5', 'b10', 'b25', 'b50', 'b100', 'b200'];
       function startFromUrl() {
         var sp;
