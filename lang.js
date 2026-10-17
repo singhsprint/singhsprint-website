@@ -1081,6 +1081,7 @@ var SP_LANG = (function() {
     'cat.cart.meter': { en: '<strong>{n}</strong> of {ordermin} pieces \u00b7 any items count', fr: '<strong>{n}</strong> pi\u00e8ces sur {ordermin} \u00b7 tous les articles comptent' },
     'cat.cart.meter.short': { en: 'Add {short} more', fr: 'Ajoutez-en {short}' },
     'cat.cart.meter.phone': { en: '<strong>{n}</strong>/{ordermin} pieces \u00b7 mix items', fr: '<strong>{n}</strong>/{ordermin} pi\u00e8ces \u00b7 m\u00e9langez' },
+    'cat.cart.met': { en: '\u00b7 minimum of {ordermin} met \u2713', fr: '\u00b7 minimum de {ordermin} atteint \u2713' },
     'cat.cart.meter.cta': { en: 'Add {short} more of anything \u2192', fr: 'Ajoutez {short} de plus, n\u2019importe quoi \u2192' },
     // The detail modal's meter: the order as it would stand AFTER this add.
     'cat.detail.meter.short': { en: 'Your order would be <strong>{n} of {ordermin}</strong> pieces \u2014 add {short} more of this or anything else to reach the minimum.', fr: 'Votre commande serait de <strong>{n} pi\u00e8ces sur {ordermin}</strong> \u2014 ajoutez-en {short}, de ceci ou de n\u2019importe quoi d\u2019autre, pour atteindre le minimum.' },

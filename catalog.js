@@ -209,6 +209,7 @@
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
     if (meter && !meter.met) {
       bar.classList.add('is-short');
+      bar.classList.remove('is-met');
       bar.dataset.short = String(meter.short);
       if (label) label.innerHTML =
         '<span class="cart-bar__meter-long">' +
@@ -224,10 +225,21 @@
     } else {
       bar.classList.remove('is-short');
       delete bar.dataset.short;
+      // Once the order clears the floor the tag STAYS, as met: the bar was
+      // telling the customer about the minimum two adds ago, and a tag that
+      // vanishes the moment it is satisfied reads as the rule having been
+      // dropped, not as the rule having been met (owner, 2026-10-17). Full
+      // pips, same meter, one word changed.
+      if (meter) bar.classList.add('is-met'); else bar.classList.remove('is-met');
       if (label) label.innerHTML =
         '<strong id="cartUnits">' + units + '</strong> ' +
         '<span class="cart-bar__label-suffix" data-i18n="cat.cart.units">' + (_t('cat.cart.units') || 'units in your quote') + '</span>' +
-        '<span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">' + (_t('cat.cart.units.short') || 'in cart') + '</span>';
+        '<span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">' + (_t('cat.cart.units.short') || 'in cart') + '</span>' +
+        (meter
+          ? ' <span class="cart-bar__met">' +
+              (_t('cat.cart.met') || '· minimum of {ordermin} met ✓').replace(/\{ordermin\}/g, meter.min) +
+            '</span><span class="cart-bar__pips" aria-hidden="true">' + pipsHtml(meter) + '</span>'
+          : '');
       if (ctaLong)  ctaLong.textContent  = _t('cat.cart.cta') || 'Continue to quote →';
       if (ctaShort) ctaShort.textContent = _t('cat.cart.cta.short') || 'Quote →';
     }

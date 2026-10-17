@@ -73,7 +73,7 @@ ok('A5 so does the catalogue',
    + 'then returning a literal is the same drift wearing a helper')
 // Named, because "the token appears somewhere" survives any one string being
 // retyped with a bare 5 — which is exactly how copy and gate drift apart.
-const MIN_KEYS = ['fold.note.nomin', 'home.diff.r2.us', 'home.faq.a2', 'sticky.sub',
+const MIN_KEYS = ['fold.note.nomin', 'cat.cart.met', 'home.diff.r2.us', 'home.faq.a2', 'sticky.sub',
                   'whyus.cmp.r2.us', 'cat.hero.meta3', 'about.clients.p2', 'home.hero.sub']
 const typed = MIN_KEYS.filter((k) => {
   const m = langRaw.match(new RegExp("'" + k.replace(/\./g, '\\.') + "':[\\s\\S]{0,2600}?\\},?\\n"))
@@ -312,6 +312,18 @@ console.log('\nG. the catalogue guides toward five of anything')
   // The surfaces that read it.
   const cat = strip(read('catalog.js'))
   ok('G10 the floating cart bar reads the meter', /function renderCartBar[\s\S]{0,1500}spOrderMeter\(/.test(cat))
+  // 2026-10-17 — the tag stays once met. The met branch of renderCartBar
+  // carries the met string AND the pips; the short branch clears is-met.
+  {
+    const body = cat.slice(cat.indexOf('function renderCartBar'), cat.indexOf('function pipsHtml'))
+    const metBranch = body.slice(body.indexOf("} else {"))
+    ok('G10b …and keeps the tag, as met, once the order clears the floor',
+       /cat\.cart\.met/.test(metBranch) && /pipsHtml\(meter\)/.test(metBranch) && /classList\.add\('is-met'\)/.test(metBranch))
+    ok('G10c …the short branch clears is-met and the met branch never adds is-short',
+       /classList\.remove\('is-met'\)/.test(body.slice(0, body.indexOf("} else {"))) && !/is-short'\)/.test(metBranch.replace(/classList\.remove\('is-short'\)/, '')))
+    ok('G10d the met tag is styled and hidden on phones with the pips, both languages',
+       [read('catalog.html'), read('fr/catalog.html')].every((h) => /\.cart-bar__met\{/.test(h) && /\.cart-bar__pips,\.cart-bar__met\{display:none\}/.test(h)))
+  }
   ok('G11 the detail modal reads the meter from ITS OWN quantity, not the page slider',
      /function renderOrderMeter[\s\S]{0,600}detailModalQtyInput[\s\S]{0,300}spOrderMeter\(/.test(cat)
      && !/function renderOrderMeter[\s\S]{0,900}state\.qty/.test(cat))
@@ -350,7 +362,7 @@ console.log('\nG. the catalogue guides toward five of anything')
   ok('G18 …and so is the phone meter label', meterDefault > 0 && meterDefault < mediaAt)
   ok('G19 the phone block shows the short label and hides the pips',
      /@media \(max-width:520px\)\{[\s\S]*?\.cart-bar__meter-short\{display:inline\}[\s\S]*?\n    \}/.test(css)
-     && /@media \(max-width:520px\)\{[\s\S]*?\.cart-bar__pips\{display:none\}/.test(css))
+     && /@media \(max-width:520px\)\{[\s\S]*?\.cart-bar__pips(,\.cart-bar__met)?\{display:none\}/.test(css))
 }
 
 // ── H. the server enforces the same floor ────────────────────────────────

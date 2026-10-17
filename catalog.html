@@ -330,6 +330,8 @@
     .cart-bar__pips,.dm-order-meter__pips{display:inline-flex;gap:3px;vertical-align:middle;margin-left:6px}
     .cart-bar__pips .pip,.dm-order-meter__pips .pip{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.22);display:inline-block}
     .cart-bar__pips .pip.on{background:var(--hi)}
+    .cart-bar__met{opacity:.8;font-weight:500}
+    .cart-bar.is-met .cart-bar__pips .pip.on{background:#4ade80}
     .dm-order-meter{flex-basis:100%;display:flex;align-items:center;gap:10px;font-size:.82rem;line-height:1.4;color:#444;padding:8px 12px;border-radius:10px;background:#f6f5f0}
     .dm-order-meter:empty{display:none}
     .dm-order-meter.is-met{background:#eefaf1;color:#155c33}
@@ -369,7 +371,7 @@
       /* Shorter CTA copy on phones via the data-attr — same href, lighter chrome. */
       .cart-bar__cta .cta-long{display:none}
       .cart-bar__cta .cta-short{display:inline}
-      .cart-bar__meter-long,.cart-bar__pips{display:none}
+      .cart-bar__meter-long,.cart-bar__pips,.cart-bar__met{display:none}
       .cart-bar__meter-short{display:inline}
     }
     .cart-toast{position:fixed;top:84px;right:18px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-size:.85rem;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:70;transform:translateY(-12px);opacity:0;transition:transform .25s,opacity .25s;pointer-events:none}
