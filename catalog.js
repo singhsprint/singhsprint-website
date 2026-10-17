@@ -683,10 +683,12 @@
   // next page. The list is the same two words as quote.js's; keep them in
   // step, and keep them in step with EMBROIDERY_ONLY_GARMENTS in the CRM's
   // lib/domain/registry.
-  var DMCZ_EMBROIDERY_ONLY = { hat: 1, cap: 1 };
+  // The list itself lives inside the SP_PRICE_LOCKUP block below
+  // (SP_EMBROIDERY_ONLY), because the card's price needs it too and that
+  // block is extracted and run on its own by two checkers.
   function dmczEmbroideryOnly(p) {
     var gt = String((p && p.garment_type) || '').toLowerCase();
-    return !!DMCZ_EMBROIDERY_ONLY[gt];
+    return !!SP_EMBROIDERY_ONLY[gt];
   }
 
   function initDmczCustomizer(p) {
@@ -4149,6 +4151,10 @@
    * would only repeat the headline.
    */
   // ===== SP_PRICE_LOCKUP_START ======================================
+  // Garments decorated only by embroidery on this press (owner, 2026-10-17).
+  // Same two words as quote.js's EMBROIDERY_ONLY_GARMENTS and the CRM's
+  // registry; check-embroidery-minimum C1 holds the two pages together.
+  var SP_EMBROIDERY_ONLY = { hat: 1, cap: 1 };
   /**
    * The price on a catalogue card.
    *
@@ -4197,10 +4203,15 @@
     // mirrors SP_EMB_MIN's: a number the caller forgot to pass must not become
     // zero and silently make every quantity look like a short run.
     const few  = qty < (minOrder || 5);
+    // An embroidery-only garment under the embroidery floor is still LISTED —
+    // the owner's rule, 2026-10-17: never make an item disappear at a
+    // quantity, tag it. It shows the price of the smallest run we stitch and
+    // says so, instead of "/each · Flat price at this tier" over a number the
+    // engine would refuse. The floor is the embroidery minimum, which equals
+    // the order minimum today; both are five.
+    const embOnly = !!SP_EMBROIDERY_ONLY[String(p.garment_type || '').toLowerCase()];
+    const embShort = embOnly && few;
     const from = `<span class="price-from" data-i18n="cat.card.from">From</span> `;
-    const main = from + `<strong>$${p.price_from.toFixed(2)}</strong>` +
-      (few ? `<span data-i18n="cat.card.pereach">/each</span>`
-           : `<span data-i18n="cat.card.perunit">/unit</span>`);
 
     // The SMALLEST QUANTITY WE SELL, not the smallest the engine can price.
     // This read ladder[1] and the card said "Just one from $X" on every one
@@ -4226,8 +4237,15 @@
       }
     }
 
+    const headline = (embShort && typeof single === 'number' && single > 0) ? single : p.price_from;
+    const main = from + `<strong>$${headline.toFixed(2)}</strong>` +
+      ((few && !embShort) ? `<span data-i18n="cat.card.pereach">/each</span>`
+                          : `<span data-i18n="cat.card.perunit">/unit</span>`);
+
     let sub;
-    if (few) {
+    if (embShort) {
+      sub = `<span class="price-tag price-tag--min" data-i18n="cat.card.embmin">Minimum ${floor} \u00b7 embroidery</span>`;
+    } else if (few) {
       sub = `<span data-i18n="cat.card.flat-no-min">Flat price at this tier</span>`;
     } else if (typeof single === 'number' && single > 0 && single !== p.price_from) {
       // Same caveat as the headline: this rung is the cheapest colourway's

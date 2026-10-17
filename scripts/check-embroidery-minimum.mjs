@@ -195,7 +195,7 @@ const listOf = (src, name) => {
   return m ? m[1].split(',').map((x) => x.split(':')[0].trim()).filter(Boolean).sort() : null
 }
 const quoteList = listOf(code, 'EMBROIDERY_ONLY_GARMENTS')
-const catList = listOf(cat, 'DMCZ_EMBROIDERY_ONLY')
+const catList = listOf(cat, 'SP_EMBROIDERY_ONLY')
 eq('C1 the catalogue and the quote page agree on which garments are embroidery-only', catList, quoteList)
 ok('C2 …and the list is not empty', Array.isArray(quoteList) && quoteList.length > 0)
 ok('C3 the catalogue modal opens an embroidery-only garment on Embroidery',

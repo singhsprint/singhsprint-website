@@ -168,6 +168,30 @@ function main() {
     }
   }
 
+  // ── An embroidery-only garment under the floor is TAGGED, not mispriced ──
+  // The owner's rule, 2026-10-17: never make an item disappear at a quantity;
+  // tag it. A cap at the 1 rung used to print the stale print-ladder rung as
+  // "/each · Flat price at this tier" — a number the engine refuses. It must
+  // print the smallest run we stitch, per unit, with the minimum on it.
+  {
+    const cap = { garment_type: 'hat', price_from: 36.95, prices_by_qty: { 1: 36.95, 5: 28.95, 10: 21.95 } }
+    const h1 = priceLockup(cap, 1, 5)
+    eq('cap at 1: the headline is the five-piece price, not the stale 1 rung', figures(h1)[0]?.amount, '28.95')
+    eq('cap at 1: priced per unit, not "/each"', /cat\.card\.perunit/.test(h1) && !/cat\.card\.pereach/.test(h1), true)
+    eq('cap at 1: carries the minimum tag', /cat\.card\.embmin/.test(h1) && /Minimum 5/.test(h1), true)
+    eq('cap at 1: does not claim a flat price at this tier', /flat-no-min/.test(h1), false)
+    const h5 = priceLockup(cap, 5, 5)
+    eq('cap at 5: no tag, ordinary card', /cat\.card\.embmin/.test(h5), false)
+    const tee = { garment_type: 'tshirt', price_from: 24.95, prices_by_qty: { 1: 24.95, 5: 18.95 } }
+    const t1 = priceLockup(tee, 1, 5)
+    eq('tee at 1: still /each with its own price', figures(t1)[0]?.amount === '24.95' && /cat\.card\.pereach/.test(t1), true)
+    eq('tee at 1: no embroidery tag', /cat\.card\.embmin/.test(t1), false)
+    // A cap whose ladder has NO rung at or above the floor falls back to its
+    // own price_from rather than printing nothing or NaN.
+    const bare = { garment_type: 'cap', price_from: 30.95 }
+    eq('cap with no ladder: still prints a price', figures(priceLockup(bare, 1, 5))[0]?.amount, '30.95')
+  }
+
   if (problems.length) {
     console.error(`check-price-lockup: ${problems.length} problem(s)\n`)
     for (const p of problems) console.error(`  - ${p}\n`)

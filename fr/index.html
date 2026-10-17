@@ -1195,15 +1195,20 @@
         // fails, so it must agree with it. The qty 1-4 row is
         // the qty=5 tier price plus the per-garment
         // micro_run_premium_cad ($6 tshirt, $7 hoodie, $4 longsleeve).
-        // Hat has no sub-5 premium (embroidery 5-piece minimum), so
-        // the [1-4] row repeats the [5-9] number for the slider's
-        // sake — the live API + display layer clamp display qty to 5.
-        // Updated 2026-05-24.
+        // Hat has no sub-5 price at all (embroidery 5-piece minimum on
+        // every garment, owner 2026-10-17): the engine refuses under five,
+        // the live endpoint repeats the [5-9] number in the [1-4] row, and
+        // effectiveQty() below clamps the display to 5 and says
+        // "Embroidered · 5-piece minimum" — the cap stays on the slider,
+        // tagged, never hidden. This row has to match that: it read 36.95,
+        // the old print-ladder micro-run rung, and check-homepage-tiers
+        // flagged the live 28.95 as "below the fallback" when it was the
+        // fallback that was stale.
         var TIERS = {
           tshirt:    [[1,4,24.95],[5,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,199,11.95],[200,99999,9.95]],
           hoodie:    [[1,4,44.95],[5,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,199,26.95],[200,99999,24.95]],
           longsleeve:[[1,4,30.95],[5,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,199,17.95],[200,99999,14.95]],
-          cap:       [[1,4,36.95],[5,9,28.95],[10,24,21.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,14.95]]
+          cap:       [[1,4,28.95],[5,9,28.95],[10,24,21.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,14.95]]
         };
         // Hit the live tier endpoint once and overwrite TIERS in place
         // so subsequent recalc() calls use the fresh numbers. Done

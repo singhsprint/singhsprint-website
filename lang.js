@@ -1074,6 +1074,7 @@ var SP_LANG = (function() {
     'cat.card.pereach': { en: '/each', fr: '/chacun' },
     'cat.card.justone': { en: '{ordermin} pieces', fr: '{ordermin} pi\u00e8ces' },
     'cat.card.justone-from': { en: '{ordermin} from', fr: '{ordermin} \u00e0 partir de' },
+    'cat.card.embmin': { en: 'Minimum {ordermin} \u00b7 embroidery', fr: 'Minimum {ordermin} \u00b7 broderie' },
     'cat.card.flat-no-min': { en: 'Flat price at this tier', fr: 'Prix fixe \u00e0 ce palier' },
     'cat.detail.embmin': { en: 'Needs {min}+ · add {n} more', fr: 'Minimum {min} · ajoutez-en {n}' },
     'cat.detail.runnote': { en: 'run of {run} with the {n} already in your order', fr: 's\u00e9rie de {run} avec les {n} d\u00e9j\u00e0 dans votre commande' },
