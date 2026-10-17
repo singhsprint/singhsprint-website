@@ -80,6 +80,17 @@ var SP_LANG = (function() {
     'footer.location': { en: 'West Island, Montreal', fr: 'Ouest-de-l\'Île, Montréal' },
     'footer.rights': { en: '2026 Singhs Print. All rights reserved.', fr: '2026 Singhs Print. Tous droits réservés.' },
     'footer.tagline': { en: 'Custom Apparel Printing | Montreal, QC', fr: 'Impression de vêtements personnalisés | Montréal, QC' },
+    // Mailing list (popup, footer form, quote/checkout boxes). The opt-in
+    // sentences are sent to the CRM verbatim as the CASL consent record, so
+    // keep them in step with CONSENT_TEXT in the CRM's lib/mailing/optin.ts.
+    'mail.optin.email': { en: "Yes, email me deals and new drops from Singh's Print. Unsubscribe anytime.", fr: "Oui, envoyez-moi les promos et nouveautés de Singh's Print par courriel. Désabonnement en tout temps." },
+    'mail.optin.sms':   { en: "Yes, text me deals from Singh's Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.", fr: "Oui, envoyez-moi les promos de Singh's Print par texto. Quelques textos par mois. Répondez STOP pour vous désabonner. Des frais peuvent s'appliquer." },
+    'mail.phone.ph':    { en: 'Mobile number (optional)', fr: 'Cellulaire (facultatif)' },
+    'footer.news.h':    { en: 'Deals and new drops', fr: 'Promos et nouveautés' },
+    'footer.news.p':    { en: 'A couple of emails a month. Unsubscribe anytime.', fr: 'Quelques courriels par mois. Désabonnement en tout temps.' },
+    'footer.news.cta':  { en: 'Sign up', fr: "S'inscrire" },
+    'footer.news.ok':   { en: "You're in. Check your inbox soon.", fr: 'Vous êtes inscrit. À bientôt dans votre boîte.' },
+    'footer.news.err':  { en: "That didn't go through. Try again?", fr: "Ça n'a pas fonctionné. Réessayer ?" },
     'footer.privacy': { en: 'Privacy', fr: 'Confidentialité' },
     'footer.cookies': { en: 'Cookies', fr: 'Témoins' },
     'footer.terms': { en: 'Terms', fr: 'Conditions' },
@@ -1184,6 +1195,10 @@ var SP_LANG = (function() {
     'quote.cart.item.remove': { en: 'Remove', fr: 'Retirer' },
     'quote.cart.item.priceloading': { en: 'Price loading…', fr: 'Chargement du prix…' },
     'quote.cart.combo': { en: 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.', fr: 'Prix de volume débloqué : {n} pièces combinées dans votre commande — chaque article obtient le tarif de {n} pièces.' },
+    // Per-press variants, used only when the cart mixes printing and
+    // embroidery — the two never pool, so "every item" would be a lie there.
+    'quote.cart.combo.dtf': { en: 'Volume pricing unlocked: {n} printed pieces combined — every printed item gets the {n}-piece rate.', fr: 'Prix de volume débloqué : {n} pièces imprimées combinées — chaque article imprimé obtient le tarif de {n} pièces.' },
+    'quote.cart.combo.emb': { en: 'Volume pricing unlocked: {n} embroidered pieces combined — every embroidered item gets the {n}-piece rate.', fr: 'Prix de volume débloqué : {n} pièces brodées combinées — chaque article brodé obtient le tarif de {n} pièces.' },
     'quote.cart.item.comborate': { en: '{n}-pc rate', fr: 'tarif {n} pcs' },
     // Shown when a line's own pieces are under the bulk floor but the same
     // item + design reaches it across colours — the customer needs to see

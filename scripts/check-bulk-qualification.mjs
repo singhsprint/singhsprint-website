@@ -265,6 +265,26 @@ function blockB(rule) {
     { product_id: TEE, color_id: 'white', qty: 2, placements: ['left-chest'], decoration_type: 'dtf', ...A },
   ])
   eq('B the neck tag does not split a design group', tagCtx.pools.dtf, 5)
+
+  // The "volume pricing unlocked" banner may only announce a pool that is
+  // actually priced. Five printed tees beside twenty embroidered hoodies is
+  // two presses with one run each: nothing pools, no banner. The old banner
+  // added the presses together and promised "every item gets the 25-piece
+  // rate" on exactly that cart.
+  const tee5 = { product_id: TEE, color_id: 'white', qty: 5, placements: ['left-chest'], decoration_type: 'dtf', ...A }
+  const hoodP = { product_id: HOOD, color_id: 'black', qty: 20, placements: ['left-chest'], decoration_type: 'dtf', ...A }
+  const hoodE = { product_id: HOOD, color_id: 'black', qty: 20, placements: ['left-chest'], decoration_type: 'embroidery', ...A }
+  eq('B banner: two presses, one run each — nothing pools, no banner',
+    rule.spPooledPresses([tee5, hoodE]), [])
+  eq('B banner: one press, two runs — one banner with that pool',
+    rule.spPooledPresses([tee5, hoodP]), [{ press: 'dtf', pool: 25, groups: 2 }])
+  eq('B banner: a run that has not qualified is not a pooled run',
+    rule.spPooledPresses([{ ...tee5, qty: 3 }, hoodP]), [])
+  eq('B banner: two colours of one print are ONE run, so no banner on their own',
+    rule.spPooledPresses([{ ...tee5, qty: 3 }, { ...tee5, color_id: 'black', qty: 2 }]), [])
+  eq('B banner: each press pools on its own',
+    rule.spPooledPresses([tee5, hoodP, hoodE, { ...hoodE, product_id: TEE, qty: 6 }]),
+    [{ press: 'dtf', pool: 25, groups: 2 }, { press: 'embroidery', pool: 26, groups: 2 }])
 }
 
 // ── C. the cart's merge key ───────────────────────────────────────────────
@@ -383,7 +403,7 @@ async function blockE(totals) {
 
 // ── run ───────────────────────────────────────────────────────────────────
 const rule = loadBlock(QUOTE, '// ===== SP_BULK_RULE_START', '// ===== SP_BULK_RULE_END',
-  ['spDesignKey', 'spBulkMethodKey', 'spBulkGroupKey', 'spLineQty', 'spBulkContext', 'spLinePricing', 'spItemTierQty'],
+  ['spDesignKey', 'spBulkMethodKey', 'spBulkGroupKey', 'spLineQty', 'spBulkContext', 'spLinePricing', 'spItemTierQty', 'spPooledPresses'],
   'the bulk rule in quote.js')
 const lineKey = loadBlock(CATALOG, '// ===== SP_CART_LINE_KEY_START', '// ===== SP_CART_LINE_KEY_END',
   ['spCartDesignKey', 'spCartLineKey'], 'the cart line key in catalog.js')

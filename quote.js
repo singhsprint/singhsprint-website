@@ -5920,6 +5920,23 @@
     function spItemTierQty(q, pool) {
       return (q >= 5 && pool > q) ? pool : 0;
     }
+    // The presses on which pooling is actually HAPPENING: two or more
+    // qualified runs sharing one press. renderCartList's "volume pricing
+    // unlocked" banner reads this, so it can only ever announce a pool that
+    // exists. It used to add every press together and tell a cart of five
+    // printed tees and twenty embroidered hoodies that "every item gets the
+    // 25-piece rate" — a number no line in that cart was priced at.
+    function spPooledPresses(items) {
+      var ctx = spBulkContext(items);
+      var groupsByPress = {};
+      Object.keys(ctx.groups).forEach(function (k) {
+        if (ctx.groups[k] < 5) return;
+        var m = k.split('|')[1];
+        groupsByPress[m] = (groupsByPress[m] || 0) + 1;
+      });
+      return Object.keys(ctx.pools).filter(function (m) { return (groupsByPress[m] || 0) >= 2; })
+        .map(function (m) { return { press: m, pool: ctx.pools[m], groups: groupsByPress[m] }; });
+    }
     // ===== SP_BULK_RULE_END
 
     // ---- Free-tee promo (2026-09-09) -----------------------------------
@@ -6279,21 +6296,23 @@
       // Combined-order volume banner: when two or more 5+ lines pool, say
       // so plainly — it's a real discount and the reason to add more items.
       var _bulkCtx = spBulkContext(items);
-      // Count qualified GROUPS, not lines: two colours of one print are one
-      // run and must not read as two pooled items.
-      var comboGroups = Object.keys(_bulkCtx.groups).filter(function (k) {
-        return _bulkCtx.groups[k] >= 5;
-      });
-      var comboPool = 0;
-      Object.keys(_bulkCtx.pools).forEach(function (m) { comboPool += _bulkCtx.pools[m]; });
-      var comboLines = comboGroups.length;
-      var comboStrip = '';
-      if (comboLines >= 2 && comboPool >= 5) {
-        var comboMsg = (_t('quote.cart.combo') || 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.')
-          .replace(/\{n\}/g, comboPool);
-        comboStrip = '<div id="spComboStrip" style="flex-basis:100%;display:flex;align-items:center;gap:8px;background:#eefaf1;border:1px solid #bfe8cd;border-radius:10px;padding:9px 12px;font-size:.8rem;color:#155c33;font-weight:600">' +
+      // One banner per press that is actually pooling (two or more qualified
+      // runs on it). A cart that mixes presses gets the press named, so
+      // "every item" is never said about items that did not get the rate.
+      var _pooled = spPooledPresses(items);
+      var _mixed = Object.keys(_bulkCtx.pools).length > 1 ||
+        items.some(function (it) { return !it.is_byo && spBulkMethodKey(it) !== (_pooled[0] || {}).press; });
+      var comboStrip = _pooled.map(function (pp) {
+        var key = !_mixed ? 'quote.cart.combo' : (pp.press === 'embroidery' ? 'quote.cart.combo.emb' : 'quote.cart.combo.dtf');
+        var fallback = !_mixed
+          ? 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.'
+          : (pp.press === 'embroidery'
+              ? 'Volume pricing unlocked: {n} embroidered pieces combined — every embroidered item gets the {n}-piece rate.'
+              : 'Volume pricing unlocked: {n} printed pieces combined — every printed item gets the {n}-piece rate.');
+        var comboMsg = (_t(key) || fallback).replace(/\{n\}/g, pp.pool);
+        return '<div class="spComboStrip" data-press="' + pp.press + '" style="flex-basis:100%;display:flex;align-items:center;gap:8px;background:#eefaf1;border:1px solid #bfe8cd;border-radius:10px;padding:9px 12px;font-size:.8rem;color:#155c33;font-weight:600">' +
           '<span aria-hidden="true" style="font-size:.9rem">✓</span><span>' + comboMsg + '</span></div>';
-      }
+      }).join('');
       host.innerHTML = comboStrip + items.map(function(it, idx) {
         if (it.is_jersey) return jerseyCartItemHtml(it, idx);
         if (it.is_byo)    return byoCartItemHtml(it, idx);
