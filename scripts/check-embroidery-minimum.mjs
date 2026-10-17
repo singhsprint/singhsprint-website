@@ -213,8 +213,10 @@ ok('C6 the print card on a cap is blocked, with the same sentence the quote page
 // card ladder, the "From" price and checkout at once.
 if (!process.argv.includes('--skip-live')) {
   const CAP = '3269ef37-3963-43e7-b502-6f10d2566423' // Richardson 112, garment_type hat
+  // At FIVE — a quantity the engine will sell. At one, every method is now
+  // refused (C8), which agrees with itself but is not what this asks.
   const price = async (m) => {
-    const r = await fetch(`https://singhsprint-crm.vercel.app/api/pricing?product_id=${CAP}&qty=1&sides=1&decoration_method=${m}&embroidery_placements=cap-front`)
+    const r = await fetch(`https://singhsprint-crm.vercel.app/api/pricing?product_id=${CAP}&qty=5&sides=1&decoration_method=${m}&embroidery_placements=cap-front`)
     const d = await r.json().catch(() => ({}))
     return typeof d.unit_price === 'number' ? d.unit_price : null
   }
