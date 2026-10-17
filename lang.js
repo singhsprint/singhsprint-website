@@ -1089,7 +1089,6 @@ var SP_LANG = (function() {
     'cat.cart.meter.cta': { en: 'Add {short} more of anything \u2192', fr: 'Ajoutez {short} de plus, n\u2019importe quoi \u2192' },
     // The detail modal's meter: the order as it would stand AFTER this add.
     'cat.detail.meter.short': { en: 'Your order would be <strong>{n} of {ordermin}</strong> pieces \u2014 add {short} more of this or anything else to reach the minimum.', fr: 'Votre commande serait de <strong>{n} pi\u00e8ces sur {ordermin}</strong> \u2014 ajoutez-en {short}, de ceci ou de n\u2019importe quoi d\u2019autre, pour atteindre le minimum.' },
-    'cat.detail.meter.met': { en: 'Order minimum met \u2014 <strong>{n}</strong> pieces across your order.', fr: 'Minimum atteint \u2014 <strong>{n}</strong> pi\u00e8ces dans votre commande.' },
     // Said next to the meter only while THIS line is under five: the two
     // fives are different rules and the customer deserves both in one breath.
     'cat.detail.meter.bulk': { en: '{bulk}+ of this item with one design gets the bulk rate.', fr: '{bulk} et plus de cet article avec un seul visuel : tarif de volume.' },

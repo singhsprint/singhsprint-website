@@ -315,6 +315,8 @@ console.log('\nG. the catalogue guides toward five of anything')
   ok('G11 the detail modal reads the meter from ITS OWN quantity, not the page slider',
      /function renderOrderMeter[\s\S]{0,600}detailModalQtyInput[\s\S]{0,300}spOrderMeter\(/.test(cat)
      && !/function renderOrderMeter[\s\S]{0,900}state\.qty/.test(cat))
+  ok('G11b …and says nothing once the minimum is met — a meter is for a gap',
+     /if \(meter\.met\) \{ host\.className = 'dm-order-meter'; host\.innerHTML = ''; return; \}/.test(cat))
   ok('G12 the modal re-renders the meter on every quantity change',
      /function syncDetailAddBtn[\s\S]{0,600}renderOrderMeter\(\)/.test(cat))
   const catHtml = read('catalog.html')

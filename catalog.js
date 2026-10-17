@@ -247,11 +247,13 @@
     const adding = Math.max(0, parseInt(inp && inp.value, 10) || 0);
     const meter = window.spOrderMeter(SinghsCart.totalUnits(), adding);
     const _t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    // The meter exists to close a gap. Once there is none it says nothing:
+    // "Order minimum met — 25 pieces across your order" over a 25-piece line
+    // was a sentence about a problem the customer never had (owner,
+    // 2026-10-17). An empty host is display:none.
+    if (meter.met) { host.className = 'dm-order-meter'; host.innerHTML = ''; return; }
     let msg;
-    if (meter.met) {
-      msg = (_t('cat.detail.meter.met') || 'Order minimum met — <strong>{n}</strong> pieces across your order.')
-        .replace(/\{n\}/g, meter.total);
-    } else {
+    {
       msg = (_t('cat.detail.meter.short') || 'Your order would be <strong>{n} of {ordermin}</strong> pieces — add {short} more of this or anything else to reach the minimum.')
         .replace(/\{n\}/g, meter.total).replace(/\{ordermin\}/g, meter.min).replace(/\{short\}/g, meter.short);
     }
