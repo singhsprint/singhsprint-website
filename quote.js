@@ -3795,6 +3795,21 @@
           var v = sp.get(k); if (v) utm[k] = v;
         });
       } catch (e) {}
+      // The customer's own date (2026-10-23). The "When do you need these
+      // by?" field and the rush checkbox sit on this same contact step, and
+      // the quote path has sent them since 2026-05-24 — but the order path
+      // never did, so 0 of 9 web orders in the CRM carried a date and the
+      // shop could not see what the person was expecting. Same keys, same
+      // shapes as the quote submit: needed_by 'YYYY-MM-DD' or null, is_rush
+      // boolean. The CRM passes meta straight onto the inbound request and
+      // shows it as "asked for" beside the ready-date picker.
+      try {
+        var needByEl = document.getElementById('needByDate');
+        var rushEl   = document.getElementById('rushFlag');
+        var nb = needByEl && /^\d{4}-\d{2}-\d{2}$/.test(needByEl.value || '') ? needByEl.value : null;
+        utm.needed_by = nb;
+        utm.is_rush   = !!(rushEl && rushEl.checked);
+      } catch (e) {}
 
       // Disable both possible triggers (panel button + bottom order button)
       // to prevent a double-submit; the overlay carries the progress message.
