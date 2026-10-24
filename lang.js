@@ -1362,9 +1362,16 @@ var SP_LANG = (function() {
     'quote.contact.delivery.opt2': { en: 'Montreal delivery', fr: 'Livraison à Montréal' },
     'quote.contact.delivery.opt3': { en: 'Shipping (Canada-wide)', fr: 'Expédition (partout au Canada)' },
     'quote.contact.needby': { en: 'When do you need these by? <span style="color:#888;font-weight:400">(optional)</span>', fr: 'Pour quand en avez-vous besoin ? <span style="color:#888;font-weight:400">(facultatif)</span>' },
-    'quote.contact.needby.hint': { en: 'Standard turnaround is 5-10 business days from approval. Need it sooner? Rush in 3 days is 25% extra.', fr: 'Le délai standard est de 5 à 10 jours ouvrables après l\'approbation. Besoin plus tôt? Le service accéléré en 3 jours coûte 25 % de plus.' },
+    'quote.contact.needby.hint': { en: 'The day you need them in hand. Within 2–4 business days? Toggle Rush — rush orders are confirmed by phone, not paid online.', fr: 'Le jour où il vous les faut en main. D\'ici 2 à 4 jours ouvrables ? Activez Urgent — les commandes urgentes sont confirmées par téléphone, pas payées en ligne.' },
     'quote.contact.rushlabel': { en: 'Rush?', fr: 'Urgent ?' },
-    'quote.contact.rush': { en: 'This is a rush order — please prioritize', fr: 'Commande urgente — veuillez prioriser' },
+    'quote.contact.rush': { en: 'Rush — I need these within 2–4 business days', fr: 'Urgent — j\'en ai besoin d\'ici 2 à 4 jours ouvrables' },
+    // Rush mode on the order step (2026-10-24): a rush cannot be paid online.
+    // The pay button goes away; the quote button becomes the request, and the
+    // note says we call. No date and no price are promised here — the call is
+    // where both get confirmed.
+    'quote.rush.quotebtn': { en: 'Send my rush request — we\'ll call you', fr: 'Envoyer ma demande urgente — on vous appelle' },
+    'quote.rush.note': { en: 'Rush orders aren\'t paid online. Send this and we\'ll call you at the first chance we get to confirm the date and the price.', fr: 'Les commandes urgentes ne se paient pas en ligne. Envoyez ceci et on vous appelle à la première occasion pour confirmer la date et le prix.' },
+    'quote.rush.blocked': { en: 'Rush orders aren\'t paid online — send the request and we\'ll call you to confirm the date and the price.', fr: 'Les commandes urgentes ne se paient pas en ligne — envoyez la demande et on vous appelle pour confirmer la date et le prix.' },
     'quote.cart.addmore.hint': { en: 'Each item can have its own print method and sizes — mix DTG and embroidery freely.', fr: 'Chaque article peut avoir sa propre méthode d\'impression et ses tailles — combinez DTG et broderie librement.' },
     'quote.promoApplied.body': { en: 'Locked to this quote. Your free tee is added once we confirm 15+ units — no code needed.', fr: 'Réservé à cette soumission. Votre t-shirt gratuit est ajouté dès la confirmation de 15 unités ou plus — aucun code requis.' },
     'quote.contact.hear': { en: 'How did you hear about us?', fr: 'Comment avez-vous entendu parler de nous ?' },

@@ -3611,7 +3611,53 @@
       return { email: !!(e && e.checked), sms: !!(t && t.checked) };
     }
 
+    // ───── Rush mode (2026-10-24) ─────────────────────────────────────
+    // The rush toggle means "within 2–4 business days". A rush is not paid
+    // online: the shop confirms the date and the price on a call. So when
+    // the toggle is on, the Order & Pay button (and the legacy pay button)
+    // disappear, the quote button becomes the rush request, and the note
+    // says we call. Off again restores every original label. handlePayment
+    // refuses too, in case a stale button is still on screen.
+    function spRushOn() {
+      var el = document.getElementById('rushFlag');
+      return !!(el && el.checked);
+    }
+    function spApplyRushMode() {
+      var on = spRushOn();
+      ['orderPayBtn', 'quoteOrderNote', 'quoteCtaDivider', 'payButton'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (on) { if (el.dataset._spDisp == null) el.dataset._spDisp = el.style.display || ''; el.style.display = 'none'; }
+        else if (el.dataset._spDisp != null) { el.style.display = el.dataset._spDisp; delete el.dataset._spDisp; }
+      });
+      var btnSpan = document.querySelector('#quoteInsteadBtn span');
+      var note    = document.getElementById('quoteLeadNote');
+      if (btnSpan) {
+        if (on) { if (btnSpan.dataset._spText == null) btnSpan.dataset._spText = btnSpan.textContent; btnSpan.textContent = spByoT('quote.rush.quotebtn', "Send my rush request — we'll call you"); }
+        else if (btnSpan.dataset._spText != null) { btnSpan.textContent = spByoT('quote.order.quoteinstead', btnSpan.dataset._spText); delete btnSpan.dataset._spText; }
+      }
+      if (note) {
+        if (on) { if (note.dataset._spText == null) note.dataset._spText = note.textContent; note.textContent = spByoT('quote.rush.note', "Rush orders aren't paid online. Send this and we'll call you at the first chance we get to confirm the date and the price."); }
+        else if (note.dataset._spText != null) { note.textContent = spByoT('quote.lead.note', note.dataset._spText); delete note.dataset._spText; }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      var rush = document.getElementById('rushFlag');
+      if (rush) rush.addEventListener('change', spApplyRushMode);
+      spApplyRushMode();
+    });
+    // The language switcher rewrites every data-i18n node, which would put
+    // the original labels back on a rush that is still toggled on.
+    document.addEventListener('sp-lang-change', function () { spApplyRushMode(); });
+
     function handlePayment() {
+      if (spRushOn()) {
+        alert(spByoT('quote.rush.blocked', "Rush orders aren't paid online — send the request and we'll call you to confirm the date and the price."));
+        spApplyRushMode();
+        var q = document.getElementById('quoteInsteadBtn');
+        if (q) { q.focus(); q.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        return;
+      }
       var nameEl    = document.getElementById('name');
       var emailEl   = document.getElementById('email');
       var phoneEl   = document.getElementById('phone');
