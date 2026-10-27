@@ -206,6 +206,13 @@
       }
     }
 
+    // One print per panel. A left chest and a full front are both the front
+    // of the garment; picking one is choosing the size of the front print,
+    // not adding a second. Same for the two backs. Until 2026-10-27 all five
+    // could be on at once, and the engine priced "left chest + full front"
+    // as two sides ($13.95 at 90, measured) for a job the press cannot run.
+    var SP_BYO_PANEL = { 'left-chest': 'front', 'full-front': 'front', 'back-top': 'back', 'back-full': 'back', 'left-sleeve': 'sleeve' };
+
     function spByoTogglePlacement(id) {
       var i = spByoPlacements.indexOf(id);
       if (i >= 0) {
@@ -213,6 +220,8 @@
         // not a thing we can price or produce.
         if (spByoPlacements.length > 1) spByoPlacements.splice(i, 1);
       } else {
+        var panel = SP_BYO_PANEL[id];
+        spByoPlacements = spByoPlacements.filter(function (p) { return SP_BYO_PANEL[p] !== panel; });
         spByoPlacements.push(id);
       }
       spByoRenderPlacements();
@@ -8630,13 +8639,25 @@
           });
           var sur = (typeof computeSizeSurcharge === 'function') ? computeSizeSurcharge() : { surchargeTotal: 0 };
           var totalQty = parseInt((fd.get('total_quantity') || '0'), 10) || 0;
+          // The cart knows its own count; the hidden size-grid total does not
+          // see a BYO line (no sizes) and read 0 for 30 hoodies.
+          if (typeof spLiveTotalQty === 'function' && typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
+            totalQty = spLiveTotalQty() || totalQty;
+          }
           var liveTotalEl = document.getElementById('livePriceTotal');
           var estimatedTotal = 0;
           if (liveTotalEl) {
             var m = (liveTotalEl.textContent || '').match(/[0-9]+\.?[0-9]*/);
             if (m) estimatedTotal = parseFloat(m[0]) || 0;
           }
-          var isBYO = (fd.get('garment_source') || '') === 'BYOG';
+          // Customer-supplied garments: the old "garment source" card, OR a
+          // cart made only of BYO lines (the line builder, 2026-09-08). The
+          // builder never touches the card, so until 2026-10-27 a cart of
+          // the customer's own hoodies arrived as we_supply with qty 0 —
+          // measured on the live page: total_qty read the empty size grid.
+          var cartItemsForFacts = (typeof SinghsCart !== 'undefined') ? SinghsCart.read().items : [];
+          var cartAllByo = cartItemsForFacts.length > 0 && cartItemsForFacts.every(function (it) { return it && it.is_byo; });
+          var isBYO = (fd.get('garment_source') || '') === 'BYOG' || cartAllByo;
           // Promo slug — set when the visitor arrived from the homepage
           // offer popup (/quote?promo=…). Pull from URL first, fall back to
           // the hidden input the page already stamps on DOMContentLoaded.
@@ -8658,7 +8679,10 @@
             total_qty:       totalQty,
             num_sides:       parseInt(fd.get('print_sides') || '1', 10) || 1,
             estimated_total: estimatedTotal,
-            notes:           fd.get('details') || null,
+            // The customer's note, plus what they are sending us, spelled out
+            // for the rep (spByoNotesSummary): a box is arriving and this is
+            // what is in it.
+            notes:           ((fd.get('details') || '') + (typeof spByoNotesSummary === 'function' ? spByoNotesSummary() : '')).trim() || null,
             cart_items:      items,
             size_breakdown:  sizeBreakdown,
             // Customer-uploaded designs — one entry per placement the
