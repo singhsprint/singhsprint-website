@@ -763,6 +763,7 @@ function loadNav() {
         { en: 'Construction & trades',   fr: 'Construction & métiers',     href: BASE + '/industries/construction-workwear' },
         { en: 'Restaurant & hospitality',fr: 'Restauration & hôtellerie',  href: BASE + '/industries/restaurant-hospitality-uniforms' },
         { en: 'Corporate & tech swag',   fr: 'Entreprise & tech swag',     href: BASE + '/industries/corporate-tech-swag' },
+        { en: 'Client gift boxes',       fr: 'Boîtes-cadeaux clients',     href: BASE + '/gifts' },
         { en: 'Charity & events',        fr: 'Caritatif & événements',     href: BASE + '/industries/charity-events-fundraisers' },
         { en: 'Schools & sports',        fr: 'Écoles & équipes sportives', href: BASE + '/industries/schools-sports-teams' }
       ]
@@ -794,6 +795,9 @@ function loadNav() {
     // — Drops is a new revenue channel and deserves the eyeball-
     // grabbing position, not buried after the niche programs.
     { en: 'Drops',     fr: 'Drops',     i18n: 'nav.drops',     href: BASE + '/shop' },
+    // 2026-10-27 — client gift boxes (docs/gift-box in the CRM repo). Landing
+    // here; the builder and the recipient pages live on pay.singhsprint.com.
+    { en: 'Gift boxes', fr: 'Boîtes-cadeaux', i18n: 'nav.gifts', href: BASE + '/gifts' },
     // SEO guides hub — grows weekly via the scheduled "draft a guide" task.
     { en: 'Guides',    fr: 'Guides',    i18n: 'nav.guides',    href: BASE + '/guides/' },
     { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' },
