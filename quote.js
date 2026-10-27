@@ -296,6 +296,10 @@
         var el = document.getElementById(id);
         if (el) el.style.display = disp;
       });
+      // The standalone "Already have garments? — Bring Your Own" card is the
+      // shortcut INTO this builder. Once the builder is open it only repeats
+      // the product-type bar above it (owner's screenshot, 2026-10-27).
+      document.querySelectorAll('.byo-standalone').forEach(function (g) { g.style.display = disp; });
       try {
         document.querySelectorAll('.form-group, .color-section').forEach(function (g) {
           var lbl = g.querySelector('label');
