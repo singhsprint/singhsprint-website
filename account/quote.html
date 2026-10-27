@@ -140,6 +140,7 @@
 <!-- Shared site chrome + Supabase client setup. Same order as orders.html. -->
 <script src="/components.js" defer></script>
 <script src="/lang.js" defer></script>
+<script src="/line-presentation.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/account/config.js" defer></script>
 <script src="/account/auth.js" defer></script>
@@ -328,9 +329,12 @@
     var sizeKeys = Object.keys(sizes).filter(function(k){ return Number(sizes[k]) > 0; });
     var unitPrice = it.unit_price != null ? Number(it.unit_price) : 0;
     var lineTotal = unitPrice * qty;
-    var locationsLabel = Array.isArray(it.print_locations) && it.print_locations.length
-      ? it.print_locations.join(', ')
-      : null;
+    // The print first, the blank second (/line-presentation.js, the same
+    // rule as the CRM's emails and order page). Raw placement keys like
+    // 'back-across' reached customers here until 2026-10-27.
+    var line = (window.SP_LINE && window.SP_LINE.describeLine) ? window.SP_LINE.describeLine(it) : null;
+    var titleText = line ? line.headline : (it.garment_type || 'Item');
+    var onWhat = line ? line.onWhat : (it.color || '');
 
     var editingDisabled = paidInFull;
 
@@ -338,12 +342,11 @@
       '<div class="item" data-line-id="' + esc(it.id || idx) + '">' +
         '<div class="item__head">' +
           '<div>' +
-            '<div class="item__title">' + esc(it.garment_type || 'Item') + '</div>' +
+            '<div class="item__title">' + esc(titleText) + '</div>' +
+            (onWhat ? '<div class="item__sub">on ' + esc(onWhat) + '</div>' : '') +
             '<div class="item__sub">' +
-              (it.color ? esc(it.color) + ' · ' : '') +
               (qty ? qty + ' pcs · ' : '') +
               money(unitPrice) + '/unit' +
-              (locationsLabel ? ' · ' + esc(locationsLabel) : '') +
             '</div>' +
           '</div>' +
           '<div class="item__price">' + money(lineTotal) + '</div>' +

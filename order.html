@@ -109,7 +109,7 @@
       var dict = {
         'New': 'Nouvelle', 'In review': 'En révision', 'Contacted': 'Contactée',
         'Converted to order': 'Convertie en commande', 'Closed': 'Fermée',
-        'Quote builder': 'Soumission', 'Bring-your-own': 'Apportez le vôtre',
+        'Quote builder': 'Soumission', 'Bring-your-own': 'Apportez le vôtre', 'on': 'sur',
         'RFP': 'Appel d\'offres', 'Pricing PDF': 'PDF de prix',
         'Inkwear partnership': 'Partenariat Inkwear',
         'Want this again?': 'Vous en voulez d\'autres ?',
@@ -224,9 +224,15 @@
         var price = (it.priceCents != null && it.priceCents > 0)
           ? fmtMoney(it.priceCents / 100)
           : (it.paidBy === 'organization' ? tFR('covered') : '—');
+        // The print first, the blank second: the API sends label (the print,
+        // or the garment when none is recorded), on_what (colour + garment,
+        // verbatim) and sizes. Until 2026-10-27 a web order showed its
+        // catalog product id here.
         html += '<div class="cart-row">';
         html +=   '<div style="min-width:0">';
-        html +=     '<div>' + esc(it.label) + (it.size ? ' <span style="color:#888">— ' + esc(it.size) + '</span>' : '') + '</div>';
+        html +=     '<div><strong>' + esc(it.label) + '</strong>' + (it.size ? ' <span style="color:#888">— ' + esc(it.size) + '</span>' : '') + '</div>';
+        if (it.on_what) html += '<div class="cart-row__meta">' + esc(tFR('on')) + ' ' + esc(it.on_what) + '</div>';
+        if (it.sizes)   html += '<div class="cart-row__meta">' + esc(it.sizes) + '</div>';
         html +=   '</div>';
         html +=   '<div class="cart-row__qty">' + esc(String(it.qty || 1)) + ' · ' + esc(price) + '</div>';
         html += '</div>';
@@ -326,8 +332,15 @@
       data.cart_items.forEach(function (it) {
         html += '<div class="cart-row">';
         html +=   '<div style="min-width:0">';
-        html +=     '<div>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + ' <span style="color:#888">— ' + esc(it.name || '') + '</span></div>';
-        html +=     '<div class="cart-row__meta">' + esc(it.color_name || '—') + '</div>';
+        if (it.headline) {
+          // The print first (headline), the blank second (on_what) — both
+          // built by the CRM so every surface says it the same way.
+          html +=   '<div><strong>' + esc(it.headline) + '</strong></div>';
+          if (it.on_what) html += '<div class="cart-row__meta">' + esc(tFR('on')) + ' ' + esc(it.on_what) + '</div>';
+        } else {
+          html +=   '<div>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + ' <span style="color:#888">— ' + esc(it.name || '') + '</span></div>';
+          html +=   '<div class="cart-row__meta">' + esc(it.color_name || '—') + '</div>';
+        }
         html +=   '</div>';
         html +=   '<div class="cart-row__qty">' + (it.qty || '?') + ' × ' + (it.sides || 1) + ' ' + esc(tFR('side')) + ((it.sides || 1) > 1 ? 's' : '') + '</div>';
         html += '</div>';
