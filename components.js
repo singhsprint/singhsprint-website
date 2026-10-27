@@ -732,6 +732,23 @@ function loadNav() {
         { en: 'Football',   fr: 'Football',   i18n: 'nav.jerseys.football',   href: BASE + '/jerseys?sport=football' },
         { en: 'Volleyball', fr: 'Volleyball', i18n: 'nav.jerseys.volleyball', href: BASE + '/jerseys?sport=volleyball' }
       ]
+    },
+    {
+      // 2026-10-27 — Client gift boxes, its own destination like Jerseys.
+      // Landing at /gifts, builder at /gifts/build (self-serve or "have us
+      // build it"), buyer status at /gifts/order. All on this site, inside
+      // this nav; they call the CRM's /api/gifts/* (CORS-open). Only the
+      // recipient's private size link lives on pay.singhsprint.com.
+      en: 'Gift boxes', fr: 'Boîtes-cadeaux', i18n: 'nav.gifts',
+      href: BASE + '/gifts',
+      subs: [
+        { en: 'How it works',        fr: 'Comment ça marche',     i18n: 'nav.gifts.how',       href: BASE + '/gifts#how' },
+        { en: 'Build your box',      fr: 'Composez votre boîte',  i18n: 'nav.gifts.build',     href: BASE + '/gifts/build' },
+        { en: 'Have us build it',    fr: 'On s\'en occupe',       i18n: 'nav.gifts.concierge', href: BASE + '/gifts/build?path=concierge' },
+        { en: 'Starter · from $80',  fr: 'Essentiel · dès 80 $',  i18n: 'nav.gifts.starter',   href: BASE + '/gifts/build?tier=starter' },
+        { en: 'Signature · from $165', fr: 'Signature · dès 165 $', i18n: 'nav.gifts.signature', href: BASE + '/gifts/build?tier=signature' },
+        { en: 'Premium · from $195', fr: 'Premium · dès 195 $',   i18n: 'nav.gifts.premium',   href: BASE + '/gifts/build?tier=premium' }
+      ]
     }
     // 2026-09-17 — the "Canadian / Canadien" item lived here. It pointed at
     // /catalog?canadian=1 (supplier-scoped to rue_sainte_patrick) with the Rue
@@ -795,9 +812,7 @@ function loadNav() {
     // — Drops is a new revenue channel and deserves the eyeball-
     // grabbing position, not buried after the niche programs.
     { en: 'Drops',     fr: 'Drops',     i18n: 'nav.drops',     href: BASE + '/shop' },
-    // 2026-10-27 — client gift boxes (docs/gift-box in the CRM repo). Landing
-    // here; the builder and the recipient pages live on pay.singhsprint.com.
-    { en: 'Gift boxes', fr: 'Boîtes-cadeaux', i18n: 'nav.gifts', href: BASE + '/gifts' },
+    // Gift boxes moved to the top category row (next to Jerseys), 2026-10-27.
     // SEO guides hub — grows weekly via the scheduled "draft a guide" task.
     { en: 'Guides',    fr: 'Guides',    i18n: 'nav.guides',    href: BASE + '/guides/' },
     { en: 'About',     fr: 'À propos',  i18n: 'nav.about',     href: BASE + '/about' },
