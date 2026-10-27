@@ -235,6 +235,14 @@
       spByoPlacements = kept.length ? kept : ['left-chest'];
     }
 
+    // The line builder IS the BYO flow. While it is open, the blank-flow
+    // questions it answers per line — garment source, placements, print
+    // method, the global size grid — stay out of the page: until 2026-10-27
+    // they all rendered underneath it, the summary bar read "GARMENT SOURCE
+    // We Supply" beside "Bring Your Own", and the submit read the source off
+    // that bar. syncReveal gates on this flag.
+    var spByoLineMode = false;
+
     function spShowByoLineBuilder() {
       var sec = document.getElementById('byoLineSection');
       var qtyHost = document.getElementById('qtyBandSection');
@@ -242,15 +250,39 @@
       if (qtyHost) { qtyHost.style.display = 'none'; qtyHost.innerHTML = ''; }
       if (tierHost) { tierHost.style.display = 'none'; tierHost.innerHTML = ''; }
       if (sec) sec.style.display = '';
+      spByoLineMode = true;
+      // The hidden garment_source field is what the submit reads; the old
+      // "Already have garments?" card is the only thing that set it.
+      var gs = document.getElementById('garmentSourceInput');
+      if (gs) gs.value = 'BYOG';
+      var byoCard = document.querySelector('.svc-btn[data-value="BYOG"]');
+      if (byoCard && byoCard.parentElement) {
+        byoCard.parentElement.querySelectorAll('.svc-btn').forEach(function (o) { o.classList.remove('selected'); });
+        byoCard.classList.add('selected');
+      }
       spByoBlankFields(true);
       spByoRenderPlacements();
       spByoLineRefreshPrice();
+      if (typeof window.spSyncReveal === 'function') window.spSyncReveal();
+      if (typeof spRefreshQuoteGate === 'function') spRefreshQuoteGate();
     }
 
     function spHideByoLineBuilder() {
       var sec = document.getElementById('byoLineSection');
       if (sec) sec.style.display = 'none';
+      var was = spByoLineMode;
+      spByoLineMode = false;
+      if (was) {
+        var gs = document.getElementById('garmentSourceInput');
+        if (gs && gs.value === 'BYOG') gs.value = 'We Supply';
+        var weCard = document.querySelector('.svc-btn[data-value="We Supply"]');
+        if (weCard && weCard.parentElement) {
+          weCard.parentElement.querySelectorAll('.svc-btn').forEach(function (o) { o.classList.remove('selected'); });
+          weCard.classList.add('selected');
+        }
+      }
       spByoBlankFields(false);
+      if (typeof window.spSyncReveal === 'function') window.spSyncReveal();
     }
 
     // Every field below describes a blank WE supply. Left visible under the
@@ -2168,6 +2200,15 @@
           // Cart mode: valid if there's at least one item in the cart.
           // Legacy single-product mode: require state.product + service.
           if (!cartHasItems && !state.product) { alert((typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.alert.product')) || 'Please select a product from the catalog.'); return; }
+          // Bring-your-own: the garments live on cart lines, so an empty cart
+          // means the builder was never submitted. Say that, not "pick a
+          // printing method" — the method is on the builder they skipped.
+          if (!cartHasItems && typeof spByoLineMode !== 'undefined' && spByoLineMode) {
+            alert(spByoT('quote.byoline.err.addfirst', 'Add your garments to the quote first — the button under the estimate.'));
+            var bsec = document.getElementById('byoLineSection');
+            if (bsec) { try { bsec.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+            return;
+          }
           // Method requirement only applies in legacy mode — cart items
           // carry per-row decoration_type (defaulting to empty/'not-sure'
           // is fine; the rep recommends the right one at quote-reply).
@@ -6305,6 +6346,12 @@
         '    </label>' +
         '    <button type="button" onclick="removeCartItem(' + idx + ')" style="background:transparent;border:none;color:#a01a1a;cursor:pointer;font-size:.86rem;font-weight:600;padding:6px 8px" aria-label="Remove">' + lblRemove + '</button>' +
         '  </div>' +
+        // Artwork, one upload per placement, the same cards every catalog
+        // line gets (cartItemFiles keyed idx_placement → uploaded at submit
+        // with cart_item_index). Until 2026-10-27 the only upload on the page
+        // sat in the blank flow's placement section, which the builder now
+        // hides; a BYO customer had nowhere to attach a design.
+        renderCartItemUploads(idx, (it.placements || []).slice()) +
         // The same grid every other line gets. A BYO row used to have none, so
         // a customer shipping 50 hoodies could not say how many were larges
         // and the rep had to ask -- about garments already in a box on a van.
@@ -9483,14 +9530,18 @@
             bar.style.display = (!gatedBool && el.classList.contains('sp-collapsed')) ? 'flex' : 'none';
           }
         }
+        // The BYO line builder asks source, placement, method and quantity
+        // per line, so the page-level versions of those questions are not
+        // asked again underneath it.
+        var lineMode = (typeof spByoLineMode !== 'undefined') && spByoLineMode;
         ['source', 'placement', 'method'].forEach(function (k) {
-          gateSec(secEl(k), !(show && !pending));
+          gateSec(secEl(k), !(show && !pending) || lineMode);
         });
         var sizesEl = document.getElementById('globalSizeSection');
-        if (sizesEl) sizesEl.classList.toggle('sp-gated', !(show && !pending));
+        if (sizesEl) sizesEl.classList.toggle('sp-gated', !(show && !pending) || lineMode);
         // Colour is OUR blanks' concern — in BYO mode the garment is theirs,
         // so the swatch section stays out of the flow entirely.
-        gateSec(secEl('color'), !(show && !pending && !spByoActive));
+        gateSec(secEl('color'), !(show && !pending && !spByoActive) || lineMode);
         // The live-estimate strip too: state.garment defaults to 'tshirt',
         // so pre-pick the strip would show a t-shirt category price the
         // visitor never asked for. Price appears once a product is chosen —
@@ -10032,6 +10083,8 @@
         } catch (e) {}
         return true;
       }
+
+      window.spSyncReveal = syncReveal;
 
       // ---- boot -----------------------------------------------------------
       window.addEventListener('load', function () {

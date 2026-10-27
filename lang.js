@@ -1308,6 +1308,7 @@ var SP_LANG = (function() {
     'quote.liveprice.sofar':    { en: 'Priced so far', fr: 'Chiffr\u00e9 jusqu\u2019ici' },
     'quote.byoline.err.desc':     { en: 'Tell us what the garments are so we can price the decoration.', fr: 'Dites-nous de quels vêtements il s’agit pour chiffrer la décoration.' },
     'quote.byoline.err.qty':      { en: 'How many garments are you sending?', fr: 'Combien de vêtements envoyez-vous ?' },
+    'quote.byoline.err.addfirst': { en: 'Add your garments to the quote first — the button under the estimate.', fr: 'Ajoutez d\'abord vos vêtements à la soumission — le bouton sous l\'estimation.' },
     'quote.byoline.err.ordmin':   { en: 'Orders start at {min} pieces \u2014 add {n} more', fr: 'Les commandes commencent à {min} pièces \u2014 ajoutez-en {n}' },
     'quote.min.order': {
       en: 'Our minimum is {ordermin} pieces per order and you have {n}. Add {short} more of anything \u2014 mixing items is fine \u2014 and you can check out.',
