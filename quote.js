@@ -166,8 +166,9 @@
     // nothing to key off; these five cover what people actually ask for, and
     // anything stranger is what the description box and the call are for.
     var SP_BYO_PLACEMENTS = [
-      { id: 'left-chest',  en: 'Left chest',  fr: 'C\u0153ur' },
-      { id: 'full-front',  en: 'Full front',  fr: 'Devant complet' },
+      { id: 'left-chest',   en: 'Left chest',   fr: 'C\u0153ur' },
+      { id: 'center-chest', en: 'Center chest', fr: 'Centre poitrine' },
+      { id: 'full-front',   en: 'Full front',   fr: 'Devant complet' },
       { id: 'back-top',    en: 'Upper back',  fr: 'Haut du dos' },
       { id: 'back-full',   en: 'Full back',   fr: 'Dos complet' },
       { id: 'left-sleeve', en: 'Sleeve',      fr: 'Manche' },
@@ -211,7 +212,7 @@
     // not adding a second. Same for the two backs. Until 2026-10-27 all five
     // could be on at once, and the engine priced "left chest + full front"
     // as two sides ($13.95 at 90, measured) for a job the press cannot run.
-    var SP_BYO_PANEL = { 'left-chest': 'front', 'full-front': 'front', 'back-top': 'back', 'back-full': 'back', 'left-sleeve': 'sleeve' };
+    var SP_BYO_PANEL = { 'left-chest': 'front', 'center-chest': 'front', 'full-front': 'front', 'back-top': 'back', 'back-full': 'back', 'left-sleeve': 'sleeve' };
 
     function spByoTogglePlacement(id) {
       var i = spByoPlacements.indexOf(id);

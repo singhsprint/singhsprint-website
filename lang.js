@@ -1293,6 +1293,7 @@ var SP_LANG = (function() {
     'quote.byoline.pending':      { en: 'Decoration priced with your quote', fr: 'Décoration chiffrée avec votre soumission' },
     'quote.byoline.where':       { en: 'Where does it go?', fr: 'O\u00f9 \u00e7a va ?' },
     'quote.byoline.pl.left-chest':  { en: 'Left chest',   fr: 'C\u0153ur' },
+    'quote.byoline.pl.center-chest': { en: 'Center chest', fr: 'Centre poitrine' },
     'quote.byoline.pl.full-front':  { en: 'Full front',   fr: 'Devant complet' },
     'quote.byoline.pl.back-top':    { en: 'Upper back',   fr: 'Haut du dos' },
     'quote.byoline.pl.back-full':   { en: 'Full back',    fr: 'Dos complet' },
