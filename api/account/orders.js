@@ -189,7 +189,9 @@ module.exports = async function handler(req, res) {
     const isPaid = o.paid === true
       || (o.paid_status && /^(paid|refunded)$/i.test(o.paid_status))
       || o.balance_paid_at != null;
-    (isPaid ? past : active).push(decorate(o));
+    // A voided (replaced) or cancelled quote is not something to act on.
+    const isDead = o.status === 'voided' || o.status === 'cancelled';
+    (isPaid || isDead ? past : active).push(decorate(o));
   }
 
   // DTC drop purchases — linked by customer_email since drop buyers are

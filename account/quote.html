@@ -485,7 +485,12 @@
     // Revision pill block.
     var pills = [];
     var isExpired = order.status === 'expired';
-    if (paidInFull)        pills.push('<span class="pill pill--paid">Paid</span>');
+    // Voided in the CRM (void_quote): replaced by another quote, or withdrawn.
+    var isVoided = order.status === 'voided';
+    var replacement = data.replacement || null;
+    if (isVoided) { paidInFull = true; }  // lock every edit control below; nothing here is payable
+    if (isVoided)          pills.push('<span class="pill pill--expired">No longer active</span>');
+    else if (paidInFull)   pills.push('<span class="pill pill--paid">Paid</span>');
     else if (depositPaid)  pills.push('<span class="pill pill--paid">Deposit paid</span>');
     if (latestSent)        pills.push('<span class="pill pill--sent">Sent v' + esc(latestSent.revision) + ' · ' + esc(fmtWhen(latestSent.sent_at)) + '</span>');
     if (order.accepted_revision) pills.push('<span class="pill pill--accepted">Accepted v' + esc(order.accepted_revision) + '</span>');
@@ -509,7 +514,7 @@
     // stamps accepted_revision (see /api/account/quote ?action=approve).
     var curRev = Number(order.revision || 0);
     var isAccepted = order.accepted_revision != null && Number(order.accepted_revision) === curRev;
-    var canApprove = latestSent && !paidInFull && !isExpired && !isAccepted;
+    var canApprove = latestSent && !paidInFull && !isExpired && !isAccepted && !isVoided;
     if (canApprove) {
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 16px;padding:16px 18px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px">' +
         '<div style="font-size:14px;color:#14532d;line-height:1.5"><strong>Happy with this quote?</strong> Approve it to lock it in — you can still message us with questions below.</div>' +
@@ -520,7 +525,13 @@
     }
 
     // Read-only / locked banner.
-    if (paidInFull) {
+    if (isVoided) {
+      html += '<div class="pre-banner" style="background:#f4f4f5;border:1px solid #d4d4d8;color:#3f3f46"><strong>This quote is no longer active.</strong> ' +
+        (replacement
+          ? 'It was replaced by quote ' + esc(replacement.order_number || '') + '. <a href="/account/quote.html?id=' + encodeURIComponent(replacement.id) + '" style="color:#1a1a1a;text-decoration:underline;font-weight:600">View the new quote →</a>'
+          : 'Message us below if you have any questions.') +
+        '</div>';
+    } else if (paidInFull) {
       html += '<div class="pre-banner"><strong>This quote is paid in full.</strong> Send us a message below if you need anything changed — we\'ll take it from there.</div>';
     } else if (depositPaid) {
       html += '<div class="pre-banner"><strong>You\'ve paid the deposit.</strong> You can still add sizes / quantity, but you can\'t reduce them. Anything bigger, message us below.</div>';

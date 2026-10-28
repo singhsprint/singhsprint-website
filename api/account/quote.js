@@ -128,7 +128,20 @@ async function handleGet(req, res, supabase, user) {
       .maybeSingle(),
   ]);
 
+  // Voided in the CRM (void_quote): the quote that replaced it, if it's the
+  // same customer's and still live. Read separately so this works before and
+  // after the CRM's replaced_by column exists.
+  let replacement = null;
+  if (order.status === 'voided') {
+    const { data: v } = await supabase.from('orders').select('replaced_by').eq('id', order.id).maybeSingle();
+    if (v && v.replaced_by) {
+      const { data: r } = await supabase.from('orders').select('id, order_number, status, customer_id').eq('id', v.replaced_by).maybeSingle();
+      if (r && r.customer_id === order.customer_id && r.status !== 'voided' && r.status !== 'cancelled') replacement = { id: r.id, order_number: r.order_number };
+    }
+  }
+
   return res.status(200).json({
+    replacement: replacement,
     order: {
       id:               order.id,
       order_number:     order.order_number,
@@ -174,6 +187,11 @@ async function handlePost(req, res, supabase, user) {
     if (typeof req.body === 'string') body = JSON.parse(req.body);
     else if (req.body && typeof req.body === 'object') body = req.body;
   } catch (_) { /* allow empty */ }
+
+  // A voided quote can't be approved or changed; they can still message us.
+  if (order.status === 'voided' && (action === 'propose-change' || action === 'approve')) {
+    return res.status(409).json({ error: 'This quote is no longer active.' });
+  }
 
   // -------- propose-change --------
   if (action === 'propose-change') {
