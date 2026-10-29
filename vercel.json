@@ -79,6 +79,7 @@
     }
   ],
   "redirects": [
+    {"source": "/m/:code", "destination": "https://singhsprint-crm.vercel.app/m/:code", "permanent": false},
     {
       "source": "/p/rue-saint-patrick-:slug",
       "destination": "/catalog",
