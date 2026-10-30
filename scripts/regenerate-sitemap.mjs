@@ -88,6 +88,7 @@ const MARKETING = [
   // as a removed page. Its screen-print, free-fitting-kit, printed-sample and
   // 5-7 day reorder lines were the problem and are gone from the page.
   { path: '/guides/procurement-checklist',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/cafe-restaurant-merch',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/custom-hoodies-bulk-order-guide',    priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/brand-colour-matching',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/branded-winter-outerwear',           priority: 0.6,  changefreq: 'monthly', hreflang: true },

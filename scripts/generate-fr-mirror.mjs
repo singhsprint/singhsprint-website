@@ -81,7 +81,7 @@ export const FULLY_FRENCH = [
   'industries/corporate-tech-swag.html', 'industries/charity-events-fundraisers.html',
   'industries/schools-sports-teams.html',
   'guides/brand-colour-matching.html', 'guides/branded-winter-outerwear.html',
-  'guides/bulk-order-size-run.html', 'guides/custom-embroidered-caps-ordering-guide.html',
+  'guides/bulk-order-size-run.html', 'guides/cafe-restaurant-merch.html', 'guides/custom-embroidered-caps-ordering-guide.html',
   'guides/decoration-method-durability.html', 'guides/fabric-cotton-polyester-blends.html',
   'guides/logo-file-requirements.html', 'guides/logo-placement-print-sizes.html',
   'guides/minimum-order-price-breaks.html', 'guides/procurement-checklist.html',

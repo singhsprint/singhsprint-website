@@ -264,6 +264,16 @@
   </url>
 
   <url>
+    <loc>https://www.singhsprint.com/guides/cafe-restaurant-merch</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/cafe-restaurant-merch"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/guides/cafe-restaurant-merch"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/guides/cafe-restaurant-merch"/>
+  </url>
+
+  <url>
     <loc>https://www.singhsprint.com/guides/brand-colour-matching</loc>
     <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
@@ -641,6 +651,16 @@
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/procurement-checklist"/>
     <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/guides/procurement-checklist"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/guides/procurement-checklist"/>
+  </url>
+
+  <url>
+    <loc>https://www.singhsprint.com/fr/guides/cafe-restaurant-merch</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/cafe-restaurant-merch"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/guides/cafe-restaurant-merch"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/guides/cafe-restaurant-merch"/>
   </url>
 
   <url>

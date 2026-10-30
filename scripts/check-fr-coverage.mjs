@@ -80,6 +80,9 @@ export function pageProblems(rel, enHtml, frOnDisk, T, tm, frSet) {
   for (const m of html.matchAll(/\s(?:src|href)="((?:\.\.\/|\.\/)[^"]*|(?![a-z]+:|\/|#|\?)[^"]+\.(?:js|css|png|jpe?g|webp|svg|ico))"/gi)) {
     out.push(`D relative asset path ${m[1]} (resolves under /fr/)`);
   }
+  // The yellow "full French version coming soon" banner (page.fr-notice) is
+  // shown on French pages only. On a page this checker passes, it is false.
+  if (/class="lang-fr-notice"/.test(html)) out.push('F still shows the "French version coming soon" notice');
   for (const m of html.matchAll(/\sdata-i18n="([^"]+)"/g)) {
     if (!T[m[1]] || !T[m[1]].fr) out.push(`E data-i18n="${m[1]}" has no French; the runtime would restore English`);
   }
