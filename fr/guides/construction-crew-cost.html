@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Does It Actually Cost to Outfit a 50-Person Construction Crew? | Singhs Print</title>
   <meta name="description" content="Real numbers: the full annual cost of branded uniforms for a 50-person Montreal construction crew. Initial outfit, reorder budget, hidden costs, year-2 math.">
@@ -33,16 +33,27 @@
 
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "What Does It Actually Cost to Outfit a 50-Person Construction Crew?",
-    "author": { "@type": "Organization", "name": "Singhs Print", "@id": "https://www.singhsprint.com/#business" },
-    "publisher": { "@type": "Organization", "name": "Singhs Print", "logo": { "@type": "ImageObject", "url": "https://www.singhsprint.com/images/logo.png" } },
-    "datePublished": "2026-05-12",
-    "dateModified": "2026-05-12",
-    "image": "https://www.singhsprint.com/images/guides/crew-cost.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/construction-crew-cost.html"
-  }
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "What Does It Actually Cost to Outfit a 50-Person Construction Crew?",
+  "author": {
+    "@type": "Organization",
+    "name": "Singhs Print",
+    "@id": "https://www.singhsprint.com/#business"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Singhs Print",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.singhsprint.com/images/logo.png"
+    }
+  },
+  "datePublished": "2026-05-12",
+  "dateModified": "2026-05-12",
+  "image": "https://www.singhsprint.com/images/guides/crew-cost.jpg",
+  "mainEntityOfPage": "https://www.singhsprint.com/guides/construction-crew-cost"
+}
   </script>
 
   <style>
@@ -88,8 +99,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -241,9 +252,9 @@
   <div class="container wide">
     <h2  data-i18n="guide.crew.h2.related">Guides et programmes connexes</h2>
     <div class="related-grid">
-      <a class="related-card" href="/fr/industries/construction-workwear"><h3>Construction workwear</h3><p>Full industry program details.</p></a>
+      <a class="related-card" href="/fr/industries/construction-workwear"><h3>Vêtements de travail de construction</h3><p>Full industry program details.</p></a>
       <a class="related-card" href="/fr/guides/procurement-checklist"><h3>Procurement checklist</h3><p>Six-step spec process for any program.</p></a>
-      <a class="related-card" href="/fr/guides/decoration-method-durability"><h3>Decoration durability</h3><p>Why DTF on hi-vis, embroidery on hoodies.</p></a>
+      <a class="related-card" href="/fr/guides/decoration-method-durability"><h3>Durabilité des décorations</h3><p>Why DTF on hi-vis, embroidery on hoodies.</p></a>
       <a class="related-card" href="/fr/businesses/rfp"><h3>Submit an RFP</h3><p>Procurement-grade intake form.</p></a>
     </div>
   </div>
@@ -256,7 +267,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Construction Crew Cost', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Construction Crew Cost', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

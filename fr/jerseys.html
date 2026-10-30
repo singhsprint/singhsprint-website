@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singhs Print · Impression de vêtements personnalisés · FR</title>
-  <meta name="description" content="Build custom team jerseys for hockey, soccer, basketball, baseball, football and volleyball. Pick a jersey blank, add every player's name, number and a team font, and get one quote for the whole roster.">
+  <title>Chandails d'équipe personnalisés à Montréal | Singhs Print</title>
+  <meta name="description" content="Créez des chandails d'équipe personnalisés : hockey, soccer, basketball, baseball, football, volleyball. Choisissez un chandail vierge, ajoutez le nom, le numéro et une police d'équipe pour chaque joueur, et obtenez une seule soumission pour toute l'équipe.">
   <link rel="canonical" href="https://www.singhsprint.com/fr/jerseys">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/jerseys">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/jerseys">
@@ -16,19 +16,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
   <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
-  <!-- Inter/Playfair for the page chrome (matches catalog.html), plus a small
-       set of open-source athletic display faces (SIL OFL) used ONLY for the
-       jersey lettering live-preview. These approximate our press styles; the
-       final lettering uses our licensed jersey fonts (see fontnote string). -->
+  
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Anton&family=Oswald:wght@500;700&family=Saira+Condensed:wght@600;700&family=Archivo+Black&family=Teko:wght@600;700&display=swap">
 
   <link rel="stylesheet" href="/jerseys.css">
 </head>
 <body>
-  <!-- Header, promo bar, footer, search + "Text us" widget are all injected
-       by components.js (loadNav/loadFooter on DOMContentLoaded). loadNav
-       mounts into #nav-placeholder and loadFooter into #footer-placeholder —
-       both must be present or the header/footer silently don't render. -->
+  
   <div id="nav-placeholder"></div>
 
   <section class="jh-hero">
@@ -42,7 +36,7 @@
   <div class="jh-bar">
     <div class="jh-meta" id="jhMeta"></div>
     <label class="jh-sort" id="jhSortWrap" style="display:none">
-      <span  data-i18n="jersey.sort.label">Trier</span>
+      <span data-i18n="jersey.sort.label">Trier</span>
       <select id="jhSort">
         <option value="featured"  data-i18n="jersey.sort.featured">En vedette</option>
         <option value="price_asc"  data-i18n="jersey.sort.priceasc">Prix : croissant</option>
@@ -53,42 +47,42 @@
   </div>
   <div class="jh-grid" id="jhGrid"></div>
 
-  <!-- Customizer modal -->
+  
   <div class="cz-overlay" id="czOverlay" role="dialog" aria-modal="true" aria-labelledby="czTitle">
     <div class="cz">
       <div class="cz-head">
         <h2 id="czTitle"  data-i18n="jersey.cz.title">Montez votre équipe</h2>
-        <button class="cz-close" id="czClose" aria-label="Close">&times;</button>
+        <button class="cz-close" id="czClose" aria-label="Fermer">&times;</button>
       </div>
       <div class="cz-body">
         <div class="cz-preview">
-          <span class="cz-prev-label"  data-i18n="jersey.cz.preview">Aperçu en direct</span>
+          <span class="cz-prev-label" data-i18n="jersey.cz.preview">Aperçu en direct</span>
           <div class="cz-svgwrap" id="czSvg"></div>
           <div id="czLogoTools" style="display:none;width:100%;max-width:280px;margin-top:2px">
             <div style="display:flex;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
-              <span  data-i18n="jersey.cz.logosize">Taille du logo</span>
+              <span data-i18n="jersey.cz.logosize">Taille du logo</span>
               <input type="range" id="czLogoSize" min="8" max="70" value="24" step="1" style="flex:1">
             </div>
             <label style="display:flex;align-items:center;gap:6px;color:#cfc9bb;font-size:.72rem;margin-top:7px;cursor:pointer">
-              <input type="checkbox" id="czLogoRemoveBg"> <span  data-i18n="jersey.cz.removebg">Retirer le fond</span>
+              <input type="checkbox" id="czLogoRemoveBg"> <span data-i18n="jersey.cz.removebg">Retirer le fond</span>
             </label>
             <div style="color:#9b958a;font-size:.66rem;margin-top:6px"  data-i18n="jersey.cz.draghint">Glissez le logo sur le maillot pour le positionner.</div>
           </div>
           <div id="czFrontTools" style="display:none;width:100%;max-width:280px;margin-top:8px">
             <div id="czFrontNumSizeRow" style="display:none;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
-              <span  data-i18n="jersey.cz.frontnumsize">Taille du numero avant</span>
+              <span data-i18n="jersey.cz.frontnumsize">Taille du numéro avant</span>
               <input type="range" id="czFrontNumSize" min="14" max="64" value="34" step="1" style="flex:1">
             </div>
             <div id="czFrontNameSizeRow" style="display:none;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem;margin-top:7px">
-              <span  data-i18n="jersey.cz.frontnamesize">Taille du nom</span>
+              <span data-i18n="jersey.cz.frontnamesize">Taille du nom</span>
               <input type="range" id="czFrontNameSize" min="10" max="40" value="18" step="1" style="flex:1">
             </div>
             <button type="button" id="czFrontSave" style="margin-top:9px;background:var(--hi,#e8ff3c);color:#1a1a1a;border:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit"  data-i18n="jersey.cz.savelayout">Enregistrer la disposition</button>
-            <span id="czFrontSaved" style="display:none;color:#8fe39a;font-size:.72rem;margin-left:8px"  data-i18n="jersey.cz.layoutsaved">Disposition enregistree</span>
+            <span id="czFrontSaved" style="display:none;color:#8fe39a;font-size:.72rem;margin-left:8px" data-i18n="jersey.cz.layoutsaved">Disposition enregistrée</span>
           </div>
           <div id="czDesignTools" style="display:none;width:100%;max-width:280px;margin-top:2px">
             <div style="display:flex;align-items:center;gap:8px;color:#cfc9bb;font-size:.72rem">
-              <span  data-i18n="jersey.cz.design.size">Taille du design</span>
+              <span data-i18n="jersey.cz.design.size">Taille du design</span>
               <input type="range" id="czDesignSize" min="20" max="95" value="58" step="1" style="flex:1">
             </div>
             <div style="color:#9b958a;font-size:.66rem;margin-top:6px"  data-i18n="jersey.cz.design.draghint">Glissez le design sur le maillot pour le positionner.</div>
@@ -110,20 +104,18 @@
             <div style="font-size:.72rem;color:var(--soft);margin-top:4px"  data-i18n="jersey.cz.goaliehint">Cochez la case à côté d'un joueur pour lui donner cette couleur.</div>
           </div>
 
-          <!-- Personalization mode: the classic name/number builder, or the
-               customer's own uploaded artwork (skips fonts/names/numbers). -->
+          
           <div class="cz-field">
             <label  data-i18n="jersey.cz.mode">Personnalisation</label>
             <div class="cz-chips" id="czMode"></div>
           </div>
 
-          <!-- Own-design mode: placement + same-for-all toggle + upload slots.
-               When "same design" is off, each roster row gets its own upload. -->
+          
           <div class="cz-field" id="czCustomField" style="display:none">
             <label  data-i18n="jersey.cz.design">Votre design</label>
             <div style="font-size:.72rem;color:var(--soft);margin-bottom:6px"  data-i18n="jersey.cz.design.place">Où va-t-il?</div>
             <div class="cz-chips" id="czDesignPlace"></div>
-            <label class="cz-toggle" style="margin-top:10px"><input type="checkbox" id="czDesignSame" checked><span  data-i18n="jersey.cz.design.same">Même design pour tous les maillots</span></label>
+            <label class="cz-toggle" style="margin-top:10px"><input type="checkbox" id="czDesignSame" checked><span data-i18n="jersey.cz.design.same">Même design pour tous les chandails</span></label>
             <div id="czDesignSlots" style="margin-top:10px"></div>
             <div id="czDesignRowHint" style="display:none;font-size:.72rem;color:var(--soft);margin-top:7px"  data-i18n="jersey.cz.design.rowhint">Téléversez le design de chaque maillot dans l'alignement ci-dessous.</div>
           </div>
@@ -135,7 +127,7 @@
 
           <div class="cz-field cz-namesonly">
             <label  data-i18n="jersey.cz.namesnumbers">Noms et numéros</label>
-            <div class="cz-chips"><span class="cz-chip sel" style="cursor:default"><span  data-i18n="jersey.cz.dtfstd">Impression DTF</span></span></div>
+            <div class="cz-chips"><span class="cz-chip sel" style="cursor:default"><span data-i18n="jersey.cz.dtfstd">Impression DTF</span></span></div>
           </div>
 
           <div class="cz-field cz-namesonly">
@@ -146,7 +138,7 @@
               <div class="cz-chips" id="czLogoPlace"></div>
               <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                 <label class="cz-linkbtn" style="border:1.5px solid var(--line);border-radius:9px;padding:8px 12px;text-decoration:none;cursor:pointer">
-                  <span  data-i18n="jersey.cz.uploadlogo">Téléverser le logo</span>
+                  <span data-i18n="jersey.cz.uploadlogo">Téléverser le logo</span>
                   <input type="file" id="czLogoFile" accept="image/*,.pdf,.ai,.eps,.svg" style="display:none">
                 </label>
                 <span id="czLogoFileName" style="font-size:.78rem;color:var(--muted)"></span>
@@ -156,14 +148,14 @@
 
           <div class="cz-field cz-namesonly">
             <label  data-i18n="jersey.cz.frontextra">Devant du maillot (optionnel)</label>
-            <label class="cz-toggle"><input type="checkbox" id="czFrontNumber"><span  data-i18n="jersey.cz.frontnum">Numero du joueur au devant</span></label>
-            <label class="cz-toggle"><input type="checkbox" id="czFrontName"><span  data-i18n="jersey.cz.frontname">Nom de l'equipe au devant</span></label>
+            <label class="cz-toggle"><input type="checkbox" id="czFrontNumber"><span data-i18n="jersey.cz.frontnum">Numéro du joueur à l'avant</span></label>
+            <label class="cz-toggle"><input type="checkbox" id="czFrontName"><span data-i18n="jersey.cz.frontname">Nom de l'équipe à l'avant</span></label>
             <input type="text" id="czTeamName" maxlength="22" placeholder="" style="display:none;width:100%;margin-top:8px;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:.86rem;background:#fff">
             <div id="czFrontHint" style="display:none;font-size:.72rem;color:var(--soft);margin-top:7px"  data-i18n="jersey.cz.fronthint">Glissez le numero et le nom sur l'apercu avant pour les placer, puis Enregistrer la disposition.</div>
           </div>
 
           <div class="cz-field">
-            <label><span  data-i18n="jersey.cz.roster">Alignement</span></label>
+            <label><span data-i18n="jersey.cz.roster">Alignement</span></label>
             <table class="cz-roster">
               <thead>
                 <tr id="czRosterHeadRow">
@@ -199,10 +191,10 @@
   <div id="footer-placeholder"></div>
 
   <script src="/components.js" defer></script>
-  <script src="consent.js" defer></script>
+  <script src="/consent.js" defer></script>
   <script src="/lang.js" defer></script>
   <script src="/offer-popup.js" defer></script>
-  <script src="ai-translate.js" defer></script>
+  <script src="/ai-translate.js" defer></script>
 
   <script src="/jerseys.js" defer></script>
 </body>

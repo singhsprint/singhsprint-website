@@ -65,7 +65,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/fr/account/" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
+  <a href="/fr/account" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
   <div id="acct-subnav"></div>
   <div class="hero">
     <h1  data-i18n="account.orders.h1">Demandes et commandes</h1>
@@ -340,9 +340,9 @@
           ${invoiceUrl && !owes ? `<a class="btn btn--ghost" href="${esc(invoiceUrl)}" target="_blank" rel="noopener">Invoice</a>` : ''}
           ${invoiceUrl && owes ? `<a class="btn btn--primary" href="${esc(invoiceUrl)}" target="_blank" rel="noopener">Pay balance · ${esc(fmtMoney(balanceDue))}</a>` : ''}
           ${bucket === 'active' && !owes
-            ? `<a class="btn btn--primary" href="/fr/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
+            ? `<a class="btn btn--primary" href="/fr/account/quote?id=${esc(order.id)}">View / edit →</a>`
             : bucket === 'active'
-              ? `<a class="btn btn--ghost" href="/fr/account/quote.html?id=${esc(order.id)}">View / edit →</a>`
+              ? `<a class="btn btn--ghost" href="/fr/account/quote?id=${esc(order.id)}">View / edit →</a>`
               : ''}
           ${bucket === 'past' ? `<button class="btn btn--primary" data-reorder="${esc(order.id)}">Reorder</button>` : ''}
         </div>`;

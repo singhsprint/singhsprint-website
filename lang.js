@@ -323,7 +323,7 @@ var SP_LANG = (function() {
     // Reviews
     'home.reviews.label':        { en: 'What Our Clients Say',          fr: 'Ce que disent nos clients' },
     'home.reviews.h':            { en: 'Real reviews from real customers', fr: 'De vrais avis de vrais clients' },
-    'home.reviews.avg':          { en: '4.7/5 (37 reviews) average',    fr: '5,4.7/5 (37 avis) en moyenne' },
+    'home.reviews.avg':          { en: '4.7/5 (37 reviews) average',    fr: '4,7/5 (37 avis) en moyenne' },
     'home.reviews.readall':      { en: 'Read all reviews →',            fr: 'Lire tous les avis →' },
     'home.reviews.author.label': { en: 'Google Review',                  fr: 'Avis Google' },
 

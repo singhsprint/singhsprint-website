@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Custom Embroidered Caps for Teams &amp; Businesses: Styles, Logo Limits &amp; Ordering Checklist | Singhs Print</title>
   <meta name="description" content="How to order custom embroidered caps in bulk: structured vs unstructured vs trucker vs toque, what a cap logo can and can&rsquo;t do, file prep, price breaks, and a checklist.">
@@ -41,7 +41,7 @@
     "datePublished": "2026-10-05",
     "dateModified": "2026-10-05",
     "image": "https://www.singhsprint.com/images/hero-duo.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/custom-embroidered-caps-ordering-guide.html"
+    "mainEntityOfPage": "https://www.singhsprint.com/guides/custom-embroidered-caps-ordering-guide"
   }
   </script>
 
@@ -97,8 +97,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -237,7 +237,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Embroidered Caps Ordering', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Embroidered Caps Ordering', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

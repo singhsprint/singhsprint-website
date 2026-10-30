@@ -2,17 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singhs Print · Impression de vêtements personnalisés · FR</title>
-  <meta name="description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.">
+  <title>Catalogue | Singhs Print — Vêtements personnalisés à Montréal</title>
+  <meta name="description" content="Magasinez 4 600 vêtements vierges imprimables — Bella+Canvas, Gildan, Comfort Colors, Next Level, Champion, Independent, ATC et plus. Prix en direct selon votre quantité, toutes les couleurs et tailles, dès 5 pièces.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Catalog API + image proxy live on the CRM domain. Preconnect so the
-       browser warms TLS/DNS before the JS fires its first fetch. Cuts
-       ~200-300ms off first paint on cold connections. -->
+  
   <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
   <link rel="dns-prefetch" href="https://singhsprint-crm.vercel.app">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
@@ -26,16 +24,16 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Singhs Print">
   <meta property="og:url" content="https://www.singhsprint.com/fr/catalog">
-  <meta property="og:title" content="Catalogue — Singhs Print">
-  <meta property="og:description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Prix unitaire en direct selon la quantité.">
+  <meta property="og:title" content="Catalogue de vêtements — Singhs Print">
+  <meta property="og:description" content="4 600 vêtements vierges prêts à décorer. Prix en direct selon votre quantité, état des stocks, toutes les couleurs.">
   <meta property="og:locale" content="fr_CA">
   <meta property="og:locale:alternate" content="en_CA">
   <meta property="og:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Catalogue — Singhs Print">
-  <meta name="twitter:description" content="Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Prix unitaire en direct selon la quantité.">
+  <meta name="twitter:title" content="Catalogue de vêtements — Singhs Print">
+  <meta name="twitter:description" content="4 600 vêtements vierges prêts à décorer. Prix en direct selon votre quantité, état des stocks, toutes les couleurs.">
   <meta name="twitter:image" content="https://www.singhsprint.com/images/product-tshirt-modavie.jpg">
   <script>
   // Early-fire the catalog fetch so it overlaps with the rest of
@@ -57,13 +55,7 @@
   })();
   </script>
 
-  <!-- ====================================================================
-       Algolia bridge — feeds /catalog the slim 30-hits-at-a-time search
-       layer that replaces direct /api/catalog scans of 6,400 products.
-       When SP_ALGOLIA_CONFIG is set with valid credentials, fetchPage()
-       routes through window.SPCatalog. Clear the credentials below to
-       force the legacy /api/catalog path back on.
-       ==================================================================== -->
+  
   <script>
     window.SP_ALGOLIA_CONFIG = {
       appId:     '56LKULJHAL',
@@ -84,51 +76,34 @@
 
   <section class="cat-hero">
     <h1  data-i18n="cat.hero.h1">Vêtements vierges</h1>
-    <!-- One line. The paragraph this replaces listed three distributors by
-         name, five mills, and three sentences of instructions, which is a
-         spec sheet, not a shop front. The supplier names went for the same
-         reason they went from the home page: a customer does not know who
-         S&S Activewear is, so the name buys no trust and costs a line. -->
+    
     <p  data-i18n="cat.hero.p"><strong id="catCount">4 600</strong> modèles, au prix réel de votre quantité.</p>
-    <!-- Auto-translation badge — only visible when FR is active. The
-         supplier feeds (S&S Activewear) only provide English copy, so we
-         machine-translate product/color/spec text on the fly. -->
+    
     <div id="aiTransBadge" style="display:none;margin-top:12px;padding:8px 12px;background:#fef9c3;border:1px solid #f7d77a;border-radius:10px;font-size:.78rem;color:#5b4500;max-width:fit-content;line-height:1.4">
       <strong>🌐 Traduction automatique active</strong> — les noms de produits et couleurs sont traduits automatiquement depuis l'anglais. Le reste du site est en français professionnel.
     </div>
     <div class="meta">
-      <span  data-i18n="cat.hero.meta1"><strong>Stock et prix</strong> mis à jour chaque jour</span>
-      <span>·</span>
-      <span  data-i18n="cat.hero.meta2">Délai habituel de <strong>5 à 10 jours</strong></span>
-      <span>·</span>
-      <!-- Was "Montreal-designed blanks available". Every is_canadian_made
-           product came from rue Saint-Patrick, which is delisted, so that
-           line is no longer true of anything in the catalogue. The slot now
-           carries the order minimum, which is the thing a first-time buyer
-           is actually scanning for — it was "No minimum" until the
-           5-piece minimum landed on 2026-10-16. -->
-      <span  data-i18n="cat.hero.meta3"><strong>À partir de {ordermin} pièces par commande</strong> — mélangez, {ordermin} ou 1 000</span>
+      <span data-i18n="cat.hero.meta1"><strong>Stock et prix</strong> mis à jour chaque jour</span> <span>·</span> <span data-i18n="cat.hero.meta2">Délai habituel de <strong>5 à 10 jours</strong></span> <span>·</span> <span data-i18n="cat.hero.meta3"><strong>À partir de {ordermin} pièces par commande</strong> — mélangez, {ordermin} ou 1 000</span>
     </div>
   </section>
 
   <div class="cat-toolbar">
     <div class="cat-search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="searchInput" placeholder="Search by brand, style number, fabric…" data-i18n-placeholder="cat.search.placeholder" autocomplete="off"/>
+      <input type="text" id="searchInput" placeholder="Recherchez par marque, numéro de style, tissu…" data-i18n-placeholder="cat.search.placeholder" autocomplete="off"/>
     </div>
     <button class="cat-filter-btn" onclick="openFilterPanel()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="2" fill="white"/><circle cx="16" cy="12" r="2" fill="white"/><circle cx="8" cy="18" r="2" fill="white"/></svg>
-      <span  data-i18n="cat.btn.filters">Filtres</span>
-      <span class="pill" id="filterCount" style="display:none">0</span>
+      <span data-i18n="cat.btn.filters">Filtres</span> <span class="pill" id="filterCount" style="display:none">0</span>
     </button>
   </div>
 
   <div class="cat-chips" id="chipRow"></div>
 
   <div class="cat-meta-row">
-    <div><strong id="resultCount">—</strong> <span  data-i18n="cat.results.products">produits</span></div>
+    <div><strong id="resultCount">—</strong> <span data-i18n="cat.results.products">produits</span></div>
     <div class="cat-sort">
-      <span  data-i18n="cat.sort.label">Trier :</span>
+      <span data-i18n="cat.sort.label">Trier :</span>
       <select id="sortSelect" onchange="setSort(this.value)" style="font-family:inherit;font-weight:600;border:none;background:transparent;cursor:pointer;font-size:.95rem;color:var(--ink);padding:0">
         <option value="bestseller"  data-i18n="cat.sort.bestseller">Populaires</option>
         <option value="price_asc"  data-i18n="cat.sort.price_asc">Prix ↑ (bas → haut)</option>
@@ -138,10 +113,7 @@
       </select>
     </div>
   </div>
-  <!-- Compact qty selector. Slim row that fits with the existing toolbar.
-       Slider snaps to canonical pricing tiers (5, 10, 25, 50, 100, 200, 500).
-       Customer can also tap a tick or type a custom number. The whole bar
-       collapses to two rows on mobile so the slider stays touch-friendly. -->
+  
   <style>
     /* ── Quantity ladder ──────────────────────────────────────────────
        Replaced the slider 2026-08-01. Three reasons, in order of weight:
@@ -215,18 +187,11 @@
     }
   </style>
   <div id="qtyPricingBar" class="qty-bar">
-    <span class="qty-bar__lede"  data-i18n="cat.qty.label">Prix pour</span>
-    <div class="qty-ladder" id="qtyLadder" role="group" aria-label="Quantity">
-      <!-- The 1-4 rung came out on 2026-10-16 with the 5-piece order
-           minimum. The engine can still price 1-4 — the micro-run tier is
-           deliberately still in the pricing config so a human can quote a
-           three-piece job — but a button that sets a quantity checkout
-           will refuse is a dead end with a price on it. -->
+    <span class="qty-bar__lede" data-i18n="cat.qty.label">Prix pour</span>
+    <div class="qty-ladder" id="qtyLadder" role="group" aria-label="Quantité">
+      
       <span class="qty-ladder__sep" aria-hidden="true"></span>
-      <!-- The 1 rung is back (2026-10-17). It was removed when the minimum
-           landed, which read the minimum as five OF THIS ONE; it is five per
-           ORDER, and a customer buying one of five different things needs the
-           price of one. -->
+      
       <button type="button" class="qty-tier" data-qty="1"   aria-pressed="false" onclick="setQty(1)">1</button>
       <button type="button" class="qty-tier" data-qty="5"   aria-pressed="false" onclick="setQty(5)">5</button>
       <button type="button" class="qty-tier" data-qty="10"  aria-pressed="false" onclick="setQty(10)">10</button>
@@ -236,16 +201,14 @@
       <button type="button" class="qty-tier" data-qty="200" aria-pressed="true"  onclick="setQty(200)">200</button>
       <button type="button" class="qty-tier" data-qty="500" aria-pressed="false" onclick="setQty(500)">500+</button>
     </div>
-    <span class="qty-bar__note" id="qtyNote"  data-i18n="cat.qty.note.bulk">Prix unitaire · 1 côté imprimé</span>
+    <span class="qty-bar__note" id="qtyNote" data-i18n="cat.qty.note.bulk">Prix unitaire · 1 côté imprimé</span>
     <label class="qty-bar__custom">
-      <span  data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Custom quantity"/>
+      <span data-i18n="cat.qty.custom">Personnalisé</span> <input id="qtyInput" type="number" inputmode="numeric" min="1" max="10000" step="1" value="200" class="qty-input" oninput="onQtyInputChanged(this.value)" aria-label="Quantité personnalisée"/>
     </label>
   </div>
 
   <div class="cat-grid" id="catGrid">
-    <!-- Skeleton placeholders shown immediately on first paint so the
-         page doesn't look frozen for the ~1.4s the catalog API takes
-         to come back. JS replaces these the moment products arrive. -->
+    
     <script>
       (function () {
         var grid = document.currentScript.parentNode;
@@ -273,10 +236,7 @@
   <div class="cat-loading" id="catLoading" style="display:none"  data-i18n="cat.loading">Chargement…</div>
   <div class="cat-empty" id="catEmpty" style="display:none"><h3  data-i18n="cat.empty.h3">Aucun résultat</h3><p  data-i18n="cat.empty.p">Essayez de retirer un filtre ou utilisez l'option « Apportez le vôtre ».</p></div>
 
-  <!-- Floating cart bar — appears whenever the customer has 1+ items
-       queued for their quote. Stays sticky at the bottom of the viewport
-       so they can keep browsing the catalog and add more without losing
-       track of what they've already picked. -->
+  
   <style>
     /* 2026-05-24 — cart-bar is now an <a>. Adding text-decoration:none
        (anchor default), and lifting touch-action / tap-highlight up to
@@ -406,32 +366,15 @@
     .is-popular #catSeoBlock{display:none}
     .is-popular .cat-grid{margin-top:18px}
   </style>
-  <!-- 2026-05-24 — Entire pill is now a single <a href> tap target.
-       Earlier iteration kept the count/label as plain spans and only
-       made the rightmost CTA clickable; that left ~70% of the pill
-       visually-looks-tappable but actually inert, which is exactly
-       how a customer would tap and see "nothing happens". Wrapping
-       everything in one anchor means any pixel of the pill navigates.
-       The inner spans keep their data-i18n hooks so translation
-       still works. -->
-  <a id="cartBar" class="cart-bar" href="/fr/quote" aria-label="Continue to quote">
-    <span class="cart-bar__count" id="cartCount">0</span>
-    <span class="cart-bar__label">
-      <strong id="cartUnits">0</strong>
-      <span class="cart-bar__label-suffix"  data-i18n="cat.cart.units">unités dans votre soumission</span>
-      <span class="cart-bar__label-suffix-short"  data-i18n="cat.cart.units.short">au panier</span>
-    </span>
-    <span id="cartBarCta" class="cart-bar__cta" aria-hidden="true">
-      <span class="cta-long"  data-i18n="cat.cart.cta">Continuer vers la soumission →</span>
-      <span class="cta-short"  data-i18n="cat.cart.cta.short">Soumission →</span>
-    </span>
+  
+  <a id="cartBar" class="cart-bar" href="/fr/quote" aria-label="Continue to quote"> <span class="cart-bar__count" id="cartCount">0</span> <span class="cart-bar__label"> <strong id="cartUnits">0</strong> <span class="cart-bar__label-suffix" data-i18n="cat.cart.units">unités dans votre soumission</span> <span class="cart-bar__label-suffix-short" data-i18n="cat.cart.units.short">au panier</span> </span> <span id="cartBarCta" class="cart-bar__cta" aria-hidden="true"> <span class="cta-long" data-i18n="cat.cart.cta">Continuer vers la soumission →</span> <span class="cta-short" data-i18n="cat.cart.cta.short">Soumission →</span> </span> </a>pan>
   </a>
   <div id="cartToast" class="cart-toast" aria-live="polite"></div>
 
-  <!-- Filter slide-over -->
+  
   <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPanel()"></div>
 
-  <!-- Product detail modal — opened by "View details" on each card -->
+  
   <div class="detail-overlay" id="detailOverlay" onclick="closeProductDetail()"></div>
   <div class="detail-modal" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
     <div class="detail-modal__inner">
@@ -441,43 +384,33 @@
           <div id="detailModalTitle" style="font-size:1.15rem;font-weight:700;margin-top:2px;line-height:1.25"></div>
         </div>
         <div id="detailModalPrice" class="detail-modal__price"></div>
-        <!-- Share this blank. Builds /b/<brand-style>/<colour> — server-rendered
-             in api/share/blank.js purely so the link unfurls with THIS garment
-             in THIS colour instead of the catalog's generic OG image. -->
+        
         <button class="sp-share" type="button" id="spShareBtn" onclick="spShareToggle(event)"
-                aria-expanded="false" aria-controls="spSharePop" aria-label="Share this blank">
+                aria-expanded="false" aria-controls="spSharePop" aria-label="Partager ce vêtement vierge">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5l5-5"/><path d="M12.5 7.5l1.6-1.6a3.4 3.4 0 014.8 4.8L17.3 12.3"/><path d="M11.5 16.5l-1.6 1.6a3.4 3.4 0 01-4.8-4.8L6.7 11.7"/></svg>
-          <span id="spShareLabel"  data-i18n="cat.share.cta">Partager</span>
+          <span id="spShareLabel" data-i18n="cat.share.cta">Partager</span>
         </button>
-        <div class="sp-sharepop" id="spSharePop" role="dialog" aria-modal="false" aria-label="Share this blank" hidden></div>
-        <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Close">✕</button>
+        <div class="sp-sharepop" id="spSharePop" role="dialog" aria-modal="false" aria-label="Partager ce vêtement vierge" hidden></div>
+        <button class="detail-modal__close" type="button" onclick="closeProductDetail()" aria-label="Fermer">✕</button>
       </div>
       <div class="detail-modal__body">
-        <!-- LEFT — single always-on live preview. The customizer's inline
-             stage (garment photo + draggable artwork overlay) IS the one
-             garment view; no separate hero gallery. -->
+        
         <div class="detail-modal__preview-col">
           <div class="dmcz__preview" id="dmczPreviewWrap"></div>
           <div id="detailModalSelectedColor" style="font-size:.82rem;color:#1a1a1a;font-weight:600;text-align:center"></div>
           <div id="detailModalSelectedSizes" style="font-size:.74rem;color:#666;text-align:center"></div>
         </div>
 
-        <!-- RIGHT — controls, always expanded + scrollable. Price + meta,
-             color swatches, then the customizer (method / placements /
-             uploads), with tech specs at the bottom. -->
+        
         <div class="detail-modal__controls-col" id="dmczCustomizer">
           <div id="detailModalMeta" style="font-size:.82rem;color:#666;line-height:1.5;margin-bottom:16px"></div>
 
-          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span  data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
+          <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"><span data-i18n="cat.detail.allcolors">Toutes les couleurs</span> (<span id="detailModalCount">0</span>)</div>
           <div class="detail-modal__swatches" id="detailModalSwatches"></div>
 
-          <!-- Customization bar — sits between the colors and tech specs. The
-               customizer drawer (method / placements / artwork) animates out of
-               this bar when the yellow footer button (or the bar) is clicked. -->
+          
           <div id="dmczCustomizeBar" class="dmcz-bar" role="button" tabindex="0" aria-expanded="false" aria-controls="dmczCustomizeBody" onclick="dmczToggleCustomize()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dmczToggleCustomize();}">
-            <span class="dmcz-bar__label"><span class="dmcz-bar__dot" aria-hidden="true"></span><span  data-i18n="cat.detail.customizehdr">Personnalisation</span></span>
-            <span class="dmcz-bar__hint"  data-i18n="cat.detail.customizehint">Ajoutez votre logo ou texte</span>
-            <span class="dmcz-bar__chev" aria-hidden="true">▾</span>
+            <span class="dmcz-bar__label"><span class="dmcz-bar__dot" aria-hidden="true"></span><span data-i18n="cat.detail.customizehdr">Personnalisation</span></span> <span class="dmcz-bar__hint" data-i18n="cat.detail.customizehint">Ajoutez votre logo ou texte</span> <span class="dmcz-bar__chev" aria-hidden="true">▾</span>
           </div>
           <div id="dmczCustomizeBody" class="dmcz-collapse">
             <div class="dmcz-collapse__inner">
@@ -490,48 +423,44 @@
             </div>
           </div>
 
-          <!-- Tech specs — parsed from the S&S product description. Moved to
-               the bottom of the controls column; still its collapsible self. -->
+          
           <div id="detailModalSpecsWrap" style="margin-top:22px;display:none">
             <div style="font-size:.74rem;color:#888;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;font-weight:600"  data-i18n="cat.detail.specs">Spécifications techniques</div>
             <ul id="detailModalSpecs" class="detail-modal__specs"></ul>
-            <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Show more specs ▾</button>
+            <button id="detailModalSpecsToggle" type="button" style="display:none;background:none;border:none;color:#1a1a1a;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:2px;margin-top:6px">Afficher plus de caractéristiques ▾</button>
           </div>
         </div>
       </div>
       <div class="detail-modal__foot">
         <div id="dmOrderMeter" class="dm-order-meter" role="status" aria-live="polite"></div>
         <div class="detail-modal__qty">
-          <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700"  data-i18n="cat.detail.qty">Qté</span>
-          <button type="button" id="detailModalQtyMinus" aria-label="Decrease quantity" class="detail-modal__qty-btn">−</button>
+          <span style="font-size:.7rem;color:#888;letter-spacing:.06em;text-transform:uppercase;font-weight:700" data-i18n="cat.detail.qty">Qté</span>
+          <button type="button" id="detailModalQtyMinus" aria-label="Diminuer la quantité" class="detail-modal__qty-btn">−</button>
           <input type="number" inputmode="numeric" id="detailModalQtyInput" min="1" max="10000" value="25" class="detail-modal__qty-input" />
-          <button type="button" id="detailModalQtyPlus" aria-label="Increase quantity" class="detail-modal__qty-btn">+</button>
+          <button type="button" id="detailModalQtyPlus" aria-label="Augmenter la quantité" class="detail-modal__qty-btn">+</button>
         </div>
         <div class="detail-modal__actions">
           <button type="button" id="dmczCustomizeToggle" class="dmcz-customize-btn" aria-expanded="false" aria-controls="dmczCustomizeBody" onclick="dmczToggleCustomize()">
-            <span class="dmcz-customize-btn__label"  data-i18n="cat.detail.customizecta">Personnaliser ce produit</span>
-            <span class="dmcz-customize-btn__chev" aria-hidden="true">▾</span>
+            <span class="dmcz-customize-btn__label" data-i18n="cat.detail.customizecta">Personnaliser ce produit</span> <span class="dmcz-customize-btn__chev" aria-hidden="true">▾</span>
           </button>
-          <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span  data-i18n="cat.card.add-to-quote">+ Ajouter à la soumission</span> · <span id="detailModalAddQty">25</span></button>
+          <button id="detailModalAddBtn" type="button" style="background:#1a1a1a;color:#fff;border:none;padding:11px 20px;border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.92rem"><span data-i18n="cat.card.add-to-quote">+ Ajouter à la soumission</span> · <span id="detailModalAddQty">25</span></button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Image lightbox — full-viewport overlay that pops open when the
-       main image in the detail modal is clicked. Click outside the image
-       or press ESC to close. Sits above the detail modal (z-index 1500). -->
-  <div class="img-lightbox" id="imgLightbox" role="dialog" aria-modal="true" aria-label="Enlarged product image" onclick="closeImgLightbox(event)">
-    <button type="button" class="img-lightbox__close" aria-label="Close" onclick="closeImgLightbox(event,true)">✕</button>
+  
+  <div class="img-lightbox" id="imgLightbox" role="dialog" aria-modal="true" aria-label="Image agrandie du produit" onclick="closeImgLightbox(event)">
+    <button type="button" class="img-lightbox__close" aria-label="Fermer" onclick="closeImgLightbox(event,true)">✕</button>
     <img class="img-lightbox__img" id="imgLightboxImg" src="" alt="" />
   </div>
   <aside class="filter-panel" id="filterPanel" aria-hidden="true">
     <header>
       <h3  data-i18n="cat.filter.refine">Affiner les résultats</h3>
-      <button onclick="closeFilterPanel()" aria-label="Close">×</button>
+      <button onclick="closeFilterPanel()" aria-label="Fermer">×</button>
     </header>
     <div class="scroll" id="filterBody">
-      <!-- Filter groups injected by JS once /api/catalog/facets returns -->
+      
     </div>
     <footer>
       <button class="clear" onclick="clearAllFilters()"  data-i18n="cat.filter.clear">Tout effacer</button>
@@ -540,16 +469,11 @@
   </aside>
 
 
-  <!-- ===== SEO: complete catalog index =====
-       Static link to /catalog/all/ — a flat alphabetical list of every
-       product page. Gives Googlebot a discoverable path to all 4,600
-       product URLs that the dynamic JS-rendered catalog doesn't expose
-       in the initial HTML. Visible to users too (people occasionally
-       want to browse the whole catalog A-Z). -->
+  
   <section style="padding:32px 24px;background:#f7f5ee;border-top:1px solid #e8e6df">
     <div style="max-width:1100px;margin:0 auto;text-align:center">
-      <p style="font-size:.92rem;color:#666;margin:0 0 8px">Looking for something specific?</p>
-      <a href="/fr/catalog/all/" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 22px;border-radius:50px;font-weight:600;font-size:.92rem"  data-i18n="cat.browseall">Parcourir les 4 600 produits par ordre alphabétique →</a>
+      <p style="font-size:.92rem;color:#666;margin:0 0 8px">Vous cherchez quelque chose de précis ?</p>
+      <a href="/fr/catalog/all" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:11px 22px;border-radius:50px;font-weight:600;font-size:.92rem" data-i18n="cat.browseall">Parcourir les 4 600 produits par ordre alphabétique →</a>
     </div>
   </section>
 
@@ -561,6 +485,6 @@
   <script src="/lang.js" defer></script>
   <script src="/offer-popup.js" defer></script>
   <script src="/account/program-catalog-filter.js" defer></script>
-  <script src="ai-translate.js" defer></script>
+  <script src="/ai-translate.js" defer></script>
 </body>
 </html>

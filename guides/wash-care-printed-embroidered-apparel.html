@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How to Wash Custom Printed &amp; Embroidered Apparel So It Lasts | Singhs Print</title>
   <meta name="description" content="A plain-language care guide for DTG, DTF, screen-printed and embroidered garments — washing, drying, ironing and what to put in the care sheet you hand your staff or team.">
@@ -34,7 +34,7 @@
   {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "How to Wash Custom Printed &amp; Embroidered Apparel So It Lasts",
+    "headline": "How to Wash Custom Printed & Embroidered Apparel So It Lasts",
     "description": "Washing, drying and ironing rules for DTG, DTF, screen print and embroidery — plus a care sheet you can hand to staff, teams and event volunteers.",
     "author": { "@type": "Organization", "name": "Singhs Print", "@id": "https://www.singhsprint.com/#business" },
     "publisher": { "@type": "Organization", "name": "Singhs Print", "logo": { "@type": "ImageObject", "url": "https://www.singhsprint.com/images/logo.png" } },
@@ -98,8 +98,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -213,7 +213,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Wash and Care', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Wash and Care', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

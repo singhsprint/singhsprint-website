@@ -109,7 +109,7 @@ def render_page(products, lang):
                 f'<section class="brand-group"><h2 id="brand-{anchor}">{html.escape(brand or "Other")}</h2><ul>'
             )
             last_brand = brand
-        href = f"{p_prefix}{slug}/"
+        href = f"{p_prefix}{slug}"  # no trailing slash: /p/x/ 308s to /p/x
         listing.append(f'<li><a href="{href}">{html.escape(full_title)}</a></li>')
     if last_brand is not None:
         listing.append('</ul></section>')

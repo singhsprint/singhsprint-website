@@ -77,11 +77,18 @@ const MARKETING = [
   { path: '/inkwear',                                   priority: 0.7,  changefreq: 'monthly', hreflang: true },
   { path: '/shop',                                      priority: 0.7,  changefreq: 'weekly',  hreflang: true },
   { path: '/shop/policies',                             priority: 0.4,  changefreq: 'yearly',  hreflang: true },
-  { path: '/order',                                     priority: 0.7,  changefreq: 'monthly', hreflang: true },
+  // /order is not listed: it is an order-tracking utility carrying noindex,
+  // and a sitemap must not ask Google to index a page that refuses it.
   { path: '/businesses/rfp',                            priority: 0.8,  changefreq: 'monthly', hreflang: true },
   { path: '/guides',                                    priority: 0.7,  changefreq: 'weekly',  hreflang: true },
-  // 2026-10-07 — retired: construction-crew-cost, procurement-checklist,
-  // charity-run-timeline (301s in vercel.json).
+  // 2026-10-07 — retired: construction-crew-cost, charity-run-timeline
+  // (301s in vercel.json). procurement-checklist was retired with them and
+  // restored 2026-10-30: it had 408 impressions and ranked #13 for "uniform
+  // program process" when it was redirected to /businesses, which Google reads
+  // as a removed page. Its screen-print, free-fitting-kit, printed-sample and
+  // 5-7 day reorder lines were the problem and are gone from the page.
+  { path: '/guides/procurement-checklist',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
+  { path: '/guides/custom-hoodies-bulk-order-guide',    priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/brand-colour-matching',              priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/branded-winter-outerwear',           priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/bulk-order-size-run',                priority: 0.6,  changefreq: 'monthly', hreflang: true },
@@ -93,16 +100,23 @@ const MARKETING = [
   { path: '/guides/minimum-order-price-breaks',         priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/team-jersey-ordering',               priority: 0.6,  changefreq: 'monthly', hreflang: true },
   { path: '/guides/wash-care-printed-embroidered-apparel', priority: 0.6, changefreq: 'monthly', hreflang: true },
+  { path: '/gifts',                                     priority: 0.8,  changefreq: 'monthly', hreflang: true },
 ]
 
-// Given an EN URL like `/p/foo/`, returns `/fr/p/foo/`. Idempotent:
+// URLS CARRY NO TRAILING SLASH (2026-10-30). vercel.json has
+// trailingSlash: false, so /p/foo/ answers 308 -> /p/foo. 111 of the 184 URLs
+// this script used to write were redirects, and Search Console counted 4,764
+// "Page with redirect". Every <loc> and hreflang below is the URL that answers
+// 200; scripts/check-url-canonical.mjs fails on any trailing slash but '/'.
+//
+// Given an EN URL like `/p/foo`, returns `/fr/p/foo`. Idempotent:
 // passing in a /fr/ URL returns it unchanged. The "/" → "/fr/"
 // replacement runs on the path portion only (the SITE prefix is
 // stripped, swapped, and re-prepended) to avoid the historical bug
 // where it would create `/fr/fr/...` when called twice.
 function toFrUrl(enLoc) {
   const path = enLoc.replace(SITE, '')
-  if (path === '/' || path === '') return `${SITE}/fr/`
+  if (path === '/' || path === '') return `${SITE}/fr`
   if (path.startsWith('/fr/') || path === '/fr') return enLoc
   return `${SITE}/fr${path}`
 }
@@ -269,7 +283,7 @@ async function run() {
   // and it is where most of the dead URLs were. Of the 12 broken entries
   // shipped on 2026-10-05, 7 were French.
   for (const m of MARKETING_LIVE) {
-    const frPath = m.path === '/' ? '/fr/' : `/fr${m.path}`
+    const frPath = m.path === '/' ? '/fr' : `/fr${m.path}`
     blocks.push(urlNode({
       loc: `${SITE}${frPath}`,
       lastmod: TODAY,
@@ -285,7 +299,7 @@ async function run() {
   // Google focuses crawl budget on the high-intent surfaces first.
   for (const slug of slugs) {
     blocks.push(urlNode({
-      loc: `${SITE}/p/${slug}/`,
+      loc: `${SITE}/p/${slug}`,
       lastmod: TODAY,
       changefreq: 'weekly',
       priority: 0.5,
@@ -301,7 +315,7 @@ async function run() {
   const frSlugs = await listFrProductSlugs()
   for (const slug of frSlugs) {
     blocks.push(urlNode({
-      loc: `${SITE}/fr/p/${slug}/`,
+      loc: `${SITE}/fr/p/${slug}`,
       lastmod: TODAY,
       changefreq: 'weekly',
       priority: 0.5,

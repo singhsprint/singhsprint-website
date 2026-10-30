@@ -75,6 +75,36 @@ window.spOrderMeter = function (cartUnits, adding, min) {
 // ===== SP_ORDER_METER_END
 
 // ---------------------------------------------------------------------
+// spAfterFirstPaint(fn) -- run fn once the visitor interacts, or 3 s after
+// the load event, whichever comes first. (Added 2026-10-30.)
+//
+// The Google tag (two copies, G- and AW-, 358 KB) and Meta's fbevents.js
+// (115 KB) were 470 KB of the 744 KB a service page downloads, all parsed
+// and run while the page was still painting: Lighthouse mobile had the
+// t-shirt page at 48 with the main content showing at 8.5 s. Nothing they
+// measure is lost by waiting -- gtag() and fbq() calls queue until the
+// library arrives -- and the first tap, wheel or key press loads them at
+// once, so a quote submitted seconds after landing is still tracked.
+// ---------------------------------------------------------------------
+function spAfterFirstPaint(fn) {
+  var done = false;
+  // Not 'scroll': pages fire scroll events on their own while loading
+  // (layout shifts, the injected nav), which loaded both tags at 0.2 s in
+  // testing. 'wheel' and 'touchstart' are the person scrolling.
+  var EVENTS = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+  function run() {
+    if (done) return;
+    done = true;
+    EVENTS.forEach(function (e) { window.removeEventListener(e, run, true); });
+    try { fn(); } catch (e) {}
+  }
+  EVENTS.forEach(function (e) { window.addEventListener(e, run, { capture: true, passive: true, once: true }); });
+  function afterLoad() { setTimeout(run, 3000); }
+  if (document.readyState === 'complete') afterLoad();
+  else window.addEventListener('load', afterLoad, { once: true });
+}
+
+// ---------------------------------------------------------------------
 // Google measurement (GA4 + Google Ads) bootstrap.
 // Mirrors the inline Meta Pixel pattern on the HTML pages: pulls IDs from
 // /gtag-config.js so rotation lives in one place. Runs immediately at
@@ -134,12 +164,16 @@ window.spOrderMeter = function (cartUnits, adding, min) {
   cfg.src = '/gtag-config.js';
   cfg.onload = function () {
     if (!window.SP_GA4_MEASUREMENT_ID) return; // config malformed — bail
-    // 2. Pull the gtag CDN. async so it doesn't block parse.
-    var base = document.createElement('script');
-    base.async = true;
-    base.src = 'https://www.googletagmanager.com/gtag/js?id='
-             + encodeURIComponent(window.SP_GA4_MEASUREMENT_ID);
-    document.head.appendChild(base);
+    // 2. Pull the gtag CDN -- once the page has painted (see
+    //    spAfterFirstPaint). Everything gtag() is called with before then
+    //    waits in window.dataLayer and is sent when the library arrives.
+    spAfterFirstPaint(function () {
+      var base = document.createElement('script');
+      base.async = true;
+      base.src = 'https://www.googletagmanager.com/gtag/js?id='
+               + encodeURIComponent(window.SP_GA4_MEASUREMENT_ID);
+      document.head.appendChild(base);
+    });
     // 3. Load our SP_GTAG helper (initialises gtag('config') + exposes API).
     var helper = document.createElement('script');
     helper.src = '/gtag.js';
@@ -165,11 +199,17 @@ window.spOrderMeter = function (cartUnits, adding, min) {
 (function loadMetaPixel() {
   if (window.fbq) return; // page already inlined the base snippet — skip
   var PIXEL_ID = '1198620955711122'; // SP_PIXEL — same ID as the /quote inline snippet
-  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  // Meta's standard base code, split in two: the fbq() queue now, the
+  // 115 KB fbevents.js once the page has painted (spAfterFirstPaint). Calls
+  // made in between queue exactly as they do while the script downloads.
+  !function(f,n){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
   n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[]}(window);
+  spAfterFirstPaint(function () {
+    var t = document.createElement('script'); t.async = true;
+    t.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(t);
+  });
   var granted = false;
   try { granted = localStorage.getItem('sp_consent') === 'granted'; } catch (e) {}
   try { window.fbq('consent', granted ? 'grant' : 'revoke'); } catch (e) {}
@@ -1493,19 +1533,13 @@ function loadSchema() {
           { "@type": "PropertyValue", "propertyID": "GST", "value": "71581 7169 RT0001" },
           { "@type": "PropertyValue", "propertyID": "QST", "value": "1233348101 TQ0001" }
         ],
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.7",
-          "reviewCount": "37",
-          "bestRating": "5"
-        },
         "areaServed": [
           { "@type": "City", "name": "Montreal" },
           { "@type": "City", "name": "Laval" },
           { "@type": "City", "name": "Longueuil" },
           { "@type": "AdministrativeArea", "name": "West Island" }
         ],
-        "sameAs": ["https://www.instagram.com/singhsprint"],
+        "sameAs": ["https://www.instagram.com/singhsprint", "https://maps.app.goo.gl/FX8o2QEvQzngxeiv7"],
         "makesOffer": [
           { "@type": "Offer", "name": "Custom T-Shirt Printing — Bulk",
             "priceSpecification": { "@type": "UnitPriceSpecification", "price": "9.95", "priceCurrency": "CAD", "unitText": "per unit at 250+ qty", "minPrice": "9.95", "maxPrice": "29.95" } },

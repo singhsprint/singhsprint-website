@@ -3854,26 +3854,12 @@
         'returnMethod':         'https://schema.org/ReturnByMail',
         'returnFees':           'https://schema.org/FreeReturn'
       };
-      var AGGREGATE_RATING = {
-        '@type': 'AggregateRating',
-        'ratingValue': '5.0',
-        'reviewCount': '23',
-        'bestRating':  '5',
-        'worstRating': '1'
-      };
-      var REVIEWS_LIST = [
-        { name: 'Coodin',      date: '2024-06-01', body: 'Printed tees for my band on extremely short notice. Literally on the same day of our gig at Singhs Arcade. If you want a print shop that actually values their customers and isn’t strictly for profit, this is the place. 10/10' },
-        { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },
-        { name: 'Ori Peer',    date: '2024-03-10', body: 'I love my shirt they supported my vision!!! Best spot in MTL!' }
-      ].map(function(r) {
-        return {
-          '@type': 'Review',
-          'author':        { '@type': 'Person', 'name': r.name },
-          'datePublished': r.date,
-          'reviewRating':  { '@type': 'Rating', 'ratingValue': '5', 'bestRating': '5' },
-          'reviewBody':    r.body
-        };
-      });
+      // No aggregateRating / review here (2026-10-30). This stamped a 5.0
+      // from 23 reviews -- a number the shop never had, the real one is 4.7
+      // from 37 on Google -- onto every product in the list, and Google's
+      // review-snippet rules forbid ratings that are not about the item or
+      // that come from another site. scripts/check-url-canonical.mjs fails if
+      // an AggregateRating comes back.
 
       var list = slice.map(function(p, i) {
         var heroColor = (p.colors || [])[0] || {};
@@ -3888,8 +3874,6 @@
           'description': (p.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500) || ((p.brand || '') + ' ' + (p.name || '') + ' decorated by Singhs Print Montreal — DTG, DTF, embroidery or screen.'),
           'category': p.garment_type || 'Custom Apparel',
           'url': BASE + '/catalog?product=' + encodeURIComponent(p.product_id || ''),
-          'aggregateRating': AGGREGATE_RATING,
-          'review':          REVIEWS_LIST,
           'offers': (typeof p.price_from === 'number' && p.price_from > 0) ? {
             '@type': 'Offer',
             'priceCurrency': 'CAD',

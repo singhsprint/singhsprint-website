@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Charity Run T-Shirt Timeline: From Sponsor Approval to Event Day | Singhs Print</title>
   <meta name="description" content="A week-by-week six-week timeline for charity run organizers ordering event apparel. Sponsor logos, sizing, mockup approval, production, race-day distribution.">
@@ -33,16 +33,27 @@
 
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Charity Run T-Shirt Timeline: From Sponsor Approval to Event Day",
-    "author": { "@type": "Organization", "name": "Singhs Print", "@id": "https://www.singhsprint.com/#business" },
-    "publisher": { "@type": "Organization", "name": "Singhs Print", "logo": { "@type": "ImageObject", "url": "https://www.singhsprint.com/images/logo.png" } },
-    "datePublished": "2026-05-12",
-    "dateModified": "2026-05-12",
-    "image": "https://www.singhsprint.com/images/guides/charity-timeline.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/charity-run-timeline.html"
-  }
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Charity Run T-Shirt Timeline: From Sponsor Approval to Event Day",
+  "author": {
+    "@type": "Organization",
+    "name": "Singhs Print",
+    "@id": "https://www.singhsprint.com/#business"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Singhs Print",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.singhsprint.com/images/logo.png"
+    }
+  },
+  "datePublished": "2026-05-12",
+  "dateModified": "2026-05-12",
+  "image": "https://www.singhsprint.com/images/guides/charity-timeline.jpg",
+  "mainEntityOfPage": "https://www.singhsprint.com/guides/charity-run-timeline"
+}
   </script>
 
   <style>
@@ -89,8 +100,8 @@
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
     @media(max-width:560px){.week-card{grid-template-columns:1fr}.week-num{min-width:auto;max-width:140px}}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -217,7 +228,7 @@
     <h2  data-i18n="guide.charity.h2.related">Guides et programmes connexes</h2>
     <div class="related-grid">
       <a class="related-card" href="/fr/industries/charity-events-fundraisers"><h3>Charity event apparel</h3><p>Race tees, volunteer kits, multi-sponsor layouts.</p></a>
-      <a class="related-card" href="/fr/guides/decoration-method-durability"><h3>Decoration durability</h3><p>Why DTF is the standard for race tees.</p></a>
+      <a class="related-card" href="/fr/guides/decoration-method-durability"><h3>Durabilité des décorations</h3><p>Why DTF is the standard for race tees.</p></a>
       <a class="related-card" href="/fr/guides/procurement-checklist"><h3>Procurement checklist</h3><p>Six-step spec process for any uniform program.</p></a>
       <a class="related-card" href="/fr/businesses/rfp"><h3>Submit an RFP</h3><p>Procurement-grade intake form.</p></a>
     </div>
@@ -231,7 +242,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Charity Run Timeline', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Charity Run Timeline', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

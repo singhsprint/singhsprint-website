@@ -130,7 +130,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/account/orders.html" class="back-link">← Back to quotes &amp; orders</a>
+  <a href="/account/orders" class="back-link">← Back to quotes &amp; orders</a>
 
   <div id="content" class="loading">Loading your quote…</div>
 </main>
@@ -465,14 +465,14 @@
 
     var quoteId = getQuoteId();
     if (!quoteId) {
-      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/account/orders" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
       return;
     }
 
     var data;
     try { data = await loadQuote(quoteId); }
     catch (e) {
-      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/account/orders" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
       return;
     }
 
@@ -528,7 +528,7 @@
     if (isVoided) {
       html += '<div class="pre-banner" style="background:#f4f4f5;border:1px solid #d4d4d8;color:#3f3f46"><strong>This quote is no longer active.</strong> ' +
         (replacement
-          ? 'It was replaced by quote ' + esc(replacement.order_number || '') + '. <a href="/account/quote.html?id=' + encodeURIComponent(replacement.id) + '" style="color:#1a1a1a;text-decoration:underline;font-weight:600">View the new quote →</a>'
+          ? 'It was replaced by quote ' + esc(replacement.order_number || '') + '. <a href="/account/quote?id=' + encodeURIComponent(replacement.id) + '" style="color:#1a1a1a;text-decoration:underline;font-weight:600">View the new quote →</a>'
           : 'Message us below if you have any questions.') +
         '</div>';
     } else if (paidInFull) {

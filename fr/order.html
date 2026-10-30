@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order tracking · Singhs Print</title>
-  <meta name="description" content="Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.">
+  <title>Suivi de commande · Singhs Print</title>
+  <meta name="description" content="Suivez l'état de votre commande de vêtements personnalisés chez Singhs Print.">
   <link rel="canonical" href="https://www.singhsprint.com/fr/order">
   <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/order">
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/order">
@@ -69,22 +69,19 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/fr/" class="back-link">← <span data-i18n="order.back">Back to homepage</span></a>
+  <a href="/fr" class="back-link">← <span>Retour à l'accueil</span></a>
 
   <div class="hero">
-    <h1 data-i18n="order.h1">Order tracking</h1>
-    <p data-i18n="order.sub" id="orderSub">Enter your tracking link or check below for the latest status.</p>
+    <h1>Suivi de commande</h1>
+    <p id="orderSub">Entrez votre lien de suivi ou consultez l'état le plus récent ci-dessous.</p>
   </div>
 
   <div id="orderRoot">
-    <div class="card loading" data-i18n="order.loading">Looking up your order…</div>
+    <div class="card loading">Recherche de votre commande…</div>
   </div>
 
   <p class="help">
-    <span data-i18n="order.help">Questions?</span>
-    <strong><a href="mailto:sales@singhsprint.com">sales@singhsprint.com</a></strong>
-    <span data-i18n="order.help.or">or</span>
-    <strong><a href="tel:4385443800">438-544-3800</a></strong>
+    <span>Des questions ?</span> <strong><a href="mailto:sales@singhsprint.com">sales@singhsprint.com</a></strong> <span>ou</span> <strong><a href="tel:4385443800">438-544-3800</a></strong>
   </p>
 </main>
 
@@ -322,23 +319,23 @@
 
     // Summary
     html += '<div class="card">';
-    html +=   '<div class="label" data-i18n="order.summary">Summary</div>';
-    html +=   '<div class="row"><span class="key" data-i18n="order.submitted">Submitted</span><span class="val">' + esc(fmtDate(data.created_at)) + '</span></div>';
+    html +=   '<div class="label">Summary</div>';
+    html +=   '<div class="row"><span class="key">Submitted</span><span class="val">' + esc(fmtDate(data.created_at)) + '</span></div>';
     if (data.updated_at && data.updated_at !== data.created_at) {
-      html += '<div class="row"><span class="key" data-i18n="order.lastupdate">Last update</span><span class="val">' + esc(fmtDate(data.updated_at)) + '</span></div>';
+      html += '<div class="row"><span class="key">Last update</span><span class="val">' + esc(fmtDate(data.updated_at)) + '</span></div>';
     }
     if (data.total_qty) {
-      html += '<div class="row"><span class="key" data-i18n="order.qty">Quantity</span><span class="val">' + data.total_qty + ' ' + esc(tFR('units')) + (data.num_sides ? ' · ' + data.num_sides + ' side' + (data.num_sides > 1 ? 's' : '') : '') + '</span></div>';
+      html += '<div class="row"><span class="key">Quantity</span><span class="val">' + data.total_qty + ' ' + esc(tFR('units')) + (data.num_sides ? ' · ' + data.num_sides + ' side' + (data.num_sides > 1 ? 's' : '') : '') + '</span></div>';
     }
     if (data.estimated_total) {
-      html += '<div class="row"><span class="key" data-i18n="order.estimate">Initial estimate</span><span class="val">' + esc(fmtMoney(data.estimated_total)) + '</span></div>';
+      html += '<div class="row"><span class="key">Initial estimate</span><span class="val">' + esc(fmtMoney(data.estimated_total)) + '</span></div>';
     }
     html += '</div>';
 
     // Cart
     if (Array.isArray(data.cart_items) && data.cart_items.length > 0) {
       html += '<div class="card">';
-      html +=   '<div class="label" data-i18n="order.items">Items</div>';
+      html +=   '<div class="label">Items</div>';
       data.cart_items.forEach(function (it) {
         html += '<div class="cart-row">';
         html +=   '<div style="min-width:0">';

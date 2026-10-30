@@ -83,7 +83,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/fr/account/" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
+  <a href="/fr/account" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
   <div id="acct-subnav"></div>
   <div class="hero">
     <h1  data-i18n="account.prog.h1">Programmes</h1>
@@ -95,15 +95,15 @@
     <span style="font-size:.78rem;opacity:.85" id="biz-strip-sub"></span>
   </div>
 
-  <!-- ============== MEMBER VIEW (read-only, shown to members) ============== -->
+  
   <div id="member-section" class="hide">
     <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:12px">Your program</h2>
     <div id="member-cards"></div>
   </div>
 
-  <!-- ============== ADMIN VIEW ============== -->
+  
   <div id="admin-section" class="hide">
-    <!-- ---- Program picker ---- -->
+    
     <div class="card">
       <h2>Programs in your organization
         <button class="btn btn--primary" id="new-program-btn" type="button">+ New program</button>
@@ -112,7 +112,7 @@
       <div id="programs-empty" class="empty hide">No programs yet. Create one to start gating a catalog by cohort.</div>
     </div>
 
-    <!-- ---- New / edit program form (toggled) ---- -->
+    
     <div class="card hide" id="form-card">
       <h2 id="form-title">New program</h2>
       <div class="form-row">
@@ -148,9 +148,9 @@
       <div id="form-msg" class="msg hide"></div>
     </div>
 
-    <!-- ---- Selected program detail ---- -->
+    
     <div id="detail-section" class="hide">
-      <!-- Access code (shared cohort code) -->
+      
       <div class="card">
         <h2>Access code
           <span style="color:#888;font-size:.78rem;font-weight:500">one shared key students enter on /join</span>
@@ -182,7 +182,7 @@
         <div id="access-code-msg" class="msg hide"></div>
       </div>
 
-      <!-- Invite members -->
+      
       <div class="card">
         <h2>Invite members
           <span style="color:#888;font-size:.78rem;font-weight:500">explicit invitations only</span>
@@ -197,13 +197,13 @@
         <div id="invites-table-wrap" class="hide" style="margin-top:18px">
           <h3 style="font-size:.86rem;font-weight:700;margin-bottom:6px;color:#666;letter-spacing:.04em;text-transform:uppercase">Pending invites</h3>
           <table id="invites-table">
-            <thead><tr><th>Email</th><th>Invited</th><th></th></tr></thead>
+            <thead><tr><th>Courriel</th><th>Invited</th><th></th></tr></thead>
             <tbody id="invites-body"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Optional domain guardrail -->
+      
       <div class="card">
         <h2>Restrict invites by email domain
           <span style="color:#888;font-size:.78rem;font-weight:500">optional safety net</span>
@@ -216,7 +216,7 @@
         </div>
       </div>
 
-      <!-- Catalog whitelist -->
+      
       <div class="card">
         <h2>Catalog whitelist
           <span style="color:#888;font-size:.78rem;font-weight:500">products members may order</span>
@@ -224,9 +224,7 @@
         <p class="sub">Members see only the products you whitelist here on the catalog page. Leave empty for an open program (no gating).</p>
         <div id="catalog-list"></div>
 
-        <!-- Product picker (replaced the old UUID-paste field with a real
-             search + click-to-add experience). The catalog is fetched once
-             from the CRM on first interaction and cached in memory. -->
+        
         <div style="position:relative;margin-top:10px">
           <input id="catalog-input" type="search" autocomplete="off" placeholder="Search products by name, brand, or style…" style="width:100%">
           <div id="catalog-dropdown" class="hide" style="position:absolute;left:0;right:0;top:100%;z-index:20;margin-top:4px;background:#fff;border:1px solid #e9e7df;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.06);max-height:280px;overflow:auto"></div>
@@ -234,7 +232,7 @@
         <p class="sub" style="margin-top:8px;font-size:.78rem">Click a product to add it. Click the × on a chip above to remove. Empty whitelist = members can order anything.</p>
       </div>
 
-      <!-- Members + reporting -->
+      
       <div class="card">
         <h2>Members
           <a class="btn btn--ghost" id="export-csv" href="#" target="_blank" rel="noopener">Export CSV</a>
@@ -261,7 +259,7 @@
 
   <div id="no-access" class="card hide" style="text-align:center">
     <h2 style="font-size:1.1rem">Programs are a business-tier feature</h2>
-    <p style="color:#666;margin-top:6px">Request business status from the <a href="/fr/account/business.html" style="text-decoration:underline">business page</a> to set up institutional programs.</p>
+    <p style="color:#666;margin-top:6px">Request business status from the <a href="/fr/account/business" style="text-decoration:underline">business page</a> to set up institutional programs.</p>
   </div>
 </main>
 
@@ -574,7 +572,7 @@
     const root = $('domains-list');
     if (!list.length) { root.innerHTML = '<div class="empty">No domain restrictions — invites can be issued to any email.</div>'; return; }
     root.innerHTML = list.map((d) =>
-      `<span class="chip">@${esc(d)} <button data-rm-domain="${esc(d)}" aria-label="Remove">×</button></span>`
+      `<span class="chip">@${esc(d)} <button data-rm-domain="${esc(d)}" aria-label="Retirer">×</button></span>`
     ).join('');
     root.querySelectorAll('button[data-rm-domain]').forEach((b) => {
       b.onclick = async () => {
@@ -664,7 +662,7 @@
         const label = p
           ? `${esc(p.name)}${p.sku ? ' <span style="color:#999;font-size:.74rem">' + esc(p.sku) + '</span>' : ''}`
           : `<span style="font-family:monospace;font-size:.74rem">${esc(id.slice(0,8))}…</span>`;
-        return `<span class="chip">${label} <button data-rm-prod="${esc(id)}" aria-label="Remove">×</button></span>`;
+        return `<span class="chip">${label} <button data-rm-prod="${esc(id)}" aria-label="Retirer">×</button></span>`;
       }).join('');
       root.querySelectorAll('button[data-rm-prod]').forEach((b) => {
         b.onclick = async () => {

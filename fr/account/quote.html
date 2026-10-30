@@ -130,7 +130,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/fr/account/orders.html" class="back-link">← Back to quotes &amp; orders</a>
+  <a href="/fr/account/orders" class="back-link">← Back to quotes &amp; orders</a>
 
   <div id="content" class="loading">Loading your quote…</div>
 </main>
@@ -465,14 +465,14 @@
 
     var quoteId = getQuoteId();
     if (!quoteId) {
-      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/fr/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      $('content').innerHTML = '<div class="empty">No quote selected. <a href="/fr/account/orders" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
       return;
     }
 
     var data;
     try { data = await loadQuote(quoteId); }
     catch (e) {
-      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/fr/account/orders.html" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
+      $('content').innerHTML = '<div class="empty">Couldn\'t load this quote: ' + esc(e.message || 'unknown error') + '. <a href="/fr/account/orders" style="color:#1a1a1a;text-decoration:underline">Back to your quotes →</a></div>';
       return;
     }
 

@@ -2,69 +2,108 @@
 /**
  * generate-fr-mirror.mjs
  * ---------------------------------------------------------------
- * Builds a static French mirror of the site at /fr/. Reads lang.js
- * for translations, walks every HTML file in singhsprint-site, and
- * outputs a pre-translated counterpart at /fr/<same-path>.
+ * Builds the static French mirror of the site at /fr/.
  *
- * Why static instead of client-side JS swap: Googlebot indexes the
- * INITIAL HTML payload as one document per URL. With JS-only swap,
- * the FR content is invisible to indexing — both /quote and the
- * (theoretical) /fr/quote return identical HTML so Google only
- * ever sees one language per URL. Static mirroring fixes that.
+ * Why static instead of a client-side swap: Googlebot indexes the initial
+ * HTML of each URL. If /fr/x only became French after JavaScript ran, Google
+ * would index English under a French URL.
  *
- * Run locally before deploy:
- *   node scripts/generate-fr-mirror.mjs
+ * Run before deploy:
+ *   node scripts/generate-fr-mirror.mjs            (writes /fr/)
+ *   node scripts/generate-fr-mirror.mjs --report   (lists untranslated copy, writes nothing)
+ *   node scripts/generate-fr-mirror.mjs --prune    (also removes FR files whose EN page is gone)
  *
- * What it does per file:
- *   1. Replace inner text/HTML of every `data-i18n="key"` element
- *      with the FR value from lang.js.
- *   2. Update <html lang="en"> → lang="fr"
- *   3. Update <title>, <meta description>, OG/Twitter meta to FR
- *      equivalents where keys exist (best-effort).
- *   4. Add hreflang alternates pointing back at the EN page.
- *   5. Update canonical URL to the /fr/ version.
- *   6. Rewrite same-origin links to /fr/ counterparts so the user
- *      doesn't get bounced back to EN by every nav click.
+ * Per page, in this order:
+ *   1. data-i18n="key" elements get their lang.js French (the runtime toggle
+ *      uses the same keys).
+ *   2. Every remaining sentence, attribute (alt/title/placeholder/aria-label,
+ *      meta description, og:/twitter: copy) and JSON-LD copy string is looked
+ *      up in i18n/fr.json, the translation memory. Lookup is by the English
+ *      sentence itself (whitespace-collapsed), see scripts/lib/html-segments.mjs.
+ *   3. <html lang>, og:locale, canonical, hreflang, og:url, and same-origin
+ *      links are rewritten to the /fr/ side.
  *
- * What it does NOT do:
- *   - Translate dynamic content from APIs (catalog product names,
- *     colours, S&S descriptions). Those are still EN unless the
- *     CRM API gets FR fields one day.
- *   - Touch the components.js / lang.js / scripts/ files. The
- *     mirror references the originals so the same nav/footer/i18n
- *     runtime works on both sides.
+ * 2026-10-30 -- why step 2 exists. Until now step 1 was the only translation,
+ * and only ~11 elements per service page carried a data-i18n key. The six
+ * service pages, five industry pages and every guide shipped under /fr/ as
+ * English with lang="fr": Search Console showed 22 French queries, 0 clicks,
+ * positions 47-75. Step 2 translates the copy itself; when an English sentence
+ * changes, its old translation stops matching and scripts/check-fr-coverage.mjs
+ * names the sentence, instead of the French page quietly keeping old wording.
  *
- * Safe to re-run. Wipes /fr/ at the start so deletions in EN are
- * reflected.
+ * What it does NOT touch:
+ *   - /fr/p/ (product pages): written by generate-product-pages.mjs.
+ *   - HAND_MAINTAINED pages below: their French is written directly.
+ *
+ * 2026-10-30 -- this script used to start with `rm -rf fr/`. Anywhere rm was
+ * allowed that deleted all 4,603 French product pages (another script's
+ * output) and the hand-written legal pages, and then regenerated neither.
+ * It only ever "worked" on a mount that refuses deletes. It no longer deletes
+ * anything unless asked with --prune, and --prune only removes generated
+ * pages whose English source is gone.
  */
 
 import fs   from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { applyTranslations, segments, norm } from './lib/html-segments.mjs';
 
-const ROOT   = path.resolve(new URL('.', import.meta.url).pathname, '..');
+const ROOT   = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FR_DIR = path.join(ROOT, 'fr');
 const SITE   = 'https://www.singhsprint.com';
+export const TM_PATH = path.join(ROOT, 'i18n', 'fr.json');
+
+// French maintained by hand (or by its own generator). The mirror never
+// writes these. Paths are relative to the site root, EN side.
+//   legal pages: full hand translation (Bill 96), since 2026-06-05
+//   gifts/*:     written by scripts/build_gifts.py in both languages
+//   account/orders, account/quote: edited by hand after mirroring
+//   guides/custom-hoodies-bulk-order-guide: written in both languages
+export const HAND_MAINTAINED = new Set([
+  'privacy.html', 'cookies.html', 'terms.html', 'accessibility.html',
+  'gifts.html', 'gifts/build.html', 'gifts/order.html',
+  'account/orders.html', 'account/quote.html',
+  'guides/custom-hoodies-bulk-order-guide.html',
+]);
+
+// Pages that must come out 100% French: every sentence has a translation in
+// i18n/fr.json. scripts/check-fr-coverage.mjs fails on any gap. These are the
+// pages people find from Google; the rest (account/*, noindex utilities, pages
+// that now redirect) still mirror, best effort.
+export const FULLY_FRENCH = [
+  'index.html', 'about.html', 'why-us.html', 'quote.html', 'catalog.html',
+  'businesses.html', 'businesses/rfp.html', 'portfolio.html', 'inkwear.html',
+  'jerseys.html', 'youth-initiative.html', 'order.html',
+  'custom-t-shirts-montreal.html', 'custom-hoodies-montreal.html',
+  'custom-hats-caps-montreal.html', 'dtg-printing-montreal.html',
+  'dtf-printing-montreal.html', 'embroidery-montreal.html',
+  'industries/construction-workwear.html', 'industries/restaurant-hospitality-uniforms.html',
+  'industries/corporate-tech-swag.html', 'industries/charity-events-fundraisers.html',
+  'industries/schools-sports-teams.html',
+  'guides/brand-colour-matching.html', 'guides/branded-winter-outerwear.html',
+  'guides/bulk-order-size-run.html', 'guides/custom-embroidered-caps-ordering-guide.html',
+  'guides/decoration-method-durability.html', 'guides/fabric-cotton-polyester-blends.html',
+  'guides/logo-file-requirements.html', 'guides/logo-placement-print-sizes.html',
+  'guides/minimum-order-price-breaks.html', 'guides/procurement-checklist.html',
+  'guides/team-jersey-ordering.html', 'guides/wash-care-printed-embroidered-apparel.html',
+  'shop/index.html', 'shop/policies.html',
+];
 
 // -- Load translations from lang.js ----------------------------------------
-// lang.js is "var translations = { ... };" — extract that object literal,
-// strip the surrounding scaffolding, and eval it inside a Function so we
-// don't need to parse JS by hand.
-async function loadTranslations() {
+// lang.js is "var translations = { ... };" -- extract that object literal and
+// evaluate it inside a Function so we don't parse JS by hand.
+export async function loadTranslations() {
   const src = await fs.readFile(path.join(ROOT, 'lang.js'), 'utf8');
   const m = src.match(/translations\s*=\s*(\{[\s\S]*?\n  \})\s*;/);
   if (!m) throw new Error('Could not extract translations object from lang.js');
-  // Use Function so eval'd code stays out of the module scope.
   const fn = new Function('return ' + m[1]);
   return fn();
 }
 
-// Legal pages are translated by hand into full French (compliance/Bill 96),
-// not via data-i18n, so the generator must NOT overwrite their /fr versions.
-// Their hand-written counterparts live at /fr/<name> and are maintained
-// directly. (Added 2026-06-05.)
-const SKIP_FILES = new Set([
-  'privacy.html', 'cookies.html', 'terms.html', 'accessibility.html',
-]);
+export async function loadMemory() {
+  try { return JSON.parse(await fs.readFile(TM_PATH, 'utf8')); }
+  catch (e) { if (e.code === 'ENOENT') return {}; throw e; }
+}
 
 // -- HTML files to mirror --------------------------------------------------
 async function findHtmlFiles(dir, out = []) {
@@ -72,30 +111,23 @@ async function findHtmlFiles(dir, out = []) {
   for (const e of entries) {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) {
-      // Skip generated dirs + node_modules / .git equivalents.
-      // /p/ (product pages) is also skipped — the page template is
-      // hardcoded English and we don't want to ship 1,100 FR URLs that
-      // serve English content (language mismatch penalty). When the
-      // template gets data-i18n keys, remove 'p' from this list.
-      // '_to_delete' added 2026-10-05. Orphaned product pages are moved there
-      // rather than removed (the mount refuses rm), and this walker mirrored
-      // all of them: 2,371 French pages for products deliberately taken off
-      // the site, committed before anyone looked at the file count.
-      if (['fr', 'scripts', 'node_modules', '.git', 'images', 'downloads', 'p', '_to_delete'].includes(e.name)) continue;
+      // /p/ is written by generate-product-pages.mjs (both languages).
+      // '_to_delete' (2026-10-05): orphaned pages are parked there rather than
+      // removed; mirroring them once produced 2,371 French pages for products
+      // deliberately taken off the site.
+      if (['fr', 'scripts', 'node_modules', '.git', 'images', 'downloads', 'p', '_to_delete', 'tmp', 'i18n'].includes(e.name)) continue;
       await findHtmlFiles(full, out);
-    } else if (e.isFile() && e.name.endsWith('.html') && !SKIP_FILES.has(e.name)) {
+    } else if (e.isFile() && e.name.endsWith('.html')) {
       out.push(full);
     }
   }
   return out;
 }
 
-// -- Translate one HTML file -----------------------------------------------
-//
-// We use a regex pass for data-i18n="key">...</close. It handles 99% of
-// the markup the site uses. For elements whose inner content contains
-// nested tags we still rewrite — a small heuristic keeps it stable.
-function translateHtml(html, T) {
+// -- Step 1: data-i18n -------------------------------------------------------
+// A regex pass for data-i18n="key">...</close. Elements whose inner content
+// itself holds data-i18n children are left to the runtime.
+export function translateHtml(html, T) {
   // 1. Replace data-i18n="key" inner content. The regex captures:
   //    [1] tag name, [2] attrs before data-i18n, [3] the key, [4] attrs after,
   //    [5] the inner content up to the matching close tag, [6] the close tag.
@@ -114,252 +146,152 @@ function translateHtml(html, T) {
     }
   );
 
-  // 2. Translate <title>, <meta name="description"...>, and OG/Twitter copy
-  //    when the FR-equivalent values are derivable. We map a few well-known
-  //    keys → meta selectors so the head of each page is fully French.
-  // (Most pages have their head copy hardcoded — we patch a few common cases
-  //  with substring search instead of trying to parse the head.)
-  const PAGE_TITLE_MAP = {
-    // Map: substring-in-current-title → fr replacement title
-    'About Singhs Print':           'À propos · Imprimerie Singhs Print',
-    'Singhs Print — Custom Apparel': 'Singhs Print · Impression de vêtements personnalisés',
-    'Singhs Print - Custom Apparel': 'Singhs Print · Impression de vêtements personnalisés',
-    'Custom Apparel Catalog':       'Catalogue de vêtements personnalisés',
-    'Apparel Catalog':              'Catalogue de vêtements',
-    'Get a Custom Apparel Quote':   'Demander une soumission',
-    'Quote · Singhs Print':         'Soumission · Singhs Print',
-    'Custom Apparel for Businesses': 'Vêtements personnalisés pour entreprises',
-    'Inkwear':                      'Inkwear',
-    'Portfolio':                    'Portfolio',
-    'Track your order':             'Suivez votre commande',
-    'Why Singhs Print':             'Pourquoi Singhs Print'
-  };
-  for (const [needle, replacement] of Object.entries(PAGE_TITLE_MAP)) {
-    html = html.replace(
-      new RegExp(`<title>([^<]*${needle.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}[^<]*)</title>`, 'i'),
-      `<title>${replacement} · FR</title>`
-    );
-  }
+  // An element keyed to a lang.js entry with no French would be put BACK to
+  // English by the runtime (SP_LANG.t falls back to en), undoing step 2. Drop
+  // the key on the French side so the static French stays.
+  html = html.replace(/\sdata-i18n="([^"]+)"/g, (m, key) => (T[key] && T[key].fr ? m : ''));
 
-  // 3. Switch <html lang="en"> to lang="fr"
   html = html.replace(/<html\s+lang="en"/i, '<html lang="fr"');
-
-  // 4. Update OG locale tags
-  html = html.replace(
-    /(<meta\s+property="og:locale"\s+content=)"en_CA"/i,
-    '$1"fr_CA"'
-  );
-  // Add fr_CA alternate if there's no FR locale set
+  html = html.replace(/(<meta\s+property="og:locale"\s+content=)"en_CA"/i, '$1"fr_CA"');
   if (!/og:locale:alternate/i.test(html)) {
     html = html.replace(
       /(<meta\s+property="og:locale"\s+content="fr_CA"\s*\/?>)/i,
       '$1\n  <meta property="og:locale:alternate" content="en_CA">'
     );
   }
-
   return html;
 }
 
-// Pre-translated meta descriptions per page so the SERP snippet is French
-// for FR results. Keys are relative paths from site root.
-const META_DESC_FR = {
-  'index.html': 'Imprimerie de vêtements personnalisés à l\'Ouest-de-l\'Île de Montréal. DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Délai standard de 3 à 5 jours, options urgentes, NEQ 1181573313.',
-  'about.html': 'Studio de vêtements personnalisés familial à Sainte-Anne-de-Bellevue, Québec. DTG, DTF, broderie et sérigraphie pour les clubs McGill, les entreprises de l\'Ouest-de-l\'Île et les comptes corporatifs Net-30. 1 100+ vêtements vierges, soumission en 1 heure, NEQ 1181573313.',
-  // 2026-10-05 — was 'S&S Activewear, SanMar et Rue Saint-Patrick' with a
-  // count of 1 100+. The supplier was delisted in September and removed from
-  // every EN page; this table was missed, so a regen re-injected the brand
-  // into /fr/catalog's description, og:description and twitter:description.
-  // Keep the supplier list and the count in step with catalog.html.
-  'catalog.html': 'Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Filtrez par marque, coupe, tissu ou certification. Prix unitaire en direct selon la quantité.',
-  'quote.html': 'Demandez une soumission personnalisée pour t-shirts, hoodies, polos, casquettes et plus. Réponse humaine en moins d\'une heure pendant les heures d\'ouverture.',
-  'businesses.html': 'Programmes de vêtements corporatifs pour les entreprises de Montréal. Net-30, entente-cadre, appels d\'offres acceptés. Soumission ferme en un jour ouvrable.',
-  'businesses/rfp.html': 'Formulaire d\'appel d\'offres pour Imprimerie Singhs Print. Soumission détaillée, échéancier de maquette et paperasse Net-30 en moins d\'un jour ouvrable.',
-  'inkwear.html': 'Programme partenaire Inkwear · vêtements co-brandés pour les créateurs et les marques de mode établies au Québec.',
-  'portfolio.html': 'Découvrez les commandes récentes décorées par Imprimerie Singhs Print pour des clubs McGill, des entreprises de l\'Ouest-de-l\'Île et des comptes corporatifs.',
-  'order.html': 'Suivez votre commande Imprimerie Singhs Print — statut en temps réel, échantillon et livraison.',
-  'why-us.html': 'La plupart des imprimeries vous font payer pour découvrir si elles sont bonnes. Prix en direct, un minimum de 5 pièces, une maquette que vous approuvez avant l\'impression et une garantie contre les erreurs d\'impression — voici la différence Singhs Print.'
-};
+// -- Step 2: translation memory ---------------------------------------------
+// Copy that step 1 already made French (a lang.js fr value) counts as
+// translated; everything else must be in the memory.
+export function frenchValues(T) {
+  const set = new Set();
+  for (const v of Object.values(T)) if (v && typeof v.fr === 'string') set.add(norm(v.fr));
+  return set;
+}
 
-// Pre-translated OG/Twitter titles + descriptions for the highest-traffic
-// pages so shared FR links preview in French. Falls back to EN elsewhere.
-const META_OG_FR = {
-  'index.html': {
-    title: 'Singhs Print — Impression de vêtements personnalisés à Montréal',
-    desc:  'DTG, DTF, sérigraphie et broderie pour marques, entreprises et créateurs. Studio de l\'Ouest-de-l\'Île. Petits minimums, délai de 3 à 5 jours avec options urgentes. T-shirt gratuit dès 15 articles.'
-  },
-  'quote.html': {
-    title: 'Soumission gratuite — Singhs Print',
-    desc:  'Créez votre soumission en quelques minutes. Choisissez un vêtement, la quantité, la méthode et téléversez votre design — réponse humaine en moins d\'une heure pendant les heures d\'ouverture.'
-  },
-  'catalog.html': {
-    title: 'Catalogue — Singhs Print',
-    desc:  'Parcourez 4 500+ vêtements vierges chez S&S Activewear, SanMar Canada et Blanks.ca. Prix unitaire en direct selon la quantité.'
+export function translateCopy(html, tm, frSet) {
+  const { html: out, missing } = applyTranslations(html, tm);
+  return { html: out, missing: [...new Set(missing.filter((k) => !frSet.has(k)))] };
+}
+
+// Convert 'businesses/rfp.html' or 'guides/index.html' to the URL Vercel
+// serves. trailingSlash is false in vercel.json, so '/guides/' 308s to
+// '/guides': the canonical must be the slash-less form or it points at a
+// redirect (2026-10-30, Search Console had /fr/ and /guides/ as redirects).
+export function cleanPath(relPath) {
+  let p = '/' + relPath.replace(/^\/+/, '').replace(/\\/g, '/');
+  if (p.endsWith('/index.html')) p = p.slice(0, -'/index.html'.length);
+  else if (p.endsWith('.html'))  p = p.slice(0, -'.html'.length);
+  return p === '' ? '/' : p;
+}
+const enUrlOf = (rel) => SITE + cleanPath(rel);
+const frUrlOf = (rel) => { const c = cleanPath(rel); return SITE + '/fr' + (c === '/' ? '' : c); };
+
+// -- Step 3: URLs -------------------------------------------------------------
+function hreflangBlock(enUrl, frUrl) {
+  return `\n  <link rel="alternate" hreflang="en" href="${enUrl}">` +
+         `\n  <link rel="alternate" hreflang="fr" href="${frUrl}">` +
+         `\n  <link rel="alternate" hreflang="x-default" href="${enUrl}">`;
+}
+
+function rewriteUrls(html, relPath) {
+  const enUrl = enUrlOf(relPath);
+  const frUrl = frUrlOf(relPath);
+  html = html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${frUrl}">`);
+  if (!/<link\s+rel="canonical"/i.test(html)) {
+    html = html.replace(/<head>/i, `<head>\n  <link rel="canonical" href="${frUrl}">`);
   }
-};
-
-function patchOgMeta(html, relPath) {
-  const fr = META_OG_FR[relPath.replace(/\\/g, '/')];
-  if (!fr) return html;
-  const esc = s => s.replace(/"/g, '&quot;');
-  return html
-    .replace(/(<meta\s+property="og:title"\s+content=)"[^"]*"/i,        `$1"${esc(fr.title)}"`)
-    .replace(/(<meta\s+name="twitter:title"\s+content=)"[^"]*"/i,       `$1"${esc(fr.title)}"`)
-    .replace(/(<meta\s+property="og:description"\s+content=)"[^"]*"/i,  `$1"${esc(fr.desc)}"`)
-    .replace(/(<meta\s+name="twitter:description"\s+content=)"[^"]*"/i, `$1"${esc(fr.desc)}"`);
-}
-
-function patchMetaDescription(html, relPath) {
-  const fr = META_DESC_FR[relPath.replace(/\\/g, '/')];
-  if (!fr) return html;
-  return html.replace(
-    /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i,
-    `<meta name="description" content="${fr.replace(/"/g, '&quot;')}">`
-  );
-}
-
-// Rewrite the OG/Twitter `og:url`/`twitter:url`/og:title/og:description so the
-// social preview matches the French page when shared in French contexts.
-function patchOgUrl(html, frUrl) {
-  return html
+  html = html.replace(/\s*<link\s+rel="alternate"\s+hreflang="[^"]+"[^>]*\/?>/gi, '');
+  html = html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, (m) => m + hreflangBlock(enUrl, frUrl));
+  html = html
     .replace(/(<meta\s+property="og:url"\s+content=)"[^"]*"/i, `$1"${frUrl}"`)
     .replace(/(<meta\s+name="twitter:url"\s+content=)"[^"]*"/i, `$1"${frUrl}"`);
-}
 
-// Convert a file path like 'businesses/rfp.html' or 'index.html' to the
-// user-facing clean URL Vercel exposes — '/businesses/rfp' or '/'.
-function cleanPath(relPath) {
-  let p = '/' + relPath.replace(/^\/+/, '').replace(/\\/g, '/');
-  if (p.endsWith('/index.html')) p = p.slice(0, -'index.html'.length);
-  else if (p.endsWith('.html'))  p = p.slice(0, -'.html'.length);
-  // Normalise root
-  if (p === '') p = '/';
-  return p;
-}
-
-// -- Rewrite <link rel="canonical"> + add hreflang + rewrite internal links -
-function rewriteUrls(html, relPath) {
-  const cleanRel = cleanPath(relPath);
-  const enUrl = SITE + (cleanRel === '/' ? '/' : cleanRel);
-  const frUrl = SITE + '/fr' + (cleanRel === '/' ? '/' : cleanRel);
-
-  // Canonical → /fr/ version
-  html = html.replace(
-    /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
-    `<link rel="canonical" href="${frUrl}">`
-  );
-  if (!/<link\s+rel="canonical"/i.test(html)) {
-    html = html.replace(
-      /<head>/i,
-      `<head>\n  <link rel="canonical" href="${frUrl}">`
-    );
-  }
-
-  // hreflang alternates — replace existing block if present, otherwise inject
-  const hreflangs =
-    `\n  <link rel="alternate" hreflang="en" href="${enUrl}">` +
-    `\n  <link rel="alternate" hreflang="fr" href="${frUrl}">` +
-    `\n  <link rel="alternate" hreflang="x-default" href="${enUrl}">`;
-  html = html.replace(
-    /\s*<link\s+rel="alternate"\s+hreflang="[^"]+"[^>]*\/?>/gi,
-    ''
-  );
-  html = html.replace(
-    /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i,
-    m => m + hreflangs
-  );
-
-  // Rewrite same-origin links so nav inside /fr/ stays inside /fr/.
-  // Matches href="/<path>" and href="<path>.html" (no scheme, no leading /fr/).
-  // Skips: external links, anchors, mailto/tel, asset paths (images, scripts, css).
-  // The extension test keeps shared static assets (page CSS/JS like
-  // /quote.css, /catalog.js) pointing at the root copy — there is no /fr/
-  // duplicate of those, the whole point is one cached copy for both languages.
+  // Same-origin links stay inside /fr/. Shared static assets keep pointing at
+  // the one root copy.
   const SKIP = /^(https?:|mailto:|tel:|#|\/api|\/images|\/downloads|\/components\.js|\/lang\.js|\/ai-translate\.js|\/favicon|\/robots|\/sitemap)|\.(css|js|mjs|png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf|pdf|xml|txt|zip)(\?|$)/i;
   html = html.replace(/\bhref="([^"#]+)"/g, (match, href) => {
     if (SKIP.test(href)) return match;
-    // Internal pages — rewrite to /fr/...
     if (href.startsWith('/')) {
       if (href.startsWith('/fr/') || href === '/fr') return match;
-      return `href="/fr${href}"`;
+      return href === '/' ? 'href="/fr"' : `href="/fr${href}"`;
     }
-    // Relative same-page links (no scheme) — leave alone; they're navigated
-    // from the FR file's own directory so they resolve correctly.
     return match;
   });
-
   return html;
 }
 
-async function main() {
-  const T = await loadTranslations();
-  const keyCount = Object.keys(T).length;
-  console.log(`loaded ${keyCount} translation keys from lang.js`);
+export const stripComments = (html) => html.replace(/<!--(?!\[if)[\s\S]*?-->/g, '');
 
-  // Fresh /fr/ each run so deletions in EN propagate.
-  // Some hosts (and the dev sandbox) won't let us delete the dir we own;
-  // fall back to an in-place overwrite if rm fails. Files removed from
-  // EN will need to be cleaned manually in that case.
-  try {
-    await fs.rm(FR_DIR, { recursive: true, force: true });
-  } catch (e) {
-    if (e && e.code !== 'EPERM' && e.code !== 'ENOENT') throw e;
-    console.warn('note: could not remove /fr/, overwriting in place');
-  }
-  await fs.mkdir(FR_DIR, { recursive: true });
-
-  const files = await findHtmlFiles(ROOT);
-  console.log(`found ${files.length} HTML files to mirror`);
-
-  let count = 0;
-  for (const file of files) {
-    const rel = path.relative(ROOT, file);
-    const outPath = path.join(FR_DIR, rel);
-    await fs.mkdir(path.dirname(outPath), { recursive: true });
-    let html = await fs.readFile(file, 'utf8');
-    html = translateHtml(html, T);
-    const cleanRel = (() => { let p = '/' + rel.replace(/\\/g, '/'); if (p.endsWith('/index.html')) p = p.slice(0, -'index.html'.length); else if (p.endsWith('.html')) p = p.slice(0, -'.html'.length); return p === '' ? '/' : p; })();
-    const frUrl = SITE + '/fr' + (cleanRel === '/' ? '/' : cleanRel);
-    html = rewriteUrls(html, rel);
-    html = patchMetaDescription(html, rel);
-    html = patchOgMeta(html, rel);
-    html = patchOgUrl(html, frUrl);
-    await fs.writeFile(outPath, html, 'utf8');
-    console.log(`  /fr/${rel}`);
-    count++;
-  }
-
-  // ------------------------------------------------------------------
-  // EN-side: inject hreflang alternates back into the original files so
-  // both languages cross-reference each other. Without this Google won't
-  // know /index.html has a French sibling at /fr/.
-  // ------------------------------------------------------------------
-  let enPatched = 0;
-  for (const file of files) {
-    const rel = path.relative(ROOT, file);
-    const cleanRel = (() => { let p = '/' + rel.replace(/\\/g, '/'); if (p.endsWith('/index.html')) p = p.slice(0, -'index.html'.length); else if (p.endsWith('.html')) p = p.slice(0, -'.html'.length); return p === '' ? '/' : p; })();
-    const enUrl = SITE + (cleanRel === '/' ? '/' : cleanRel);
-    const frUrl = SITE + '/fr' + (cleanRel === '/' ? '/' : cleanRel);
-    let html = await fs.readFile(file, 'utf8');
-    // Remove any existing hreflang block, then re-inject right after canonical.
-    html = html.replace(/\s*<link\s+rel="alternate"\s+hreflang="[^"]+"[^>]*\/?>/gi, '');
-    const hreflangs =
-      `\n  <link rel="alternate" hreflang="en" href="${enUrl}">` +
-      `\n  <link rel="alternate" hreflang="fr" href="${frUrl}">` +
-      `\n  <link rel="alternate" hreflang="x-default" href="${enUrl}">`;
-    if (/<link\s+rel="canonical"/i.test(html)) {
-      html = html.replace(/(<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>)/i, m => m + hreflangs);
-    } else {
-      html = html.replace(/<head>/i, `<head>\n  <link rel="canonical" href="${enUrl}">${hreflangs}`);
-    }
-    await fs.writeFile(file, html, 'utf8');
-    enPatched++;
-  }
-
-  console.log(`\nmirrored ${count} files → ${FR_DIR}`);
-  console.log(`patched hreflang on ${enPatched} EN files`);
+/** The whole French page for one EN file. Pure: no I/O. */
+export function buildFrPage(enHtml, relPath, T, tm, frSet) {
+  // Developer comments are English notes about the English page; they are not
+  // copied to /fr/ (one named a delisted supplier on /fr/catalog). Conditional
+  // comments (<!--[if ...]>) stay.
+  let html = translateHtml(stripComments(enHtml), T);
+  const r = translateCopy(html, tm, frSet);
+  html = rewriteUrls(r.html, relPath);
+  return { html, missing: r.missing };
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+/** EN side: hreflang alternates pointing at the French sibling. */
+export function patchEnHreflang(html, relPath) {
+  const enUrl = enUrlOf(relPath);
+  html = html.replace(/\s*<link\s+rel="alternate"\s+hreflang="[^"]+"[^>]*\/?>/gi, '');
+  html = html.replace(/(<link\s+rel="canonical"\s+href=")[^"]*("\s*\/?>)/i, `$1${enUrl}$2`);
+  if (/<link\s+rel="canonical"/i.test(html)) {
+    return html.replace(/(<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>)/i, (m) => m + hreflangBlock(enUrl, frUrlOf(relPath)));
+  }
+  return html.replace(/<head>/i, `<head>\n  <link rel="canonical" href="${enUrl}">${hreflangBlock(enUrl, frUrlOf(relPath))}`);
+}
+
+export async function mirrorTargets() {
+  const files = await findHtmlFiles(ROOT);
+  return files.map((f) => path.relative(ROOT, f).replace(/\\/g, '/')).filter((r) => !HAND_MAINTAINED.has(r)).sort();
+}
+
+async function main() {
+  const REPORT = process.argv.includes('--report');
+  const PRUNE  = process.argv.includes('--prune');
+  const T = await loadTranslations();
+  const tm = await loadMemory();
+  const frSet = frenchValues(T);
+  console.log(`lang.js: ${Object.keys(T).length} keys; i18n/fr.json: ${Object.keys(tm).length} sentences`);
+
+  const rels = await mirrorTargets();
+  const gaps = {};
+  for (const rel of rels) {
+    const src = await fs.readFile(path.join(ROOT, rel), 'utf8');
+    const { html, missing } = buildFrPage(src, rel, T, tm, frSet);
+    if (missing.length) gaps[rel] = missing;
+    if (REPORT) continue;
+    const outPath = path.join(FR_DIR, rel);
+    await fs.mkdir(path.dirname(outPath), { recursive: true });
+    await fs.writeFile(outPath, html, 'utf8');
+    await fs.writeFile(path.join(ROOT, rel), patchEnHreflang(src, rel), 'utf8');
+  }
+
+  const strict = new Set(FULLY_FRENCH);
+  for (const [rel, miss] of Object.entries(gaps)) {
+    if (REPORT || strict.has(rel)) console.log(`${strict.has(rel) ? 'UNTRANSLATED' : 'partial'}  /fr/${rel}: ${miss.length} sentence(s)`);
+    if (REPORT && process.argv.includes('--verbose')) for (const k of miss) console.log('    ' + k.slice(0, 160));
+  }
+
+  if (PRUNE && !REPORT) {
+    const keep = new Set(rels);
+    const frFiles = (await findHtmlFiles(FR_DIR).catch(() => []))
+      .map((f) => path.relative(FR_DIR, f).replace(/\\/g, '/'));
+    for (const rel of frFiles) {
+      if (keep.has(rel) || HAND_MAINTAINED.has(rel)) continue;
+      await fs.rm(path.join(FR_DIR, rel));
+      console.log(`pruned /fr/${rel} (no English page)`);
+    }
+  }
+  if (!REPORT) console.log(`\nmirrored ${rels.length} pages -> /fr/ (hand-maintained, untouched: ${HAND_MAINTAINED.size})`);
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
+  main().catch((err) => { console.error(err); process.exit(1); });
+}

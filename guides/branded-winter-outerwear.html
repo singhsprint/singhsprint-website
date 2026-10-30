@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Branded Winter Outerwear for Montreal Teams: What to Order and When | Singhs Print</title>
   <meta name="description" content="How to order custom branded winter jackets, fleece, softshells and toques for a Montreal team — which garment to pick, how to decorate insulated and waterproof shells, sizing for layering, and the ordering timeline that beats the November rush.">
@@ -41,7 +41,7 @@
     "datePublished": "2026-08-03",
     "dateModified": "2026-08-03",
     "image": "https://www.singhsprint.com/images/guides/winter-outerwear.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/branded-winter-outerwear.html"
+    "mainEntityOfPage": "https://www.singhsprint.com/guides/branded-winter-outerwear"
   }
   </script>
 
@@ -97,8 +97,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -247,6 +247,7 @@
       <a class="related-card" href="/guides/decoration-method-durability"><h3>Decoration durability</h3><p>Screen print vs DTG vs DTF vs embroidery, by wash life.</p></a>
       <a class="related-card" href="/guides/bulk-order-size-run"><h3>Size runs</h3><p>How many of each size to order for a bulk run.</p></a>
       <a class="related-card" href="/guides/logo-file-requirements"><h3>Logo file requirements</h3><p>What to send your printer so nothing gets delayed.</p></a>
+      <a class="related-card" href="/guides/procurement-checklist"><h3>Uniform program checklist</h3><p>Speccing a program for 50&ndash;500 employees.</p></a>
       <a class="related-card" href="/catalog"><h3>Browse the catalog</h3><p>Compare jackets, fleece and softshells side by side.</p></a>
     </div>
   </div>
@@ -259,7 +260,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Branded Winter Outerwear', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Branded Winter Outerwear', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

@@ -105,9 +105,13 @@ async function run() {
     [/\(\d+\s*avis\)/g,                              `(${countStr} avis)`],
     [/\b\d(?:\.\d)?★ \(\d+ reviews\)/g,              `${ratingStr}★ (${countStr} reviews)`],
     [/\b\d(?:\.\d)?\/5 \(\d+ reviews\)/g,            `${ratingStr}/5 (${countStr} reviews)`],
-    [/\b\d(?:\.\d)?\/5 \(\d+ avis\)/g,               `${ratingStr}/5 (${countStr} avis)`],
-    // FR comma-decimal form: "5,4.7/5 (37 avis)"
-    [/\b\d,\d\/5 \(\d+ avis\)/g,                     `${ratingStr.replace('.', ',')}/5 (${countStr} avis)`],
+    // FR comma-decimal form, "4,7/5 (37 avis)". It must run BEFORE the dot
+    // form below and the dot form must not start after a comma: \b matches
+    // between "5," and "0", so "5,0/5 (23 avis)" used to become
+    // "5,4.7/5 (37 avis)" -- which the French home page showed until
+    // 2026-10-30.
+    [/(?<![\d.,])\d,\d\/5 \(\d+ avis\)/g,              `${ratingStr.replace('.', ',')}/5 (${countStr} avis)`],
+    [/(?<![\d.,])\d(?:\.\d)?\/5 \(\d+ avis\)/g,       `${ratingStr.replace('.', ',')}/5 (${countStr} avis)`],
 
     // JSON-LD schema strings (in any quote style)
     [/"ratingValue":\s*"\d(?:\.\d)?"/g,              `"ratingValue": "${ratingStr}"`],

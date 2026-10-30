@@ -6,11 +6,11 @@
   <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/businesses/rfp">
   <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/businesses/rfp">
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Procurement Pricing Request | Singhs Print — Bulk Apparel Montreal</title>
-  <meta name="description" content="Formulaire d'appel d'offres pour Imprimerie Singhs Print. Soumission détaillée, échéancier de maquette et paperasse Net-30 en moins d'un jour ouvrable.">
+  <title>Demande de prix d'approvisionnement | Singhs Print — Vêtements en gros Montréal</title>
+  <meta name="description" content="Demandez des prix d'approvisionnement en gros pour uniformes d'employés, vêtements de marque et produits corporatifs. Dépôt de 50 % + solde Net 30 pour les comptes admissibles. Soumissions le jour même pendant les heures d'ouverture.">
   <meta name="robots" content="index,follow">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -159,15 +159,15 @@
       }
     }
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
 <div id="nav-placeholder"></div>
 
 <div class="page-header">
-  <span class="label"  data-i18n="rfp.label">Pour les équipes d'approvisionnement et d'opérations</span>
+  <span class="label" data-i18n="rfp.label">Pour les équipes d'approvisionnement et d'opérations</span>
   <h1  data-i18n="rfp.h1">Demander des prix d'approvisionnement</h1>
   <p  data-i18n="rfp.sub">Parlez-nous du programme. On revient avec une soumission, un échéancier de maquette et une fiche de modalités — habituellement en moins d'une heure pendant les heures d'ouverture.</p>
 </div>
@@ -179,11 +179,11 @@
       <div class="section-title" data-step="1"  data-i18n="rfp.sect.company">Entreprise</div>
       <div class="form-row">
         <div class="form-group">
-          <label for="company"><span  data-i18n="rfp.label.company">Entreprise / organisation</span> <span class="req">*</span></label>
-          <input type="text" id="company" name="company" required placeholder="Acme Construction Ltd." data-i18n-placeholder="rfp.ph.company">
+          <label for="company"><span data-i18n="rfp.label.company">Entreprise / organisation</span> <span class="req">*</span></label>
+          <input type="text" id="company" name="company" required placeholder="Construction Acme ltée" data-i18n-placeholder="rfp.ph.company">
         </div>
         <div class="form-group">
-          <label for="industry"><span  data-i18n="rfp.label.industry">Industrie</span> <span class="req">*</span></label>
+          <label for="industry"><span data-i18n="rfp.label.industry">Industrie</span> <span class="req">*</span></label>
           <select id="industry" name="industry" required>
             <option value=""  data-i18n="rfp.opt.industry0">Sélectionnez votre secteur</option>
             <option  data-i18n="rfp.opt.industry1">Construction et métiers</option>
@@ -201,7 +201,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="contactName"><span  data-i18n="rfp.label.name">Votre nom</span> <span class="req">*</span></label>
+          <label for="contactName"><span data-i18n="rfp.label.name">Votre nom</span> <span class="req">*</span></label>
           <input type="text" id="contactName" name="contact_name" required>
         </div>
         <div class="form-group">
@@ -222,8 +222,8 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="email"><span  data-i18n="rfp.label.email">Courriel professionnel</span> <span class="req">*</span></label>
-          <input type="email" id="email" name="email" required placeholder="you@company.com" data-i18n-placeholder="rfp.ph.email">
+          <label for="email"><span data-i18n="rfp.label.email">Courriel professionnel</span> <span class="req">*</span></label>
+          <input type="email" id="email" name="email" required placeholder="vous@entreprise.com" data-i18n-placeholder="rfp.ph.email">
         </div>
         <div class="form-group">
           <label for="phone"  data-i18n="rfp.label.phone">Téléphone</label>
@@ -234,36 +234,30 @@
       <div class="section-title" data-step="2"  data-i18n="rfp.sect.order">La commande</div>
 
       <div class="form-group">
-        <label for="firstOrderQty"><span  data-i18n="rfp.label.firstqty">Combien de pièces pour cette première commande ?</span> <span class="req">*</span></label>
+        <label for="firstOrderQty"><span data-i18n="rfp.label.firstqty">Combien de pièces pour cette première commande ?</span> <span class="req">*</span></label>
         <input type="number" id="firstOrderQty" name="first_order_qty" required min="1" max="100000" step="1" inputmode="numeric" placeholder="e.g. 120" data-i18n-placeholder="rfp.ph.firstqty">
         <p class="hint"  data-i18n="rfp.hint.firstqty">Nombre total de pièces, tous vêtements et tailles confondus, pour la commande que vous faites soumissionner maintenant — pas votre programme annuel. Une estimation suffit.</p>
       </div>
 
       <div class="form-group">
-        <label><span  data-i18n="rfp.label.volume">Volume annuel d'unités</span> <span class="req">*</span></label>
+        <label><span data-i18n="rfp.label.volume">Volume annuel d'unités</span> <span class="req">*</span></label>
         <div class="pill-group" data-name="volume">
-          <span class="pill" data-value="<500"  data-i18n="rfp.vol.500">Moins de 500 unités</span>
-          <span class="pill" data-value="500-2000"  data-i18n="rfp.vol.500-2000">500 à 2 000</span>
-          <span class="pill" data-value="2000-10000"  data-i18n="rfp.vol.2000-10000">2 000 à 10 000</span>
-          <span class="pill" data-value="10000+"  data-i18n="rfp.vol.10000+">10 000+</span>
+          <span class="pill" data-value="<500" data-i18n="rfp.vol.500">Moins de 500 unités</span> <span class="pill" data-value="500-2000" data-i18n="rfp.vol.500-2000">500 à 2 000</span> <span class="pill" data-value="2000-10000" data-i18n="rfp.vol.2000-10000">2 000 à 10 000</span> <span class="pill" data-value="10000+" data-i18n="rfp.vol.10000+">10 000+</span>
         </div>
         <input type="hidden" name="annual_volume" id="annual_volume" required>
       </div>
 
       <div class="form-group">
-        <label><span  data-i18n="rfp.label.cadence">Modèle de commande</span> <span class="req">*</span></label>
+        <label><span data-i18n="rfp.label.cadence">Modèle de commande</span> <span class="req">*</span></label>
         <div class="pill-group" data-name="cadence">
-          <span class="pill" data-value="one-time"  data-i18n="rfp.cad.onetime">Commande unique</span>
-          <span class="pill" data-value="quarterly"  data-i18n="rfp.cad.quarterly">Renouvellement trimestriel</span>
-          <span class="pill" data-value="annual"  data-i18n="rfp.cad.annual">Programme annuel</span>
-          <span class="pill" data-value="ongoing"  data-i18n="rfp.cad.ongoing">Continu / réapprovisionnement</span>
+          <span class="pill" data-value="one-time" data-i18n="rfp.cad.onetime">Commande unique</span> <span class="pill" data-value="quarterly" data-i18n="rfp.cad.quarterly">Renouvellement trimestriel</span> <span class="pill" data-value="annual" data-i18n="rfp.cad.annual">Programme annuel</span> <span class="pill" data-value="ongoing" data-i18n="rfp.cad.ongoing">Continu / réapprovisionnement</span>
         </div>
         <input type="hidden" name="order_cadence" id="order_cadence" required>
       </div>
 
       <div class="form-group">
         <label for="garments"  data-i18n="rfp.label.garments">Que commandez-vous ?</label>
-        <textarea id="garments" name="garments" placeholder="E.g. 80 hi-vis t-shirts (cotton blend, embroidered logo left chest), 40 fleece hoodies for winter. Include any spec you have." data-i18n-placeholder="rfp.ph.garments"></textarea>
+        <textarea id="garments" name="garments" placeholder="Ex. 80 t-shirts haute visibilité (mélange de coton, logo brodé poitrine gauche), 40 hoodies en molleton pour l'hiver. Incluez toutes les spécifications dont vous disposez." data-i18n-placeholder="rfp.ph.garments"></textarea>
       </div>
 
       <div class="form-group">
@@ -277,10 +271,7 @@
       <div class="form-group">
         <label  data-i18n="rfp.label.terms">Modalités de paiement souhaitées</label>
         <div class="pill-group" data-name="terms">
-          <span class="pill" data-value="prepaid"  data-i18n="rfp.terms.prepaid">Prépayé (rabais de 2 %)</span>
-          <span class="pill selected" data-value="deposit-net30"  data-i18n="rfp.terms.deposit30">Dépôt 50 % + solde Net 30</span>
-          <span class="pill" data-value="net30"  data-i18n="rfp.terms.net30">Net 30 complet</span>
-          <span class="pill" data-value="net60"  data-i18n="rfp.terms.net60">Net 60 / sur mesure</span>
+          <span class="pill" data-value="prepaid" data-i18n="rfp.terms.prepaid">Prépayé (rabais de 2 %)</span> <span class="pill selected" data-value="deposit-net30" data-i18n="rfp.terms.deposit30">Dépôt 50 % + solde Net 30</span> <span class="pill" data-value="net30" data-i18n="rfp.terms.net30">Net 30 complet</span> <span class="pill" data-value="net60" data-i18n="rfp.terms.net60">Net 60 / sur mesure</span>
         </div>
         <input type="hidden" name="payment_terms" id="payment_terms" value="deposit-net30">
         <p class="hint"  data-i18n="rfp.hint.terms">Dépôt 50 % + Net 30 est notre standard pour les nouveaux comptes. De meilleures modalités sont possibles après une première collaboration.</p>
@@ -289,11 +280,7 @@
       <div class="form-group">
         <label  data-i18n="rfp.label.compliance">Conformité / certifications requises</label>
         <div class="pill-group" data-name="compliance" data-multi="1">
-          <span class="pill" data-value="CSA"  data-i18n="rfp.comp.csa">Hi-vis conforme CSA</span>
-          <span class="pill" data-value="OEKO-TEX"  data-i18n="rfp.comp.oeko">Certifié OEKO-TEX</span>
-          <span class="pill" data-value="union-made"  data-i18n="rfp.comp.union">Fournisseur montréalais</span>
-          <span class="pill" data-value="GOTS"  data-i18n="rfp.comp.gots">Biologique / GOTS</span>
-          <span class="pill" data-value="none"  data-i18n="rfp.comp.none">Aucune requise</span>
+          <span class="pill" data-value="CSA" data-i18n="rfp.comp.csa">Hi-vis conforme CSA</span> <span class="pill" data-value="OEKO-TEX" data-i18n="rfp.comp.oeko">Certifié OEKO-TEX</span> <span class="pill" data-value="union-made" data-i18n="rfp.comp.union">Fournisseur montréalais</span> <span class="pill" data-value="GOTS" data-i18n="rfp.comp.gots">Biologique / GOTS</span> <span class="pill" data-value="none" data-i18n="rfp.comp.none">Aucune requise</span>
         </div>
         <input type="hidden" name="compliance" id="compliance">
       </div>
@@ -310,7 +297,7 @@
 
       <div class="form-group">
         <label for="extra"  data-i18n="rfp.label.extra">Autre chose qu'on devrait savoir ?</label>
-        <textarea id="extra" name="extra" placeholder="Sizing data, attrition rate, existing supplier (and what's missing), specific compliance audit windows, etc." data-i18n-placeholder="rfp.ph.extra"></textarea>
+        <textarea id="extra" name="extra" placeholder="Données sur les tailles, taux de roulement, fournisseur actuel (et ce qui manque), périodes d'audit de conformité précises, etc." data-i18n-placeholder="rfp.ph.extra"></textarea>
       </div>
 
       <div class="submit-row">
@@ -538,8 +525,7 @@
   });
 </script>
 
-<!-- Meta Pixel (mirrors quote.html) -->
-<!-- Meta Pixel base code, consent gating (Law 25) and PageView are
-     handled once in /components.js, which loads above. -->
+
+
 </body>
 </html>

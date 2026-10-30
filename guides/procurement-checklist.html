@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How to Spec a Uniform Program for 50–500 Employees: A Procurement Checklist | Singhs Print</title>
   <meta name="description" content="A six-step procurement checklist for HR and operations leads building a uniform program for 50–500 employees. Wear policy, garment selection, decoration, sizing, reorders, supplier criteria.">
@@ -38,9 +38,9 @@
     "author": { "@type": "Organization", "name": "Singhs Print", "@id": "https://www.singhsprint.com/#business" },
     "publisher": { "@type": "Organization", "name": "Singhs Print", "logo": { "@type": "ImageObject", "url": "https://www.singhsprint.com/images/logo.png" } },
     "datePublished": "2026-05-12",
-    "dateModified": "2026-05-12",
+    "dateModified": "2026-10-30",
     "image": "https://www.singhsprint.com/images/guides/procurement-checklist.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/procurement-checklist.html"
+    "mainEntityOfPage": "https://www.singhsprint.com/guides/procurement-checklist"
   }
   </script>
 
@@ -85,8 +85,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -156,9 +156,9 @@
       <p>Decoration recommendations (see <a href="/guides/decoration-method-durability">our decoration durability guide</a> for the full rationale):</p>
       <ul>
         <li><strong>Polos:</strong> embroidery, left chest, ~3.5" wide.</li>
-        <li><strong>Tees on cotton:</strong> DTG or screen print at scale, full chest or left chest depending on logo style.</li>
+        <li><strong>Tees on cotton:</strong> DTG for full-colour art, DTF for bold graphics, full chest or left chest depending on logo style.</li>
         <li><strong>Tees on poly/blend:</strong> DTF, same placement rules.</li>
-        <li><strong>Hoodies:</strong> embroidery left chest (premium), or DTF/screen print for back-panel designs.</li>
+        <li><strong>Hoodies:</strong> embroidery left chest (premium), or DTF for back-panel designs.</li>
         <li><strong>Caps:</strong> embroidery front center.</li>
       </ul>
       <p>Document the exact placement in the spec sheet ("3.5" wide, centered horizontally on left chest, top edge 2.5" below shoulder seam"). Your supplier should match this on every order, year after year.</p>
@@ -172,7 +172,7 @@
       <p>The most common uniform-program failure is "we ordered the sizes everyone said they were and 30% of the team can&rsquo;t wear theirs because the cut runs small." The fix is a physical fitting kit.</p>
       <p>Process:</p>
       <ol>
-        <li>Order a fitting kit from your supplier &mdash; one of every size in each garment type. We provide this on first orders for free.</li>
+        <li>Order a fitting kit from your supplier &mdash; one of every size in each garment type.</li>
         <li>Block one day during a regular work week. Everyone tries on their planned uniform.</li>
         <li>Capture each person&rsquo;s size in a spreadsheet (name, garment type, size). This is your roster.</li>
         <li>For new hires, repeat the fitting at onboarding using the same kit (kept on-site).</li>
@@ -204,11 +204,11 @@
       <ul>
         <li><strong>Do they take POs and offer Net 30 (or 50% deposit + Net 30 balance)?</strong> If not, they don&rsquo;t serve B2B at the level you need.</li>
         <li><strong>Do they hold your roster, design file, and decoration spec on file for reorders?</strong> If you need to re-quote every order from zero, the operational tax is enormous.</li>
-        <li><strong>Do they sample before production?</strong> Non-negotiable for uniform programs. The first run on a new design must be sample-approved.</li>
+        <li><strong>Do they show you a proof before production?</strong> Non-negotiable for uniform programs. The first run on a new design should be signed off on a mockup showing colour, placement and size.</li>
         <li><strong>Do they have a named account manager?</strong> Or do you re-explain the program every time you email?</li>
         <li><strong>Are they local to your region?</strong> Local Montreal pickup for last-minute orders is a real benefit that national suppliers can&rsquo;t match.</li>
         <li><strong>Can they show you wear data?</strong> Real numbers on how their decoration holds up after 50, 100, 200 wash cycles. We publish ours in <a href="/guides/decoration-method-durability">the decoration durability guide</a>.</li>
-        <li><strong>What&rsquo;s their turnaround for reorders?</strong> Standard should be 5&ndash;7 business days for repeat orders on file. If they say "2&ndash;3 weeks" for a reorder, that&rsquo;s a re-quote operation, not a program supplier.</li>
+        <li><strong>What&rsquo;s their turnaround for reorders?</strong> Get it in writing for designs already on file. If a reorder of an unchanged design takes as long as a brand-new order, they&rsquo;re re-quoting from zero, not running a program.</li>
       </ul>
     </div>
 
@@ -259,7 +259,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Procurement Checklist', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Procurement Checklist', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

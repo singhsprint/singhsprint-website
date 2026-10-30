@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How Many of Each Size? A Size-Run Guide for Bulk T-Shirt & Team Apparel Orders | Singhs Print</title>
   <meta name="description" content="How many smalls, mediums, larges, and XLs to order for a bulk apparel run — standard size curves, athletic vs general crowds, women's and youth cuts, and how to cut leftover stock. For Montreal teams, events, and organizers.">
@@ -41,7 +41,7 @@
     "datePublished": "2026-06-16",
     "dateModified": "2026-06-16",
     "image": "https://www.singhsprint.com/images/guides/bulk-order-size-run.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/bulk-order-size-run.html"
+    "mainEntityOfPage": "https://www.singhsprint.com/guides/bulk-order-size-run"
   }
   </script>
 
@@ -97,8 +97,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -225,7 +225,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Bulk Order Size Run', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Bulk Order Size Run', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Why 12 Shirts Cost Almost as Much as 50: Minimums, Setup Fees &amp; Price Breaks | Singhs Print</title>
   <meta name="description" content="Setup fees, order minimums, and where the price breaks actually fall on custom apparel — screen print screens, embroidery digitizing, DTF, and how to get a better per-shirt price without ordering more shirts. For Montreal businesses and teams.">
@@ -41,7 +41,7 @@
     "datePublished": "2026-08-10",
     "dateModified": "2026-08-10",
     "image": "https://www.singhsprint.com/images/hero-duo.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/minimum-order-price-breaks.html"
+    "mainEntityOfPage": "https://www.singhsprint.com/guides/minimum-order-price-breaks"
   }
   </script>
 
@@ -97,8 +97,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -255,6 +255,7 @@
       <a class="related-card" href="/guides/decoration-method-durability"><h3>Which method lasts longest</h3><p>DTG, DTF, screen print and embroidery compared.</p></a>
       <a class="related-card" href="/guides/bulk-order-size-run"><h3>How many of each size</h3><p>The standard size curve for a bulk run.</p></a>
       <a class="related-card" href="/guides/logo-file-requirements"><h3>Logo file requirements</h3><p>What to send so artwork prep doesn&rsquo;t cost you.</p></a>
+      <a class="related-card" href="/guides/procurement-checklist"><h3>Uniform program checklist</h3><p>Speccing a program for 50&ndash;500 employees.</p></a>
     </div>
   </div>
 </section>
@@ -266,7 +267,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Minimum Order Price Breaks', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Minimum Order Price Breaks', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

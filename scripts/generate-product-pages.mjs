@@ -52,17 +52,18 @@ const robotsTag = (slug) => (INDEXABLE && !INDEXABLE.has(slug))
 
 // ---------------------------------------------------------------------------
 // SEO structured-data constants. Used by every generated Product entity to
-// satisfy Google's "Product snippet" + "Merchant listing" enrichment fields
-// (aggregateRating, review, shippingDetails, hasMerchantReturnPolicy). Edit
-// the values here when the live business policy changes — no per-product
-// overrides are needed because these are brand-level facts.
+// satisfy Google's "Merchant listing" fields (shippingDetails,
+// hasMerchantReturnPolicy). Edit the values here when the live business policy
+// changes -- they are brand-level facts, not per-product.
+//
+// NO aggregateRating / review (removed 2026-10-30). Every page used to carry
+// the shop's Google Maps rating (4.7 from 37) and three Google reviews of the
+// SHOP as if they were ratings of this blank. Google's review-snippet rules
+// forbid both: ratings must be about the item marked up, and must not be
+// gathered from another site. On 4,603 pages that is a manual-action risk for
+// the whole domain, for stars Google would not show anyway.
+// scripts/check-url-canonical.mjs fails if either comes back.
 // ---------------------------------------------------------------------------
-const STAR_RATING = { ratingValue: '4.7', reviewCount: '37' }; // current Google Reviews
-const REVIEWS = [
-  { name: 'Coodin',      date: '2024-06-01', body: 'Printed tees for my band on extremely short notice. Literally on the same day of our gig at Singhs Arcade. If you want a print shop that actually values their customers and isn’t strictly for profit, this is the place. 10/10' },
-  { name: 'Keerit Kaur', date: '2024-04-15', body: 'Really happy with my order, the prints came out perfect, quality was great, and they got everything done on time.' },
-  { name: 'Ori Peer',    date: '2024-03-10', body: 'I love my shirt they supported my vision!!! Best spot in MTL!' }
-];
 // Free Canada-wide shipping (cost is bundled into the per-unit quote). The
 // carrier leg — Chit Chats / Canada Post, once the box leaves the shop — is
 // 1-5 days and is the same whoever made the blank. Adjust if the shop ever
@@ -143,24 +144,6 @@ function handlingTimeFor(supplierCode) {
 // defects — matches the misprint guarantee in the homepage FAQ.
 const RETURNS  = { country: 'CA', windowDays: 14 };
 
-function aggregateRatingNode() {
-  return {
-    '@type':       'AggregateRating',
-    'ratingValue': STAR_RATING.ratingValue,
-    'reviewCount': STAR_RATING.reviewCount,
-    'bestRating':  '5',
-    'worstRating': '1'
-  };
-}
-function reviewNodes() {
-  return REVIEWS.map(r => ({
-    '@type':         'Review',
-    'author':        { '@type': 'Person', 'name': r.name },
-    'datePublished': r.date,
-    'reviewRating':  { '@type': 'Rating', 'ratingValue': '5', 'bestRating': '5' },
-    'reviewBody':    r.body
-  }));
-}
 function shippingDetailsNode(supplierCode) {
   const h = handlingTimeFor(supplierCode);
   return {
@@ -396,10 +379,12 @@ function buildPage(p, lang = 'en') {
   const style = (p.style_number || '').trim();
   const name  = (p.name || '').trim();
   const slug  = slugify(brand + '-' + style);
-  const urlPath = (lang === 'fr' ? '/fr/p/' : '/p/') + slug + '/';
+  // No trailing slash (2026-10-30): vercel.json has trailingSlash: false, so
+  // /p/x/ 308s to /p/x and a canonical ending in '/' points at a redirect.
+  const urlPath = (lang === 'fr' ? '/fr/p/' : '/p/') + slug;
   const url   = SITE + urlPath;
-  const urlEn = SITE + '/p/' + slug + '/';
-  const urlFr = SITE + '/fr/p/' + slug + '/';
+  const urlEn = SITE + '/p/' + slug;
+  const urlFr = SITE + '/fr/p/' + slug;
   const heroColor = (p.colors || []).find(c => Array.isArray(c.sizes_in_stock) && c.sizes_in_stock.length) || (p.colors || [])[0] || {};
   const hero  = imgUrl(heroColor.mockup_front_url || p.hero_image_url || '');
 
@@ -410,8 +395,7 @@ function buildPage(p, lang = 'en') {
 
   // Variant offers per color — drives "Available in N colours" rich-result variants.
   // shippingDetails + hasMerchantReturnPolicy are required by Google's Merchant
-  // Listing enrichment; aggregateRating + review unlock the Product-snippet
-  // rich-result with stars.
+  // Listing enrichment.
   const colors = (p.colors || []).slice(0, 24);
   const offers = {
     '@type': 'AggregateOffer',
@@ -441,14 +425,12 @@ function buildPage(p, lang = 'en') {
         'url': url,
         'inLanguage': lang === 'fr' ? 'fr-CA' : 'en-CA',
         'offers': offers,
-        'aggregateRating': aggregateRatingNode(),
-        'review':          reviewNodes(),
         'isRelatedTo': { '@id': SITE + '/#business' }
       },
       {
         '@type': 'BreadcrumbList',
         'itemListElement': [
-          { '@type': 'ListItem', 'position': 1, 'name': t('home', lang),    'item': SITE + (lang === 'fr' ? '/fr/' : '/') },
+          { '@type': 'ListItem', 'position': 1, 'name': t('home', lang),    'item': SITE + (lang === 'fr' ? '/fr' : '/') },
           { '@type': 'ListItem', 'position': 2, 'name': t('catalog', lang), 'item': SITE + (lang === 'fr' ? '/fr/catalog' : '/catalog') },
           { '@type': 'ListItem', 'position': 3, 'name': `${brand} ${style}`, 'item': url }
         ]
@@ -540,7 +522,7 @@ function buildPage(p, lang = 'en') {
   <div id="nav-placeholder"></div>
 
   <nav class="crumbs" aria-label="Breadcrumb"><div class="container">
-    <a href="${lang === 'fr' ? '/fr/' : '/'}">${t('home', lang)}</a> · <a href="${lang === 'fr' ? '/fr/catalog' : '/catalog'}">${t('catalog', lang)}</a> · ${escapeHtml(brand + ' ' + style)}
+    <a href="${lang === 'fr' ? '/fr' : '/'}">${t('home', lang)}</a> · <a href="${lang === 'fr' ? '/fr/catalog' : '/catalog'}">${t('catalog', lang)}</a> · ${escapeHtml(brand + ' ' + style)}
   </div></nav>
 
   <section class="product-hero"><div class="container"><div class="product-hero__grid">
@@ -552,7 +534,7 @@ function buildPage(p, lang = 'en') {
       <div class="product-hero__price">${t('from', lang)} <strong>$${priceFrom.toFixed(2)}</strong> ${t('perUnit', lang)}</div>
       <div class="product-hero__hint">${usingFloor ? t('hintFloor', lang) : t('hintEngine', lang)}</div>
       <div class="product-hero__ctas">
-        <a class="btn btn-primary" href="${lang === 'fr' ? '/fr/quote' : '/quote.html'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaQuote', lang)}</a>
+        <a class="btn btn-primary" href="${lang === 'fr' ? '/fr/quote' : '/quote'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaQuote', lang)}</a>
         <a class="btn btn-outline" href="${lang === 'fr' ? '/fr/catalog' : '/catalog'}#p=${encodeURIComponent(p.product_id || '')}">${t('ctaInCatalog', lang)}</a>
       </div>
       ${colors.length ? `<div class="colorbar" aria-label="${t('coloursAria', lang)}">
@@ -595,7 +577,7 @@ function buildPage(p, lang = 'en') {
     <div class="container">
       <h2>${t('ctaSecH2Prefix', lang)} ${escapeHtml(brand + ' ' + style)}</h2>
       <p>${t('ctaSecP', lang)}</p>
-      <a class="btn btn-accent" href="${lang === 'fr' ? '/fr/quote' : '/quote.html'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaSecBtn', lang)}</a>
+      <a class="btn btn-accent" href="${lang === 'fr' ? '/fr/quote' : '/quote'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaSecBtn', lang)}</a>
     </div>
   </section>
 
@@ -648,13 +630,13 @@ async function main() {
     await fs.writeFile(path.join(dirFr, 'index.html'), buildPage(p, 'fr'), 'utf8');
 
     generated.push({ slug, brand: p.brand, style: p.style_number, name: p.name });
-    console.log(`  /p/${slug}/  +  /fr/p/${slug}/`);
+    console.log(`  /p/${slug}  +  /fr/p/${slug}`);
   }
 
   // Sitemap fragment — both languages, each with hreflang cross-link.
   const sitemapFragment = generated.map(g => {
-    const en = `${SITE}/p/${g.slug}/`;
-    const fr = `${SITE}/fr/p/${g.slug}/`;
+    const en = `${SITE}/p/${g.slug}`;
+    const fr = `${SITE}/fr/p/${g.slug}`;
     return `  <url><loc>${en}</loc><changefreq>weekly</changefreq><priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en" href="${en}"/>
     <xhtml:link rel="alternate" hreflang="fr" href="${fr}"/>

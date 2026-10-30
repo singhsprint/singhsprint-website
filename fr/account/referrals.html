@@ -75,23 +75,23 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/fr/account/" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
+  <a href="/fr/account" class="back-link"  data-i18n="account.back.account">← Retour au compte</a>
   <div id="acct-subnav"></div>
   <div class="hero">
     <h1  data-i18n="account.ref.h1">Parrainages et crédit</h1>
     <p  data-i18n="account.ref.sub">Partagez votre code, gagnez du crédit quand vos amis commandent.</p>
   </div>
 
-  <!-- ------- Your code ------- -->
+  
   <div class="share-card">
     <h2>Your referral code</h2>
     <p class="copy" id="share-copy">Share this and they'll get <strong id="copy-referee-amt">$25 off</strong> their first order of <strong id="copy-minorder">$100+</strong>. When that order ships, <strong id="copy-referrer-amt">$25</strong> lands in your credit balance below.</p>
 
     <div class="code-row">
       <span class="code" id="code-display">······</span>
-      <button id="share-btn" type="button" data-i18n="account.ref.share">Share</button>
-      <button id="copy-code" type="button" data-i18n="account.ref.copycode">Copy code</button>
-      <button id="copy-link" type="button" data-i18n="account.ref.copylink">Copy link</button>
+      <button id="share-btn" type="button">Share</button>
+      <button id="copy-code" type="button">Copy code</button>
+      <button id="copy-link" type="button">Copy link</button>
     </div>
 
     <div class="share-stats">
@@ -101,7 +101,7 @@
     </div>
   </div>
 
-  <!-- ------- Credit balance ------- -->
+  
   <div class="card">
     <h2>Credit balance <span style="color:#888;font-size:.78rem;font-weight:500;">applies at checkout</span></h2>
     <div class="balance" id="balance">$0.00</div>
@@ -114,13 +114,13 @@
     <div id="ledger-empty" class="empty">No credit activity yet.</div>
   </div>
 
-  <!-- ------- Apply someone else's code (new accounts only) ------- -->
+  
   <div class="card" id="redeem-card">
     <h2>Have a referral code?</h2>
     <p style="color:#666;font-size:.88rem;margin-bottom:4px">Apply it once, before your first order, to get the welcome credit on your first qualifying purchase.</p>
     <div class="redeem-row">
       <input id="redeem-input" type="text" maxlength="16" placeholder="ENTER CODE">
-      <button id="redeem-btn" type="button">Apply</button>
+      <button id="redeem-btn" type="button">Postuler</button>
     </div>
     <div id="redeem-msg" class="msg hide"></div>
   </div>

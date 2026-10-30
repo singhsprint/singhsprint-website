@@ -117,7 +117,7 @@ console.log('3. every generated page agrees, and there are no orphans');
   // carrying the copy and prices of the previous regen. The sitemap is the
   // cheap proxy: if it lists exactly what is on disk, nothing was stranded.
   const sitemap = read('sitemap.xml');
-  const listed = new Set([...sitemap.matchAll(/<loc>https:\/\/www\.singhsprint\.com\/p\/([^/]+)\/<\/loc>/g)].map((m) => m[1]));
+  const listed = new Set([...sitemap.matchAll(/<loc>https:\/\/www\.singhsprint\.com\/p\/([^/<]+)\/?<\/loc>/g)].map((m) => m[1]));
   // Since 2026-10-07 only p/indexable.json is submitted; the rest are noindex.
   let INDEXABLE = null;
   try { INDEXABLE = new Set(JSON.parse(read('p/indexable.json')).slugs); } catch { /* no list: every page */ }

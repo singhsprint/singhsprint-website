@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" href="../images/favicon-180.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logo File Requirements for Custom Apparel: What to Send Your Printer | Singhs Print</title>
   <meta name="description" content="What file format your logo needs for screen printing, DTG, DTF, and embroidery — vector vs raster, transparent PNGs, digitizing, and a pre-order artwork checklist that avoids delays.">
@@ -41,7 +41,7 @@
     "datePublished": "2026-07-06",
     "dateModified": "2026-07-06",
     "image": "https://www.singhsprint.com/images/guides/logo-file-requirements.jpg",
-    "mainEntityOfPage": "https://www.singhsprint.com/guides/logo-file-requirements.html"
+    "mainEntityOfPage": "https://www.singhsprint.com/guides/logo-file-requirements"
   }
   </script>
 
@@ -97,8 +97,8 @@
     .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:50px;font-size:.98rem;font-weight:600;background:#1a1a1a;color:#fff;text-decoration:none;transition:all .25s}
     .btn:hover{background:#000;transform:translateY(-1px);text-decoration:none}
   </style>
-  <script src="../components.js"></script>
-  <script src="../lang.js"></script>
+  <script src="/components.js" defer></script>
+  <script src="/lang.js" defer></script>
 </head>
 <body>
 
@@ -221,7 +221,10 @@
    handled once in /components.js, which loads above. This page only
    declares its own ViewContent so it inherits the same consent state
    instead of firing a second, ungated init + PageView. */
-try { fbq('track', 'ViewContent', { content_name: 'Guide: Logo File Requirements', content_category: 'B2B Guide' }); } catch (e) {}
+// components.js is deferred, so fbq exists from DOMContentLoaded on.
+document.addEventListener('DOMContentLoaded', function () {
+  try { fbq('track', 'ViewContent', { content_name: 'Guide: Logo File Requirements', content_category: 'B2B Guide' }); } catch (e) {}
+});
 </script>
 </body>
 </html>

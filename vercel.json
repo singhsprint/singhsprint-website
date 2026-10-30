@@ -176,8 +176,6 @@
     {"source": "/fr/bulk-apparel-printing-montreal.html", "destination": "/fr/businesses", "permanent": true},
     {"source": "/guides/construction-crew-cost", "destination": "/industries/construction-workwear", "permanent": true},
     {"source": "/fr/guides/construction-crew-cost", "destination": "/fr/industries/construction-workwear", "permanent": true},
-    {"source": "/guides/procurement-checklist", "destination": "/businesses", "permanent": true},
-    {"source": "/fr/guides/procurement-checklist", "destination": "/fr/businesses", "permanent": true},
     {"source": "/guides/charity-run-timeline", "destination": "/industries/charity-events-fundraisers", "permanent": true},
     {"source": "/fr/guides/charity-run-timeline", "destination": "/fr/industries/charity-events-fundraisers", "permanent": true}
   ],

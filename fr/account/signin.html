@@ -54,8 +54,7 @@
     .help{margin-top:20px;font-size:.82rem;color:#888;text-align:center;line-height:1.55}
     .hide{display:none !important}
   </style>
-  <!-- Meta Pixel (Singhs Print) — sitewide base code, consent-gated (added 2026-06-12).
-       This page does not load components.js, so it gets the inline snippet. -->
+  
   <script>
   !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
   try { fbq('consent', (localStorage.getItem('sp_consent') === 'granted') ? 'grant' : 'revoke'); }
@@ -67,7 +66,7 @@
 <body>
 
 <main class="wrap">
-  <a href="/fr/" class="back-link"  data-i18n="account.back.home">← Retour à l'accueil</a>
+  <a href="/fr" class="back-link"  data-i18n="account.back.home">← Retour à l'accueil</a>
 
   <div class="wordmark"><span class="dot" aria-hidden="true"></span> Singhs Print</div>
 
@@ -77,7 +76,7 @@
   </div>
 
   <div class="card">
-    <!-- Step 1: choose method + enter contact info -->
+    
     <div id="step-request">
       <div class="tabs" role="tablist">
         <button class="tab active" id="tab-email" type="button"  data-i18n="account.signin.tab.email">Courriel</button>
@@ -86,7 +85,7 @@
 
       <div id="pane-email">
         <label for="email"  data-i18n="account.signin.label.email">Adresse courriel</label>
-        <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+        <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="vous@exemple.com">
       </div>
 
       <div id="pane-phone" class="hide">
@@ -98,7 +97,7 @@
       <div id="msg-request" class="msg hide"></div>
     </div>
 
-    <!-- Step 2: enter the OTP -->
+    
     <div id="step-verify" class="hide">
       <label for="code"  data-i18n="account.signin.code">Entrez le code à 6 chiffres</label>
       <input id="code" class="code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">

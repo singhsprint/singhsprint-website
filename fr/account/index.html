@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="canonical" href="https://www.singhsprint.com/fr/account/">
-  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/account/">
-  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/account/">
-  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/account/">
+  <link rel="canonical" href="https://www.singhsprint.com/fr/account">
+  <link rel="alternate" hreflang="en" href="https://www.singhsprint.com/account">
+  <link rel="alternate" hreflang="fr" href="https://www.singhsprint.com/fr/account">
+  <link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/account">
   <meta charset="UTF-8">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/images/favicon-180.png">
@@ -58,7 +58,7 @@
 <div id="nav-placeholder"></div>
 
 <main class="wrap">
-  <a href="/fr/" class="back-link"  data-i18n="account.back.home">← Retour à l'accueil</a>
+  <a href="/fr" class="back-link"  data-i18n="account.back.home">← Retour à l'accueil</a>
   <div id="acct-subnav"></div>
 
   <div class="hero">
@@ -69,76 +69,73 @@
     <button id="signout" class="signout-btn" type="button"  data-i18n="account.signout">Déconnexion</button>
   </div>
 
-  <!-- ------- Quick stats (3 tiles, balanced) ------- -->
+  
   <div class="grid">
-    <a href="/fr/account/orders.html" class="acct-card" id="stat-active">
+    <a href="/fr/account/orders" class="acct-card" id="stat-active">
       <div class="acct-stat__label"  data-i18n="account.dash.stat.active">Demandes en cours</div>
       <div class="acct-stat__value" id="stat-active-val">—</div>
       <div class="acct-stat__sub"  data-i18n="account.dash.stat.active.sub">En révision ou en contact</div>
     </a>
-    <a href="/account/orders.html#past" class="acct-card" id="stat-past">
+    <a href="/account/orders#past" class="acct-card" id="stat-past">
       <div class="acct-stat__label"  data-i18n="account.dash.stat.past">Commandes passées</div>
       <div class="acct-stat__value" id="stat-past-val">—</div>
       <div class="acct-stat__sub"  data-i18n="account.dash.stat.past.sub">Recommandez en un clic</div>
     </a>
-    <a href="/fr/account/referrals.html" class="acct-card acct-card--accent">
+    <a href="/fr/account/referrals" class="acct-card acct-card--accent">
       <div class="acct-stat__label"  data-i18n="account.dash.stat.credit">Solde de crédit</div>
       <div class="acct-stat__row">
         <div class="acct-stat__value" id="stat-credit-val">—</div>
-        <span class="pip" id="stat-ref-pip">0 <span data-i18n="account.dash.stat.ref.signed">signed up</span></span>
+        <span class="pip" id="stat-ref-pip">0 <span>signed up</span></span>
       </div>
       <div class="acct-stat__sub" id="stat-credit-sub"  data-i18n="account.dash.stat.credit.sub">Provenant des parrainages et récompenses</div>
     </a>
   </div>
 
-  <!-- ------- Access-code redeem strip (hidden once the student is in
-       a program; visible by default so any student with a code from
-       their school can paste it without leaving the dashboard) ------- -->
+  
   <div id="redeem-strip" class="acct-card" style="margin-bottom:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:18px 22px">
     <div style="flex:1;min-width:200px">
-      <div style="font-weight:700;font-size:.95rem;margin-bottom:2px" data-i18n="account.dash.code.title">Have an access code from your school?</div>
-      <div style="color:#888;font-size:.82rem" data-i18n="account.dash.code.sub">Paste it to unlock your cohort catalog and spending allowance.</div>
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:2px">Have an access code from your school?</div>
+      <div style="color:#888;font-size:.82rem">Paste it to unlock your cohort catalog and spending allowance.</div>
     </div>
     <input id="dash-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ACCESS CODE" style="flex:1;min-width:160px;padding:11px 14px;border:1.5px solid #e0ddd1;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;outline:none">
     <button id="dash-redeem" type="button" style="padding:11px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer">Unlock →</button>
   </div>
 
-  <!-- ------- Sub-pages ------- -->
+  
   <div class="cards-row">
-    <a href="/fr/account/orders.html" class="acct-card nav-card">
+    <a href="/fr/account/orders" class="acct-card nav-card">
       <h3  data-i18n="account.dash.card.orders">Demandes et commandes</h3>
       <p  data-i18n="account.dash.card.orders.sub">Consultez vos demandes en attente, suivez vos commandes actuelles et recommandez ce que vous avez déjà imprimé avec nous.</p>
       <span class="arrow"  data-i18n="account.cta.view">Voir →</span>
     </a>
-    <a href="/fr/account/designs.html" class="acct-card nav-card">
-      <h3 data-i18n="account.dash.card.designs">Your designs</h3>
-      <p data-i18n="account.dash.card.designs.sub">Every garment you've customized or shared. Pick one up where you left off &mdash; artwork, colour and print position come back exactly as you set them.</p>
+    <a href="/fr/account/designs" class="acct-card nav-card">
+      <h3>Your designs</h3>
+      <p>Every garment you've customized or shared. Pick one up where you left off &mdash; artwork, colour and print position come back exactly as you set them.</p>
       <span class="arrow"  data-i18n="account.cta.view">Voir →</span>
     </a>
-    <a href="/fr/account/referrals.html" class="acct-card nav-card">
+    <a href="/fr/account/referrals" class="acct-card nav-card">
       <h3  data-i18n="account.dash.card.ref">Parrainages et crédit</h3>
       <p  data-i18n="account.dash.card.ref.sub">Partagez votre code, gagnez 25 $ pour chaque ami dont la commande est expédiée, et appliquez vos crédits au paiement.</p>
       <span class="arrow"  data-i18n="account.cta.share">Partager →</span>
     </a>
-    <a href="/fr/account/business.html" class="acct-card nav-card" id="card-business">
+    <a href="/fr/account/business" class="acct-card nav-card" id="card-business">
       <h3 id="card-business-title"  data-i18n="account.dash.card.biz">Compte entreprise</h3>
       <p id="card-business-sub"  data-i18n="account.dash.card.biz.sub">Vous avez soumis un appel d'offres ? Demandez les tarifs entreprise, les conditions net 30, les comptes d'équipe et la bibliothèque graphique.</p>
       <span class="arrow" id="card-business-arrow"  data-i18n="account.cta.apply">Demander →</span>
     </a>
-    <a href="/fr/account/programs.html" class="acct-card nav-card" id="card-programs">
+    <a href="/fr/account/programs" class="acct-card nav-card" id="card-programs">
       <h3  data-i18n="account.dash.card.programs">Programmes</h3>
       <p id="card-programs-sub"  data-i18n="account.dash.card.programs.sub">Achats institutionnels avec cohortes, catalogue restreint et plafonds de dépenses.</p>
       <span class="arrow"  data-i18n="account.cta.open">Ouvrir →</span>
     </a>
-    <a href="/fr/account/settings.html" class="acct-card nav-card">
+    <a href="/fr/account/settings" class="acct-card nav-card">
       <h3  data-i18n="account.dash.card.settings">Paramètres</h3>
       <p  data-i18n="account.dash.card.settings.sub">Profil, mot de passe de paiement, cartes enregistrées et déconnexion.</p>
       <span class="arrow"  data-i18n="account.cta.manage">Gérer →</span>
     </a>
   </div>
 
-  <!-- ------- Shared mockups ("My designs"): only shown when the shop has
-       shared at least one mockup with this customer. ------- -->
+  
   <section id="mockups-card" class="acct-card mockups-card" style="display:none">
     <h2  data-i18n="account.dash.mockups.h2">Mes maquettes</h2>
     <p class="sub"  data-i18n="account.dash.mockups.sub">Maquettes que notre équipe a partagées avec vous. Touchez pour télécharger un aperçu en taille réelle.</p>
