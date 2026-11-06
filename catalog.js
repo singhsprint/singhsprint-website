@@ -3939,7 +3939,15 @@
     // in, and that order IS the page. Running the default sort over it put
     // the curated picks back on top and quietly turned the most-ordered page
     // into a second copy of the catalog's first page.
-    if (!POPULAR) visible = sortProducts(visible, state.sort);
+    // The default sort on the Algolia path is ALREADY the page's order: the
+    // index ranks picks, then stock, then cotton-faced blanks (customRanking).
+    // Re-sorting those 30 hits here used the fallback keys instead -- S&S
+    // first, then colour count -- because Algolia hits carry no pick_rank or
+    // cotton_rank, so page one came out reshuffled (measured 2026-11-06:
+    // Gildan 2000 at #4, CVC 6210 above the ATC ring-spun picks). Explicit
+    // sorts (price, name, brand) still run.
+    const serverOrdered = state.serverPaged && (state.sort || 'bestseller') === 'bestseller';
+    if (!POPULAR && !serverOrdered) visible = sortProducts(visible, state.sort);
 
     // The Algolia path already asked for exactly this page. The API fallback
     // holds the whole filtered set in memory, so it is sliced here. Both end
@@ -4723,6 +4731,12 @@
           const sa = a.in_stock === false ? 1 : 0;
           const sb = b.in_stock === false ? 1 : 0;
           if (sa !== sb) return sa - sb;
+          // Cotton-faced blanks next, in tees / hoodies / crewnecks / long
+          // sleeves / sweatpants (owner, 2026-11-06). The API sets cotton_rank
+          // from each product's own fibre statement; Algolia ranks on the same
+          // number (_rank_cotton), so both paths draw the same page.
+          const ka = a.cotton_rank || 0, kb = b.cotton_rank || 0;
+          if (ka !== kb) return kb - ka;
           const na = a.supplier_code === 'ss_activewear' ? 0 : 1;
           const nb = b.supplier_code === 'ss_activewear' ? 0 : 1;
           if (na !== nb) return na - nb;

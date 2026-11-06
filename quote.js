@@ -39,16 +39,18 @@
         {v:'Comfort Colors 1717', t:'Comfort Colors 1717 - Garment-dyed, vintage look'}
       ],
       hoodie: [
-        {v:'Gildan 18500', t:'Gildan 18500 - Budget-friendly heavyweight'},
-        {v:'Champion S700', t:'Champion S700 - Streetwear quality, thick fleece'},
+        // Cotton-faced only (owner, 2026-11-06): the shop prints DTG, and a
+        // 50/50 face (Gildan 18500, Champion S700) prints dull and speckled.
+        {v:'Gildan SF500', t:'Gildan SF500 - Softstyle, cotton face, great value'},
         {v:'Independent Trading SS4500', t:'Independent Trading SS4500 - Premium midweight'},
+        {v:'Comfort Colors 1567', t:'Comfort Colors 1567 - Garment-dyed, heavyweight'},
         {v:'American Apparel RF498', t:'American Apparel RF498 - Flex fleece hoodie'},
         {v:'Bella+Canvas 3719', t:'Bella+Canvas 3719 - Soft, retail feel'}
       ],
       crewneck: [
-        {v:'Gildan 18000', t:'Gildan 18000 - Budget-friendly, classic fit'},
-        {v:'Champion S600', t:'Champion S600 - Heavyweight fleece'},
+        {v:'Gildan SF000', t:'Gildan SF000 - Softstyle, cotton face, great value'},
         {v:'Comfort Colors 1566', t:'Comfort Colors 1566 - Garment-dyed, relaxed'},
+        {v:'Bella+Canvas 3945', t:'Bella+Canvas 3945 - Drop shoulder, cotton face'},
         {v:'American Apparel RF496', t:'American Apparel RF496 - Flex fleece crewneck'},
         {v:'Independent Trading SS3000', t:'Independent Trading SS3000 - Midweight crew'}
       ],
