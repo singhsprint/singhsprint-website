@@ -14,6 +14,8 @@
  *     edit from changing one line and not the total.
  * F4  the quote form's hoodie, crewneck and jogger blank lists carry no 50/50
  *     face, and the bring-your-own example does not name one.
+ * F5  the quote page sends SanMar / S&S / blanks.ca photos through the image
+ *     proxy (SanMar's CDN 403s our Referer: the blank Nike polo card).
  */
 import { readFileSync } from 'node:fs'
 
@@ -58,6 +60,18 @@ for (const lang of ['', 'fr/']) {
 for (const rel of ['quote.html', 'fr/quote.html']) {
   const ph = (file(rel).match(/id="byoDesc"[^>]*placeholder="([^"]+)"/) || [])[1] || ''
   ok(`F4 ${rel}: the bring-your-own example names a cotton-faced hoodie`, /SF500/.test(ph) && !BAD.some((s) => ph.includes(s)), ph)
+}
+{
+  // F5 supplier photos on the quote page go through the proxy (SanMar 403s our Referer).
+  const q = file('quote.js')
+  const i = q.indexOf('function imgUrl(raw)'), j = q.indexOf('\n    }\n', i) + 6
+  const PROXY = q.match(/var IMAGE_PROXY_FOR_QUOTE\s*=\s*'([^']+)'/)?.[1] || ''
+  // eslint-disable-next-line no-new-func
+  const imgUrl = new Function('IMAGE_PROXY_FOR_QUOTE', `${q.slice(i, j)}; return imgUrl;`)(PROXY || '/proxy')
+  const via = (u) => imgUrl(u).startsWith((PROXY || '/proxy') + '?url=')
+  ok('F5 quote page proxies SanMar photos', via('https://media.sanmarcanada.com/catalog/product/n/k/nkdc1963_flat-front.jpg'))
+  ok('F5 quote page proxies S&S and blanks.ca photos', via('https://www.ssactivewear.com/Images/Style/11190_fl.jpg') && via('https://www.blanks.ca/media/catalog/product/a/3/a3000-001-f.png'))
+  ok('F5 our own images are left alone', imgUrl('/images/x.jpg') === '/images/x.jpg')
 }
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

@@ -5004,7 +5004,12 @@
       if (!raw) return '';
       if (raw.indexOf('/api/image-proxy') >= 0) return raw;     // already proxied
       if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
-      if (raw.indexOf('ssactivewear.com') >= 0) {
+      // SanMar's CDN 403s any request that carries our domain as Referer, so
+      // its photos must go through the proxy too (it answers SanMar with a 302
+      // and Referrer-Policy: no-referrer). Only S&S was listed here, so every
+      // SanMar blank on the quote page -- the Nike polo card, 2026-11-06 --
+      // rendered with no picture. Same hosts as catalog.js PROXIED_HOSTS.
+      if (/ssactivewear\.com|sanmarcanada\.com|sanmar\.com|blanks\.ca/i.test(raw)) {
         return IMAGE_PROXY_FOR_QUOTE + '?url=' + encodeURIComponent(raw);
       }
       return raw;
