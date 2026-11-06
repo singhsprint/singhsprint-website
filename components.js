@@ -306,6 +306,197 @@ function spAfterFirstPaint(fn) {
 })();
 
 // ---------------------------------------------------------------------
+// Google Ads click IDs + the one lead-conversion helper (2026-11-06).
+//
+// Why: consent defaults to denied (Law 25), and in that state the browser
+// sends Google Ads nothing, so most ad-click leads never reached Ads. The
+// fix is to keep the click ID ourselves and let the OS upload qualified
+// leads and won orders to Google overnight (offline conversions).
+//
+// 1. CAPTURE. ?gclid= / ?gbraid= / ?wbraid= on the landing URL are kept
+//    in localStorage 'sp_gads_click' for 90 days (Google's click window).
+//    localStorage, not a cookie: nothing is sent anywhere by keeping it.
+//    Falls back to Google's own _gcl_aw cookie, which exists only after
+//    the visitor accepted cookies.
+// 2. SEND. Every POST to the OS's /api/inbound gets an `ads` object
+//    {gclid|gbraid|wbraid, click_at, ad_consent}. Done once, here, by
+//    wrapping fetch, so no form can forget it. The OS stores it on the
+//    request, the lead and the contact. ad_consent tells the OS whether
+//    hashed email/phone may go with the upload (only when 'granted').
+// 3. CONVERT. SP_LEAD.afterInbound(response, info) fires the Meta Lead
+//    (Pixel + server, one event id) and the Google Ads conversion
+//    (send_to AW-…/label, transaction_id = the OS request id) — unless
+//    the OS answered spam === true. That is the only thing that
+//    suppresses a conversion.
+// ---------------------------------------------------------------------
+(function initLeadTracking() {
+  var KEY = 'sp_gads_click';
+  var TTL = 90 * 864e5;
+  var ID_RE = /^[A-Za-z0-9_-]{10,300}$/;
+  var KINDS = ['gclid', 'gbraid', 'wbraid'];
+  var CRM = 'https://singhsprint-crm.vercel.app';
+  var INBOUND_RE = /^(?:https:\/\/singhsprint-crm\.vercel\.app)?\/api\/inbound\/?(?:[?#]|$)/;
+  var memo = null; // used only when localStorage throws
+
+  function stored() {
+    var o = null;
+    try { o = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { o = memo; }
+    if (o && typeof o === 'object' && o.exp > Date.now()) return o;
+    if (o) { try { localStorage.removeItem(KEY); } catch (e) {} memo = null; }
+    return null;
+  }
+
+  function capture(search) {
+    var p;
+    try { p = new URLSearchParams(search); } catch (e) { return null; }
+    var rec = {}, any = false;
+    KINDS.forEach(function (k) { var v = p.get(k); if (v && ID_RE.test(v)) { rec[k] = v; any = true; } });
+    if (!any) return null;
+    rec.click_at = new Date().toISOString();
+    rec.exp = Date.now() + TTL;
+    memo = rec;
+    try { localStorage.setItem(KEY, JSON.stringify(rec)); } catch (e) {}
+    return rec;
+  }
+
+  // _gcl_aw = GCL.<unix seconds>.<gclid>
+  function fromCookie() {
+    var m = document.cookie.match(/(?:^|; )_gcl_aw=([^;]+)/);
+    if (!m) return null;
+    var parts = decodeURIComponent(m[1]).split('.');
+    if (parts.length < 3) return null;
+    var g = parts.slice(2).join('.'), ts = Number(parts[1]) * 1000;
+    if (!ID_RE.test(g) || !(ts > 0) || Date.now() - ts > TTL) return null;
+    return { gclid: g, click_at: new Date(ts).toISOString() };
+  }
+
+  function consentState() {
+    try { var s = localStorage.getItem('sp_consent'); return (s === 'granted' || s === 'denied') ? s : 'unset'; }
+    catch (e) { return 'unset'; }
+  }
+
+  function clickIds() {
+    var r = stored() || fromCookie();
+    if (!r) return null;
+    var out = {};
+    KINDS.forEach(function (k) { if (r[k]) out[k] = r[k]; });
+    out.click_at = r.click_at;
+    out.ad_consent = consentState();
+    return out;
+  }
+
+  // Adds `ads` to a JSON body string. Returns the body unchanged when there
+  // is no click ID, the body is not a JSON object, or it already has `ads`.
+  function withClickIds(body) {
+    if (typeof body !== 'string') return body;
+    var ids = clickIds();
+    if (!ids) return body;
+    try {
+      var b = JSON.parse(body);
+      if (!b || typeof b !== 'object' || Array.isArray(b) || b.ads) return body;
+      b.ads = ids;
+      return JSON.stringify(b);
+    } catch (e) { return body; }
+  }
+
+  if (typeof window.fetch === 'function' && !window.fetch.__spAds) {
+    var origFetch = window.fetch;
+    var wrapped = function (input, init) {
+      try {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        if (init && INBOUND_RE.test(url) && String(init.method || 'GET').toUpperCase() === 'POST') {
+          var nb = withClickIds(init.body);
+          if (nb !== init.body) init = Object.assign({}, init, { body: nb });
+        }
+      } catch (e) { /* never block a form on tracking */ }
+      return origFetch.call(window, input, init);
+    };
+    wrapped.__spAds = true;
+    window.fetch = wrapped;
+  }
+
+  function newId() {
+    return (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+      : ('lead-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  }
+
+  function googleConversion(params, tries) {
+    if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
+      window.SP_GTAG.trackConversion('quote_submit', params);
+    } else if ((tries || 0) < 20) {
+      setTimeout(function () { googleConversion(params, (tries || 0) + 1); }, 250);
+    }
+  }
+
+  // info: { inboundId, value, contentName, contentCategory, numItems, form,
+  //         user: { email, phone, name } }
+  function fire(info) {
+    info = info || {};
+    var id = info.inboundId ? String(info.inboundId) : newId();
+    var value = (typeof info.value === 'number' && isFinite(info.value) && info.value > 0) ? info.value : undefined;
+    var custom = { content_name: info.contentName || 'Quote Request', content_category: info.contentCategory || 'Print', currency: 'CAD' };
+    if (value !== undefined) custom.value = value;
+    if (info.numItems) custom.num_items = info.numItems;
+
+    // Meta Lead: Pixel and server share one event id, so Meta counts one.
+    try {
+      if (typeof window.fbq === 'function') window.fbq('track', 'Lead', custom, { eventID: id });
+      if (consentState() === 'granted') {
+        var ck = function (n) { var m = document.cookie.match('(?:^|; )' + n + '=([^;]+)'); return m ? decodeURIComponent(m[1]) : undefined; };
+        var u = info.user || {};
+        var parts = String(u.name || '').trim().split(/\s+/).filter(Boolean);
+        fetch(CRM + '/api/ads/capi/Lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            event_id: id,
+            event_source_url: location.href,
+            email: u.email || undefined,
+            phone: u.phone || undefined,
+            first_name: parts[0] || undefined,
+            last_name: parts.length > 1 ? parts.slice(1).join(' ') : undefined,
+            fbp: ck('_fbp'),
+            fbc: ck('_fbc'),
+            value: value,
+            currency: 'CAD'
+          })
+        }).catch(function () {});
+      } else if (window.SP_META && typeof window.SP_META.send === 'function') {
+        window.SP_META.send('Lead', id, custom); // no email/phone/name without consent
+      }
+    } catch (e) { /* tracking never breaks the success state */ }
+
+    // Google Ads conversion + GA4 quote_submit.
+    try {
+      var g = { currency: 'CAD', transaction_id: id };
+      if (value !== undefined) g.value = value;
+      if (info.contentName) g.product = info.contentName;
+      if (info.contentCategory) g.service = info.contentCategory;
+      if (info.numItems) g.num_items = info.numItems;
+      if (info.form) g.form = info.form;
+      googleConversion(g, 0);
+    } catch (e) {}
+    return id;
+  }
+
+  // The one gate: only spam === true from the OS suppresses a conversion.
+  function afterInbound(resp, info) {
+    if (resp && resp.spam === true) {
+      try { console.info('[SP_LEAD] the OS flagged this submission as spam; no conversion sent'); } catch (e) {}
+      return null;
+    }
+    return fire(Object.assign({}, info || {}, { inboundId: (resp && resp.id) || (info && info.inboundId) || null }));
+  }
+
+  capture(location.search);
+  window.SP_LEAD = {
+    clickIds: clickIds, withClickIds: withClickIds, capture: capture,
+    fire: fire, afterInbound: afterInbound, INBOUND_RE: INBOUND_RE
+  };
+})();
+
+// ---------------------------------------------------------------------
 // Contact-click tracking — tel: / sms: / mailto:  (moved here 2026-07-26)
 //
 // This lived in /pixel.js, which turns out to be loaded by exactly two

@@ -2766,108 +2766,34 @@
       // Clear immediately to defend against accidental re-render double-fires
       window.__sp_pendingConversion = null;
 
-      // Spam guard (2026-07-25): server flagged this submission (queued:false)
-      // — success panel already rendered above, but NO conversion events.
+      var inboundId = window.__sp_inboundId || null;
+      window.__sp_inboundId = null;
+
+      // Spam guard: the OS answered spam === true — success panel already
+      // rendered above (never tip off a bot), but NO conversion events.
       if (window.__sp_suppressConversion) { window.__sp_suppressConversion = false; return; }
 
-      // Meta Lead — the event the Leads-objective ad sets optimize toward.
-      // Fired on BOTH the browser Pixel and the server-side CAPI with a single
-      // shared event_id, so Meta de-dupes to exactly ONE Lead (no double-count)
-      // while recovering the ~10-20% of browser events lost to ad-blockers/iOS
-      // and lifting Event Match Quality via hashed email/phone/name. The CAPI
-      // POST is gated on the same consent flag the Pixel respects (sp_consent),
-      // so PII never leaves the browser without consent. Mirrors the drops
-      // funnel, which already had server-side CAPI; the quote funnel did not.
+      // Meta Lead (Pixel + server, one event id) and the Google Ads
+      // conversion (transaction_id = the OS request id) both go through
+      // SP_LEAD in components.js, the one helper every lead form uses.
+      // Hashed email/phone go to Meta only when the visitor accepted cookies.
       try {
-        if (typeof fbq === 'function') {
-          var leadCustom = {
-            content_name: trk.product || 'Quote Request',
-            content_category: trk.service || 'Print',
+        if (window.SP_LEAD) {
+          window.SP_LEAD.fire({
+            inboundId: inboundId,
             value: trk.estValue || 0,
-            currency: 'CAD',
-            num_items: trk.totalQty || 0
-          };
-          var leadEventId = (window.crypto && crypto.randomUUID)
-            ? crypto.randomUUID()
-            : ('lead-' + Date.now() + '-' + Math.random().toString(16).slice(2));
-
-          // 1) Browser Pixel — with eventID so it dedupes against the server event.
-          fbq('track', 'Lead', leadCustom, { eventID: leadEventId });
-
-          // 2) Server CAPI — same event_id + hashed identity. Consent-gated.
-          try {
-            if (localStorage.getItem('sp_consent') === 'granted') {
-              var spCookie = function (n) { var m = document.cookie.match('(?:^|; )' + n + '=([^;]+)'); return m ? decodeURIComponent(m[1]) : undefined; };
-              var leadName = ((document.getElementById('name') || {}).value || '').trim();
-              var leadParts = leadName ? leadName.split(/\s+/) : [];
-              var leadUserData = {
-                em:  ((document.getElementById('email') || {}).value || '').trim() || undefined,
-                ph:  ((document.getElementById('phone') || {}).value || '').trim() || undefined,
-                fn:  leadParts[0] || undefined,
-                ln:  leadParts.length > 1 ? leadParts.slice(1).join(' ') : undefined,
-                fbp: spCookie('_fbp'),
-                fbc: spCookie('_fbc')
-              };
-              // Meta CAPI — repointed 2026-08-10.
-              //
-              // This posted to a RELATIVE '/api/meta-capi' on the static host. No
-              // such route exists there or anywhere, so the server half of the
-              // Pixel+CAPI pair has never fired. That is worse than a normal dead
-              // call: the pair exists so Meta can dedupe on a shared event_id, and
-              // with CAPI absent Meta has been optimising on Pixel-only signal.
-              //
-              // The real receiver is the CRM's /api/ads/capi/[event], which takes
-              // the event name in the PATH and a FLAT body — not Meta's nested
-              // user_data/custom_data shape — so the payload is reshaped here.
-              //
-              // sendBeacon is deliberately not used: it cannot send an
-              // application/json body cross-origin (the preflight it would need is
-              // not something beacon performs). fetch with keepalive survives the
-              // page transition just as well.
-              var leadCapiBody = JSON.stringify({
-                event_id:         leadEventId,
-                event_source_url: location.href,
-                email:            leadUserData.em,
-                phone:            leadUserData.ph,
-                first_name:       leadUserData.fn,
-                last_name:        leadUserData.ln,
-                fbp:              leadUserData.fbp,
-                fbc:              leadUserData.fbc,
-                value:            Number(trk.estValue || 0),
-                currency:         'CAD'
-              });
-              fetch('https://singhsprint-crm.vercel.app/api/ads/capi/Lead', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: leadCapiBody,
-                keepalive: true
-              }).catch(function () { /* tracking must never break the success state */ });
-            } else if (window.SP_META) {
-              // No consent: still mirror the Lead server-side, but with NO
-              // email/phone/name — only the ad click id (fbc) + IP/UA so the
-              // Leads-objective ad sets get the conversion signal. (2026-10-04)
-              window.SP_META.send('Lead', leadEventId, leadCustom);
+            contentName: trk.product || 'Quote Request',
+            contentCategory: trk.service || 'Print',
+            numItems: trk.totalQty || 0,
+            form: 'quote',
+            user: {
+              email: ((document.getElementById('email') || {}).value || '').trim(),
+              phone: ((document.getElementById('phone') || {}).value || '').trim(),
+              name:  ((document.getElementById('name') || {}).value || '').trim()
             }
-          } catch (capiErr) { /* CAPI must never break the success state */ }
-        }
-      } catch(err) { /* tracking should never break the success state */ }
-
-      // Google Ads conversion + GA4 quote_submit — mirrors the fbq Lead
-      // payload so ROAS reports line up between Meta and Google.
-      // SP_GTAG.trackConversion handles AW-/label wiring (gtag-config.js)
-      // and is a no-op until verification clears.
-      try {
-        if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
-          window.SP_GTAG.trackConversion('quote_submit', {
-            value: trk.estValue || 0,
-            currency: 'CAD',
-            transaction_id: 'quote-' + Date.now(), // dedupe key for Ads
-            product: trk.product || null,
-            service: trk.service || null,
-            num_items: trk.totalQty || 0
           });
         }
-      } catch(err) { /* tracking should never break the success state */ }
+      } catch (err) { /* tracking should never break the success state */ }
     }
 
     // ===== PRICING CALCULATOR =====
@@ -8870,13 +8796,16 @@
               // Inline success — short-circuits Web3Forms entirely.
               form.dataset.spUploadCleared = '1';
               spHideUploadOverlay();
-              // Spam guard (2026-07-25): the CRM answers queued:false when
-              // its spam layers flagged the submission (honeypot / rate
-              // limit / gibberish). We still show the normal success panel
-              // — never tip off a bot — but suppress the Lead conversions
-              // so fake Leads can't poison Meta/Google optimization.
+              // Spam guard: the OS answers spam:true when its spam layers
+              // flagged the submission (honeypot / rate limit / gibberish).
+              // We still show the normal success panel — never tip off a
+              // bot — but suppress the Lead conversions so fake Leads can't
+              // poison Meta/Google optimization. spam === true is the ONLY
+              // suppressor; anything else (including an unreadable body)
+              // counts as a real lead.
               r.json().catch(function(){ return {}; }).then(function(j){
-                if (j && j.queued === false) window.__sp_suppressConversion = true;
+                window.__sp_suppressConversion = !!(j && j.spam === true);
+                window.__sp_inboundId = (j && j.id) || null;
                 try { showSuccess(); } catch (e) { /* showSuccess is defined below; fall back if not yet */ }
               });
             } else {

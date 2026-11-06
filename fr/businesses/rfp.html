@@ -502,22 +502,22 @@
         source_url: location.href
       }),
       keepalive: true
+    }).then(function(r) {
+      return r && r.ok ? r.json().catch(function() { return {}; }) : null;
+    }).then(function(j) {
+      // Meta Lead + Google Ads conversion, only once the OS has the request
+      // and did not answer spam:true (SP_LEAD in components.js). Value is the
+      // same rough bid signal as before (PIXEL_PER_UNIT_CAD), never a quote;
+      // omitted when the qty didn't parse.
+      if (!j || !window.SP_LEAD) return;
+      window.SP_LEAD.afterInbound(j, {
+        value: (units !== null) ? units * PIXEL_PER_UNIT_CAD : undefined,
+        contentName: 'RFP — ' + (document.getElementById('industry').value || 'B2B'),
+        contentCategory: 'B2B Procurement',
+        form: 'rfp',
+        user: { email: payload.email, phone: payload.phone, name: payload.contact_name }
+      });
     }).catch(function() { /* legacy leads insert still went through */ });
-
-    // Fire Meta Pixel Lead event so the ad set can optimize toward RFP conversions too
-    try {
-      if (typeof fbq === 'function') {
-        fbq('track', 'Lead', {
-          content_name: 'RFP — ' + (document.getElementById('industry').value || 'B2B'),
-          content_category: 'B2B Procurement',
-          // Bid signal only — see PIXEL_PER_UNIT_CAD above. Omitted rather than
-          // sent as 0 when the qty didn't parse, so a bad submit can't teach the
-          // ad set that RFP leads are worthless.
-          value: (units !== null) ? units * PIXEL_PER_UNIT_CAD : undefined,
-          currency: 'CAD'
-        });
-      }
-    } catch(err) {}
 
     // Show success state, hide form
     form.style.display = 'none';

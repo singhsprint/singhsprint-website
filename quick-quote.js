@@ -17,7 +17,7 @@
  * platforms see one kind of lead:
  *   - logo  → /api/inbound/upload-url (signed PUT) → /sign, relay fallback
  *   - lead  → POST /api/inbound, kind 'quote', meta.quick_quote = true
- *   - on 2xx and queued !== false only: Google Ads 'quote_submit'
+ *   - on 2xx and unless the OS says spam:true: Google Ads 'quote_submit'
  *     conversion (SP_GTAG), Meta Lead (Pixel + CAPI, one event_id),
  *     spTrack('quick_quote_submit')
  *   - honeypot field "website" — the CRM flags any non-empty value
@@ -295,51 +295,20 @@
       });
   }
 
-  function fireConversions(contact, name, item, qty) {
-    // Google Ads + GA4 — same conversion action as the full builder.
+  // Meta Lead + Google Ads conversion through SP_LEAD (components.js):
+  // one event id for Meta's Pixel and server copy, transaction_id = the OS
+  // request id for Google. Skipped only when the OS answered spam === true.
+  function fireConversions(resp, contact, name, item, qty) {
+    if (resp && resp.spam === true) return; // OS flagged spam: no conversion, no GA4 event
     try {
-      if (window.SP_GTAG && typeof window.SP_GTAG.trackConversion === 'function') {
-        window.SP_GTAG.trackConversion('quote_submit', {
-          currency: 'CAD',
-          transaction_id: 'qq-' + Date.now(),
-          product: item,
-          service: svc.crm,
-          num_items: qty,
-          form: 'quick_quote'
+      if (window.SP_LEAD) {
+        window.SP_LEAD.afterInbound(resp, {
+          contentName: item,
+          contentCategory: svc.crm,
+          numItems: qty,
+          form: 'quick_quote',
+          user: { email: contact.email, phone: contact.phone, name: name }
         });
-      }
-    } catch (e) { /* tracking never breaks the success state */ }
-
-    // Meta Lead — Pixel + CAPI share one event_id so Meta counts one.
-    try {
-      var eventId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
-        : ('lead-' + Date.now() + '-' + Math.random().toString(16).slice(2));
-      var custom = { content_name: item, content_category: svc.crm, currency: 'CAD', num_items: qty };
-      if (typeof window.fbq === 'function') window.fbq('track', 'Lead', custom, { eventID: eventId });
-
-      var consented = false;
-      try { consented = localStorage.getItem('sp_consent') === 'granted'; } catch (e) {}
-      if (consented) {
-        var ck = function (n) { var m = document.cookie.match('(?:^|; )' + n + '=([^;]+)'); return m ? decodeURIComponent(m[1]) : undefined; };
-        var parts = (name || '').trim().split(/\s+/);
-        fetch(CRM + '/api/ads/capi/Lead', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          keepalive: true,
-          body: JSON.stringify({
-            event_id: eventId,
-            event_source_url: location.href,
-            email: contact.email,
-            phone: contact.phone,
-            first_name: parts[0] || undefined,
-            last_name: parts.length > 1 ? parts.slice(1).join(' ') : undefined,
-            fbp: ck('_fbp'),
-            fbc: ck('_fbc'),
-            currency: 'CAD'
-          })
-        }).catch(function () {});
-      } else if (window.SP_META && typeof window.SP_META.send === 'function') {
-        window.SP_META.send('Lead', eventId, custom); // no PII without consent
       }
     } catch (e) { /* tracking never breaks the success state */ }
 
@@ -447,9 +416,10 @@
           return r.json().catch(function () { return {}; });
         })
         .then(function (j) {
-          // queued:false = the CRM's spam layers flagged it. Show the normal
-          // success (never tip off a bot) but keep it out of ad optimisation.
-          if (!(j && j.queued === false)) fireConversions(contact, name, item, qty);
+          // spam:true = the OS's spam layers flagged it. Show the normal
+          // success (never tip off a bot); SP_LEAD keeps it out of ad
+          // optimisation.
+          fireConversions(j, contact, name, item, qty);
           showSuccess(form);
         })
         .catch(function (err) {
