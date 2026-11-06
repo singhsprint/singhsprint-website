@@ -67,11 +67,13 @@
         {v:'Otto Cap 83-1101', t:'Otto Cap - 5-panel, dad hat style'}
       ],
       joggers: [
-        {v:'Gildan 18200', t:'Gildan 18200 - Heavy blend sweatpants'},
-        {v:'Champion RW10', t:'Champion RW10 - Reverse weave joggers'},
+        // Cotton-faced or 100% cotton (owner, 2026-11-06). Out: Gildan 18200
+        // (50/50), and Champion RW10 / American Apparel 5398 / Bella 3727,
+        // which are no longer in stock or no longer carried.
+        {v:'Gildan SF100', t:'Gildan SF100 - Softstyle fleece, cotton face'},
+        {v:'KOI 2280', t:'KOI 2280 - Cotton-face fleece, great value'},
         {v:'Independent Trading IND20PNT', t:'Independent Trading - Midweight fleece'},
-        {v:'American Apparel 5398', t:'American Apparel 5398 - California fleece jogger'},
-        {v:'Bella+Canvas 3727', t:'Bella+Canvas 3727 - Sponge fleece jogger'}
+        {v:'Comfort Colors 1469', t:'Comfort Colors 1469 - Garment-dyed, 100% cotton'}
       ],
       tote: [
         {v:'Q-Tees Q800', t:'Q-Tees Q800 - Canvas tote, 12oz'},

@@ -12,13 +12,14 @@
  *     and in French. The numbers themselves came from price_configuration on
  *     2026-11-06 (black SF500, left chest; see the commit); this keeps a later
  *     edit from changing one line and not the total.
- * F4  the quote form's hoodie and crewneck blank lists carry no 50/50 face.
+ * F4  the quote form's hoodie, crewneck and jogger blank lists carry no 50/50
+ *     face, and the bring-your-own example does not name one.
  */
 import { readFileSync } from 'node:fs'
 
 const ROOT = new URL('..', import.meta.url).pathname
 const PAGES = ['corporate-tech-swag', 'construction-workwear', 'schools-sports-teams', 'charity-events-fundraisers']
-const BAD = ['18500', '18000', 'S700', 'S600']
+const BAD = ['18500', '18000', 'S700', 'S600', '18200', 'RW10', '975MPR']
 let pass = 0, fail = 0
 const ok = (n, c, d = '') => { if (c) { pass++; console.log(`  ok  ${n}`) } else { fail++; console.log(`  FAIL ${n}${d ? ' -- ' + d : ''}`) } }
 const file = (rel) => readFileSync(process.env[`F_${rel.replace(/\W/g, '_')}`] || ROOT + rel, 'utf8')
@@ -49,10 +50,14 @@ for (const lang of ['', 'fr/']) {
 {
   const q = file('quote.js')
   const block = (g) => q.slice(q.indexOf(`      ${g}: [`), q.indexOf('],', q.indexOf(`      ${g}: [`)))
-  for (const g of ['hoodie', 'crewneck']) {
+  for (const g of ['hoodie', 'crewneck', 'joggers']) {
     const b = block(g).replace(/\/\/[^\n]*/g, '')
     ok(`F4 quote form ${g} blanks carry no 50/50 face`, b.length > 50 && !BAD.some((s) => new RegExp(`'[^']*\\b${s}\\b`).test(b)), b.match(/v:'[^']+'/g)?.join(' '))
   }
+}
+for (const rel of ['quote.html', 'fr/quote.html']) {
+  const ph = (file(rel).match(/id="byoDesc"[^>]*placeholder="([^"]+)"/) || [])[1] || ''
+  ok(`F4 ${rel}: the bring-your-own example names a cotton-faced hoodie`, /SF500/.test(ph) && !BAD.some((s) => ph.includes(s)), ph)
 }
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)
