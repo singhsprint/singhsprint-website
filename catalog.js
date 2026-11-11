@@ -3636,7 +3636,17 @@
     if (PROXIED_HOSTS.some(h => raw.indexOf(h) >= 0)) {
       return IMAGE_PROXY + '?url=' + encodeURIComponent(raw) + (w ? '&w=' + w : '');
     }
+    if (/^https:\/\/cdn\.shopify\.com\//.test(raw)) return shopifySized(raw, w || 1600);
     return raw;
+  }
+  // Jerico's photos are Shopify CDN originals: 2000x2500 to 4000x5000, 0.8-1.5 MB
+  // each. Measured 2026-11-11 on /catalog?canadian=1: 162 images, 56 MB, for a
+  // grid that shows them ~270px wide. Shopify's CDN resizes on request
+  // (?width=N; 800 KB -> 21 KB at 400px, WebP when the browser accepts it), so
+  // ask it for the size the page draws instead of the original.
+  function shopifySized(raw, w) {
+    const base = raw.replace(/([?&])width=\d+&?/, '$1').replace(/[?&]$/, '');
+    return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'width=' + w;
   }
 
   function getQueryParam(name) {

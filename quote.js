@@ -4938,6 +4938,12 @@
       if (/ssactivewear\.com|sanmarcanada\.com|sanmar\.com|blanks\.ca/i.test(raw)) {
         return IMAGE_PROXY_FOR_QUOTE + '?url=' + encodeURIComponent(raw);
       }
+      // Shopify CDN originals (Jerico) are up to 4000x5000 / 1.5 MB. Ask the
+      // CDN for a picture the quote page can actually use.
+      if (/^https:\/\/cdn\.shopify\.com\//.test(raw)) {
+        var sb = raw.replace(/([?&])width=\d+&?/, '$1').replace(/[?&]$/, '');
+        return sb + (sb.indexOf('?') >= 0 ? '&' : '?') + 'width=900';
+      }
       return raw;
     }
 

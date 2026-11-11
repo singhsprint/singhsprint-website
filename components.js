@@ -856,7 +856,7 @@ function loadNav() {
         { en: 'Long sleeve',         fr: 'Manches longues',     href: BASE + '/catalog?type=longsleeve' },
         { en: 'Tank tops',           fr: 'Camisoles',           href: BASE + '/catalog?type=tank' },
         { en: 'Performance / tech',  fr: 'Performance',         href: BASE + '/catalog?type=performance_shirt' },
-        { en: 'Canadian-made',       fr: 'Fait au Canada',      href: BASE + '/catalog?type=tshirt&canadian=1' }
+        { en: 'Made in Canada',      fr: 'Fabriqué au Canada',  href: BASE + '/catalog?type=tshirt&canadian=1' }
       ]
     },
     {
@@ -882,8 +882,9 @@ function loadNav() {
       href: BASE + '/catalog?type=jacket',
       subs: [
         { en: 'All jackets',         fr: 'Toutes les vestes',   href: BASE + '/catalog?type=jacket' },
-        { en: 'Vests',               fr: 'Gilets',              href: BASE + '/catalog?type=vest' },
-        { en: 'Canadian-made',       fr: 'Fait au Canada',      href: BASE + '/catalog?type=jacket&canadian=1' }
+        { en: 'Vests',               fr: 'Gilets',              href: BASE + '/catalog?type=vest' }
+        // "Canadian-made" jackets removed 2026-11-11: no Canadian-made jacket
+        // is in the catalogue (Jerico makes none), so it opened "No matches".
       ]
     },
     {
@@ -981,10 +982,29 @@ function loadNav() {
         { en: 'Premium · from $195', fr: 'Premium · dès 195 $',   i18n: 'nav.gifts.premium',   href: BASE + '/gifts/build?tier=premium' }
       ]
     }
-    // 2026-09-17 — the "Canadian / Canadien" item lived here. It pointed at
-    // /catalog?canadian=1 (supplier-scoped to rue_sainte_patrick) with the Rue
-    // Saint-Patrick brand story as its only sub-link. Both the filter and the
-    // story page are gone; we no longer carry the line.
+    ,
+    {
+      // 2026-11-11 — Made in Canada, back as its own tab. The 2026-09-17
+      // "Canadian" item meant one supplier (since delisted); this one is the
+      // catalog's Made in Canada filter, which reads each product's own flag
+      // (Jerico today, 45 styles). Subs are only the categories that have
+      // Canadian-made styles (measured on the index, 2026-11-11): tees 19,
+      // hoodies 8, crewnecks 6, long sleeves 5, tanks 3, polos 2,
+      // sweatpants 2, youth 7. A sub with nothing behind it is a dead end.
+      en: 'Made in Canada', fr: 'Fabriqué au Canada', i18n: 'nav.madeincanada',
+      href: BASE + '/catalog?canadian=1',
+      subs: [
+        { en: 'All Made in Canada',  fr: 'Tout le fabriqué au Canada', href: BASE + '/catalog?canadian=1' },
+        { en: 'T-shirts',            fr: 'T-shirts',            href: BASE + '/catalog?canadian=1&type=tshirt' },
+        { en: 'Hoodies',             fr: 'Hoodies',             href: BASE + '/catalog?canadian=1&type=hoodie' },
+        { en: 'Crewnecks',           fr: 'Pulls col rond',      href: BASE + '/catalog?canadian=1&type=crewneck' },
+        { en: 'Long sleeves',        fr: 'Manches longues',     href: BASE + '/catalog?canadian=1&type=longsleeve' },
+        { en: 'Polos',               fr: 'Polos',               href: BASE + '/catalog?canadian=1&type=polo' },
+        { en: 'Tank tops',           fr: 'Camisoles',           href: BASE + '/catalog?canadian=1&type=tank' },
+        { en: 'Sweatpants',          fr: 'Pantalons de jogging',href: BASE + '/catalog?canadian=1&type=sweatpants' },
+        { en: 'Youth & kids',        fr: 'Enfants',             href: BASE + '/catalog?canadian=1&gender=youth' }
+      ]
+    }
   ];
 
   // EDITORIAL, right-rail nav items.
@@ -1074,6 +1094,7 @@ function loadNav() {
     grid:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
     // Same line weight as the rest of the set, drawn open rather than filled
     // so it reads as a mark, not a rating.
+    maple:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.7 3.3 2-1-.6 4.5 2.6-2.4.7 1.7 2.6-.5-.9 2.8 1.2.7-4.6 3.8.6 1.6-4.6-.7"/><path d="M12 2.5l-1.7 3.3-2-1 .6 4.5-2.6-2.4-.7 1.7-2.6-.5.9 2.8-1.2.7 4.6 3.8-.6 1.6 4.6-.7"/><path d="M12 15.9V21.5"/></svg>',
     star:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.3 5.8.85-4.2 4.1 1 5.75L12 16.9l-5.2 2.7 1-5.75-4.2-4.1 5.8-.85z"/></svg>'
   };
 
@@ -1190,6 +1211,7 @@ function loadNav() {
     + '<nav class="sp-mobile-cats" aria-label="' + t('Categories', 'Catégories') + '">'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/popular">' + ICON.star + '<span>' + t('Popular', 'Populaires') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog">' + ICON.grid + '<span>' + t('All', 'Tout') + '</span></a>'
+    + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?canadian=1">' + ICON.maple + '<span>' + t('Made in Canada', 'Fabriqué au Canada') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=tshirt">' + ICON.tshirt + '<span>' + t('T-Shirts', 'T-shirts') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=hoodie">' + ICON.hoodie + '<span>' + t('Hoodies', 'Hoodies') + '</span></a>'
     + '  <a class="sp-mobile-cat" href="' + BASE + '/catalog?type=polo">' + ICON.polo + '<span>' + t('Polos', 'Polos') + '</span></a>'
@@ -1374,6 +1396,12 @@ function loadNav() {
               if (!raw) return '';
               if (raw.indexOf('/api/image-proxy') >= 0) return raw;
               if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
+              // Shopify CDN originals (Jerico) are up to 4000x5000; the dropdown
+              // draws them as small thumbnails. Ask the CDN for that size.
+              if (/^https:\/\/cdn\.shopify\.com\//.test(raw)) {
+                var b = raw.replace(/([?&])width=\d+&?/, '$1').replace(/[?&]$/, '');
+                return b + (b.indexOf('?') >= 0 ? '&' : '?') + 'width=200';
+              }
               for (var i = 0; i < PROXIED_HOSTS.length; i++) {
                 if (raw.indexOf(PROXIED_HOSTS[i]) >= 0) {
                   return IMG_PROXY + '?url=' + encodeURIComponent(raw);

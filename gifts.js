@@ -30,6 +30,12 @@
     if (!raw) return '/images/product-tshirt-white.jpg';
     if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
     for (var i = 0; i < PROXIED_HOSTS.length; i++) if (raw.indexOf(PROXIED_HOSTS[i]) >= 0) return IMAGE_PROXY + '?url=' + encodeURIComponent(raw);
+    // Shopify CDN originals (Jerico) are up to 4000x5000 / 1.5 MB; the builder
+    // draws gear tiles a few hundred px wide. Ask the CDN for that size.
+    if (/^https:\/\/cdn\.shopify\.com\//.test(raw)) {
+      var b = raw.replace(/([?&])width=\d+&?/, '$1').replace(/[?&]$/, '');
+      return b + (b.indexOf('?') >= 0 ? '&' : '?') + 'width=800';
+    }
     return raw;
   }
   function money(n) {

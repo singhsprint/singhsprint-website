@@ -854,6 +854,7 @@ var SP_LANG = (function() {
     'nav.hats':     { en: 'Hats',                 fr: 'Chapeaux' },
     'nav.jerseys':  { en: 'Jerseys',              fr: 'Maillots' },
     'nav.gifts':    { en: 'Gift boxes',           fr: 'Boîtes-cadeaux' },
+    'nav.madeincanada': { en: 'Made in Canada',   fr: 'Fabriqué au Canada' },
     'nav.gifts.how':       { en: 'How it works',          fr: 'Comment ça marche' },
     'nav.gifts.build':     { en: 'Build your box',        fr: 'Composez votre boîte' },
     'nav.gifts.concierge': { en: 'Have us build it',      fr: "On s'en occupe" },

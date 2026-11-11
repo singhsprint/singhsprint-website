@@ -14,6 +14,15 @@
  *      the legacy /api/catalog fallback carries canadian=1; a Canadian-made
  *      card wears the badge and others do not.
  *   C  lang.js — the chip and badge strings exist in English and French.
+ *   D  the menu bar (components.js in a DOM, EN and FR): a "Made in Canada"
+ *      item to /catalog?canadian=1, every sub-link keeps canadian=1, it is in
+ *      the phone drawer and the phone category strip too, and no menu link
+ *      asks for Canadian-made jackets (there are none; it opened "No matches").
+ *   E  image size: Jerico's Shopify originals are 2000x2500 to 4000x5000
+ *      (56 MB for one Made in Canada page, measured 2026-11-11). The card,
+ *      the swatches and the big view ask Shopify's CDN for ?width=, and so do
+ *      the search dropdown, the gift builder and the quote page; other hosts
+ *      are untouched.
  */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -48,8 +57,10 @@ async function algoliaFilters(opts) {
 }
 
 // ── B. the catalog page ───────────────────────────────────────────────────
+const SHOP = 'https://cdn.shopify.com/s/files/1/0738/5235/4810/files/15-Black-2000x2500.png?v=1749538216'
 const P = (id, canadian, extra = {}) => ({ product_id: id, brand: 'Jerico', style_number: id, name: 'Tee ' + id, garment_type: 'tshirt', category_effective: 'tshirt',
-  price_from: 12, in_stock: true, is_canadian_made: canadian, colors: [{ color_id: id + 'c', color_name: 'Black', hex_code: '#000', sizes_in_stock: ['M'] }], ...extra })
+  price_from: 12, in_stock: true, is_canadian_made: canadian, hero_image_url: canadian ? SHOP : 'https://cdn.ssactivewear.com/Images/Style/1_fm.jpg',
+  colors: [{ color_id: id + 'c', color_name: 'Black', hex_code: '#000', sizes_in_stock: ['M'], mockup_front_url: canadian ? SHOP : 'https://cdn.ssactivewear.com/Images/Color/1_f_fm.jpg' }], ...extra })
 
 async function page(query = '') {
   const html = read('catalog.html').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -108,9 +119,63 @@ async function main() {
   const cat = fetched.find((u) => /\/api\/catalog\?/.test(u))
   ok('B8 without Algolia, /api/catalog is asked for canadian=1', !!cat && new URL(cat).searchParams.get('canadian') === '1', J(fetched.slice(0, 3)))
 
+  // ── E. image size on the catalog page ──
+  {
+    const e = await page('?canadian=1')
+    const card = [...e.w.document.querySelectorAll('#catGrid .card')].find((c) => c.innerHTML.includes('Tee 15'))
+    const srcs = card ? [...card.querySelectorAll('img')].map((i) => i.getAttribute('src') || '') : []
+    const shop = srcs.filter((u) => u.startsWith('https://cdn.shopify.com/'))
+    ok('E1 a Jerico card asks Shopify for a sized picture, never the original', shop.length > 0 && shop.every((u) => /[?&]width=\d+$/.test(u) && Number(u.match(/width=(\d+)/)[1]) <= 640), J(srcs))
+    const other = [...e.w.document.querySelectorAll('#catGrid .card')].find((c) => c.innerHTML.includes('Tee 8000'))
+    const osrc = other ? [...other.querySelectorAll('img')].map((i) => i.getAttribute('src') || '') : []
+    ok('E2 other suppliers still go through the image proxy, unchanged', osrc.length > 0 && osrc.every((u) => !/cdn\.shopify\.com/.test(u) && !/[?&]width=/.test(u)), J(osrc))
+  }
+  // the three other pictures-on-the-page helpers, run for real (extracted and evaluated)
+  {
+    const fn = (file, re) => { const m = read(file).match(re); return m ? m[0] : null }
+    const run = (code, name, arg) => { const ctx = vm.createContext({ IMAGE_PROXY: 'P', IMAGE_PROXY_FOR_QUOTE: 'P', IMG_PROXY: 'P', PROXIED_HOSTS: ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'], encodeURIComponent }); vm.runInContext(code, ctx); return ctx[name](arg) }
+    const cases = [
+      ['components.js', /function searchImgUrl\(raw\) \{[\s\S]*?\n            \}/, 'searchImgUrl', 200],
+      ['gifts.js', /function imgUrl\(raw\) \{[\s\S]*?\n  \}/, 'imgUrl', 800],
+      ['quote.js', /function \w+\(raw\) \{\s*if \(!raw\) return '';\s*if \(raw\.indexOf\('\/api\/image-proxy'\)[\s\S]*?\n    \}/, null, 900],
+    ]
+    for (const [file, re, name, w] of cases) {
+      const code = fn(file, re)
+      const nm = name || (code && code.match(/function (\w+)/)[1])
+      let got = null, keep = null, twice = null
+      try { got = run(code, nm, SHOP); keep = run(code, nm, 'https://cdn.ssactivewear.com/a.jpg'); twice = run(code, nm, SHOP + '&width=4000') } catch (err) { got = 'ERR ' + err.message }
+      ok(`E3 ${file}: a Shopify original comes back at width=${w}; an S&S photo is not resized; an existing width is replaced, not doubled`,
+        got === SHOP + '&width=' + w && !/width=/.test(String(keep)) && twice === SHOP + '&width=' + w, J([got, keep, twice]))
+    }
+  }
+
+  // ── D. the menu bar ──
+  for (const lang of ['en', 'fr']) {
+    const base = lang === 'fr' ? '/fr' : ''
+    const dom = new JSDOM('<!doctype html><html><body><div id="nav-placeholder"></div><div id="footer-placeholder"></div></body></html>', { url: 'https://www.singhsprint.com' + base + '/catalog', runScripts: 'outside-only', pretendToBeVisual: true })
+    const w = dom.window
+    w.fetch = async () => ({ ok: true, json: async () => ({}) })
+    w.matchMedia = w.matchMedia || (() => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} }))
+    w.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} }
+    let err = null
+    try { w.eval(read('components.js')); w.document.dispatchEvent(new w.Event('DOMContentLoaded')) } catch (e) { err = e }
+    await tick(100)
+    const label = lang === 'fr' ? 'Fabriqué au Canada' : 'Made in Canada'
+    const links = [...w.document.querySelectorAll('a')]
+    const href = (a) => new URL(a.getAttribute('href'), 'https://www.singhsprint.com').pathname + new URL(a.getAttribute('href'), 'https://www.singhsprint.com').search
+    const top = links.find((a) => a.classList.contains('sp-nav-item') && a.textContent.trim() === label)
+    ok(`D1 [${lang}] the menu bar has "${label}" -> ${base}/catalog?canadian=1`, !err && !!top && href(top) === base + '/catalog?canadian=1', err ? String(err).slice(0, 200) : top ? href(top) : J(links.filter((a) => a.classList.contains('sp-nav-item')).map((a) => a.textContent.trim())))
+    const subs = top ? [...top.closest('.sp-nav-parent').querySelectorAll('a')].filter((a) => a !== top) : []
+    ok(`D2 [${lang}] its ${subs.length} sub-links all keep canadian=1 and stay in ${lang}`, subs.length >= 5 && subs.every((a) => /[?&]canadian=1/.test(href(a)) && href(a).startsWith(base + '/catalog')), J(subs.map(href)))
+    const drawer = links.filter((a) => /[?&]canadian=1/.test(a.getAttribute('href') || '') && a.closest('.sp-drawer, [class*=drawer]'))
+    const strip = [...w.document.querySelectorAll('.sp-mobile-cats a')].find((a) => href(a) === base + '/catalog?canadian=1')
+    ok(`D3 [${lang}] it is in the phone drawer and the phone category strip`, drawer.length > 0 && !!strip && strip.textContent.includes(label), J({ drawer: drawer.length, strip: !!strip }))
+    ok(`D4 [${lang}] no menu link asks for Canadian-made jackets`, !links.some((a) => /type=jacket/.test(a.getAttribute('href') || '') && /canadian=1/.test(a.getAttribute('href') || '')))
+  }
+
   // ── C. strings ──
   const lang = read('lang.js')
-  for (const k of ['cat.chip.madeincanada', 'cat.card.madeincanada']) {
+  for (const k of ['cat.chip.madeincanada', 'cat.card.madeincanada', 'nav.madeincanada']) {
     const m = lang.match(new RegExp(`'${k.replace(/\./g, '\\.')}'\\s*:\\s*\\{\\s*en:\\s*'([^']+)',\\s*fr:\\s*'([^']+)'`))
     ok(`C1 ${k}: English and French`, !!m && /Made in Canada/.test(m[1]) && /Fabriqué au Canada/.test(m[2]), m ? J([m[1], m[2]]) : 'missing')
   }
