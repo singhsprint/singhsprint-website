@@ -2573,13 +2573,33 @@ function loadLiveReviews() {
   }
 }
 
-// Auto-run when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+// The header renders as soon as this file runs, not at DOMContentLoaded.
+// Measured 2026-11-11: DOMContentLoaded waits for EVERY deferred script on
+// the page to download and run -- quote.js (545 KB), catalog.js (322 KB),
+// lang.js (182 KB) -- so on a slower connection the menu bar appeared only
+// after the page's biggest script had arrived (/quote: 2.9 s, with quote.js
+// taking 2.8 s of it). This file is deferred and listed first, so by the time
+// it runs the page is parsed and #nav-placeholder exists; the menu does not
+// need to wait for anything else. The rest (footer, CTAs, schema, modal,
+// reviews) still runs at DOMContentLoaded, after the page's own scripts, as
+// before. A page that loads this file in <head> without defer still gets its
+// header at DOMContentLoaded, because the placeholder is not there yet.
+function spRenderShell() {
+  if (window.__spShellDone) return;
+  if (!document.getElementById('nav-placeholder') && document.readyState === 'loading') return;
+  window.__spShellDone = true;
   loadSearchConsoleVerification();
   loadAnalytics();
   loadMobileTrim();
   loadPromoLoader();
   loadNav();
+  try { performance.mark('sp-nav-rendered'); } catch (e) {}
+}
+spRenderShell();
+
+// Auto-run when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  spRenderShell();
   loadFooter();
   loadSchema();
   loadStickyCTA();
