@@ -6,7 +6,8 @@
  * checkout charges from. Nothing is priced in the browser.
  *
  *   /gifts/build                    fork: build it myself | have us build it
- *   /gifts/build?tier=signature     start a self-serve draft from a tier
+ *   /gifts/build?tier=signature     start a box from a tier (in the browser; the
+ *                                   draft is created on the first real action)
  *   /gifts/build?d=<id>&k=<secret>  resume a draft (also Stripe's cancel_url)
  *   /gifts/build?path=concierge     the 2-minute "have us build it" form
  *   /gifts/order?t=<token>[&paid=1] buyer status (Stripe's success_url)
@@ -48,6 +49,49 @@
   function jpost(url, body, method) { return j(url, { method: method || 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
   function isEmbOnly(g) { g = String(g || '').toLowerCase(); return g === 'hat' || g === 'cap'; }
 
+  // ---- Colours ------------------------------------------------------------
+  // The catalogue's colours carry no hex code, so every swatch drew the same
+  // grey circle (65 of them on the ATC1000). Names map to representative
+  // colours (same idea as jerseys.js); a name we do not know shows the
+  // product photo in that colour instead.
+  var COLORMAP = {
+    'black': '#1a1a1a', 'jet black': '#1a1a1a', 'white': '#f7f7f5', 'natural': '#efe6d0', 'cream': '#f1e7cf', 'ivory': '#f3eedf',
+    'grey': '#9aa0a6', 'gray': '#9aa0a6', 'ash': '#d6d6d2', 'ash grey': '#d6d6d2', 'silver': '#c8ccd0', 'light grey': '#c9cbcf', 'sport grey': '#a7a9ac', 'heather': '#a9abae', 'athletic heather': '#a9abae', 'grey heather': '#a9abae', 'heather grey': '#a9abae', 'oxford': '#7b7f86',
+    'charcoal': '#3a3d42', 'dark heather': '#4b4e54', 'graphite': '#3a3d42', 'steel': '#8a9099', 'iron': '#5a5e64', 'carbon': '#2f3236',
+    'navy': '#0a1f44', 'true navy': '#0a1f44', 'dark navy': '#08183a', 'royal': '#1f3a93', 'royal blue': '#1f3a93', 'blue': '#1d4ed8', 'cobalt': '#1f4fbf', 'carolina': '#6cace4', 'carolina blue': '#6cace4', 'sky': '#7fb3e0', 'sky blue': '#7fb3e0', 'light blue': '#9cc3e6', 'aquatic blue': '#3f9fd1', 'bright aqua': '#22b8cf', 'aqua': '#2dd4bf', 'teal': '#0e8c8c', 'turquoise': '#1fb6a6', 'indigo': '#3b3f8f', 'slate': '#5b6b7a', 'denim': '#4a6a8a',
+    'red': '#c8102e', 'cardinal': '#8c1d24', 'maroon': '#6a1a2a', 'burgundy': '#6d1a2b', 'crimson': '#b00020', 'scarlet': '#c8102e', 'cherry': '#b11226', 'wine': '#5e1a2e',
+    'green': '#1b7a3d', 'kelly': '#1b7a3d', 'kelly green': '#1b7a3d', 'forest': '#14532d', 'forest green': '#14532d', 'dark green': '#14532d', 'military green': '#4b5320', 'olive': '#5b5f2a', 'army': '#4b5320', 'sage': '#9caf88', 'mint': '#8fd9b6', 'lime': '#7cb518',
+    'gold': '#d4af37', 'yellow': '#ffd200', 'daisy': '#f6d33c', 'mustard': '#d4a017', 'orange': '#e35205', 'burnt orange': '#bf5700', 'coral': '#f27360', 'peach': '#f6b38e',
+    'purple': '#5b2a86', 'violet': '#7140a3', 'lavender': '#b9a6d8', 'pink': '#e0457b', 'light pink': '#f4b6c8', 'hot pink': '#e0457b',
+    'sand': '#d8c79a', 'tan': '#cda878', 'khaki': '#bfae86', 'stone': '#cfc6b4', 'brown': '#5a3b22', 'chocolate': '#4a2f1d', 'coyote': '#8a6a4a', 'camel': '#b58a5a'
+  };
+  // A gift starts in the colour most clients would pick (lib/gifts/colours in the CRM, same order).
+  var DEFAULT_COLOURS = ['black', 'navy', 'true navy', 'charcoal', 'dark heather', 'white'];
+  function colNorm(s) { return String(s || '').toLowerCase().replace(/[*®™]/g, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function colourHexes(name) {
+    var out = [];
+    colNorm(name).split(/[\-\/&]|\s+and\s+/).map(function (x) { return x.trim(); }).filter(Boolean).forEach(function (tok) {
+      if (COLORMAP[tok]) { out.push(COLORMAP[tok]); return; }
+      var w = tok.split(' '), hit = null;
+      for (var n = w.length; n >= 1 && !hit; n--) for (var i = 0; i + n <= w.length && !hit; i++) { var k = w.slice(i, i + n).join(' '); if (COLORMAP[k]) hit = COLORMAP[k]; }
+      if (hit) out.push(hit);
+    });
+    return out;
+  }
+  function colourBg(x) {
+    if (x.hex_code) return esc(x.hex_code);
+    var hs = colourHexes(x.color_name);
+    if (hs.length === 1) return hs[0];
+    if (hs.length > 1) return 'linear-gradient(135deg,' + hs[0] + ' 50%,' + hs[1] + ' 50%)';
+    if (x.mockup_front_url) return "#fff url('" + esc(imgUrl(x.mockup_front_url)) + "') center 38%/280% no-repeat";
+    return '#ccc';
+  }
+  function colourName(n) { return String(n || '').replace(/\*+$/, '').trim(); }
+  function defaultColour(colours) {
+    for (var i = 0; i < DEFAULT_COLOURS.length; i++) for (var j = 0; j < colours.length; j++) if (colNorm(colours[j].color_name) === DEFAULT_COLOURS[i]) return colours[j];
+    return colours[0] || {};
+  }
+
   var PLACE = {
     shirt: [['left-chest', 'Left chest', 'Poitrine gauche'], ['center-chest', 'Center chest', 'Centre poitrine'], ['full-front', 'Full front', 'Devant complet'], ['back-top', 'Top back', 'Haut du dos'], ['left-sleeve', 'Left sleeve', 'Manche gauche'], ['right-sleeve', 'Right sleeve', 'Manche droite']],
     cap: [['cap-front', 'Cap front', 'Devant'], ['cap-left-side', 'Left side', 'Côté gauche'], ['cap-right-side', 'Right side', 'Côté droit'], ['cap-back', 'Back panel', 'Arrière']],
@@ -58,7 +102,8 @@
 
   var T = {
     en: {
-      steps: ['The pieces', 'Your logo', 'Your clients', 'Review & pay'], saved: 'Saved', saving: 'Saving…', draft: 'Your draft saves as you go - this link brings you back.', hand: 'Stuck? Hand it to us →', handed: "Got it - we'll take it from here.", handedp: 'Mockups and a price within 1 business day, to',
+      steps: ['The pieces', 'Your logo', 'Your clients', 'Review & pay'], saved: 'Saved', saving: 'Saving…', draft: 'Your draft saves as you go - this link brings you back.', notyet: 'Your box saves as soon as you change something.',
+      savep: 'Not ready yet? Email yourself a link to this box.', saveph: 'you@company.com', savebtn: 'Email me the link', sending: 'Sending…', sentto: 'Link sent to', savechange: 'change', badmail: 'Check the email address.', change: 'Change', more: 'more', nexts: ['Your logo →', 'Your clients →', 'Review →', 'Pay →'], hand: 'Stuck? Hand it to us →', handed: "Got it - we'll take it from here.", handedp: 'Mockups and a price within 1 business day, to',
       pickh: 'Start with a tier', pickp: 'Each one fills the box with pieces that work together. Swap anything after.', custom: 'Custom', customp: 'Set your own budget and pick every piece.', resume: 'Continue your saved box →', starting: 'Setting up your box…',
       s1h: 'Pick the pieces', s1p: 'Start from a tier or set your own budget, then pick what goes in the box.', tier: 'Tier', budget: 'Budget per client', clients: 'How many clients?', min: 'min ' + MIN + ', steps of ' + STEP, add: 'Add to box', inbox: '✓ In the box', coll: 'Same catalog as the shop, picked for gifting.', next1: 'Your logo →', max6: 'Up to 6 pieces per box.',
       s2h: 'Your logo on the gear', s2p: "One logo, used everywhere. Pick a colour and placement per piece - or skip and we'll keep it small and tasteful.", upload: 'Upload your logo', replace: 'Replace', uploading: 'Uploading…', logohint: 'PNG, SVG, AI or PDF. We clean it up if needed, free.', mode: 'How much logo?',
@@ -71,7 +116,8 @@
       ce: 'Have us build it', ch: 'Tell us about the box', cp: "Two minutes. We'll send mockups and a quote within 1 business day. No payment now.", cbudget: 'Budget per client', cbudgets: [[80, 'About $80'], [165, 'About $165'], [195, 'About $195'], [0, "I'll say"]], cbph: '$ per client', cwho: 'Who are these for?', cwhos: [['past_clients', 'Past clients'], ['referral_partners', 'Referral partners'], ['employees', 'Employees'], ['event', 'Event / launch']], cbiz: "What's your business?", cbizs: [['real_estate', 'Real estate'], ['mortgage_insurance', 'Mortgage / insurance'], ['construction', 'Construction / reno'], ['dealership', 'Dealership'], ['other', 'Other']], clogo: 'Your logo and colours', cbrand: 'Brand colour', cmatch: 'or match my logo', cmatched: "we'll match your logo", cgear: 'Logo on the gear?', cnotes: 'Anything we should know?', optional: 'optional', cnotesph: 'e.g. mostly men 35-55, no hoodies, French cards, need them before Dec 10', csend: 'Where do we send the mockups?', cbtn: 'Send me mockups and a quote →', cbusy: 'Sending…', cfine: 'No payment now. Within 1 business day you get mockups of the gear and the box, the per-client price, and a deposit link if you like it.', cget: "What you'll get back", cgets: ['2-3 pieces picked to fit your budget and your clients', 'Photo-real mockups with your logo on each piece', 'A proof of your box lid and card', 'The price per client and the order total, taxes in', 'One click to approve, or tell us what to change'], cbox: 'The box, so you know', cboxes: [['Small', '12 × 10 × 5 in', 'tee or polo + cap'], ['Medium', '14 × 11 × 6.5 in', 'quarter-zip or crewneck + tee + cap'], ['Large', '16 × 12 × 7.5 in', 'hoodie or fleece + tee + cap']], cboxnote: 'Kraft mailer with your logo sticker (printed box available), tissue, logo seal, printed card. Shipped in a plain outer box.', cdoneh: 'Got it', cdonep: "We're building a box for about {n} clients{b}. You'll get mockups and the price at {e} within 1 business day. The proof has one-click approve, or a comment box if you want changes.", cdonep2: 'Reply to that email any time - it comes straight to us. Or call 438-544-3800.', cerr: 'Something went wrong - try again or email sales@singhsprint.com', reorder: 'Same box as order', each: ' at around {b} each', choose: 'Choose file'
     },
     fr: {
-      steps: ['Les morceaux', 'Votre logo', 'Vos clients', 'Réviser et payer'], saved: 'Enregistré', saving: 'Enregistrement…', draft: 'Le brouillon s’enregistre - ce lien vous ramène ici.', hand: 'Bloqué? Confiez-nous la suite →', handed: 'C’est noté - on prend le relais.', handedp: 'Maquettes et prix en 1 jour ouvrable, à',
+      steps: ['Les morceaux', 'Votre logo', 'Vos clients', 'Réviser et payer'], saved: 'Enregistré', saving: 'Enregistrement…', draft: 'Le brouillon s’enregistre - ce lien vous ramène ici.', notyet: 'Votre boîte s’enregistre dès que vous changez quelque chose.',
+      savep: 'Pas encore prêt? Recevez par courriel un lien vers cette boîte.', saveph: 'vous@entreprise.com', savebtn: 'M’envoyer le lien', sending: 'Envoi…', sentto: 'Lien envoyé à', savechange: 'modifier', badmail: 'Vérifiez l’adresse courriel.', change: 'Changer', more: 'de plus', nexts: ['Votre logo →', 'Vos clients →', 'Réviser →', 'Payer →'], hand: 'Bloqué? Confiez-nous la suite →', handed: 'C’est noté - on prend le relais.', handedp: 'Maquettes et prix en 1 jour ouvrable, à',
       pickh: 'Partez d’un forfait', pickp: 'Chacun remplit la boîte de morceaux qui vont bien ensemble. Changez ce que vous voulez ensuite.', custom: 'Sur mesure', customp: 'Fixez votre budget et choisissez chaque morceau.', resume: 'Reprendre votre boîte →', starting: 'Préparation de votre boîte…',
       s1h: 'Choisissez les morceaux', s1p: 'Partez d’un forfait ou fixez votre budget, puis choisissez ce qui va dans la boîte.', tier: 'Forfait', budget: 'Budget par client', clients: 'Combien de clients?', min: 'min ' + MIN + ', par ' + STEP, add: 'Ajouter', inbox: '✓ Dans la boîte', coll: 'Le même catalogue que la boutique, choisi pour les cadeaux.', next1: 'Votre logo →', max6: 'Jusqu’à 6 morceaux par boîte.',
       s2h: 'Votre logo sur les vêtements', s2p: 'Un logo, partout. Choisissez couleur et emplacement par morceau - ou passez, on le garde petit et de bon goût.', upload: 'Téléversez votre logo', replace: 'Remplacer', uploading: 'Téléversement…', logohint: 'PNG, SVG, AI ou PDF. On le nettoie au besoin, gratuitement.', mode: 'Quelle taille de logo?',
@@ -116,7 +162,7 @@
     var d = qp('d'), k = qp('k'), tier = qp('tier');
     if (qp('path') === 'concierge') return openConcierge();
     if (d && k) return loadDraft(d, k, Number(qp('step')) || null);
-    if (tier) return createDraft(tier);
+    if (tier) return startLocal(tier);
     openPick();
   }
 
@@ -132,14 +178,42 @@
     S.view = 'concierge'; render();
   }
 
-  function createDraft(tier) {
-    S.view = 'starting'; forkSel('self'); render();
-    jpost(API + '/api/gifts/drafts', { tier: tier || 'custom', lang: L, source_url: location.href }).then(function (r) {
-      if (!r.ok || !r.body.id) { S.view = 'pick'; S.err = (r.body && typeof r.body.error === 'string' ? r.body.error : t.cerr); render(); return; }
-      lsSet({ id: r.body.id, k: r.body.secret });
-      setUrl('d=' + r.body.id + '&k=' + r.body.secret);
-      loadDraft(r.body.id, r.body.secret, 1);
-    }).catch(function () { S.view = 'pick'; S.err = t.cerr; render(); });
+  // A box from a tier, held in the browser. Nothing is written until the
+  // buyer does something (ensureDraft): landing here used to create a draft
+  // on every visit, crawlers included, and 13 of the first 18 were never
+  // touched.
+  var TIER_BUDGET = { starter: 80, signature: 165, premium: 195, custom: 125 };
+  function startLocal(tier) {
+    tier = TIER_BUDGET[tier] ? tier : 'custom';
+    S.view = 'starting'; S.id = null; S.k = null; forkSel('self'); render();
+    j(API + '/api/gifts/collection/public').then(function (b) {
+      S.coll = (b.body && b.body.items) || [];
+      if (!b.ok) S.err = t.loadfail;
+      S.order = { tier: tier, budget_per_recipient: TIER_BUDGET[tier], recipient_count: 25, status: 'draft', path: 'self_serve', step: 1, lang: L,
+        card_mode: 'standard', delivery_mode: 'ship_each', ship_mode: 'together', card_lang: 'en', default_size: 'L', logo_mode: 'subtle', buyer_email: null };
+      S.items = presetItems(tier); S.recipients = []; S.step = 1; S.view = 'draft';
+      render(); reprice();
+    }).catch(function () { S.view = 'pick'; S.err = t.loadfail; render(); });
+  }
+  function presetItems(tier) {
+    var next = [];
+    (TIER_STYLES[tier] || []).forEach(function (st) { S.coll.forEach(function (c) { if (String(c.product.style_number || '').toUpperCase() === st && !next.some(function (n) { return n.product_id === c.product_id; })) next.push(newItem(c)); }); });
+    return next;
+  }
+  var creating = null;
+  function ensureDraft() {
+    if (S.id) return Promise.resolve(true);
+    if (creating) return creating;
+    var o = S.order || {};
+    creating = jpost(API + '/api/gifts/drafts', { tier: o.tier || 'custom', lang: L, source_url: location.href, items: itemPayload(S.items), recipient_count: o.recipient_count, budget_per_recipient: o.budget_per_recipient, buyer_email: o.buyer_email || null }).then(function (r) {
+      creating = null;
+      if (!r.ok || !r.body.id) { S.err = (r.body && typeof r.body.error === 'string' ? r.body.error : t.cerr); render(); return false; }
+      S.id = r.body.id; S.k = r.body.secret;
+      lsSet({ id: S.id, k: S.k });
+      setUrl('d=' + S.id + '&k=' + S.k + (S.step > 1 ? '&step=' + S.step : ''));
+      return true;
+    }).catch(function () { creating = null; S.err = t.cerr; render(); return false; });
+    return creating;
   }
 
   function draftUrl() { return API + '/api/gifts/drafts/' + encodeURIComponent(S.id) + '?k=' + encodeURIComponent(S.k); }
@@ -174,6 +248,7 @@
   }
   function flush() {
     clearTimeout(saveTimer);
+    if (!S.id) return ensureDraft().then(function (ok) { return ok ? flush() : null; });
     var body = pending; pending = {};
     if (pendingItems) { body.items = itemPayload(pendingItems); pendingItems = null; }
     if (!Object.keys(body).length) return savePromise || Promise.resolve();
@@ -206,7 +281,7 @@
 
   function collBy(pid) { for (var i = 0; i < S.coll.length; i++) if (S.coll[i].product_id === pid) return S.coll[i]; return null; }
   function newItem(c) {
-    var g = c.product.garment_type, col = c.product.colors[0] || {};
+    var g = c.product.garment_type, col = defaultColour(c.product.colors || []);
     return { product_id: c.product_id, color_id: col.color_id || null, placements: [c.default_placement || (isEmbOnly(g) ? 'cap-front' : 'left-chest')], decoration_method: isEmbOnly(g) ? 'embroidery' : (c.default_decoration || 'dtg'), logo_ink: 'match', name: c.product.name, brand: c.product.brand, style_number: c.product.style_number, color_name: col.color_name || null, garment_type: g };
   }
   function toggleItem(pid) {
@@ -221,22 +296,25 @@
     TIERS.forEach(function (x) { if (x[0] === tier && x[3]) budget = x[3]; });
     S.order.tier = tier; S.order.budget_per_recipient = budget;
     if (tier === 'custom') { save({ tier: tier, budget_per_recipient: budget }); reprice(); render(); return; }
-    var next = [];
-    (TIER_STYLES[tier] || []).forEach(function (s) { S.coll.forEach(function (c) { if (String(c.product.style_number || '').toUpperCase() === s && !next.some(function (n) { return n.product_id === c.product_id; })) next.push(newItem(c)); }); });
-    setItems(next, { tier: tier, budget_per_recipient: budget });
+    setItems(presetItems(tier), { tier: tier, budget_per_recipient: budget });
   }
 
   function handToUs() {
     if (!S.order.buyer_email) { S.step = 4; S.err = t.needemail; render(); return; }
-    flush();
-    jpost(draftUrl(), { hand_to_us: true, step: S.step }, 'PATCH').then(function (r) {
+    Promise.resolve(flush()).then(function () {
+      if (!S.id) return { ok: false, body: {} };
+      return jpost(draftUrl(), { hand_to_us: true, step: S.step }, 'PATCH');
+    }).then(function (r) {
       if (r.ok) { S.view = 'handed'; render(); window.scrollTo(0, 0); } else { S.err = 'could not hand off - email sales@singhsprint.com'; render(); }
     });
   }
   function addRecipients() {
     var ta = app.querySelector('#gbPaste'); var paste = ta ? ta.value : '';
     if (!paste.trim()) return;
-    jpost(API + '/api/gifts/drafts/' + encodeURIComponent(S.id) + '/recipients?k=' + encodeURIComponent(S.k), { paste: paste }).then(function (r) {
+    ensureDraft().then(function (ok) {
+      if (!ok) return { ok: false, body: { error: t.cerr } };
+      return jpost(API + '/api/gifts/drafts/' + encodeURIComponent(S.id) + '/recipients?k=' + encodeURIComponent(S.k), { paste: paste });
+    }).then(function (r) {
       if (!r.ok) { S.err = r.body.error || 'could not add'; render(); return; }
       S.recipients = r.body.recipients || [];
       if (S.recipients.length > S.order.recipient_count) patchOrder({ recipient_count: Math.min(MAX, Math.ceil(S.recipients.length / STEP) * STEP) }, false);
@@ -267,10 +345,18 @@
     var a = el.getAttribute('data-act'), v = el.getAttribute('data-v');
     if (S.view === 'concierge') return cClick(a, v, el);
     switch (a) {
-      case 'tierstart': createDraft(v); break;
+      case 'tierstart': setUrl('tier=' + v); startLocal(v); break;
       case 'resume': var ls = lsGet(); if (ls) { setUrl('d=' + ls.id + '&k=' + ls.k); loadDraft(ls.id, ls.k); } break;
       case 'step': goStep(Number(v)); break;
       case 'hand': handToUs(); break;
+      case 'emaillink': sendLink(); break;
+      case 'relink': S.linkSent = null; render(); break;
+      case 'mnext': if (S.step < 4) goStep(S.step + 1); else pay(); break;
+      case 'gearfor': S.items.forEach(function (x, n) { if (x.product_id === v) S.gear = n; }); goStep(2); break;
+      case 'pcol':
+        var pid = el.getAttribute('data-pid'), cc0 = collBy(pid);
+        setItems(S.items.map(function (x) { if (x.product_id !== pid) return x; var y = {}; for (var kq in x) y[kq] = x[kq]; y.color_id = v; (cc0 ? cc0.product.colors : []).forEach(function (cc) { if (cc.color_id === v) y.color_name = cc.color_name; }); return y; }));
+        break;
       case 'dismiss': S.err = null; render(); break;
       case 'tier': applyTier(v); break;
       case 'n': patchOrder({ recipient_count: Math.max(MIN, Math.min(MAX, S.order.recipient_count + Number(v) * STEP)) }); break;
@@ -354,11 +440,42 @@
     var body = S.step === 1 ? vS1(o) : S.step === 2 ? vS2(o) : S.step === 3 ? vS3(o) : vS4(o);
     return '<div class="gb-tabs">' + tabs + '</div>' +
       '<div class="gb-status"><span id="gbSaveState">' + saveText() + '</span><button data-act="hand">' + t.hand + '</button></div>' + errBox() +
-      '<div class="gb-grid"><div>' + body + '</div><aside class="gb-card gb-sum" id="gbSum">' + vSummary() + '</aside></div>';
+      (S.step < 4 ? vSaveLink(o) : '') +
+      '<div class="gb-grid"><div>' + body + '</div><aside class="gb-card gb-sum" id="gbSum">' + vSummary() + '</aside></div>' + vMbar();
   }
-  function saveText() { return S.saving === 'saving' ? t.saving : S.saving === 'saved' ? t.saved + ' · ' + t.draft : t.draft; }
+  // "Email me a link to this box": the buyer's email, early, so a box left
+  // half-built can be picked up (and gets one follow-up from the CRM).
+  function vSaveLink(o) {
+    if (S.linkSent) return '<div class="gb-save sent">✓ ' + t.sentto + ' <b>' + esc(S.linkSent) + '</b> <button data-act="relink">' + t.savechange + '</button></div>';
+    return '<div class="gb-save"><span>' + t.savep + '</span><span class="gb-save-f"><input class="gb-fld" id="gbLinkEmail" type="email" autocomplete="email" placeholder="' + esc(t.saveph) + '" value="' + esc(o.buyer_email || '') + '">' +
+      '<button class="gx-btn sm" data-act="emaillink"' + (S.linking ? ' disabled' : '') + '>' + (S.linking ? t.sending : t.savebtn) + '</button></span></div>';
+  }
+  // Phone: the price and the next step stay on screen.
+  function vMbar() {
+    var ok = S.price && S.price.ok;
+    var dis = (S.step === 1 && !S.items.length) || (S.step === 4 && (S.paying || !ok));
+    return '<div class="gb-mbar"><div><small>' + t.per + '</small><b id="gbMbarPrice">' + (ok ? money(S.price.per_recipient.subtotal) : '—') + '</b></div>' +
+      '<button class="gx-btn' + (S.step === 4 ? ' hi' : '') + '" data-act="mnext"' + (dis ? ' disabled' : '') + '>' + t.nexts[S.step - 1] + '</button></div>';
+  }
+  function sendLink() {
+    var el = app.querySelector('#gbLinkEmail'); var email = el ? el.value.trim() : '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { S.err = t.badmail; render(); return; }
+    S.linking = true; S.order.buyer_email = email; render();
+    ensureDraft().then(function (ok) {
+      if (!ok) return { ok: false, body: {} };
+      return jpost(API + '/api/gifts/drafts/' + encodeURIComponent(S.id) + '/email-link?k=' + encodeURIComponent(S.k), { email: email, name: S.order.buyer_name || null });
+    }).then(function (r) {
+      S.linking = false;
+      if (r.ok) { S.linkSent = email; S.err = null; } else S.err = (r.body && r.body.error) || t.cerr;
+      render();
+    }).catch(function () { S.linking = false; S.err = t.cerr; render(); });
+  }
+  function saveText() { return S.saving === 'saving' ? t.saving : !S.id ? t.notyet : S.saving === 'saved' ? t.saved + ' · ' + t.draft : t.draft; }
   function paintStatus() { var el = app && app.querySelector('#gbSaveState'); if (el) el.textContent = saveText(); }
-  function paintSummary() { var el = app && app.querySelector('#gbSum'); if (el) el.innerHTML = vSummary(); }
+  function paintSummary() {
+    var el = app && app.querySelector('#gbSum'); if (el) el.innerHTML = vSummary();
+    var mb = app && app.querySelector('.gb-mbar'); if (mb) mb.outerHTML = vMbar();
+  }
   function paintPrices() {
     if (!app) return;
     if (S.step === 1) Array.prototype.forEach.call(app.querySelectorAll('[data-price-for]'), function (el) { el.textContent = unitPrice(el.getAttribute('data-price-for')); });
@@ -383,6 +500,7 @@
       return '<div class="gb-prod' + (on ? ' on' : '') + '"><div class="ph"><img src="' + esc(img) + '" alt="' + esc(c.product.name) + '" loading="lazy"></div><div class="bd">' +
         '<div class="br">' + esc(c.product.brand || '') + ' ' + esc(c.product.style_number || '') + '</div><div class="nm">' + esc(c.product.name) + '</div>' +
         '<div class="mt">' + (emb ? t.embroidered : (L === 'fr' ? 'Imprimé' : 'Printed')) + ' · ' + c.product.colors.length + ' ' + t.colours + '</div>' +
+        (on && it ? miniSwatches(c, it) : '') +
         '<div class="ft"><b data-price-for="' + esc(c.product_id) + '">' + unitPrice(c.product_id) + '</b><button class="gx-btn sm' + (on ? '' : ' ghost') + '" data-act="toggle" data-v="' + esc(c.product_id) + '">' + (on ? t.inbox : t.add) + '</button></div></div></div>';
     }).join('');
     return '<h2 class="gb-h">' + t.s1h + '</h2><p class="gb-sub">' + t.s1p + '</p>' +
@@ -392,6 +510,19 @@
       '<div><span class="gb-lbl">' + t.clients + '</span><div class="gb-row"><div class="gb-step"><button data-act="n" data-v="-1">−</button><b>' + o.recipient_count + '</b><button data-act="n" data-v="1">+</button></div><span class="gb-note">' + t.boxes + ' · ' + t.min + '</span></div>' + vol + '</div></div></div>' +
       '<p class="gb-note" style="margin:22px 0 4px">' + t.coll + '</p><div class="gb-prods">' + prods + '</div>' +
       '<div class="gb-nav"><span></span><button class="gx-btn" data-act="step" data-v="2"' + (S.items.length ? '' : ' disabled') + '>' + t.next1 + '</button></div>';
+  }
+
+  // Pick a colour right on the card (the 10 most common first), or more in step 2.
+  function miniSwatches(c, it) {
+    var cols = (c.product.colors || []).slice(), shown = [], seen = {};
+    DEFAULT_COLOURS.concat(['red', 'royal', 'forest green', 'maroon', 'athletic heather', 'sport grey', 'natural', 'sand']).forEach(function (want) { cols.forEach(function (x) { if (!seen[x.color_id] && colNorm(x.color_name) === want) { shown.push(x); seen[x.color_id] = 1; } }); });
+    cols.forEach(function (x) { if (shown.length < 10 && !seen[x.color_id]) { shown.push(x); seen[x.color_id] = 1; } });
+    shown = shown.slice(0, 10);
+    if (it.color_id && !shown.some(function (x) { return x.color_id === it.color_id; })) cols.forEach(function (x) { if (x.color_id === it.color_id) shown[shown.length - 1] = x; });
+    var rest = cols.length - shown.length;
+    return '<div class="gb-colname">' + esc(colourName(it.color_name)) + '</div><div class="gb-mini">' +
+      shown.map(function (x) { return '<button class="' + (x.color_id === it.color_id ? 'on' : '') + '" title="' + esc(colourName(x.color_name)) + '" aria-label="' + esc(colourName(x.color_name)) + '" style="background:' + colourBg(x) + '" data-act="pcol" data-pid="' + esc(c.product_id) + '" data-v="' + esc(x.color_id) + '"></button>'; }).join('') +
+      (rest > 0 ? '<button class="more" data-act="gearfor" data-v="' + esc(c.product_id) + '">+' + rest + '</button>' : '') + '</div>';
   }
 
   function vS2(o) {
@@ -406,15 +537,15 @@
       var c = collBy(it.product_id), colours = c ? c.product.colors : [], cur = null;
       colours.forEach(function (x) { if (x.color_id === it.color_id) cur = x; });
       var itabs = S.items.map(function (x, n) { return '<button class="' + (n === S.gear ? 'on' : '') + '" data-act="gear" data-v="' + n + '">' + esc((x.brand || '') + ' ' + (x.style_number || '')) + '</button>'; }).join('');
-      var sw = colours.map(function (x) { return '<button class="gb-sw' + (x.color_id === it.color_id ? ' on' : '') + '" title="' + esc(x.color_name) + '" aria-label="' + esc(x.color_name) + '" style="background:' + esc(x.hex_code || '#ccc') + '" data-act="colour" data-v="' + esc(x.color_id) + '"></button>'; }).join('');
+      var sw = colours.map(function (x) { return '<button class="gb-sw' + (x.color_id === it.color_id ? ' on' : '') + '" title="' + esc(colourName(x.color_name)) + '" aria-label="' + esc(colourName(x.color_name)) + '" style="background:' + colourBg(x) + '" data-act="colour" data-v="' + esc(x.color_id) + '"></button>'; }).join('');
       var pl = placementsFor(it.garment_type).map(function (p) { return '<button class="gb-chip' + (it.placements[0] === p[0] ? ' on' : '') + '" data-act="place" data-v="' + p[0] + '">' + (L === 'fr' ? p[2] : p[1]) + '</button>'; }).join('');
       var forced = isEmbOnly(it.garment_type);
       var me = [['dtg', t.printed], ['embroidery', t.embroidered]].map(function (m) { return '<button class="gb-chip' + (it.decoration_method === m[0] ? ' on' : '') + '" data-act="method" data-v="' + m[0] + '"' + (forced && m[0] !== 'embroidery' ? ' disabled' : '') + '>' + m[1] + '</button>'; }).join('');
       var ink = t.inks.map(function (m) { return '<button class="gb-chip' + (it.logo_ink === m[0] ? ' on' : '') + '" data-act="ink" data-v="' + m[0] + '">' + m[1] + '</button>'; }).join('');
       h += '<div class="gb-card"><div class="gb-itabs">' + itabs + '</div><div class="gb-gear"><div class="ph">' +
         (cur && cur.mockup_front_url ? '<img src="' + esc(imgUrl(cur.mockup_front_url)) + '" alt="">' : '<img src="' + esc(imgUrl(c && c.product.hero_image_url)) + '" alt="">') +
-        '<small>' + esc(it.color_name || '') + ' · ' + esc(placeLabel(it.placements[0])) + '</small></div>' +
-        '<div style="display:grid;gap:16px;align-content:start"><div><span class="gb-lbl">' + t.colour + '</span><div class="gb-swatches">' + sw + '</div><div class="gb-note" style="margin-top:4px">' + esc(it.color_name || '') + '</div></div>' +
+        '<small>' + esc(colourName(it.color_name)) + ' · ' + esc(placeLabel(it.placements[0])) + '</small></div>' +
+        '<div style="display:grid;gap:16px;align-content:start"><div><span class="gb-lbl">' + t.colour + '</span><div class="gb-swatches">' + sw + '</div><div class="gb-note" style="margin-top:6px"><b>' + esc(colourName(it.color_name)) + '</b></div></div>' +
         '<div><span class="gb-lbl">' + t.place + '</span><div class="gb-chips">' + pl + '</div></div>' +
         '<div><span class="gb-lbl">' + t.method + '</span><div class="gb-chips">' + me + '</div>' + (forced ? '<div class="gb-note" style="margin-top:4px">' + t.capnote + '</div>' : '') + '</div>' +
         '<div><span class="gb-lbl">' + t.ink + '</span><div class="gb-chips">' + ink + '</div></div><p class="gb-note">' + t.preview + '</p></div></div></div>';
@@ -451,7 +582,7 @@
   }
   function vS4Inner(o) {
     var p = S.price, n = o.recipient_count, ok = p && p.ok;
-    var items = S.items.map(function (it, i) { return '<div class="gb-line"><span>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + ' <span class="gb-mute">· ' + esc(it.color_name || '') + ' · ' + esc(placeLabel(it.placements[0])) + '</span></span><b>' + (p && p.items && p.items[i] ? money(p.items[i].unit_price) : '') + '</b></div>'; }).join('');
+    var items = S.items.map(function (it, i) { return '<div class="gb-line"><span>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + ' <span class="gb-mute">· ' + esc(colourName(it.color_name)) + ' · ' + esc(placeLabel(it.placements[0])) + '</span></span><b>' + (p && p.items && p.items[i] ? money(p.items[i].unit_price) : '') + '</b></div>'; }).join('');
     var tot = ok ? '<div class="gb-lines">' +
       '<div class="gb-line"><span>' + S.items.length + ' ' + t.pieces + ' × ' + n + '</span><span>' + money(p.per_recipient.pieces * n) + '</span></div>' +
       '<div class="gb-line"><span>' + t.boxline + (o.delivery_mode === 'ship_each' ? t.ship : '') + ' × ' + n + '</span><span>' + money(p.per_recipient.box_line * n) + '</span></div>' +
@@ -481,7 +612,7 @@
         '<div class="gb-line gb-note" style="margin-top:5px"><span>' + t.budget + ' ' + whole(b) + '</span><span style="color:' + (over ? 'var(--bad)' : 'var(--ok)') + '">' + whole(Math.abs(p.per_recipient.subtotal - b)) + ' ' + (over ? t.over : t.under) + '</span></div>';
     }
     h += '<hr class="gb-hr"><div class="gb-lines">';
-    S.items.forEach(function (it, i) { h += '<div class="gb-line pc"><span><b>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + '</b><small>' + esc(it.color_name || '') + ' · ' + (it.decoration_method === 'embroidery' ? t.embroidered : t.printed) + '</small></span><span>' + (p && p.items && p.items[i] ? money(p.items[i].unit_price) : '') + '<button data-act="rmitem" data-v="' + i + '" aria-label="remove">✕</button></span></div>'; });
+    S.items.forEach(function (it, i) { h += '<div class="gb-line pc"><span><b>' + esc((it.brand || '') + ' ' + (it.style_number || '')) + '</b><small>' + esc(colourName(it.color_name)) + ' · ' + (it.decoration_method === 'embroidery' ? t.embroidered : t.printed) + '</small></span><span>' + (p && p.items && p.items[i] ? money(p.items[i].unit_price) : '') + '<button data-act="rmitem" data-v="' + i + '" aria-label="remove">✕</button></span></div>'; });
     if (!S.items.length) h += '<div class="gb-note">' + t.empty + '</div>';
     if (ok) h += '<div class="gb-line gb-mute" style="padding:0 9px"><span>' + t.boxline + (o.delivery_mode === 'ship_each' ? t.ship : '') + '</span><span>' + money(p.per_recipient.box_line) + '</span></div>';
     if (ok && p.per_recipient.card_upgrade > 0) h += '<div class="gb-line gb-mute" style="padding:0 9px"><span>' + t.perscard + '</span><span>+' + money(p.per_recipient.card_upgrade) + '</span></div>';
