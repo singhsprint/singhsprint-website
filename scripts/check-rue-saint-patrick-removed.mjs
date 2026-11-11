@@ -287,10 +287,15 @@ const vercel = JSON.parse(readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
   eq('G2 nothing still asks for a removed string', dangling, []);
 }
 
-// ── H. the catalog's Canadian filter is gone, the rest of it is not ───────
+// ── H. the Rue Saint-Patrick collection filter is gone, the rest is not ───
+// 2026-11-11: the catalog has a Canadian filter again ("Made in Canada"), on
+// purpose, and it is checked in check-made-in-canada-tab.mjs. What this
+// section still forbids is the OLD one: a filter that meant one supplier,
+// with its collection banner. The new one reads each product's own
+// is_canadian_made and names no supplier, so it cannot bring this line back.
 {
   const cat = stripComments(readFileSync(path.join(ROOT, 'catalog.js'), 'utf8'), false);
-  ok('H1 no canadian filter state', !/state\.filters\.canadian/.test(cat));
+  ok('H1 the catalog names no supplier for its Canadian filter', !/rue_sainte_patrick|rue-saint-patrick/i.test(cat));
   ok('H2 no rspBanner toggle', !/rspBanner/.test(cat));
   // The neighbouring CSA filter must survive — this removal was surgical.
   // "the identifier appears somewhere" was all this asserted, and the search
@@ -302,7 +307,8 @@ const vercel = JSON.parse(readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
   ok('H3c …and still reaches the URL', /params\.set\('csa'/.test(cat));
   ok('H4 the in-stock filter still works', /state\.filters\.inStockOnly/.test(cat));
   const alg = stripComments(readFileSync(path.join(ROOT, 'catalog-algolia.js'), 'utf8'), false);
-  ok('H5 search sends no canadian facet', !/opts\.canadian/.test(alg));
+  ok('H5 the Canadian facet is the product flag, never a supplier',
+    !/supplier_code:rue/i.test(alg) && (!/opts\.canadian/.test(alg) || /opts\.canadian\)\s*f\.push\('is_canadian_made:true'\)/.test(alg)));
   ok('H6 search still sends the CSA facet', /opts\.csa/.test(alg));
 }
 

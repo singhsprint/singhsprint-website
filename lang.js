@@ -1163,6 +1163,8 @@ var SP_LANG = (function() {
     'cat.detail.backorder':  { en: 'on backorder — about a month', fr: 'en rupture — environ un mois' },
     'cat.card.bestseller': { en: '★ Bestseller', fr: '★ Populaire' },
     'cat.card.csa': { en: 'CSA Hi-Vis', fr: 'CSA hi-vis' },
+    'cat.card.madeincanada': { en: '🇨🇦 Made in Canada', fr: '🇨🇦 Fabriqué au Canada' },
+    'cat.chip.madeincanada': { en: '🇨🇦 Made in Canada', fr: '🇨🇦 Fabriqué au Canada' },
     'cat.detail.color': { en: 'Color:', fr: 'Couleur :' },
     'cat.detail.sizes': { en: 'Sizes in stock:', fr: 'Tailles disponibles :' },
     'cat.detail.contactus': { en: 'contact us', fr: 'contactez-nous' },
