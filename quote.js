@@ -8746,10 +8746,14 @@
               is_rush:        !!fd.get('is_rush')
             },
             source_url: location.href,
-            // Honeypot (2026-07-25) — hidden "company_website" input in the
-            // form markup. Humans never see it; bots machine-fill it. The
-            // CRM's /api/inbound flags any non-empty value as spam.
-            website: fd.get('company_website') || null
+            // Honeypot (2026-07-25) — hidden input in the form markup. Humans
+            // never see it. It was named "company_website", and browsers
+            // autofilled it with the customer's own site (Samsung Internet put
+            // "motoflash.ca" in it, 2026-11-12): 10 of its 12 firings were real
+            // customers. Renamed to sp_hp_7f3 with the password-manager ignore
+            // attributes, and the CRM no longer quarantines on it alone. The
+            // payload key stays `website`, which is what /api/inbound reads.
+            website: fd.get('sp_hp_7f3') || null
           };
           // Now that the design file(s) are already in our bucket (or
           // none if the customer skipped artwork), POST the structured

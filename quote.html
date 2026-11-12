@@ -119,10 +119,10 @@
                  input they find. A non-empty value tells /api/inbound this is
                  spam — it archives on arrival and skips the Lead pixel.
                  NOT type=hidden on purpose: bots skip those. -->
-            <input type="text" name="company_website" value="" tabindex="-1" autocomplete="off"
+            <input type="text" name="sp_hp_7f3" value="" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"
                    aria-hidden="true"
                    style="position:absolute !important;left:-9999px;top:-9999px;height:1px;width:1px;opacity:0;pointer-events:none;">
-            <!-- Web3Forms' OWN honeypot. The company_website field above is
+            <!-- Web3Forms' OWN honeypot. The sp_hp_7f3 field above is
                  read by the CRM, which only ever sees a submission that came
                  through the JS path (fetch → /api/inbound). Web3Forms knows
                  nothing about it, and Web3Forms is what receives the NO-JS
