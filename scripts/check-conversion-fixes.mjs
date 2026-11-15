@@ -9,8 +9,9 @@
  * Needs Playwright (npm i -g playwright, or run where it is installed).
  *
  * G  /get-a-price: each ad link's words and chips; the whole form and its
- *    button on one screen with the cookie bar up; one request to the OS per
- *    submit with the source, picks and every utm_/fbclid; the thank-you.
+ *    two buttons on one screen with the cookie bar up; a mobile number is
+ *    required and an email is optional; one request to the OS per submit
+ *    with the source, picks and every utm_/fbclid; the thank-you.
  * L  Meta: Lead fires once per quote-form submit (Pixel + server, one id),
  *    not when the OS says spam, and from nowhere else. A popup claim is
  *    FreeTeeClaim. A price-sheet download is PriceSheetDownload.
@@ -132,7 +133,7 @@ const PRESETS = [
         eyebrow: eb.hidden ? '' : eb.textContent.trim().toUpperCase(), h1: document.getElementById('gpH1').textContent.trim(), sub: document.getElementById('gpSub').textContent.trim(),
         chips: [...document.querySelectorAll('#gpProducts .gp-chip')].map((c) => ({ t: c.textContent.trim(), on: c.getAttribute('aria-pressed') === 'true', ...box(c) })),
         qty: [...document.querySelectorAll('#gpQty .gp-chip')].map((c) => ({ t: c.textContent.trim(), ...box(c) })),
-        btn: { t: btn.textContent.trim(), ...box(btn) }, fields: ['gpName', 'gpContact', 'gpLogo'].map((id) => !!document.getElementById(id)),
+        btn: { t: btn.textContent.trim(), ...box(btn) }, alt: { href: document.getElementById('gpFull').getAttribute('href'), t: document.getElementById('gpFull').innerText.trim(), ...box(document.getElementById('gpFull')) }, req: { phone: document.getElementById('gpPhone').required, email: document.getElementById('gpEmail').required, phoneType: document.getElementById('gpPhone').type, emailType: document.getElementById('gpEmail').type }, icons: document.querySelectorAll('#gpProducts .gp-chip svg').length,
         inputs: [...document.querySelectorAll('#gpForm input:not([name="sp_hp_7f3"])')].map((i) => i.name), fixed, vh: innerHeight, vw: innerWidth, scrollY, popup: !!document.querySelector('.sp-op-overlay'), sticky: !!document.getElementById('sp-sticky-cta'),
         nameY: box(document.getElementById('gpName')), logoY: box(document.querySelector('.gp-file')),
       }
@@ -146,21 +147,24 @@ const PRESETS = [
     const cover = m.fixed.filter((f) => f.top < m.btn.bottom && f.bottom > m.btn.top && f.left < m.btn.right && f.right > m.btn.left)
     const bar = m.fixed.find((f) => /consent/i.test(String(f.id)))
     ok(`G8 ${tag} form and button on one 390x844 screen, cookie bar up, nothing over the button (button ends at ${Math.round(m.btn.bottom)}px, bar starts at ${bar ? Math.round(bar.top) : 'n/a'}px)`, m.scrollY === 0 && m.btn.bottom <= m.vh && m.nameY.top > 0 && m.logoY.bottom < m.btn.top && cover.length === 0 && !!bar && m.btn.bottom <= bar.top, JSON.stringify({ btn: m.btn, cover }))
-    ok(`G9 ${tag} button says "${button}"; fields are name, contact, logo and nothing else`, m.btn.t === button && JSON.stringify(m.inputs) === JSON.stringify(['name', 'contact', 'logo']), `${m.btn.t} ${m.inputs}`)
+    ok(`G9 ${tag} button says "${button}"; fields are name, phone (required), email (optional), logo and nothing else`, m.btn.t === button && JSON.stringify(m.inputs) === JSON.stringify(['name', 'phone', 'email', 'logo']) && m.req.phone === true && m.req.email === false && m.req.phoneType === 'tel' && m.req.emailType === 'email', `${m.btn.t} ${m.inputs} ${JSON.stringify(m.req)}`)
+    ok(`G9b ${tag} a second button goes to the full quote builder, on the same screen above the cookie bar (ends at ${Math.round(m.alt.bottom)}px)`, m.alt.href === '/quote' && /full quote/i.test(m.alt.t) && m.alt.h >= 44 && m.alt.top > m.btn.bottom && !!bar && m.alt.bottom <= bar.top, JSON.stringify(m.alt))
+    ok(`G9c ${tag} every product tile has its icon`, m.icons === chips.length, String(m.icons))
     ok(`G10 ${tag} no free-tee popup, no second sticky bar`, !m.popup && !m.sticky)
     await ctx.close()
   }
 }
 
 // submit: phone only, then email only
-async function submit({ q, name, contact, tapProducts = [], band, consent, spam = false, file = false }) {
+async function submit({ q, name, tel, mail, tapProducts = [], band, consent, spam = false }) {
   const { ctx, page, state } = await phone({ consent })
   state.spam = spam
   await page.goto(`${BASE}/get-a-price${q}`, { waitUntil: 'load' }); await page.waitForTimeout(600)
   for (const t of tapProducts) await page.locator('#gpProducts .gp-chip', { hasText: new RegExp(`^${t}$`) }).click()
   if (band) await page.locator('#gpQty .gp-chip', { hasText: new RegExp(`^${band.replace('+', '\\+')}$`) }).click()
   if (name != null) await page.fill('#gpName', name)
-  if (contact != null) await page.fill('#gpContact', contact)
+  if (tel != null) await page.fill('#gpPhone', tel)
+  if (mail != null) await page.fill('#gpEmail', mail)
   const urlBefore = page.url()
   await page.locator('#gpBtn').click()
   await page.waitForTimeout(1200)
@@ -168,9 +172,9 @@ async function submit({ q, name, contact, tapProducts = [], band, consent, spam 
   return out
 }
 {
-  const a = await submit({ q: '?product=hoodie&preset=cafe&utm_source=ig&utm_medium=paid&utm_campaign=hoodie-season-cafes&utm_content=video1&utm_placement=reels&fbclid=FBCLID123', name: 'Sam', contact: '514 555 0199', tapProducts: ['Hats'], band: '10-24', consent: 'denied' })
+  const a = await submit({ q: '?product=hoodie&preset=cafe&utm_source=ig&utm_medium=paid&utm_campaign=hoodie-season-cafes&utm_content=video1&utm_placement=reels&fbclid=FBCLID123', name: 'Sam', tel: '514 555 0199', tapProducts: ['Hats'], band: '10-24', consent: 'denied' })
   const b = a.state.inbound[0] || {}
-  ok('G11 phone only: exactly one request to the OS', a.state.inbound.length === 1, String(a.state.inbound.length))
+  ok('G11 phone and no email: exactly one request to the OS', a.state.inbound.length === 1, String(a.state.inbound.length))
   ok('G12 it is a website quote request (the kind that becomes a lead), phone set, no email', b.kind === 'quote' && b.phone === '514 555 0199' && b.email === null && b.contact_name === 'Sam' && Array.isArray(b.cart_items) && b.cart_items.length === 0)
   ok('G13 source ad-landing, preset, products, quantity band', b.meta?.source === 'ad-landing' && b.meta?.preset === 'hoodie-cafe' && JSON.stringify(b.meta?.products) === JSON.stringify(['Hoodies', 'Hats']) && b.meta?.quantity_band === '10-24' && b.meta?.quantity_min === 10 && b.meta?.quantity_max === 24 && b.total_qty === 10, JSON.stringify(b.meta))
   const at = b.meta?.attribution || {}
@@ -187,21 +191,27 @@ async function submit({ q, name, contact, tapProducts = [], band, consent, spam 
   ok('L3 without cookie consent the server copy carries no name, phone or email', !JSON.stringify(sv[0]?.body.user_data || {}).match(/Sam|5145550199|514 555/))
   await a.ctx.close()
 
-  const e = await submit({ q: '?product=business', name: 'Dana', contact: 'dana@cafe.ca', band: '25-49', consent: 'granted' })
+  const e = await submit({ q: '?product=business', name: 'Dana', tel: '(438) 555-0142', mail: 'dana@cafe.ca', band: '25-49', consent: 'granted' })
   const eb = e.state.inbound[0] || {}
-  ok('G20 email only: exactly one request, email set, no phone', e.state.inbound.length === 1 && eb.email === 'dana@cafe.ca' && eb.phone === null)
+  ok('G20 phone and email: exactly one request, both saved', e.state.inbound.length === 1 && eb.email === 'dana@cafe.ca' && eb.phone === '(438) 555-0142')
   ok('G21 nothing preselected on the business link and none tapped: products empty, said so in the notes', JSON.stringify(eb.meta?.products) === '[]' && /Wants: not picked/.test(eb.notes))
-  ok('G22 thank-you says email, and 25-49 gets the free tee', /We’ll email you a price and a mockup/.test(e.text) && /Your order qualifies for a free tee/.test(e.text))
+  ok('G22 thank-you lists the phone and the email, and 25-49 gets the free tee', /We’ll text you a price and a mockup/.test(e.text) && /dana@cafe\.ca/.test(e.text) && /\(438\) 555-0142/.test(e.text) && /Your order qualifies for a free tee/.test(e.text))
   const px2 = await pixel(e.page, 'Lead')
   ok('L4 with consent: one Pixel Lead, one server Lead to the OS, same id', px2.length === 1 && e.state.capi.filter((c) => c.event === 'Lead').length === 1 && e.state.capi[0].body.event_id === px2[0][3].eventID && (await beacons(e.page, 'Lead', e.state)).length === 0)
   await e.ctx.close()
 
-  const bad = await submit({ q: '', name: '', contact: '12345' })
-  ok('G23 no name or a bad contact: nothing is sent, the fields say why', bad.state.inbound.length === 0 && !bad.done && /Add your name/.test(bad.text) && /phone number or an email/.test(bad.text))
+  const bad = await submit({ q: '', name: '', tel: '12345' })
+  ok('G23 no name or a short phone number: nothing is sent, the fields say why', bad.state.inbound.length === 0 && !bad.done && /Add your name/.test(bad.text) && /Add a mobile number/.test(bad.text))
+  const eo = await submit({ q: '?product=hat', name: 'Lee', mail: 'lee@shop.ca', band: '5-9' })
+  ok('G23b an email with no phone number is not enough: nothing is sent, and the phone field says why', eo.state.inbound.length === 0 && !eo.done && /Add a mobile number/.test(eo.text) && (await pixel(eo.page, 'Lead')).length === 0)
+  await eo.ctx.close()
+  const he = await submit({ q: '', name: 'Kim', tel: '514-555-0111', mail: 'kim@' })
+  ok('G23c a half-typed email is caught rather than sent', he.state.inbound.length === 0 && /That email looks incomplete/.test(he.text))
+  await he.ctx.close()
   ok('L5 and no Lead', (await pixel(bad.page, 'Lead')).length === 0)
   await bad.ctx.close()
 
-  const sp = await submit({ q: '?product=hat', name: 'Bot', contact: 'bot@x.io', spam: true })
+  const sp = await submit({ q: '?product=hat', name: 'Bot', tel: '514-555-0100', mail: 'bot@x.io', spam: true })
   ok('L6 the OS says spam: the visitor still sees the thank-you, and no Lead fires', sp.done && (await pixel(sp.page, 'Lead')).length === 0 && (await beacons(sp.page, 'Lead', sp.state)).length === 0)
   await sp.ctx.close()
 }

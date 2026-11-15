@@ -17,6 +17,9 @@
  *     45s + 20s per extra file (site commit 9361d78b: a phone on LTE needs
  *     20-40s for a few MB), then sends the request either way. The page never
  *     navigates: the thank-you is a swap, and leaving mid-upload asks first.
+ *   - fields: what, how many, a name, a mobile number (required), an email
+ *     (optional), a logo (optional). A second button goes to /quote, the
+ *     full builder.
  *   - request → POST /api/inbound, kind 'quote', meta.source 'ad-landing'
  *     with the preset, products, quantity band and every utm_*, fbclid, gclid.
  *   - on 2xx, unless the OS says spam:true: SP_LEAD.afterInbound → one Meta
@@ -24,7 +27,7 @@
  *   - honeypot input sp_hp_7f3 (a name browsers do not autofill), sent as
  *     `website`, which is what the OS reads.
  *
- * GP.config / GP.parseContact / GP.buildPayload are pure and exported on
+ * config / validPhone / validEmail / buildPayload are pure and exported on
  * window.SP_GET_A_PRICE for scripts/check-get-a-price.mjs.
  * ========================================================================= */
 (function () {
@@ -86,14 +89,15 @@
       chips: ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'], selected: [], button: 'Get my price' };
   }
 
-  // ---- pure: one field, phone or email ------------------------------------
-  function parseContact(v) {
-    v = String(v || '').trim();
-    if (v.indexOf('@') > -1) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? { email: v } : null;
-    }
-    var digits = v.replace(/\D/g, '');
-    return (digits.length >= 10 && digits.length <= 15) ? { phone: v } : null;
+  // ---- pure: a phone number (required) and an email (optional) ----------
+  // Owner, 2026-11-15: two fields, not one "phone or email". The reply is a
+  // text with the price, so the number is the one thing the form must have.
+  function validPhone(v) {
+    var digits = String(v || '').replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 15;
+  }
+  function validEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || '').trim());
   }
 
   // ---- pure: every utm_*, fbclid and gclid on the link --------------------
@@ -178,9 +182,23 @@
   }
 
   window.SP_GET_A_PRICE = {
-    config: config, parseContact: parseContact, attributionFrom: attributionFrom, buildPayload: buildPayload,
+    config: config, validPhone: validPhone, validEmail: validEmail, attributionFrom: attributionFrom, buildPayload: buildPayload,
     freeTeeLine: freeTeeLine, BANDS: BANDS, NOTE_HEAD: NOTE_HEAD,
     uploadWaitMs: function (n) { return UPLOAD_WAIT_BASE_MS + Math.max(0, n - 1) * UPLOAD_WAIT_PER_EXTRA_MS; }
+  };
+
+  // Line icons for the product tiles, in the style of /quote's product types
+  // (stroke follows the text colour, so a picked tile inverts).
+  var SVG = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  var ICONS = {
+    'Tees': SVG + '<path d="M15 8 L10 10 L4 18 L10 22 L14 15 L14 40 L34 40 L34 15 L38 22 L44 18 L38 10 L33 8"/><path d="M15 8 C17 12 21 14 24 14 C27 14 31 12 33 8"/></svg>',
+    'Hoodies': SVG + '<path d="M15 10 L10 12 L4 20 L10 24 L13 17 L13 40 L35 40 L35 17 L38 24 L44 20 L38 12 L33 10"/><path d="M15 10 C16 5 20 3 24 3 C28 3 32 5 33 10"/><path d="M20 10 L20 15 Q20 18 24 18 Q28 18 28 15 L28 10" stroke-width="1.5"/><path d="M19 30 L29 30 L31 36 L17 36 Z" stroke-width="1.5"/></svg>',
+    'Crewnecks': SVG + '<path d="M15 8 L10 10 L4 18 L10 22 L14 15 L14 40 L34 40 L34 15 L38 22 L44 18 L38 10 L33 8"/><path d="M15 8 C17 12 21 14 24 14 C27 14 31 12 33 8"/><path d="M14 36 L34 36" stroke-width="1.5"/><path d="M19 9.5 C20.5 12 27.5 12 29 9.5" stroke-width="1.5"/></svg>',
+    'Polos': SVG + '<path d="M15 10 L10 12 L4 20 L10 24 L14 17 L14 40 L34 40 L34 17 L38 24 L44 20 L38 12 L33 10"/><path d="M15 10 L19 6 L24 10 L29 6 L33 10"/><path d="M24 10 L24 20" stroke-width="1.5"/></svg>',
+    'Hats': SVG + '<path d="M8 30 C8 18 15 10 24 10 C33 10 40 18 40 30"/><path d="M4 30 C10 27 38 27 40 30 Q44 31 46 34 Q30 31 4 34 Z"/></svg>',
+    'Beanies': SVG + '<path d="M10 32 C10 18 16 10 24 10 C32 10 38 18 38 32"/><rect x="8" y="32" width="32" height="8" rx="3"/><circle cx="24" cy="7" r="3"/><path d="M16 32 L16 40 M24 32 L24 40 M32 32 L32 40" stroke-width="1.5"/></svg>',
+    'Quarter-zips': SVG + '<path d="M15 10 L10 12 L4 20 L10 24 L14 17 L14 40 L34 40 L34 17 L38 24 L44 20 L38 12 L33 10"/><path d="M15 10 L19 5 L24 9 L29 5 L33 10"/><path d="M24 9 L24 22" stroke-width="1.5"/><path d="M22.5 22 L25.5 22" stroke-width="1.5"/></svg>',
+    'Something else': SVG + '<circle cx="24" cy="24" r="14" stroke-dasharray="4 4"/><path d="M24 18 L24 30 M18 24 L30 24"/></svg>'
   };
 
   // ---- upload: same signed-URL flow as quote.js, relay as fallback --------
@@ -242,10 +260,10 @@
     var prodBox = document.getElementById('gpProducts');
     prodBox.innerHTML = cfg.chips.map(function (c) {
       var on = cfg.selected.indexOf(c) > -1;
-      return '<button type="button" class="gp-chip" data-v="' + esc(c) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(c) + '</button>';
+      return '<button type="button" class="gp-chip gp-tile" data-v="' + esc(c) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+        (ICONS[c] || ICONS['Something else']) + '<span>' + esc(c) + '</span></button>';
     }).join('');
-    if (cfg.chips.length <= 4) prodBox.classList.add('one-row');
-    else if (cfg.chips.length === 5) prodBox.classList.add('tight');
+    prodBox.classList.add('n' + cfg.chips.length);
     prodBox.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('.gp-chip') : null;
       if (!b) return;
@@ -274,11 +292,8 @@
     }
     form.addEventListener('focusin', started);
 
-    var contactEl = document.getElementById('gpContact');
-    contactEl.addEventListener('input', function () {
-      var v = contactEl.value;
-      contactEl.setAttribute('inputmode', /[a-z@]/i.test(v) ? 'email' : (/^\+?[\d\s().-]+$/.test(v) ? 'tel' : 'email'));
-    });
+    var phoneEl = document.getElementById('gpPhone');
+    var emailEl = document.getElementById('gpEmail');
 
     function setErr(key, msg) {
       var f = form.querySelector('[data-f="' + key + '"]');
@@ -305,7 +320,7 @@
           .catch(function () { u.failed = true; u.done = true; return null; });
         return u;
       });
-      fileName.textContent = files.length ? (files.length === 1 ? files[0].name : files.length + ' files') : 'Optional. PNG, JPG, PDF or AI';
+      fileName.textContent = files.length ? (files.length === 1 ? files[0].name : files.length + ' files') : 'Optional. PNG, JPG or PDF';
       started();
     });
 
@@ -331,10 +346,15 @@
       msg.hidden = true;
 
       var name = document.getElementById('gpName').value.trim();
-      var contact = parseContact(contactEl.value);
+      var phone = phoneEl.value.trim();
+      var email = emailEl.value.trim();
+      var phoneOk = validPhone(phone);
+      var emailOk = !email || validEmail(email);   // optional, but not half-typed
       setErr('name', name ? '' : 'Add your name.');
-      setErr('contact', contact ? '' : 'Add a phone number or an email so we can send your price.');
-      if (!name || !contact) {
+      setErr('phone', phoneOk ? '' : 'Add a mobile number so we can text your price.');
+      setErr('email', emailOk ? '' : 'That email looks incomplete.');
+      var contact = { phone: phone, email: email || null };
+      if (!name || !phoneOk || !emailOk) {
         var bad = form.querySelector('.gp-row.bad input');
         if (bad) bad.focus();
         return;
@@ -374,7 +394,7 @@
                 contentCategory: 'Ad landing',
                 numItems: band ? band.min : undefined,
                 form: 'get_a_price',
-                user: { email: contact.email, phone: contact.phone, name: name }
+                user: { email: contact.email || undefined, phone: contact.phone, name: name }
               });
             }
           } catch (err) { /* tracking never breaks the thank-you */ }
@@ -399,20 +419,22 @@
         ['Items', s.products.length ? s.products.join(', ') : 'Not picked yet'],
         ['Quantity', s.band ? s.band.label : 'Not picked yet'],
         ['Name', s.name],
-        [s.contact.email ? 'Email' : 'Phone', s.contact.email || s.contact.phone],
+        ['Phone', s.contact.phone]
+      ].concat(s.contact.email ? [['Email', s.contact.email]] : []).concat([
         ['Logo', s.logos ? (s.logos === 1 ? 'Attached' : s.logos + ' files attached') : 'None yet. You can send it after.']
-      ];
+      ]);
       var main = document.getElementById('gp');
-      main.classList.add('gp-ok');
       main.innerHTML =
+        '<div class="gp-ok">' +
         '<h1 tabindex="-1" id="gpDone">Got it. We’re on it.</h1>' +
-        '<p>We’ll ' + (s.contact.email ? 'email' : 'text') + ' you a price and a mockup, usually within the hour (9am-6pm).</p>' +
+        '<p>We’ll text you a price and a mockup, usually within the hour (9am-6pm).</p>' +
         '<div class="gp-sent"><h2>What you sent</h2><dl>' +
           rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') +
         '</dl></div>' +
         (tee ? '<p class="gp-tee">' + esc(tee) + '</p>' : '') +
         '<p class="gp-sooner">Need it sooner?</p>' +
-        '<div class="gp-cta"><a href="tel:4385443800" data-sp-track="get_a_price_call">Call 438-544-3800</a><a href="sms:4385443800" data-sp-track="get_a_price_text">Text us</a></div>';
+        '<div class="gp-cta"><a href="tel:4385443800" data-sp-track="get_a_price_call">Call 438-544-3800</a><a href="sms:4385443800" data-sp-track="get_a_price_text">Text us</a></div>' +
+        '</div>';
       try { window.scrollTo(0, 0); document.getElementById('gpDone').focus(); } catch (e) {}
     }
   }
