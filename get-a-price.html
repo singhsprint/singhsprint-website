@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get a price | Singhs Print</title>
+  <meta name="description" content="Tell us what you need. We'll send a price and a free mockup, usually within the hour.">
+  <!-- Ads only: the page people land on from an Instagram or Facebook ad.
+       Not in the sitemap and not indexed; /quote is the page search finds. -->
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://www.singhsprint.com/quote">
+  <meta property="og:site_name" content="Singhs Print">
+  <meta property="og:title" content="Get a price | Singhs Print">
+  <meta property="og:description" content="Tell us what you need. We'll send a price and a free mockup, usually within the hour.">
+  <meta property="og:image" content="https://www.singhsprint.com/images/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://singhsprint-crm.vercel.app" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+  <style>
+    /* /get-a-price — the short ad form (2026-11-15).
+       One screen on a 390x844 phone: promo bar, header, the whole form and its
+       button, no scrolling. scripts/check-get-a-price.mjs measures that. */
+    *,*::before,*::after{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{margin:0;font-family:Inter,-apple-system,system-ui,sans-serif;color:#1a1a1a;background:#fafaf7;line-height:1.4;-webkit-font-smoothing:antialiased}
+    .gp{max-width:520px;margin:0 auto;padding:14px 16px 28px}
+    .gp-eyebrow{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:#e8ff3c;color:#1a1a1a;padding:3px 8px;border-radius:3px;margin:0 0 6px}
+    .gp-eyebrow[hidden]{display:none}
+    .gp h1{font-family:"Playfair Display",Georgia,serif;font-weight:800;font-size:1.55rem;line-height:1.12;margin:0 0 5px;text-wrap:balance}
+    .gp-sub{font-size:.84rem;color:#55595f;margin:0 0 10px}
+    .gp-form{display:grid;gap:8px}
+    .gp-q{font-size:.8rem;font-weight:600;margin:0 0 4px;display:block}
+    .gp-chips{display:flex;flex-wrap:wrap;gap:6px}
+    .gp-chips.one-row{flex-wrap:nowrap}
+    .gp-chips.one-row .gp-chip{flex:1 1 0;min-width:0;padding:0 2px}
+    .gp-chips.tight{flex-wrap:nowrap;gap:5px}
+    .gp-chips.tight .gp-chip{flex:1 1 auto;min-width:0;padding:0 6px;font-size:.8rem}
+    .gp-chip{min-height:44px;padding:0 12px;border:1.5px solid #d9d7cf;border-radius:10px;background:#fff;font:inherit;font-size:.86rem;font-weight:600;color:#1a1a1a;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+    .gp-chip[aria-pressed="true"],.gp-chip[aria-checked="true"]{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+    .gp-chip:focus-visible,.gp-in:focus-visible,.gp-btn:focus-visible,.gp-file:focus-within{outline:3px solid rgba(26,26,26,.35);outline-offset:2px}
+    .gp-row{display:grid;gap:3px}
+    .gp-in{width:100%;min-height:44px;padding:9px 12px;border:1.5px solid #d9d7cf;border-radius:10px;background:#fff;font:inherit;font-size:1rem;color:#1a1a1a}
+    .gp-in:focus{outline:none;border-color:#1a1a1a}
+    .gp-row.bad .gp-in{border-color:#c0392b}
+    .gp-err{font-size:.74rem;color:#c0392b}
+    .gp-err:empty{display:none}
+    .gp-file{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 10px;border:1.5px dashed #c9c7bf;border-radius:10px;background:#fff;cursor:pointer}
+    .gp-file input{position:absolute;width:1px;height:1px;opacity:0}
+    .gp-file .pick{flex:none;font-size:.8rem;font-weight:600;padding:6px 10px;border-radius:7px;background:#f0efe9}
+    .gp-file .nm{font-size:.8rem;color:#6b6f75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gp-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+    .gp-btn{width:100%;min-height:52px;border:none;border-radius:999px;background:#e8ff3c;color:#1a1a1a;font:inherit;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:2px}
+    .gp-btn[disabled]{opacity:.6;cursor:wait}
+    .gp-msg{font-size:.82rem;color:#c0392b}
+    .gp-note{font-size:.78rem;color:#55595f;text-align:center;margin:0}
+    .gp-note a{color:#1a1a1a;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+    /* thank-you */
+    .gp-ok h1{margin-bottom:8px}
+    .gp-ok p{font-size:.95rem;color:#3d4046;margin:0 0 14px}
+    .gp-sent{background:#fff;border:1px solid #e2dfd6;border-radius:12px;padding:12px 14px;margin:0 0 14px}
+    .gp-sent h2{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#6b6f75;margin:0 0 6px}
+    .gp-sent dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0;font-size:.9rem}
+    .gp-sent dt{color:#6b6f75}.gp-sent dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+    .gp-tee{background:#e8ff3c;border-radius:10px;padding:10px 12px;font-size:.9rem;font-weight:600;margin:0 0 14px}
+    .gp-sooner{font-weight:700;margin:0 0 8px;font-size:.95rem}
+    .gp-cta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .gp-cta a{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:999px;font-weight:700;text-decoration:none;background:#1a1a1a;color:#fff}
+    .gp-cta a + a{background:#fff;color:#1a1a1a;border:1.5px solid #1a1a1a}
+    /* This page is the form. The floating "Text us" pill sits on the button on a
+       phone, so it is off here; the thank-you state has Call and Text. */
+    .sp-tw-btn{display:none!important}
+    /* The catalogue strip under the header is a row of ways to leave. */
+    .sp-mobile-cats{display:none!important}
+    /* Cookie banner, phones: the usual one is 170px tall and sits on the
+       button. Here it is one slim row with the same two choices, and the page
+       keeps room for it, so the button is never underneath. Nothing about
+       what is consented to, or when trackers fire, changes (consent.js). */
+    @media (max-width:600px){
+      body[data-page="get-a-price"] #sp-consent-banner{padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))!important;border-radius:0!important;font-size:.74rem!important;line-height:1.3!important}
+      body[data-page="get-a-price"] #sp-consent-banner .sp-consent-inner{flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:10px!important}
+      body[data-page="get-a-price"] #sp-consent-banner .sp-consent-msg{margin:0!important;flex:1 1 auto!important;min-width:0}
+      body[data-page="get-a-price"] #sp-consent-banner .sp-consent-row{flex-direction:row!important;flex-wrap:nowrap!important;gap:4px!important;align-items:center!important}
+      body[data-page="get-a-price"] #sp-consent-banner .sp-consent-accept{order:2;width:auto!important;min-height:40px!important;padding:8px 14px!important;font-size:.82rem!important}
+      body[data-page="get-a-price"] #sp-consent-banner .sp-consent-reject{order:1;width:auto!important;min-height:40px!important;padding:8px 6px!important;font-size:.76rem!important}
+      .gp{padding-bottom:84px}
+    }
+    @media (min-width:700px){.gp{padding-top:40px}.gp h1{font-size:2.1rem}.gp-sub{font-size:1rem;margin-bottom:18px}.gp-form{gap:14px}}
+  </style>
+</head>
+<body data-no-offer-popup data-page="get-a-price">
+  <div id="nav-placeholder"></div>
+
+  <main class="gp" id="gp">
+    <span class="gp-eyebrow" id="gpEyebrow" hidden></span>
+    <h1 id="gpH1">Get a price in an hour</h1>
+    <p class="gp-sub" id="gpSub">Tell us what you need. We'll send a price and a free mockup.</p>
+
+    <form class="gp-form" id="gpForm" novalidate>
+      <div>
+        <span class="gp-q" id="gpWhatQ">What do you need?</span>
+        <div class="gp-chips" id="gpProducts" role="group" aria-labelledby="gpWhatQ"></div>
+      </div>
+      <div>
+        <span class="gp-q" id="gpQtyQ">How many?</span>
+        <div class="gp-chips one-row" id="gpQty" role="radiogroup" aria-labelledby="gpQtyQ"></div>
+      </div>
+      <div class="gp-row" data-f="name">
+        <label class="gp-q" for="gpName">Your name</label>
+        <input class="gp-in" id="gpName" name="name" autocomplete="given-name" placeholder="First name is fine" maxlength="120" required>
+        <span class="gp-err" aria-live="polite"></span>
+      </div>
+      <div class="gp-row" data-f="contact">
+        <label class="gp-q" for="gpContact">Phone or email</label>
+        <input class="gp-in" id="gpContact" name="contact" autocomplete="tel" inputmode="email" placeholder="514 555-0123 or you@business.com" maxlength="200" required>
+        <span class="gp-err" aria-live="polite"></span>
+      </div>
+      <div class="gp-row" data-f="logo">
+        <label class="gp-file"><input id="gpLogo" name="logo" type="file" multiple accept="image/*,.pdf,.ai,.eps,.psd,.svg">
+          <span class="pick">Add your logo</span><span class="nm" id="gpLogoName">Optional. PNG, JPG, PDF or AI</span></label>
+        <span class="gp-err" aria-live="polite"></span>
+      </div>
+      <div class="gp-hp" aria-hidden="true"><label>Leave this empty<input name="sp_hp_7f3" tabindex="-1" autocomplete="off"></label></div>
+      <button class="gp-btn" id="gpBtn" type="submit">Get my price</button>
+      <div class="gp-msg" id="gpMsg" role="alert" hidden></div>
+      <p class="gp-note">No payment. A real person replies, usually within the hour (9am-6pm).</p>
+      <p class="gp-note">Want to pick exact blanks and sizes? <a href="/quote" id="gpFull">Build it yourself</a></p>
+    </form>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/components.js" defer></script>
+  <script src="/consent.js" defer></script>
+  <script src="/lang.js" defer></script>
+  <script src="/get-a-price.js" defer></script>
+</body>
+</html>

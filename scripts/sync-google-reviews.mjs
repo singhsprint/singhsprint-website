@@ -2,7 +2,7 @@
 /**
  * sync-google-reviews.mjs
  *
- * Fetches Singh's Print's current Google Maps rating + review count via the
+ * Fetches Singhs Print's current Google Maps rating + review count via the
  * CRM's /api/google-reviews endpoint and rewrites every hardcoded mention
  * across the static site so initial HTML + JSON-LD schema reflect the live
  * numbers. Lets us keep the site SEO-fresh without depending on JS to
@@ -99,6 +99,8 @@ async function run() {
   // the current hardcoded value is. Matches any rating like "5.0", "4.8",
   // "4" and any review count digit string.
   const replacements = [
+    // components.js SP_REVIEWS.BAKED, the one typed rating the pages' scripts read
+    [/BAKED: \{ rating: [\d.]+, count: \d+ \}/g, `BAKED: { rating: ${ratingStr}, count: ${countStr} }`],
     // Visible text patterns
     [/\(\d+\s*reviews\)/g,                           `(${countStr} reviews)`],
     [/\(\d+\s*Reviews\)/g,                           `(${countStr} Reviews)`],

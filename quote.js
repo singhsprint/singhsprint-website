@@ -3158,9 +3158,15 @@
 
     // Top-of-form live price strip — visible whenever a catalog product is
     // picked. Updates with sides on Step 1 and qty on Step 2.
-    function updateLivePriceStrip(qty, perUnit, isLive, startingAt, basisQty) {
+    // opts (2026-11-15): { pick: true } = no quantity picked yet, so no number at
+    // all ("Pick a quantity"); { band: '25–49' } = a quantity tier is picked and
+    // perUnit is THAT tier's price. Before this the strip showed "$9.95/unit ·
+    // starting at 200+ units" from the first tap and kept showing it after
+    // someone picked 25–49, until a blank was chosen.
+    function updateLivePriceStrip(qty, perUnit, isLive, startingAt, basisQty, opts) {
       var strip = document.getElementById('livePriceStrip');
       if (!strip) return;
+      opts = opts || {};
       if (!catalogPick) {
         // Defensive: in cart mode the strip is owned by updateCartTotal,
         // so don't hide it just because there's no single catalogPick.
@@ -3169,7 +3175,7 @@
         // No blank picked: if we have a category "starting at" price (the
         // customer chose a garment type), keep the strip visible and fall
         // through to render it; otherwise hide it as before.
-        if (!(startingAt && perUnit > 0)) { strip.style.display = 'none'; return; }
+        if (!(startingAt && perUnit > 0) && !(opts.pick && state.garment)) { strip.style.display = 'none'; return; }
       }
       strip.style.display = 'block';
       // Make sure the "/unit" suffix is visible — cart mode hides it.
@@ -3198,6 +3204,14 @@
       var qtyLabel = qty && qty > 0
         ? (qty + ' ' + wordUnits + ' · ' + sides + ' ' + wordSide + tail)
         : (wordEnter + ' · ' + sides + ' ' + wordSide + (startingAt ? ' · ' + wordStarting + wordBasis : ''));
+      if (opts.pick && !(qty > 0)) {
+        // No quantity yet: say so, and show no price.
+        document.getElementById('livePriceUnit').textContent = _t('quote.strip.pickqty') || 'Pick a quantity';
+        if (suf) suf.style.display = 'none';
+        qtyLabel = sides + ' ' + wordSide;
+      } else if (opts.band && !(qty > 0)) {
+        qtyLabel = opts.band + ' ' + wordUnits + ' · ' + sides + ' ' + wordSide + (isLive ? '' : ' · ' + wordEst);
+      }
       document.getElementById('livePriceQty').textContent = qtyLabel;
       var totalWrap = document.getElementById('livePriceTotalWrap');
       if (qty && perUnit) {
@@ -3212,33 +3226,41 @@
     // When sides change on Step 1 (before any qty is entered), still fetch
     // a live per-unit at the top tier so the strip shows something useful.
     function fetchAndRenderTopTierEstimate() {
+      // 2026-11-15 — the estimate before any sizes are entered. It used to price
+      // at 200 pieces and say "starting at 200+ units": the first number on the
+      // page was one almost nobody pays, and it stayed after a quantity was
+      // picked. Now: no quantity = "Pick a quantity", no number. A quantity tier
+      // picked = that tier's price straight away, on the Standard blank until
+      // one is chosen. The 200+ price shows only when 200+ is what they picked.
+      var band = (typeof spQtyBand !== 'undefined' && spQtyBand && spQtyBand.qty) ? spQtyBand : null;
+      var bandLabel = band ? ((typeof spQtyBandLabel === 'function' && spQtyBandLabel(band)) || band.label || String(band.qty)) : '';
+      if (!band) {
+        updateLivePriceStrip(0, 0, false, false, 0, { pick: true });
+        return;
+      }
       if (!catalogPick || !catalogPick.product_id) {
-        // No blank picked — if a garment type is chosen, show that category's
-        // CRM "starting at" price in the strip (priced at the bulk tier, like
-        // the catalog's "From $X" floor). Otherwise leave the strip empty.
         if (state.garment) {
           fetchCategoryStartingPrice(function (u) {
-            if (typeof u === 'number' && u > 0) updateLivePriceStrip(0, u, false, true, 200);
-            else updateLivePriceStrip(0, 0, false);
-          }, 200);
+            if (spQtyBand !== band) return; // they picked another tier meanwhile
+            if (typeof u === 'number' && u > 0) updateLivePriceStrip(0, u, false, true, 0, { band: bandLabel });
+            else updateLivePriceStrip(0, 0, false, false, 0, { pick: true });
+          }, band.qty);
         } else {
           updateLivePriceStrip(0, 0, false);
         }
         return;
       }
       var sides = parseInt(document.getElementById('printCountInput').value) || 1;
-      // Placements, colour AND method. This one was missing the method too,
-      // so an embroidery quote's strip quoted the print ladder — and it is
-      // the strip that updates the instant a placement is clicked, because
-      // togglePlacementPreset() calls straight into here.
+      // Placements, colour AND method, as before; only the quantity changed.
       fetch(PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(catalogPick.product_id) +
-        '&qty=200&sides=' + sides +
+        '&qty=' + band.qty + '&sides=' + sides +
         '&decoration_method=' + currentDecorationMethod() +
         spQuotePricingParams().qs
       ).then(function(r){ return r.ok ? r.json() : null; })
        .then(function(d){
-         if (d && typeof d.unit_price === 'number') updateLivePriceStrip(0, d.unit_price, true, true, 200);
+         if (spQtyBand !== band) return;
+         if (d && typeof d.unit_price === 'number') updateLivePriceStrip(0, d.unit_price, true, true, 0, { band: bandLabel });
        }).catch(function(){});
     }
 
@@ -7634,7 +7656,7 @@
           document.getElementById('catalogPickMeta').textContent = metaParts.join(' · ');
           if (typeof p.price_from === 'number') {
             document.getElementById('catalogPickPrice').innerHTML =
-              'From <strong>$' + p.price_from.toFixed(2) + '/unit</strong> at top-tier qty';
+              'Ordering 200+? As low as <strong>$' + p.price_from.toFixed(2) + '</strong>.';
           }
 
           // Hidden inputs that ride along on quote submit
@@ -8034,6 +8056,11 @@
       // spRenderTierCards re-renders the chips too (it owns the tiers
       // payload the price ladder needs), then paints the tier cards.
       spRenderTierCards(garmentKey, productLabel);
+      // The estimate follows the tier the moment it is picked (see fetchAndRenderTopTierEstimate).
+      try {
+        var sizesSoFar = parseInt(document.getElementById('sizeTotal').textContent, 10) || 0;
+        if (!sizesSoFar && typeof fetchAndRenderTopTierEstimate === 'function') fetchAndRenderTopTierEstimate();
+      } catch (e) { /* the strip is decoration; never block the pick */ }
       if (typeof window.spOnQtyBandPicked === 'function') window.spOnQtyBandPicked(band);
     }
 
@@ -8097,7 +8124,10 @@
             '<div class="tier-card__name">' + (t.name || '') + '</div>' +
             '<div class="tier-card__tag">' + spTierT('quote.tiers.tag.' + t.tier, '') + '</div>' +
             '<div class="tier-card__price" id="sp-tierprice-' + t.product_id + '">' +
-              (from ? '<strong>' + spTierT('quote.tiers.from', 'From') + ' ' + from + '</strong>' + spTierT('quote.tiers.perunit', '/unit') : '') +
+              // Filled below: this blank's price for five pieces (the minimum) until a
+              // quantity is picked, then that quantity's price. It used to print
+              // "From $9.95/unit", the 200+ price, on a card for a 5-piece minimum.
+              '<span style="color:#999">\u2026</span>' +
             '</div>' +
             (t.color_count ? '<div class="tier-card__colours">' + t.color_count + ' ' + spTierT('quote.tiers.colors', 'colours') + '</div>' : '') +
             '</button>';
@@ -8131,6 +8161,15 @@
               if (el && typeof p === 'number' && p > 0) {
                 el.innerHTML = '<strong>$' + p.toFixed(2) + '</strong>' + spTierT('quote.tiers.perunit', '/unit') +
                   ' <span style="color:#999">· ' + spQtyBandLabel(spQtyBand) + ' ' + spTierT('quote.qty.pcs', 'pcs') + '</span>';
+              }
+            });
+          });
+        } else {
+          tiers.forEach(function(t) {
+            liveUnitPrice(t.product_id, 5, 1, [], function (p) {
+              var el = document.getElementById('sp-tierprice-' + t.product_id);
+              if (el && typeof p === 'number' && p > 0 && !spQtyBand) {
+                el.innerHTML = '<strong>' + spTierT('quote.tiers.fivefor', '5 for') + ' $' + p.toFixed(2) + '</strong> ' + spTierT('quote.tiers.each', 'each');
               }
             });
           });
@@ -9722,6 +9761,8 @@
         // THEIR sort order, so "who shows first" is managed from the CRM
         // (Portfolio → drag to reorder), not hardcoded here.
         var CLIENTS = ['McGill Sororities', 'Sainte-Anne-de-Bellevue', 'Artwood Construction'];
+        // One typed rating for the whole site: components.js SP_REVIEWS.BAKED.
+        var SP_BAKED_REVIEWS = (window.SP_REVIEWS && window.SP_REVIEWS.BAKED) || { rating: 4.7, count: 37 };
         var chip = 'display:inline-block;background:#fafaf6;border:1px solid #e4e4e4;border-radius:50px;' +
           'padding:3px 11px;font-size:.74rem;font-weight:600;color:#444;white-space:nowrap';
         function chipsHtml(names) {
@@ -9734,10 +9775,10 @@
           // Rating row — links to the real Google listing (tap to verify).
           '<a href="https://maps.app.goo.gl/FX8o2QEvQzngxeiv7" target="_blank" rel="noopener"' +
             ' style="display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:#1a1a1a">' +
-            '<span id="spSocialStars" style="font-size:.95rem;letter-spacing:1.5px;line-height:1">' + spStarsHtml(5) + '</span>' +
-            '<strong id="spSocialRating" style="font-size:.9rem">5.0</strong>' +
+            '<span id="spSocialStars" style="font-size:.95rem;letter-spacing:1.5px;line-height:1">' + spStarsHtml(SP_BAKED_REVIEWS.rating) + '</span>' +
+            '<strong id="spSocialRating" style="font-size:.9rem">' + Number(SP_BAKED_REVIEWS.rating).toFixed(1) + '</strong>' +
             '<span style="color:#888;font-size:.8rem;text-decoration:underline;text-underline-offset:2px">' +
-              '<span id="spSocialCount">23</span> ' + t('quote.social.reviews', 'Google reviews') + '</span>' +
+              '<span id="spSocialCount">' + SP_BAKED_REVIEWS.count + '</span> ' + t('quote.social.reviews', 'Google reviews') + '</span>' +
           '</a>' +
           // Client chips — proof with visual weight, in the site's pill language.
           '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:6px">' +

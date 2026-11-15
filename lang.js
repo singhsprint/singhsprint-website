@@ -60,8 +60,8 @@ var SP_LANG = (function() {
 
     // ===== FOOTER =====
     'footer.brand': {
-      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open 7 days, 9AM\u20136PM.",
-      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert 7 jours sur 7, 9 h à 18 h."
+      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open 7 days, 10am-4pm. Call before visiting.",
+      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert 7 jours sur 7, 10 h à 16 h. Appelez avant de passer."
     },
     'footer.pages': { en: 'Pages', fr: 'Pages' },
     'footer.home': { en: 'Home', fr: 'Accueil' },
@@ -83,8 +83,8 @@ var SP_LANG = (function() {
     // Mailing list (popup, footer form, quote/checkout boxes). The opt-in
     // sentences are sent to the CRM verbatim as the CASL consent record, so
     // keep them in step with CONSENT_TEXT in the CRM's lib/mailing/optin.ts.
-    'mail.optin.email': { en: "Yes, email me deals and new drops from Singh's Print. Unsubscribe anytime.", fr: "Oui, envoyez-moi les promos et nouveautés de Singh's Print par courriel. Désabonnement en tout temps." },
-    'mail.optin.sms':   { en: "Yes, text me deals from Singh's Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.", fr: "Oui, envoyez-moi les promos de Singh's Print par texto. Quelques textos par mois. Répondez STOP pour vous désabonner. Des frais peuvent s'appliquer." },
+    'mail.optin.email': { en: "Yes, email me deals and new drops from Singhs Print. Unsubscribe anytime.", fr: "Oui, envoyez-moi les promos et nouveautés de Singhs Print par courriel. Désabonnement en tout temps." },
+    'mail.optin.sms':   { en: "Yes, text me deals from Singhs Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.", fr: "Oui, envoyez-moi les promos de Singhs Print par texto. Quelques textos par mois. Répondez STOP pour vous désabonner. Des frais peuvent s'appliquer." },
     'mail.phone.ph':    { en: 'Mobile number (optional)', fr: 'Cellulaire (facultatif)' },
     'footer.news.h':    { en: 'Deals and new drops', fr: 'Promos et nouveautés' },
     'footer.news.p':    { en: 'A couple of emails a month. Unsubscribe anytime.', fr: 'Quelques courriels par mois. Désabonnement en tout temps.' },
@@ -253,12 +253,16 @@ var SP_LANG = (function() {
     'home.faq.a6': { en: 'You approve a photoreal mockup before we print anything — colors, placement, sizing.', fr: 'Vous approuvez une maquette photoréaliste avant qu\'on imprime quoi que ce soit — couleurs, placement, taille.' },
     'home.faq.q7': { en: 'Do you guarantee against misprints?', fr: 'Offrez-vous une garantie contre les erreurs d\'impression ?' },
     'home.faq.a7': { en: 'Yes. If there is a print quality issue or garment defect, we will reprint or replace the item at no cost to you.', fr: 'Oui. S\'il y a un problème de qualité d\'impression ou un défaut de vêtement, on réimprime ou on remplace l\'article sans frais.' },
-    'home.faq.q8': { en: 'Do you offer a first-order discount?', fr: 'Offrez-vous un rabais sur la première commande ?' },
-    'home.faq.a8': { en: 'Yes — order 15 or more and we add a free tee in the same design, applied automatically when you request your quote. No code needed.', fr: 'Oui — commandez 15 articles ou plus et on ajoute un t-shirt gratuit avec le même design, appliqué automatiquement lors de la soumission. Aucun code requis.' },
+    'home.faq.q8': { en: 'Any deals right now?', fr: 'Des promotions en ce moment?' },
+    'home.faq.a8': { en: "Free tee on orders of 15+, same design. It's added automatically when you request your quote.", fr: "Un t-shirt gratuit sur les commandes de 15 articles et plus, même design. Il est ajouté automatiquement quand vous demandez votre soumission." },
     'home.faq.q9': { en: 'What areas do you serve?', fr: 'Quels secteurs desservez-vous ?' },
     'home.faq.a9': { en: "We decorate in Sainte-Anne-de-Bellevue and deliver across Montreal's West Island (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), greater Montreal, Laval, and the South Shore. Canada-wide shipping available for larger orders.", fr: "On décore à Sainte-Anne-de-Bellevue et livre dans tout l'Ouest-de-l'Île de Montréal (Pointe-Claire, Dorval, Kirkland, Beaconsfield, Pierrefonds, Baie-d'Urfé, L'Île-Bizard), le grand Montréal, Laval et la Rive-Sud. Expédition partout au Canada pour les commandes plus importantes." },
     'home.popup.h3':     { en: 'Get a free tee on orders of 15+', fr: 'Obtenez un t-shirt gratuit dès 15 articles' },
-    'home.popup.p':      { en: 'Drop your email and we lock it to your quote \u2014 orders of 15+, same design. No spam, no code, nothing to retype.', fr: "Laissez votre courriel et on le réserve à votre soumission \u2014 dès 15 articles, même design. Pas de spam, pas de code, rien à retaper." },
+    'home.popup.p':      { en: "Leave your number and we'll lock it to your quote. Orders of 15+, same design.", fr: "Laissez votre numéro et on le réserve à votre soumission. Commandes de 15 articles et plus, même design." },
+    'home.popup.phone':    { en: 'Mobile number', fr: 'Numéro de cellulaire' },
+    'home.popup.emailopt': { en: 'Email (optional)', fr: 'Courriel (facultatif)' },
+    'home.popup.optin':    { en: 'Yes, send me deals from Singhs Print.', fr: 'Oui, envoyez-moi les promos de Singhs Print.' },
+    'home.popup.fine':     { en: 'A few messages a month. Reply STOP or unsubscribe anytime.', fr: 'Quelques messages par mois. Répondez STOP ou désabonnez-vous en tout temps.' },
     'home.popup.cta':    { en: 'Claim my free tee →', fr: 'Réclamer mon t-shirt gratuit →' },
     'home.popup.skip':   { en: 'Maybe later', fr: 'Plus tard' },
     // Unused after slice "popup → quote builder", kept so older cached pages
@@ -482,8 +486,8 @@ var SP_LANG = (function() {
 
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 9AM to 6PM. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
-      fr: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 9 h à 18 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
+      en: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 10am-4pm. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
+      fr: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 10 h à 16 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
@@ -715,6 +719,9 @@ var SP_LANG = (function() {
     'quote.tiers.premium': { en: 'Premium', fr: 'Premium' },
     'quote.tiers.from': { en: 'From', fr: 'À partir de' },
     'quote.tiers.perunit': { en: '/unit', fr: '/unité' },
+    'quote.tiers.fivefor': { en: '5 for', fr: '5 pour' },
+    'quote.tiers.each': { en: 'each', fr: 'chacun' },
+    'quote.strip.pickqty': { en: 'Pick a quantity', fr: 'Choisissez une quantité' },
     'quote.tiers.colors': { en: 'colours', fr: 'couleurs' },
     'quote.qty.h': { en: 'How many do you need?', fr: 'Il vous en faut combien ?' },
     'quote.qty.k': { en: 'Quantity', fr: 'Quantité' },
@@ -1416,7 +1423,7 @@ var SP_LANG = (function() {
     'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–6pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h).' },
     'quote.sidebar.next.p2': { en: 'You approve a mockup before we print.', fr: 'Vous approuvez une maquette avant l\'impression.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
-    'quote.sidebar.talk.hours': { en: 'Open 7 days, 9AM – 6PM', fr: 'Ouvert 7 jours sur 7, 9 h à 18 h' },
+    'quote.sidebar.talk.hours': { en: 'Open 7 days, 10am-4pm. Call before visiting.', fr: 'Ouvert 7 jours sur 7, 10 h à 16 h. Appelez avant de passer.' },
     'quote.freetee.nudge':    { en: 'Add {n} more and the 16th tee is on us.', fr: 'Encore {n} et le 16e t-shirt est offert.' },
     'quote.freetee.included': { en: 'Free tee included \u2014 same design. We\'ll confirm your size.', fr: 'T-shirt gratuit inclus \u2014 m\u00eame design. On confirmera votre taille.' },
     'quote.freetee.cartline': { en: 'Free tee \u2014 same design, on us', fr: 'T-shirt gratuit \u2014 m\u00eame design, offert' },

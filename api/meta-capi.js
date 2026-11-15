@@ -82,7 +82,10 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'missing_event_name_or_event_id' });
   }
   // Public, unauthenticated endpoint: only accept the events the site fires.
-  const ALLOWED_EVENTS = ['PageView', 'ViewContent', 'Lead', 'Contact', 'InitiateCheckout', 'Purchase'];
+  // Lead is a real quote request and nothing else (2026-11-15). The popup's
+  // free-tee claim and a price-sheet download have their own names so Meta
+  // does not optimise ads toward them.
+  const ALLOWED_EVENTS = ['PageView', 'ViewContent', 'Lead', 'Contact', 'InitiateCheckout', 'Purchase', 'FreeTeeClaim', 'PriceSheetDownload'];
   if (!ALLOWED_EVENTS.includes(incoming.event_name)) {
     return res.status(400).json({ error: 'event_not_allowed' });
   }

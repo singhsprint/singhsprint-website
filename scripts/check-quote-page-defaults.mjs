@@ -107,9 +107,12 @@ ok('2c tier cards no longer bail out when no band is chosen',
    !/if \(!spQtyBand\) \{ host\.style\.display = 'none'; host\.innerHTML = ''; return; \}/.test(js))
 ok('2d bandQty tolerates a missing band',
    /var bandQty = spQtyBand \? spQtyBand\.qty : null/.test(js))
-// Without a band the card must keep its "From $X" floor.
-ok('2e the From-price string is still built',
-   /spTierT\('quote\.tiers\.from', 'From'\)/.test(js))
+// Without a band the card shows what five pieces cost ("5 for $18.95 each"),
+// priced by the engine at qty 5. It used to print a "From $9.95" floor, the
+// 200+ price, on a card for a 5-piece minimum (2026-11-15).
+ok('2e without a band the card is priced at five pieces, not a From floor',
+   /liveUnitPrice\(t\.product_id, 5, 1, \[\]/.test(js) && /spTierT\('quote\.tiers\.fivefor', '5 for'\)/.test(js) &&
+   !/spTierT\('quote\.tiers\.from', 'From'\) \+ ' ' \+ from/.test(js))
 ok('2f repricing is gated on an actual band',
    /if \(bandQty\) \{/.test(js))
 // Every spQtyBand read inside the renderer must be null-safe now.

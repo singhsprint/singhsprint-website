@@ -1,4 +1,9 @@
-// offer-popup.js — the free-tee email capture, on every page that matters.
+// offer-popup.js — the free-tee claim, on every page that matters.
+//
+// 2026-11-15: phone first, email optional. A claim with a number or an email
+// is a LEAD in the OS ("Free tee claim"), not a newsletter signup: five went
+// unanswered in November because they were filed as signups. It fires the
+// custom Meta event FreeTeeClaim, never Lead (Lead is a quote request).
 //
 // Was inline in index.html and nowhere else, so it only ever ran on the
 // homepage: 33 captures in five months, not because it converted badly but
@@ -42,7 +47,7 @@
   }
   // Already gave us an address this session? Then there is nothing to ask for.
   function alreadyCaptured() {
-    try { return !!sessionStorage.getItem('sp_lead_email'); } catch (_) { return false; }
+    try { return !!(sessionStorage.getItem('sp_lead_email') || sessionStorage.getItem('sp_lead_phone')); } catch (_) { return false; }
   }
 
   if (dismissed() || alreadyCaptured()) return;
@@ -61,6 +66,9 @@
     + '.sp-op-optin{display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:.8rem;line-height:1.4;color:#555;margin:0 0 12px;cursor:pointer}'
     + '.sp-op-optin input{width:18px;height:18px;margin:1px 0 0;padding:0;flex:none;accent-color:#1a1a1a}'
     + '.sp-op-optin[hidden]{display:none}'
+    + '.sp-op p.sp-op-fine{font-size:.72rem;color:#888;margin:-6px 0 12px;text-align:left;line-height:1.4}'
+    + '.sp-op-err{font-size:.8rem;color:#c0392b;margin:-6px 0 10px;text-align:left}'
+    + '.sp-op-err:empty{display:none}'
     + '.sp-op-skip{display:block;margin:12px auto 0;font-size:.85rem;color:#aaa;cursor:pointer;background:none;border:none;font-family:inherit}'
     + '@media(max-width:520px){.sp-op{padding:36px 22px}.sp-op h3{font-size:1.42rem}}';
 
@@ -80,12 +88,13 @@
         '<div class="sp-op">'
       +   '<button class="sp-op-close" type="button" aria-label="Close">&times;</button>'
       +   '<h3 data-i18n="home.popup.h3" data-promo="popup-h3">Get a free tee on orders of 15+</h3>'
-      +   '<p data-i18n="home.popup.p">Drop your email and we lock it to your quote &mdash; orders of 15+, same design. No spam, no code, nothing to retype.</p>'
+      +   '<p data-i18n="home.popup.p">Leave your number and we&#39;ll lock it to your quote. Orders of 15+, same design.</p>'
       +   '<form class="sp-op-form" novalidate>'
-      +     '<input type="email" name="email" placeholder="you@example.com" data-i18n-placeholder="home.popup.email" required maxlength="200" autocomplete="email">'
-      +     '<input type="tel" name="phone" placeholder="Mobile number (optional)" data-i18n-placeholder="mail.phone.ph" maxlength="40" autocomplete="tel" inputmode="tel">'
-      +     '<label class="sp-op-optin"><input type="checkbox" name="email_optin"><span data-i18n="mail.optin.email">Yes, email me deals and new drops from Singh&#39;s Print. Unsubscribe anytime.</span></label>'
-      +     '<label class="sp-op-optin sp-op-optin-sms" hidden><input type="checkbox" name="sms_optin"><span data-i18n="mail.optin.sms">Yes, text me deals from Singh&#39;s Print. A few texts a month. Reply STOP to opt out. Msg &amp; data rates may apply.</span></label>'
+      +     '<input type="tel" name="phone" placeholder="Mobile number" data-i18n-placeholder="home.popup.phone" aria-label="Mobile number" required maxlength="40" autocomplete="tel" inputmode="tel">'
+      +     '<input type="email" name="email" placeholder="Email (optional)" data-i18n-placeholder="home.popup.emailopt" aria-label="Email (optional)" maxlength="200" autocomplete="email">'
+      +     '<div class="sp-op-err" role="alert"></div>'
+      +     '<label class="sp-op-optin"><input type="checkbox" name="deals_optin"><span data-i18n="home.popup.optin">Yes, send me deals from Singhs Print.</span></label>'
+      +     '<p class="sp-op-fine" data-i18n="home.popup.fine">A few messages a month. Reply STOP or unsubscribe anytime.</p>'
       +     '<button type="submit" class="sp-op-cta" data-i18n="home.popup.cta" data-sp-track="popup_submit_lead">Claim my free tee &rarr;</button>'
       +   '</form>'
       +   '<button class="sp-op-skip" type="button" data-i18n="home.popup.skip">Maybe later</button>'
@@ -95,14 +104,6 @@
     overlay.querySelector('.sp-op-close').addEventListener('click', close);
     overlay.querySelector('.sp-op-skip').addEventListener('click', skip);
     overlay.querySelector('.sp-op-form').addEventListener('submit', submit);
-    // The text box only makes sense once there is a number to text.
-    var phoneIn = overlay.querySelector('input[name="phone"]');
-    var smsRow  = overlay.querySelector('.sp-op-optin-sms');
-    phoneIn.addEventListener('input', function () {
-      var has = phoneIn.value.replace(/\D/g, '').length >= 10;
-      smsRow.hidden = !has;
-      if (!has) smsRow.querySelector('input').checked = false;
-    });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('show')) close();
@@ -121,7 +122,7 @@
   function show() {
     if (!overlay || overlay.classList.contains('show') || dismissed()) return;
     overlay.classList.add('show');
-    var i = overlay.querySelector('input[name="email"]');
+    var i = overlay.querySelector('input[name="phone"]');
     if (i && window.matchMedia && window.matchMedia('(min-width:768px)').matches) i.focus();
     if (typeof window.spTrack === 'function') {
       window.spTrack('popup_shown', { promo_slug: PROMO_SLUG, path: path });
@@ -146,18 +147,40 @@
   function submit(e) {
     e.preventDefault();
     var form  = e.target;
-    var input = form.querySelector('input[name="email"]');
-    var email = ((input || {}).value || '').trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (form.reportValidity) form.reportValidity();
+    var err   = form.querySelector('.sp-op-err');
+    var phone = ((form.querySelector('input[name="phone"]') || {}).value || '').trim();
+    var email = ((form.querySelector('input[name="email"]') || {}).value || '').trim();
+    var digits = phone.replace(/\D/g, '');
+    var phoneOk = digits.length >= 10 && digits.length <= 15;
+    var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    // The number is what we ask for. Someone who would rather give an email
+    // can: one of the two is enough to claim it.
+    if (!phoneOk && !emailOk) {
+      if (err) err.textContent = isFr ? 'Ajoutez un numéro de cellulaire (ou un courriel).' : 'Add a mobile number (or an email).';
+      var first = form.querySelector('input[name="phone"]'); if (first) first.focus();
       return;
     }
-    var phone      = ((form.querySelector('input[name="phone"]') || {}).value || '').trim();
-    var emailOptin = !!(form.querySelector('input[name="email_optin"]') || {}).checked;
-    var smsOptin   = !!(form.querySelector('input[name="sms_optin"]') || {}).checked && phone.replace(/\D/g, '').length >= 10;
+    if (email && !emailOk) {
+      if (err) err.textContent = isFr ? 'Ce courriel ne semble pas complet.' : 'That email looks incomplete.';
+      return;
+    }
+    if (err) err.textContent = '';
+    if (!phoneOk) phone = '';
+    var deals      = !!(form.querySelector('input[name="deals_optin"]') || {}).checked;
+    var emailOptin = deals && emailOk;
+    var smsOptin   = deals && phoneOk;
     try {
-      sessionStorage.setItem('sp_lead_email', email);
+      if (emailOk) sessionStorage.setItem('sp_lead_email', email);
+      if (phoneOk) sessionStorage.setItem('sp_lead_phone', phone);
       sessionStorage.setItem('sp_promo_slug', PROMO_SLUG);
+    } catch (_) {}
+    // Meta: a claim is FreeTeeClaim, never Lead. Pixel and server copy share
+    // one event id so Meta counts it once.
+    try {
+      var claimId = (window.SP_META && window.SP_META.newEventId) ? window.SP_META.newEventId() : ('ftc-' + Date.now());
+      var claimData = { content_name: 'Free tee claim', promo_slug: PROMO_SLUG };
+      if (typeof window.fbq === 'function') window.fbq('trackCustom', 'FreeTeeClaim', claimData, { eventID: claimId });
+      if (window.SP_META && window.SP_META.send) window.SP_META.send('FreeTeeClaim', claimId, claimData);
     } catch (_) {}
     try {
       fetch(INBOUND_API, {
@@ -165,7 +188,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           kind: 'other',
-          email: email,
+          email: emailOk ? email : null,
           phone: phone || null,
           notes: 'Popup capture — visitor opted into the free-tee offer (15+).',
           cart_items: [],
@@ -187,7 +210,7 @@
     if ((emailOptin || smsOptin) && window.SP_MAILING) {
       window.SP_MAILING.subscribe({
         source: 'popup',
-        email: email,
+        email: emailOptin ? email : null,
         phone: smsOptin ? phone : null,
         email_optin: emailOptin,
         sms_optin: smsOptin

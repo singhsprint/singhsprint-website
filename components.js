@@ -1226,7 +1226,7 @@ function loadNav() {
     + '<header class="sp-nav" role="banner">'
     + '  <div class="sp-row1">'
     + '    <button class="sp-burger" aria-label="' + t('Open menu', 'Ouvrir le menu') + '" onclick="window.__spOpenDrawer()">' + ICON.burger + '</button>'
-    + '    <a href="' + BASE + '/" class="sp-logo" aria-label="Singh\'s Print"><img src="/images/logo.png" alt="Singh\'s Print"></a>'
+    + '    <a href="' + BASE + '/" class="sp-logo" aria-label="Singhs Print"><img src="/images/logo.png" alt="Singhs Print"></a>'
     + '    <div class="sp-spacer"></div>'
     + '    <div class="sp-search-wrap" id="sp-search-wrap">'
     + '      <label class="sp-search" for="sp-search-input">'
@@ -1259,7 +1259,7 @@ function loadNav() {
     + '<div class="sp-drawer" id="sp-drawer" aria-hidden="true">'
     + '  <div class="sp-drawer-head">'
     + '    <button class="sp-drawer-close" aria-label="' + t('Close menu', 'Fermer le menu') + '" onclick="window.__spCloseDrawer()">' + ICON.close + '</button>'
-    + '    <a href="' + BASE + '/" class="sp-logo" style="flex:1;justify-content:center" aria-label="Singh\'s Print"><img src="/images/logo.png" alt="Singh\'s Print"></a>'
+    + '    <a href="' + BASE + '/" class="sp-logo" style="flex:1;justify-content:center" aria-label="Singhs Print"><img src="/images/logo.png" alt="Singhs Print"></a>'
     + '    <div style="width:38px"></div>'
     + '  </div>'
     + '  <div class="sp-drawer-body">'
@@ -1596,7 +1596,7 @@ function loadFooter() {
     + '    <div class="footer-grid" style="grid-template-columns:1.6fr 1fr 1fr 1fr 1fr">'
     + '      <div class="footer-brand">'
     + '        <div class="logo"><span>SINGHS</span><span>PRINT</span></div>'
-    + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open Mon\u2013Sat, 9AM\u20136PM.</p>'
+    + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open 7 days, 10am-4pm. Call before visiting.</p>'
     + '      </div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/youth-initiative" data-i18n="footer.youth">Youth Initiative</a><a href="/about" data-i18n="footer.about">About</a><a href="/why-us" data-i18n="footer.whyus">Why us</a></div>'
     + '      <div class="footer-col" data-mobile-hide><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
@@ -1665,8 +1665,8 @@ var SP_MAILING = window.SP_MAILING || (function () {
     try { if (window.SP_LANG && SP_LANG.t) { var v = SP_LANG.t(key); if (v) return v; } } catch (_) {}
     return fallback;
   }
-  var EMAIL_TEXT = "Yes, email me deals and new drops from Singh's Print. Unsubscribe anytime.";
-  var SMS_TEXT = "Yes, text me deals from Singh's Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.";
+  var EMAIL_TEXT = "Yes, email me deals and new drops from Singhs Print. Unsubscribe anytime.";
+  var SMS_TEXT = "Yes, text me deals from Singhs Print. A few texts a month. Reply STOP to opt out. Msg & data rates may apply.";
   function consentText(channel) {
     return channel === 'sms' ? t('mail.optin.sms', SMS_TEXT) : t('mail.optin.email', EMAIL_TEXT);
   }
@@ -1744,8 +1744,8 @@ function loadSchema() {
         "openingHoursSpecification": [{
           "@type": "OpeningHoursSpecification",
           "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-          "opens": "09:00",
-          "closes": "18:00"
+          "opens":"10:00",
+          "closes":"16:00"
         }],
         "identifier": [
           { "@type": "PropertyValue", "propertyID": "NEQ", "value": "1181573313" },
@@ -2031,6 +2031,8 @@ function loadStickyCTA() {
   // Skip if user is already on the quote flow or post-conversion pages.
   if (path === '/quote' || path === '/quote/' || path.indexOf('/quote/') === 0) return;
   if (path === '/order' || path === '/order/' || path.indexOf('/order/') === 0) return;
+  // /get-a-price is one short form with its own button; a second bar would sit on it.
+  if (path === '/get-a-price' || path === '/fr/get-a-price') return;
   // /catalog has its own sticky cart bar at the bottom — adding our generic
   // CTA on top of it causes them to overlap on mobile. Skip on catalog too.
   if (path === '/catalog' || path === '/catalog/' || path.indexOf('/catalog/') === 0) return;
@@ -2491,6 +2493,126 @@ function loadProductModal() {
 }
 
 // =========================================================================
+// SP_FROM — one ladder behind every "from" price on the site (2026-11-15).
+//
+// $9.95 is what a t-shirt costs on an order of 200 or more. Five tees are
+// $18.95 each, and five is the minimum, so the first price a visitor sees has
+// to be one they can get: every "from" number is the 5-9 row, written
+// "5 for $18.95 each". The 200+ price is only ever said as a 200+ price.
+//
+// The numbers come from the OS's engine (GET /api/pricing/homepage-tiers,
+// edge-cached 10 min). Before this the homepage cards, the /quote tiles and
+// the category pages each typed their own: the homepage said hats $14.95 and
+// long sleeves $14.95 while /quote said $15.95 and $13.95.
+//
+//   <strong data-sp-from="hoodie">5 for $37.95 each</strong>
+//   <span data-sp-from="hoodie" data-sp-fmt="at25">$29.95 each at 25+</span>
+//   <span data-sp-from="tshirt" data-sp-fmt="bulk">Ordering 200+? As low as $9.95.</span>
+//   <span data-sp-price="cap@25">$19.95/ea</span>   (only the number is replaced)
+//
+// TIERS below is the same ladder baked for first paint and for when the OS
+// cannot be reached; scripts/check-from-prices.mjs fails when it, the baked
+// text in the pages, and the live endpoint disagree.
+// =========================================================================
+window.SP_FROM = window.SP_FROM || (function () {
+  var TIERS = {
+    "tshirt":[[1,4,24.95],[5,9,18.95],[10,24,16.95],[25,49,14.95],[50,99,13.95],[100,199,11.95],[200,99999,9.95]],
+    "hoodie":[[1,4,44.95],[5,9,37.95],[10,24,33.95],[25,49,29.95],[50,99,27.95],[100,199,26.95],[200,99999,24.95]],
+    "longsleeve":[[1,4,30.95],[5,9,26.95],[10,24,23.95],[25,49,21.95],[50,99,19.95],[100,199,17.95],[200,99999,14.95]],
+    "cap":[[1,4,28.95],[5,9,28.95],[10,24,21.95],[25,49,19.95],[50,99,17.95],[100,199,16.95],[200,99999,14.95]],
+    "crewneck":[[1,4,41.95],[5,9,34.95],[10,24,30.95],[25,49,26.95],[50,99,24.95],[100,199,23.95],[200,99999,21.95]],
+    "polo":[[1,4,31.95],[5,9,27.95],[10,24,24.95],[25,49,22.95],[50,99,20.95],[100,199,18.95],[200,99999,15.95]],
+    "joggers":[[1,4,39.95],[5,9,32.95],[10,24,28.95],[25,49,24.95],[50,99,22.95],[100,199,21.95],[200,99999,19.95]],
+    "tote":[[1,4,26.95],[5,9,21.95],[10,24,19.95],[25,49,17.95],[50,99,16.95],[100,199,14.95],[200,99999,12.95]],
+    "hivis":[[1,4,31.95],[5,9,27.95],[10,24,24.95],[25,49,22.95],[50,99,20.95],[100,199,18.95],[200,99999,15.95]],
+    "polo_embroidery":[[1,4,45.95],[5,9,45.95],[10,24,31.95],[25,49,26.95],[50,99,23.95],[100,199,20.95],[200,99999,20.95]]
+  };
+  var ALIAS = { hat: 'cap', hats: 'cap', sweatpants: 'joggers' };
+  var live = false, waiting = [];
+
+  function key(g) {
+    g = String(g || '').toLowerCase();
+    if (TIERS[g]) return g;
+    return (ALIAS[g] && TIERS[ALIAS[g]]) ? ALIAS[g] : null;
+  }
+  function rowAt(g, qty) {
+    var k = key(g); if (!k) return null;
+    var rows = TIERS[k];
+    for (var i = 0; i < rows.length; i++) if (qty >= rows[i][0] && qty <= rows[i][1]) return rows[i];
+    return null;
+  }
+  function priceAt(g, qty) { var r = rowAt(g, qty); return r ? r[2] : null; }
+  function top(g) { var k = key(g); return k ? TIERS[k][TIERS[k].length - 1] : null; }
+  function bandLabel(g, qty) {
+    var r = rowAt(g, qty); if (!r) return '';
+    return r[1] >= 99999 ? (r[0] + '+') : (r[0] + '-' + r[1]);
+  }
+  function isFr() {
+    try { if (window.SP_LANG && window.SP_LANG.getLang) return window.SP_LANG.getLang() === 'fr'; } catch (e) {}
+    return /^\/fr(\/|$)/.test(location.pathname) || (document.documentElement.lang || '').toLowerCase().indexOf('fr') === 0;
+  }
+  function money(n) { return isFr() ? Number(n).toFixed(2).replace('.', ',') + ' $' : '$' + Number(n).toFixed(2); }
+  function text(g, fmt) {
+    var p5 = priceAt(g, 5), p25 = priceAt(g, 25), t = top(g), fr = isFr();
+    if (fmt === 'at25') return p25 == null ? '' : money(p25) + (fr ? ' chacun à 25+' : ' each at 25+');
+    if (fmt === 'bulk') return !t ? '' : (fr ? 'Commande de ' + t[0] + '+? Aussi bas que ' + money(t[2]) + '.' : 'Ordering ' + t[0] + '+? As low as ' + money(t[2]) + '.');
+    if (fmt === 'chip') return p5 == null ? '' : (fr ? '5 pour ' : '5 for ') + money(p5);
+    return p5 == null ? '' : (fr ? '5 pour ' : '5 for ') + money(p5) + (fr ? ' chacun' : ' each');
+  }
+  function at(spec) { var m = /^([a-z_]+)@(\d+)$/.exec(String(spec || '')); return m ? [m[1], parseInt(m[2], 10)] : null; }
+  function render(root) {
+    root = root || document;
+    var i, els, el, s, a;
+    els = root.querySelectorAll('[data-sp-from]');
+    for (i = 0; i < els.length; i++) { el = els[i]; s = text(el.getAttribute('data-sp-from'), el.getAttribute('data-sp-fmt')); if (s) el.textContent = s; }
+    els = root.querySelectorAll('[data-sp-price]');
+    for (i = 0; i < els.length; i++) {
+      el = els[i]; a = at(el.getAttribute('data-sp-price')); if (!a) continue;
+      s = priceAt(a[0], a[1]); if (s == null) continue;
+      // Swap the number and keep the words around it as the page wrote them
+      // ("$19.95/ea", "19,95 $/unité"): the French mirror translates the text,
+      // and its attributes have to stay identical to the English page's.
+      var mm = /^(\s*\$?)(\d+[.,]\d\d)([\s\S]*)$/.exec(el.textContent || '');
+      var fixed = Number(s).toFixed(2);
+      el.textContent = mm ? mm[1] + (mm[2].indexOf(',') > -1 ? fixed.replace('.', ',') : fixed) + mm[3] : money(s);
+    }
+  }
+  function valid(rows) {
+    if (!Array.isArray(rows) || rows.length < 6) return false;
+    for (var i = 0; i < rows.length; i++) if (!Array.isArray(rows[i]) || !(rows[i][2] > 0)) return false;
+    return true;
+  }
+  function load() {
+    if (load.started) return; load.started = true;
+    try {
+      fetch('https://singhsprint-crm.vercel.app/api/pricing/homepage-tiers?d=' + new Date().toISOString().slice(0, 10))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !j.tiers) return;
+          for (var k in j.tiers) if (Object.prototype.hasOwnProperty.call(j.tiers, k) && valid(j.tiers[k])) TIERS[k] = j.tiers[k];
+          live = true;
+          render();
+          var w = waiting; waiting = [];
+          w.forEach(function (cb) { try { cb(); } catch (e) {} });
+        })
+        .catch(function () { /* the baked ladder stands */ });
+    } catch (e) {}
+  }
+  return {
+    tiers: TIERS, priceAt: priceAt, bandLabel: bandLabel, top: top, text: text, money: money, render: render, load: load,
+    onLive: function (cb) { if (live) cb(); else waiting.push(cb); }
+  };
+})();
+
+function loadFromPrices() {
+  if (!document.querySelector('[data-sp-from],[data-sp-price]')) return;
+  window.SP_FROM.render();
+  window.SP_FROM.load();
+  // The language switch (lang.js) rewrites text; say the prices again in it.
+  document.addEventListener('sp-lang-change', function () { window.SP_FROM.render(); });
+}
+
+// =========================================================================
 // loadLiveReviews — patches every visible "4.7/5 (37 reviews)" / "(37 reviews)"
 // / "(37 avis)" instance on the page using the
 // live numbers from /api/google-reviews. Build-time script (scripts/sync-
@@ -2513,6 +2635,11 @@ function loadProductModal() {
 // Resolves to { rating, count } or null. Never rejects — every consumer is
 // decorative and must not have to supply its own .catch().
 window.SP_REVIEWS = window.SP_REVIEWS || {
+  // What the page shows until the live number lands. The ONE place the site
+  // types the rating (scripts/sync-google-reviews.mjs rewrites it with the
+  // static pages). quote.js used to carry its own 5.0 / 23 while every other
+  // page said 4.7 / 37; it reads this now.
+  BAKED: { rating: 4.7, count: 37 },
   get: function () {
     if (window.__spReviewsPromise) return window.__spReviewsPromise;
 
@@ -2605,6 +2732,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadStickyCTA();
   loadMidPageCTA();
   loadProductModal();
+  loadFromPrices();
   loadLiveReviews();
 });
 

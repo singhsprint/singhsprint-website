@@ -77,9 +77,9 @@ def render_page(products, lang):
         else "https://www.singhsprint.com/fr/catalog/all"
     )
     title = (
-        "Complete Product Catalog — 4,600 Custom Apparel Blanks · Singh's Print"
+        "Complete Product Catalog — 4,600 Custom Apparel Blanks · Singhs Print"
         if lang == 'en' else
-        "Catalogue complet — 4 600 vêtements personnalisables · Singh's Print"
+        "Catalogue complet — 4 600 vêtements personnalisables · Singhs Print"
     )
     meta = (
         "Browse our complete catalog of 4,600 apparel blanks for custom printing and "
@@ -155,7 +155,7 @@ def render_page(products, lang):
 <body>
   <div class="wrap">
     <header class="hero">
-      <a class="back" href="{home_link}">← Singh's Print</a>
+      <a class="back" href="{home_link}">← Singhs Print</a>
       <h1>{h1}</h1>
       <p class="subhead">{sub}</p>
       <a class="cta" href="{quote_link}">{nav_quote} →</a>

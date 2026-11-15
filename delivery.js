@@ -1,5 +1,5 @@
 /* =============================================================================
- * delivery.js — pickup vs delivery for Singh's Print.
+ * delivery.js — pickup vs delivery for Singhs Print.
  *
  * Self-contained, no dependencies. Two jobs, auto-detected by page:
  *

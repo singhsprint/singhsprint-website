@@ -402,8 +402,8 @@
         <table class="pricing-table">
           <thead><tr><th>Quantité</th><th>1 face</th><th>2 faces</th><th>3 faces</th><th>4 faces</th></tr></thead>
           <tbody>
-            <tr class="best-value"><td>250+</td><td>$9.95</td><td>$12.95</td><td>$14.95</td><td>$15.95</td></tr>
-            <tr><td>100-249</td><td>$11.95</td><td>$14.95</td><td>$17.95</td><td>$18.95</td></tr>
+            <tr class="best-value"><td>200+</td><td>$9.95</td><td>$12.95</td><td>$14.95</td><td>$15.95</td></tr>
+            <tr><td>100-199</td><td>$11.95</td><td>$14.95</td><td>$17.95</td><td>$18.95</td></tr>
             <tr><td>50-99</td><td>$13.95</td><td>$16.95</td><td>$19.95</td><td>$21.95</td></tr>
             <tr><td>25-49</td><td>$14.95</td><td>$17.95</td><td>$21.95</td><td>$23.95</td></tr>
             <tr><td>10-24</td><td>$16.95</td><td>$20.95</td><td>$23.95</td><td>$26.95</td></tr>
@@ -480,8 +480,8 @@
         <table class="pricing-table">
           <thead><tr><th>Quantité</th><th>1 face</th><th>2 faces</th><th>3 faces</th><th>4 faces</th></tr></thead>
           <tbody>
-            <tr class="best-value"><td>250+</td><td>$16.95</td><td>$19.95</td><td>$21.95</td><td>$22.95</td></tr>
-            <tr><td>100-249</td><td>$18.95</td><td>$21.95</td><td>$24.95</td><td>$25.95</td></tr>
+            <tr class="best-value"><td>200+</td><td>$16.95</td><td>$19.95</td><td>$21.95</td><td>$22.95</td></tr>
+            <tr><td>100-199</td><td>$18.95</td><td>$21.95</td><td>$24.95</td><td>$25.95</td></tr>
             <tr><td>50-99</td><td>$20.95</td><td>$23.95</td><td>$26.95</td><td>$28.95</td></tr>
             <tr><td>25-49</td><td>$21.95</td><td>$24.95</td><td>$28.95</td><td>$30.95</td></tr>
             <tr><td>10-24</td><td>$23.95</td><td>$27.95</td><td>$30.95</td><td>$33.95</td></tr>
@@ -806,11 +806,15 @@
         body: JSON.stringify({ email: email, lang: 'en' }),
         keepalive: true
       }).catch(function() {});
-      // Fire Pixel Lead event for retargeting audiences
+      // A price-sheet download is NOT a Meta Lead (2026-11-15): Lead means a
+      // quote request, and ads optimise on it. This is its own custom event,
+      // Pixel and server copy sharing one id.
       try {
+        var psId = (window.SP_META && window.SP_META.newEventId) ? window.SP_META.newEventId() : ('ps-' + Date.now());
         if (typeof fbq === 'function') {
-          fbq('track', 'Lead', { content_name: 'Pricing PDF Download', content_category: 'B2B', value: 0, currency: 'CAD' });
+          fbq('trackCustom', 'PriceSheetDownload', { content_name: 'Pricing PDF Download', content_category: 'B2B' }, { eventID: psId });
         }
+        if (window.SP_META && window.SP_META.send) window.SP_META.send('PriceSheetDownload', psId, { content_name: 'Pricing PDF Download', content_category: 'B2B' });
       } catch(err) {}
 
       // Swap to success state, trigger PDF download

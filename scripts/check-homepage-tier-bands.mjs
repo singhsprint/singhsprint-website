@@ -66,10 +66,11 @@ for (const g of GARMENTS) {
      JSON.stringify(prices))
 }
 
-// The "from $X" chip reads the LAST band by index. If someone re-pins it to a
-// fixed position it silently shows the wrong tier when band count changes.
-ok('T9 from-price chip reads the last band, not a fixed index',
-   /tier\[tier\.length - 1\]\[2\]/.test(html))
+// The chip under each garment is the 5-9 price ("5 for $18.95"), found by its
+// RANGE. It used to read the last band (the 200+ price, $9.95): the first
+// number on the slider was one a 5-piece minimum order never pays (2026-11-15).
+ok('T9 from-price chip reads the band that holds 5, not the last band or a fixed index',
+   /tier\[ti\]\[0\] <= 5 && tier\[ti\]\[1\] >= 5/.test(html) && !/var fromPrice = tier\[tier\.length - 1\]\[2\]/.test(html))
 
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }

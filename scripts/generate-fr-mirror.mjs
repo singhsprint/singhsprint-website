@@ -64,6 +64,9 @@ export const HAND_MAINTAINED = new Set([
   'gifts.html', 'gifts/build.html', 'gifts/order.html',
   'account/orders.html', 'account/quote.html',
   'guides/custom-hoodies-bulk-order-guide.html',
+  // The ad landing page (2026-11-15): noindex, English ads only, and its copy
+  // lives in get-a-price.js. No French mirror until that copy is translated.
+  'get-a-price.html',
 ]);
 
 // Pages that must come out 100% French: every sentence has a translation in
