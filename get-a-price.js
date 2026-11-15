@@ -6,9 +6,9 @@
  * tapped an Instagram ad on a phone needs four taps and a button. This page
  * is that, and /quote stays as it is for everyone else.
  *
- * The link picks the words and which chips start selected:
- *   ?product=hoodie&preset=cafe   ?product=hoodie   ?product=hoodie&method=embroidery
- *   ?product=hat                  ?product=business  (nothing = the general form)
+ * One general form, the same words for every ad. A link may carry ?product=
+ * (hoodie, hat, tee, crewneck, polo) to start with that tile picked; that and
+ * ?preset= / ?method= are saved on the request so the OS knows the ad link.
  *
  * Wiring is the same as quote.js and quick-quote.js, so the OS and the ad
  * platforms see one kind of lead:
@@ -48,45 +48,28 @@
     { label: '50-99', min: 50, max: 99 }, { label: '100+', min: 100, max: null }
   ];
 
-  var SUB = 'Printed or embroidered in Montreal. 5-piece minimum. You see a mockup before we print.';
-  var SUB_EMB = 'Embroidered in Montreal. 5-piece minimum. You see a mockup before we stitch.';
-  var SUB_DEFAULT = "Tell us what you need. We'll send a price and a free mockup.";
-
-  // ---- pure: which page this link asks for --------------------------------
+  // ---- pure: what this link asks for ---------------------------------------
+  // ONE general form for every ad (owner, 2026-11-15: "don't need to brand it
+  // like this, this is too specific, it should still be a general form we can
+  // attach to any ads"). The heading, the words and the six tiles are the same
+  // whatever the link says. A link may still carry ?product= to start with a
+  // tile already picked, and that (with ?preset= / ?method=) is saved on the
+  // request as meta.preset, so the OS can tell which ad link it came from.
+  var CHIPS = ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'];
+  var PICK = { hoodie: 'Hoodies', hoodies: 'Hoodies', hat: 'Hats', hats: 'Hats', cap: 'Hats', tee: 'Tees', tees: 'Tees', tshirt: 'Tees', crewneck: 'Crewnecks', crewnecks: 'Crewnecks', polo: 'Polos', polos: 'Polos' };
   function config(search) {
     var p;
     try { p = new URLSearchParams(search || ''); } catch (e) { p = new URLSearchParams(''); }
-    var product = String(p.get('product') || '').toLowerCase();
-    var preset = String(p.get('preset') || '').toLowerCase();
-    var method = String(p.get('method') || '').toLowerCase();
-    if (product === 'hoodie' && method === 'embroidery') {
-      return { key: 'hoodie-embroidery', product: 'hoodie', preset: null, method: 'embroidery', eyebrow: 'Embroidered',
-        h1: 'Embroidered hoodies with your logo', sub: SUB_EMB,
-        chips: ['Hoodies', 'Crewnecks', 'Hats', 'Quarter-zips'], selected: ['Hoodies'], button: 'Get my hoodie price' };
-    }
-    if (product === 'hoodie' && preset === 'cafe') {
-      return { key: 'hoodie-cafe', product: 'hoodie', preset: 'cafe', method: null, eyebrow: 'Hoodie season',
-        h1: 'Hoodies with your café’s logo', sub: SUB,
-        chips: ['Hoodies', 'Crewnecks', 'Tees', 'Hats'], selected: ['Hoodies'], button: 'Get my hoodie price' };
-    }
-    if (product === 'hoodie') {
-      return { key: 'hoodie', product: 'hoodie', preset: null, method: null, eyebrow: 'Hoodie season',
-        h1: 'Custom hoodies with your logo', sub: SUB,
-        chips: ['Hoodies', 'Crewnecks', 'Tees', 'Hats'], selected: ['Hoodies'], button: 'Get my hoodie price' };
-    }
-    if (product === 'hat') {
-      return { key: 'hat', product: 'hat', preset: null, method: 'embroidery', eyebrow: 'Hats',
-        h1: 'Hats with your logo, embroidered', sub: SUB,
-        chips: ['Hats', 'Beanies', 'Hoodies', 'Tees'], selected: ['Hats'], button: 'Get my price' };
-    }
-    if (product === 'business') {
-      return { key: 'business', product: 'business', preset: null, method: null, eyebrow: 'Merch for your business',
-        h1: 'Your logo on tees, hoodies and hats', sub: SUB,
-        chips: ['Tees', 'Hoodies', 'Hats', 'Polos', 'Quarter-zips'], selected: [], button: 'Get my price' };
-    }
-    return { key: 'default', product: null, preset: null, method: null, eyebrow: '',
-      h1: 'Get a price in an hour', sub: SUB_DEFAULT,
-      chips: ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'], selected: [], button: 'Get my price' };
+    var clean = function (k) { return String(p.get(k) || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24); };
+    var product = clean('product'), preset = clean('preset'), method = clean('method');
+    var key = [product, preset || method].filter(Boolean).join('-') || 'default';
+    return {
+      key: key, product: product || null, preset: preset || null,
+      method: (method === 'embroidery' || product === 'hat') ? 'embroidery' : null,
+      h1: 'Get a price in an hour',
+      sub: "Tell us what you need. We'll send a price and a free mockup.",
+      chips: CHIPS, selected: PICK[product] ? [PICK[product]] : [], button: 'Get my price'
+    };
   }
 
   // ---- pure: a phone number (required) and an email (optional) ----------
@@ -250,8 +233,6 @@
     var cfg = config(location.search);
     var attribution = attributionFrom(location.search, (function () { try { return window.sessionStorage; } catch (e) { return null; } })());
 
-    var eyebrow = document.getElementById('gpEyebrow');
-    if (cfg.eyebrow) { eyebrow.textContent = cfg.eyebrow; eyebrow.hidden = false; }
     document.getElementById('gpH1').textContent = cfg.h1;
     document.getElementById('gpSub').textContent = cfg.sub;
     var btn = document.getElementById('gpBtn');
@@ -263,7 +244,7 @@
       return '<button type="button" class="gp-chip gp-tile" data-v="' + esc(c) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
         (ICONS[c] || ICONS['Something else']) + '<span>' + esc(c) + '</span></button>';
     }).join('');
-    prodBox.classList.add('n' + cfg.chips.length);
+
     prodBox.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('.gp-chip') : null;
       if (!b) return;

@@ -109,13 +109,16 @@ const beacons = async (page, name, state) => state.beacons.filter((b) => b.event
 const pixel = (page, name) => page.evaluate((n) => JSON.parse(sessionStorage.getItem('__fbq') || '[]').filter((c) => (c[0] === 'track' || c[0] === 'trackCustom') && c[1] === n), name)
 
 // ═════════════════════ G. /get-a-price ═════════════════════════════════════
+// One general form for every ad: the same words and tiles whatever the link
+// says. ?product= only decides which tile starts picked.
+const GENERAL = { h1: 'Get a price in an hour', sub: "Tell us what you need. We'll send a price and a free mockup.", chips: ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'], button: 'Get my price' }
 const PRESETS = [
-  ['?product=hoodie&preset=cafe', 'HOODIE SEASON', 'Hoodies with your café’s logo', ['Hoodies', 'Crewnecks', 'Tees', 'Hats'], ['Hoodies'], 'Get my hoodie price', 'Printed or embroidered in Montreal. 5-piece minimum. You see a mockup before we print.'],
-  ['?product=hoodie', 'HOODIE SEASON', 'Custom hoodies with your logo', ['Hoodies', 'Crewnecks', 'Tees', 'Hats'], ['Hoodies'], 'Get my hoodie price', null],
-  ['?product=hoodie&method=embroidery', 'EMBROIDERED', 'Embroidered hoodies with your logo', ['Hoodies', 'Crewnecks', 'Hats', 'Quarter-zips'], ['Hoodies'], 'Get my hoodie price', 'Embroidered in Montreal. 5-piece minimum. You see a mockup before we stitch.'],
-  ['?product=hat', 'HATS', 'Hats with your logo, embroidered', ['Hats', 'Beanies', 'Hoodies', 'Tees'], ['Hats'], 'Get my price', null],
-  ['?product=business', 'MERCH FOR YOUR BUSINESS', 'Your logo on tees, hoodies and hats', ['Tees', 'Hoodies', 'Hats', 'Polos', 'Quarter-zips'], [], 'Get my price', null],
-  ['', '', 'Get a price in an hour', ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'], [], 'Get my price', "Tell us what you need. We'll send a price and a free mockup."],
+  ['?product=hoodie&preset=cafe', '', GENERAL.h1, GENERAL.chips, ['Hoodies'], GENERAL.button, GENERAL.sub],
+  ['?product=hoodie', '', GENERAL.h1, GENERAL.chips, ['Hoodies'], GENERAL.button, GENERAL.sub],
+  ['?product=hoodie&method=embroidery', '', GENERAL.h1, GENERAL.chips, ['Hoodies'], GENERAL.button, GENERAL.sub],
+  ['?product=hat', '', GENERAL.h1, GENERAL.chips, ['Hats'], GENERAL.button, GENERAL.sub],
+  ['?product=business', '', GENERAL.h1, GENERAL.chips, [], GENERAL.button, GENERAL.sub],
+  ['', '', GENERAL.h1, GENERAL.chips, [], GENERAL.button, GENERAL.sub],
 ]
 {
   const html = read('get-a-price.html')
@@ -130,7 +133,7 @@ const PRESETS = [
       const fixed = [...document.querySelectorAll('body *')].filter((e) => { const cs = getComputedStyle(e); const b = e.getBoundingClientRect(); return cs.position === 'fixed' && cs.display !== 'none' && cs.visibility !== 'hidden' && b.height > 0 && b.width > 0 && !e.closest('#nav-placeholder') }).map((e) => ({ id: e.id || e.className, ...box(e) }))
       const eb = document.getElementById('gpEyebrow')
       return {
-        eyebrow: eb.hidden ? '' : eb.textContent.trim().toUpperCase(), h1: document.getElementById('gpH1').textContent.trim(), sub: document.getElementById('gpSub').textContent.trim(),
+        eyebrow: eb ? eb.textContent.trim() : '', pitch: document.querySelector('.gp-pitch').innerText, h1: document.getElementById('gpH1').textContent.trim(), sub: document.getElementById('gpSub').textContent.trim(),
         chips: [...document.querySelectorAll('#gpProducts .gp-chip')].map((c) => ({ t: c.textContent.trim(), on: c.getAttribute('aria-pressed') === 'true', ...box(c) })),
         qty: [...document.querySelectorAll('#gpQty .gp-chip')].map((c) => ({ t: c.textContent.trim(), ...box(c) })),
         btn: { t: btn.textContent.trim(), ...box(btn) }, alt: { href: document.getElementById('gpFull').getAttribute('href'), t: document.getElementById('gpFull').innerText.trim(), ...box(document.getElementById('gpFull')) }, req: { phone: document.getElementById('gpPhone').required, email: document.getElementById('gpEmail').required, phoneType: document.getElementById('gpPhone').type, emailType: document.getElementById('gpEmail').type }, icons: document.querySelectorAll('#gpProducts .gp-chip svg').length,
@@ -139,7 +142,7 @@ const PRESETS = [
       }
     })
     const tag = `[${q || 'no params'}]`
-    ok(`G3 ${tag} eyebrow "${eyebrow}", heading "${h1}"`, m.eyebrow === eyebrow && m.h1 === h1, `${m.eyebrow} / ${m.h1}`)
+    ok(`G3 ${tag} the general heading "${h1}", no ad-specific label or product in the pitch`, m.eyebrow === eyebrow && m.h1 === h1 && !/hoodie|caf[eé]|hat|embroidered hoodies|season/i.test(m.pitch.split("\n").slice(0, 2).join(" ")), `${m.eyebrow} / ${m.h1}`)
     if (sub) ok(`G4 ${tag} subhead`, m.sub === sub, m.sub)
     ok(`G5 ${tag} chips ${chips.join(', ')}; preselected: ${selected.join(', ') || 'none'}`, JSON.stringify(m.chips.map((c) => c.t)) === JSON.stringify(chips) && JSON.stringify(m.chips.filter((c) => c.on).map((c) => c.t)) === JSON.stringify(selected), JSON.stringify(m.chips.map((c) => [c.t, c.on])))
     ok(`G6 ${tag} every chip is at least 44px tall`, [...m.chips, ...m.qty].every((c) => c.h >= 44), JSON.stringify([...m.chips, ...m.qty].map((c) => Math.round(c.h))))

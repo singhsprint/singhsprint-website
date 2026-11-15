@@ -32,8 +32,6 @@
     body{margin:0;font-family:Inter,-apple-system,system-ui,sans-serif;color:#1a1a1a;background:#f5f4ef;line-height:1.4;-webkit-font-smoothing:antialiased}
     .gp{max-width:1080px;margin:0 auto;padding:8px 14px 28px}
     .gp-wrap{display:grid;gap:10px}
-    .gp-eyebrow{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:#e8ff3c;color:#1a1a1a;padding:3px 8px;border-radius:3px;margin:0 0 6px}
-    .gp-eyebrow[hidden]{display:none}
     .gp h1{font-family:"Playfair Display",Georgia,serif;font-weight:800;font-size:1.4rem;line-height:1.1;margin:0 0 3px;text-wrap:balance}
     .gp-sub{font-size:.82rem;color:#55595f;margin:0}
     .gp-points{display:none;list-style:none;margin:22px 0 0;padding:0;gap:12px}
@@ -43,16 +41,10 @@
     .gp-q{font-size:.76rem;font-weight:700;margin:0 0 5px;display:block;letter-spacing:.01em}
     .gp-chip{font:inherit;color:#1a1a1a;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,border-color .12s,color .12s}
     /* what: icon tiles */
-    .gp-tiles{display:grid;gap:6px;grid-template-columns:repeat(4,1fr)}
-    .gp-tiles.n5{grid-template-columns:repeat(5,1fr);gap:5px}
-    .gp-tiles.n6{grid-template-columns:repeat(3,1fr)}
-    .gp-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;padding:4px 2px;border:1.5px solid #dddad1;border-radius:12px;background:#fafaf7;font-size:.74rem;font-weight:600;line-height:1.1;min-width:0}
-    .gp-tile svg{width:26px;height:26px;flex:none}
+    .gp-tiles{display:grid;gap:6px;grid-template-columns:repeat(3,1fr)}
+    .gp-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px 2px;border:1.5px solid #dddad1;border-radius:12px;background:#fafaf7;font-size:.76rem;font-weight:600;line-height:1.1;min-width:0}
+    .gp-tile svg{width:24px;height:24px;flex:none}
     .gp-tile span{white-space:nowrap}
-    .gp-tiles.n5 .gp-tile{font-size:.68rem}
-    .gp-tiles.n5 .gp-tile span,.gp-tiles.n6 .gp-tile span{white-space:normal;line-height:1.05}
-    .gp-tiles.n6 .gp-tile{flex-direction:row;gap:5px;min-height:44px;font-size:.74rem;text-align:left;padding:4px 6px}
-    .gp-tiles.n6 .gp-tile svg{width:20px;height:20px}
     .gp-tile[aria-pressed="true"]{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
     /* how many: one segmented control */
     .gp-seg{display:grid;grid-template-columns:repeat(5,1fr);border:1.5px solid #dddad1;border-radius:12px;overflow:hidden;background:#fafaf7}
@@ -121,9 +113,7 @@
       .gp-note .wide,.gp-alt .wide{display:inline}
       .gp-in{min-height:46px}
       .gp-fields.two{grid-template-columns:1fr 1fr;gap:10px}
-      .gp-tile{min-height:76px;font-size:.84rem}.gp-tile svg{width:32px;height:32px}
-      .gp-tiles.n5 .gp-tile{font-size:.8rem}
-      .gp-tiles.n6 .gp-tile{min-height:52px;font-size:.86rem}
+      .gp-tile{min-height:72px;font-size:.86rem}.gp-tile svg{width:30px;height:30px}
       .gp-q{font-size:.84rem;margin-bottom:7px}
       .gp h1{font-size:2rem}.gp-sub{font-size:.95rem}
       .gp-wrap{gap:18px;max-width:560px;margin:0 auto}
@@ -133,7 +123,6 @@
       .gp-wrap{max-width:none;grid-template-columns:1fr minmax(0,480px);gap:56px;align-items:start}
       .gp-pitch{padding-top:18px}
       .gp h1{font-size:3rem;line-height:1.04}.gp-sub{font-size:1.1rem;margin-top:10px}
-      .gp-eyebrow{font-size:.74rem;padding:4px 10px;margin-bottom:12px}
       .gp-points{display:grid}
     }
   </style>
@@ -144,7 +133,6 @@
   <main class="gp" id="gp">
     <div class="gp-wrap">
       <section class="gp-pitch">
-        <span class="gp-eyebrow" id="gpEyebrow" hidden></span>
         <h1 id="gpH1">Get a price in an hour</h1>
         <p class="gp-sub" id="gpSub">Tell us what you need. We'll send a price and a free mockup.</p>
         <ul class="gp-points">
