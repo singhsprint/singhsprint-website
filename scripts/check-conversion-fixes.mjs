@@ -111,7 +111,7 @@ const pixel = (page, name) => page.evaluate((n) => JSON.parse(sessionStorage.get
 // ═════════════════════ G. /get-a-price ═════════════════════════════════════
 // One general form for every ad: the same words and tiles whatever the link
 // says. ?product= only decides which tile starts picked.
-const GENERAL = { h1: 'Get a price in an hour', sub: "Tell us what you need. We'll send a price and a free mockup.", chips: ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'], button: 'Get my price' }
+const GENERAL = { h1: 'We’ll reach you within the hour', sub: "Tell us what you need. We'll send a price and a free mockup.", chips: ['Tees', 'Hoodies', 'Hats', 'Crewnecks', 'Polos', 'Something else'], button: 'Get my price' }
 const PRESETS = [
   ['?product=hoodie&preset=cafe', '', GENERAL.h1, GENERAL.chips, ['Hoodies'], GENERAL.button, GENERAL.sub],
   ['?product=hoodie', '', GENERAL.h1, GENERAL.chips, ['Hoodies'], GENERAL.button, GENERAL.sub],

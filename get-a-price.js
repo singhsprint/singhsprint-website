@@ -66,7 +66,7 @@
     return {
       key: key, product: product || null, preset: preset || null,
       method: (method === 'embroidery' || product === 'hat') ? 'embroidery' : null,
-      h1: 'Get a price in an hour',
+      h1: 'We’ll reach you within the hour',
       sub: "Tell us what you need. We'll send a price and a free mockup.",
       chips: CHIPS, selected: PICK[product] ? [PICK[product]] : [], button: 'Get my price'
     };
@@ -234,7 +234,11 @@
     var attribution = attributionFrom(location.search, (function () { try { return window.sessionStorage; } catch (e) { return null; } })());
 
     document.getElementById('gpH1').textContent = cfg.h1;
-    document.getElementById('gpSub').textContent = cfg.sub;
+    // Phones show the first sentence; the heading already says the rest and
+    // the second line would push the buttons under the cookie bar.
+    var subEl = document.getElementById('gpSub'), cut = cfg.sub.indexOf('. ');
+    subEl.textContent = cut < 0 ? cfg.sub : cfg.sub.slice(0, cut + 1);
+    if (cut >= 0) { var rest = document.createElement('span'); rest.className = 'wide'; rest.textContent = cfg.sub.slice(cut + 1); subEl.appendChild(rest); }
     var btn = document.getElementById('gpBtn');
     btn.textContent = cfg.button;
 

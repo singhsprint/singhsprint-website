@@ -74,7 +74,7 @@
     .gp-alt .wide{display:none}
     .gp-alt{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border:1.5px solid #1a1a1a;border-radius:999px;background:#fff;color:#1a1a1a;font-size:.86rem;font-weight:600;text-decoration:none;text-align:center}
     .gp-note{font-size:.76rem;color:#55595f;text-align:center;margin:0}
-    .gp-note .wide{display:none}
+    .gp-note .wide,.gp-sub .wide{display:none}
     .gp-note a{color:#1a1a1a;font-weight:600;text-decoration:underline;text-underline-offset:3px}
     /* thank-you */
     .gp-ok{max-width:520px}
@@ -111,7 +111,7 @@
     @media (min-width:600px){
       .gp{padding:28px 20px 48px}
       .gp-form{padding:22px;gap:14px;border-radius:20px}
-      .gp-note .wide,.gp-alt .wide{display:inline}
+      .gp-note .wide,.gp-alt .wide,.gp-sub .wide{display:inline}
       .gp-in{min-height:46px}
       .gp-fields.two{grid-template-columns:1fr 1fr;gap:10px}
       .gp-tile{min-height:72px;font-size:.86rem}.gp-tile svg{width:30px;height:30px}
@@ -134,8 +134,8 @@
   <main class="gp" id="gp">
     <div class="gp-wrap">
       <section class="gp-pitch">
-        <h1 id="gpH1">Get a price in an hour</h1>
-        <p class="gp-sub" id="gpSub">Tell us what you need. We'll send a price and a free mockup.</p>
+        <h1 id="gpH1">We’ll reach you within the hour</h1>
+        <p class="gp-sub" id="gpSub">Tell us what you need.<span class="wide"> We'll send a price and a free mockup.</span></p>
         <ul class="gp-points">
           <li>A free mockup before anything is printed</li>
           <li>5-piece minimum</li>
