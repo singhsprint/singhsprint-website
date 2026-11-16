@@ -131,7 +131,11 @@ def render_page(products, lang):
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{html.escape(meta)}">
   <meta property="og:url" content="{canonical}">
-  <meta property="og:image" content="https://www.singhsprint.com/images/hero-duo.jpg">
+  <meta property="og:image" content="https://www.singhsprint.com/images/share/site-catalog.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.singhsprint.com/images/share/site-catalog.jpg">
   <meta name="theme-color" content="#1a1a1a">
   <style>
     body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;margin:0;color:#1a1a1a;background:#f7f5ee;line-height:1.55}}

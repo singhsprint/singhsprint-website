@@ -47,6 +47,7 @@ import fs   from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { applyTranslations, segments, norm } from './lib/html-segments.mjs';
+import { frShareCard } from './share-cards.mjs';
 
 const ROOT   = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FR_DIR = path.join(ROOT, 'fr');
@@ -236,6 +237,8 @@ export function buildFrPage(enHtml, relPath, T, tm, frSet) {
   let html = translateHtml(stripComments(enHtml), T);
   const r = translateCopy(html, tm, frSet);
   html = rewriteUrls(r.html, relPath);
+  // A French page shows the French link-preview card (scripts/share-cards.mjs).
+  html = frShareCard(html);
   return { html, missing: r.missing };
 }
 
