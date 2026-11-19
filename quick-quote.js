@@ -258,6 +258,14 @@
 
   // Same signed-URL flow as quote.js uploadDesignFile(), relay as fallback.
   function uploadLogo(file) {
+    // 2026-11-18: through SP_UPLOADS (components.js) when it is there, so the
+    // OS can tie this browser's upload to its request; old path as fallback.
+    if (file && window.SP_UPLOADS && typeof window.SP_UPLOADS.upload === 'function') {
+      return window.SP_UPLOADS.upload(file, { page: 'quick-quote' }).catch(function () { return uploadLogoDirect(file); });
+    }
+    return uploadLogoDirect(file);
+  }
+  function uploadLogoDirect(file) {
     if (!file) return Promise.resolve(null);
     if (file.size > UPLOAD_MAX_BYTES) return Promise.reject(new Error('too-big'));
     return fetch(UPLOAD_URL_API, {
@@ -371,6 +379,10 @@
 
       btn.disabled = true;
       btn.textContent = T.sending;
+      var SPU = window.SP_UPLOADS || null;
+      var attemptId = (SPU && SPU.newAttemptId) ? SPU.newAttemptId() : null;
+      var payload = null;
+      try { if (SPU && SPU.setContact) SPU.setContact({ email: contact.email || null, phone: contact.phone || null, name: name }); } catch (e3) {}
 
       uploadLogo(file)
         .catch(function () { return null; }) // a failed logo never loses the lead
@@ -378,7 +390,7 @@
           var notes = 'Quick quote from ' + location.pathname + ': ' + qty + ' x ' + item +
             (file && !up ? ' (logo upload failed — ask them to email it)' : '') +
             (file ? '' : ' (no logo attached)');
-          var payload = {
+          payload = {
             kind: 'quote',
             contact_name: name,
             email: contact.email || null,
@@ -402,6 +414,8 @@
               attribution: attribution()
             },
             source_url: location.href,
+            browser_session: (SPU && SPU.session) ? SPU.session() : null,
+            attempt_id: attemptId,
             website: (form.querySelector('input[name="website"]') || {}).value || null
           };
           return fetch(INBOUND_API, {
@@ -424,6 +438,16 @@
         })
         .catch(function (err) {
           console.warn('[quick-quote] submit failed:', err);
+          try {
+            if (SPU && SPU.reportFailure) {
+              var m = /inbound (\d+)/.exec(String(err && err.message || ''));
+              SPU.reportFailure(m ? 'http_error' : 'network_error', {
+                attempt_id: attemptId, form: 'quick_quote', status_code: m ? Number(m[1]) : null,
+                error: String((err && err.message) || err).slice(0, 300),
+                contact_name: name, email: contact.email || null, phone: contact.phone || null, payload: payload
+              });
+            }
+          } catch (e4) {}
           btn.disabled = false;
           btn.textContent = T.submit;
           msg.textContent = T.errSend;

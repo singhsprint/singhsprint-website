@@ -1307,6 +1307,18 @@
    * (older deploy, transient 5xx), so a small file always has a route in.
    */
   function dmczPutArtwork(file) {
+    // 2026-11-18: through SP_UPLOADS (components.js) when it is there: the
+    // same file from this browser is stored once, and the OS links this
+    // browser's uploads to the request it later sends. Same result shape.
+    if (window.SP_UPLOADS && typeof window.SP_UPLOADS.upload === 'function') {
+      return window.SP_UPLOADS.upload(file, { page: 'catalog' }).then(function (r) {
+        if (!r || !r.path) throw new Error('no path');
+        return { path: r.path, signed_url: r.signed_url || URL.createObjectURL(file) };
+      }).catch(function () { return dmczPutArtworkDirect(file); });
+    }
+    return dmczPutArtworkDirect(file);
+  }
+  function dmczPutArtworkDirect(file) {
     var meta = { filename: file.name || 'design', mime: file.type || 'application/octet-stream', bytes: file.size };
     return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url', {
       method: 'POST',
