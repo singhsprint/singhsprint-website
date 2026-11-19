@@ -4229,6 +4229,15 @@
       // A placement has art if it has an in-memory File OR a persisted design.
       function hasArt(p) { return (fileByP[p] instanceof File) || !!existByP[p]; }
 
+      // 2026-11-18: ask where to send the mockup before opening it, once per
+      // browser (SP_UPLOADS, components.js). The answer rides on every upload,
+      // so artwork that never turns into a request still has someone to call.
+      // Skipped when the quote form already has their email or phone.
+      if (!opts.__contactAsked && window.SP_UPLOADS && typeof window.SP_UPLOADS.askContactThen === 'function') {
+        var asked = window.SP_UPLOADS.askContactThen(function () { opts.__contactAsked = true; spOpenCustomizer(opts); });
+        if (asked) return;
+      }
+
       var boxes = {};
       placements.forEach(function(p) {
         boxes[p] = (opts.initial && opts.initial.boxes && opts.initial.boxes[p]) || spDefaultBox(p);
@@ -8383,6 +8392,16 @@
       // function ran. This file promised 15 MB, so anything between the two
       // failed with a generic error. The server still mints the path and
       // enforces MIME, size and per-IP limits; only the payload skips it.
+      //
+      // 2026-11-18: through SP_UPLOADS (components.js) when it is there. It
+      // hashes the file and sends this browser's id, so the same file is
+      // stored ONCE however many times it is previewed and submitted (each
+      // re-upload used to leave the earlier copy in the OS's "Unfinished
+      // uploads"), and the OS can link this browser's uploads to its request.
+      if (window.SP_UPLOADS && typeof window.SP_UPLOADS.upload === 'function') {
+        return window.SP_UPLOADS.upload(file, { page: 'quote' })
+          .catch(function(){ return uploadDesignFileViaRelay(file); });
+      }
       return fetch('https://singhsprint-crm.vercel.app/api/inbound/upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -8508,6 +8527,58 @@
         // POSTed cart_items: [] alongside a real price. (2026-08-11)
         var items = spBuildQuoteCartItems();
 
+        // 2026-11-18: one id per press of Submit, so the OS can group what it
+        // hears about this attempt, and a report of anything that stops the
+        // request reaching the OS (inbound_submit_failures). Until now a
+        // failed POST, a timeout or the Web3Forms fallback left no trace.
+        var spAttemptId = (window.SP_UPLOADS && window.SP_UPLOADS.newAttemptId) ? window.SP_UPLOADS.newAttemptId() : null;
+        var spLastPayload = null;
+        function spFail(kind, extra) {
+          try {
+            if (!window.SP_UPLOADS || !window.SP_UPLOADS.reportFailure) return;
+            var fd0 = new FormData(form);
+            var d = {
+              attempt_id: spAttemptId, form: 'quote',
+              contact_name: fd0.get('name') || null, email: fd0.get('email') || null, phone: fd0.get('phone') || null,
+              payload: spLastPayload || { kind: 'quote', cart_items: items, notes: fd0.get('details') || null }
+            };
+            if (extra) for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) d[k] = extra[k];
+            window.SP_UPLOADS.reportFailure(kind, d);
+          } catch (e) {}
+        }
+
+        // 2026-11-18: every design the customer ALREADY stored, not just the
+        // File objects still in memory: art attached in the catalog modal or a
+        // previous visit lives on the cart line (placement_designs /
+        // design_path), and the single-product customizer keeps its upload in
+        // window.__spSingleDesign. They used to ride only inside cart_items,
+        // where the OS ignored them whenever designs[] had anything in it.
+        function spExistingDesigns() {
+          var out = [];
+          try {
+            var cartItemsNow = (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) ? SinghsCart.read().items : [];
+            cartItemsNow.forEach(function (it, idx) {
+              if (!it) return;
+              var pd = it.placement_designs || {};
+              var pls = Array.isArray(it.placements) ? it.placements : [];
+              Object.keys(pd).forEach(function (pl) {
+                var v = pd[pl];
+                if (v && v.path) out.push({ placement: pl, cart_item_index: idx, path: v.path, signed_url: v.signed_url || v.url || null, mime: v.mime || null, bytes: v.bytes || null });
+              });
+              if (it.design_path && !out.some(function (o) { return o.path === it.design_path && o.cart_item_index === idx; })) {
+                out.push({ placement: pls[0] || null, cart_item_index: idx, path: it.design_path, signed_url: it.design_url || null, mime: null, bytes: null });
+              }
+            });
+            var sd = window.__spSingleDesign;
+            if (!cartItemsNow.length && sd && sd.path) {
+              var firstPl = null;
+              try { firstPl = Object.values(presetByLocation || {}).filter(Boolean)[0] || null; } catch (e) {}
+              out.push({ placement: firstPl, cart_item_index: null, path: sd.path, signed_url: sd.signed_url || null, mime: null, bytes: null });
+            }
+          } catch (e) { /* never block submit on this */ }
+          return out;
+        }
+
         // 1) Hidden fields for the Web3Forms email backup
         if (items.length > 0 && !form.querySelector('input[name="cart_items_json"]')) {
           var hidden = document.createElement('input');
@@ -8623,7 +8694,10 @@
           ('Uploading ' + fileCount + ' designs…')
         );
 
-        function finishAndSubmit() {
+        function finishAndSubmit(reason) {
+          // The request did not reach the OS; the Web3Forms email backup is all
+          // that is left. Say so before the page navigates away.
+          spFail('web3forms_fallback', { error: reason || null });
           form.dataset.spUploadCleared = '1';
           spHideUploadOverlay();
           // form.submit() doesn't trigger 'submit' handlers, so our
@@ -8658,7 +8732,8 @@
         var bailoutTimer = setTimeout(function(){
           if (form.dataset.spUploadCleared === '1') return;
           console.warn('[quote submit] upload took >' + bailoutMs + 'ms — falling back to email backup');
-          finishAndSubmit();
+          spFail('timeout', { error: 'no answer after ' + Math.round(bailoutMs / 1000) + 's (' + fileCount + ' file' + (fileCount === 1 ? '' : 's') + ')' });
+          finishAndSubmit('timeout');
         }, bailoutMs);
 
         function doStructuredPostThenSubmit(uploaded) {
@@ -8726,7 +8801,15 @@
             // The legacy single-design fields stay populated from the
             // FIRST upload (if any) so older CRM read paths that
             // haven't migrated yet keep showing something.
-            designs:         Array.isArray(uploaded) ? uploaded.map(function(u){
+            designs:         (function () {
+                               var fresh = Array.isArray(uploaded) ? uploaded : [];
+                               var all = fresh.slice();
+                               spExistingDesigns().forEach(function (e) {
+                                 var dup = all.some(function (u) { return u.path === e.path && (u.placement || null) === (e.placement || null); });
+                                 if (!dup) all.push(e);
+                               });
+                               return all;
+                             })().map(function(u){
                                return {
                                  placement:       u.placement || null,
                                  // 2026-05-24 — tells the CRM which cart
@@ -8741,7 +8824,7 @@
                                  mime:            u.mime  || null,
                                  bytes:           u.bytes || null,
                                };
-                             }) : [],
+                             }),
             design_path:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].path)       || null,
             design_url:      (Array.isArray(uploaded) && uploaded[0] && uploaded[0].signed_url) || null,
             design_mime:     (Array.isArray(uploaded) && uploaded[0] && uploaded[0].mime)       || null,
@@ -8782,9 +8865,17 @@
               // quote builder's `deadline` from needed_by so the rep
               // doesn't re-type.
               needed_by:      fd.get('need_by_date') || null,
-              is_rush:        !!fd.get('is_rush')
+              is_rush:        !!fd.get('is_rush'),
+              // What the customer saw in the single-product customizer.
+              customer_mockups: (Array.isArray(window.__spSingleMockups) && window.__spSingleMockups.length) ? window.__spSingleMockups : null
             },
             source_url: location.href,
+            // 2026-11-18: this browser's id (links its uploads to this request
+            // in the OS, no time window), this press of Submit, and the
+            // single-product customizer's design + mockups.
+            browser_session: (window.SP_UPLOADS && window.SP_UPLOADS.session) ? window.SP_UPLOADS.session() : null,
+            attempt_id:      spAttemptId,
+            single_design:   (window.__spSingleDesign && window.__spSingleDesign.path) ? window.__spSingleDesign : null,
             // Honeypot (2026-07-25) — hidden input in the form markup. Humans
             // never see it. It was named "company_website", and browsers
             // autofilled it with the customer's own site (Samsung Internet put
@@ -8834,11 +8925,15 @@
               });
             }
           } catch (e) {}
+          spLastPayload = payload;
+          var inboundBody = JSON.stringify(payload);
           fetch(INBOUND_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            keepalive: true
+            body: inboundBody,
+            // keepalive caps the body at 64 KB; a bigger cart would be refused
+            // outright, so only ask for it when it fits.
+            keepalive: inboundBody.length < 60000
           }).then(function(r){
             clearTimeout(bailoutTimer);
             if (r && r.ok) {
@@ -8859,18 +8954,21 @@
               });
             } else {
               console.warn('[inbound POST] non-2xx from CRM (status ' + (r && r.status) + ') — falling back to Web3Forms');
-              finishAndSubmit();
+              spFail('http_error', { status_code: (r && r.status) || null, error: 'POST /api/inbound answered ' + ((r && r.status) || '?') });
+              finishAndSubmit('http ' + ((r && r.status) || '?'));
             }
           }).catch(function(err){
             console.warn('[inbound POST] failed — falling back to Web3Forms:', err);
             clearTimeout(bailoutTimer);
-            finishAndSubmit();
+            spFail('network_error', { error: String((err && err.message) || err).slice(0, 300) });
+            finishAndSubmit('network error');
           });
         } catch (e) {
           // Never block the form submit on our own analytics path.
           console.warn('[inbound dual-post] skipped:', e);
           clearTimeout(bailoutTimer);
-          finishAndSubmit();
+          spFail('network_error', { error: 'page error building the request: ' + String((e && e.message) || e).slice(0, 300) });
+          finishAndSubmit('page error');
         }
         }  // end doStructuredPostThenSubmit
 
@@ -8908,6 +9006,7 @@
           // because the customer should see the error before navigating.
           clearTimeout(bailoutTimer);
           console.warn('[design upload] failed:', err);
+          spFail('upload_error', { error: String((err && err.message) || err).slice(0, 300) });
           spShowUploadError((err && err.message) || 'Something went wrong uploading your design.');
           var retry = document.getElementById('spUploadRetry');
           var skip  = document.getElementById('spUploadSkip');

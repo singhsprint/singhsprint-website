@@ -558,6 +558,17 @@
      * correct for the small files it can carry.
      */
     function jerseyPutArtwork(file){
+      // 2026-11-18: through SP_UPLOADS (components.js) when it is there, so
+      // the OS can link this browser's uploads to its request. Same shape.
+      if (window.SP_UPLOADS && typeof window.SP_UPLOADS.upload === 'function') {
+        return window.SP_UPLOADS.upload(file, { page: 'jerseys' }).then(function(r){
+          if (!r || !r.path) throw new Error('no path');
+          return { path: r.path, signed_url: r.signed_url || '' };
+        }).catch(function(){ return jerseyPutArtworkDirect(file); });
+      }
+      return jerseyPutArtworkDirect(file);
+    }
+    function jerseyPutArtworkDirect(file){
       return fetch(UPLOAD_URL_API, {
         method:'POST', headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ filename:file.name||'design', mime:file.type||'application/octet-stream', bytes:file.size })

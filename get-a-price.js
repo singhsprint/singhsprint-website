@@ -152,6 +152,10 @@
         attribution: s.attribution || {}
       },
       source_url: s.href || null,
+      // This browser's id and this press of the button (links its uploads
+      // in the OS, groups any failure report). 2026-11-18.
+      browser_session: s.browserSession || null,
+      attempt_id: s.attemptId || null,
       website: s.honeypot || null
     };
   }
@@ -186,6 +190,16 @@
 
   // ---- upload: same signed-URL flow as quote.js, relay as fallback --------
   function uploadOne(file) {
+    // 2026-11-18: through SP_UPLOADS (components.js) when it is there: the
+    // same file from this browser is stored once, and the OS can link this
+    // browser's uploads to the request it sends. The old path stays as the
+    // fallback.
+    if (typeof window !== 'undefined' && window.SP_UPLOADS && typeof window.SP_UPLOADS.upload === 'function') {
+      return window.SP_UPLOADS.upload(file, { page: 'get-a-price' }).catch(function () { return uploadOneDirect(file); });
+    }
+    return uploadOneDirect(file);
+  }
+  function uploadOneDirect(file) {
     return fetch(UPLOAD_URL_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -354,10 +368,15 @@
       btn.textContent = uploads.some(function (u) { return !u.done; }) ? 'Sending your logo…' : 'Sending…';
 
       var payload;
+      var SPU = window.SP_UPLOADS || null;
+      var attemptId = (SPU && SPU.newAttemptId) ? SPU.newAttemptId() : null;
+      // They gave a phone (and maybe an email): put it on their uploads too.
+      try { if (SPU && SPU.setContact) SPU.setContact({ phone: phone, email: email || null, name: name }); } catch (e3) {}
       waitForUploads()
         .then(function () {
           var ok = uploads.filter(function (u) { return u.result && u.result.path; }).map(function (u) { return u.result; });
           payload = buildPayload({
+            browserSession: (SPU && SPU.session) ? SPU.session() : null, attemptId: attemptId,
             cfg: cfg, products: products, band: band, name: name, contact: contact,
             uploads: ok, logoPicked: uploads.length > 0, logoFailed: uploads.length - ok.length,
             attribution: attribution, href: location.href, path: location.pathname,
@@ -390,6 +409,17 @@
         })
         .catch(function (err) {
           try { console.warn('[get-a-price] submit failed:', err); } catch (e2) {}
+          // Tell the OS someone tried and it did not land (inbound_submit_failures).
+          try {
+            if (SPU && SPU.reportFailure) {
+              var m = /inbound (\d+)/.exec(String(err && err.message || ''));
+              SPU.reportFailure(m ? 'http_error' : 'network_error', {
+                attempt_id: attemptId, form: 'get_a_price', status_code: m ? Number(m[1]) : null,
+                error: String((err && err.message) || err).slice(0, 300),
+                contact_name: name, phone: phone, email: email || null, payload: payload || null
+              });
+            }
+          } catch (e4) {}
           busy = false;
           btn.disabled = false;
           btn.textContent = cfg.button;

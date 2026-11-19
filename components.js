@@ -2887,3 +2887,259 @@ document.addEventListener('DOMContentLoaded', function() {
     timer = setTimeout(function () { el.classList.remove('is-in'); }, 4200);
   };
 })();
+
+// ---------------------------------------------------------------------
+// SP_UPLOADS: one way to store artwork, tied to this browser (2026-11-18)
+//
+// Artwork kept landing in the OS's "Unfinished uploads" though the customer
+// had sent it. The quote page re-uploaded every file on each preview and
+// again at submit, under a new folder each time, so earlier copies were left
+// with no request; and the only way to tie an upload to its request was the
+// daily IP hash inside 15 minutes.
+//
+// Now every upload from every page goes through here:
+//   session()      this browser's id: localStorage singhsCartId_v1, the same
+//                  id the cart-recovery sync already uses. Sent with each
+//                  upload and with the request, so the OS links them by
+//                  browser, with no time window.
+//   upload(file)   hashes the file (SHA-256) and asks the OS for an upload
+//                  URL with the hash; if this browser already stored this
+//                  exact file, the OS hands back the stored path and nothing
+//                  is uploaded again. Also cached here for the page's life.
+//   contact()      the email / phone asked for before "Customize & preview",
+//                  sent with every upload so an unfinished one has somebody
+//                  to contact. askContactThen(fn) shows the question once.
+//   reportFailure  tells the OS a request did not reach it (error, timeout,
+//                  Web3Forms fallback), via sendBeacon so it survives the
+//                  page navigating away.
+//
+// Every caller keeps its old path as a fallback: if this object is missing
+// or throws, uploads and submits work exactly as before.
+// ---------------------------------------------------------------------
+(function initSpUploads() {
+  var CRM = 'https://singhsprint-crm.vercel.app';
+  var UPLOAD_URL_API = CRM + '/api/inbound/upload-url';
+  var SIGN_API = CRM + '/api/inbound/upload-url/sign';
+  var CONTACT_API = CRM + '/api/inbound/upload-contact';
+  var FAILURE_API = CRM + '/api/inbound/failure';
+  var SESSION_KEY = 'singhsCartId_v1';
+  var CONTACT_KEY = 'sp_upload_contact_v1';
+  var CACHE_KEY = 'sp_upload_cache_v1';
+  var CACHE_TTL_MS = 6 * 24 * 3600 * 1000;   // signed read URLs live 7 days
+  var fr = /^fr/i.test((document.documentElement && document.documentElement.lang) || '');
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  function session() {
+    var v = lsGet(SESSION_KEY);
+    if (v && /^[a-zA-Z0-9_-]{8,64}$/.test(v)) return v;
+    var id = '';
+    try { if (window.crypto && crypto.randomUUID) id = crypto.randomUUID().replace(/-/g, ''); } catch (e) {}
+    if (!id) id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    lsSet(SESSION_KEY, id);
+    return id;
+  }
+
+  function newAttemptId() {
+    try { if (window.crypto && crypto.randomUUID) return 'a' + crypto.randomUUID().replace(/-/g, '').slice(0, 24); } catch (e) {}
+    return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+  }
+
+  // ---- contact ---------------------------------------------------------
+  function contact() {
+    try { var c = JSON.parse(lsGet(CONTACT_KEY) || 'null'); return (c && (c.email || c.phone)) ? c : null; } catch (e) { return null; }
+  }
+  function validEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '').trim()); }
+  function validPhone(s) { return String(s || '').replace(/\D/g, '').length >= 7; }
+  function setContact(c) {
+    var email = c && validEmail(c.email) ? String(c.email).trim() : null;
+    var phone = c && validPhone(c.phone) ? String(c.phone).trim() : null;
+    var name = c && c.name ? String(c.name).trim().slice(0, 200) : null;
+    if (!email && !phone) return null;
+    var prev = contact() || {};
+    var next = { email: email || prev.email || null, phone: phone || prev.phone || null, name: name || prev.name || null };
+    lsSet(CONTACT_KEY, JSON.stringify(next));
+    // Put it on the uploads this browser already made. Best-effort.
+    try {
+      fetch(CONTACT_API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, keepalive: true,
+        body: JSON.stringify({ browser_session: session(), email: next.email, phone: next.phone, name: next.name }) }).catch(function () {});
+    } catch (e) {}
+    return next;
+  }
+  // Whatever the page's own form already has counts: no need to ask again.
+  function contactFromPage() {
+    function val(id) { var el = document.getElementById(id); return el && el.value ? el.value : ''; }
+    var email = val('email'), phone = val('phone');
+    if (validEmail(email) || validPhone(phone)) return setContact({ email: email, phone: phone, name: val('name') });
+    return null;
+  }
+
+  var T = fr ? {
+    title: 'Où devons-nous envoyer votre maquette?',
+    sub: 'Votre courriel ou votre numéro, pour vous la renvoyer si la page se ferme.',
+    ph: 'Courriel ou téléphone', go: 'Continuer', bad: 'Entrez un courriel ou un numéro de téléphone valide.', close: 'Fermer'
+  } : {
+    title: 'Where should we send your mockup?',
+    sub: 'Your email or number, so we can get it to you if the page closes.',
+    ph: 'Email or phone number', go: 'Continue', bad: 'Enter a valid email or phone number.', close: 'Close'
+  };
+
+  /**
+   * Run `then` once we know how to reach them. Returns true when it had to
+   * ask (the caller should stop; `then` runs after they answer), false when
+   * a contact is already known (the caller just carries on).
+   */
+  function askContactThen(then) {
+    if (contact() || contactFromPage()) return false;
+    if (document.getElementById('spAskContact')) return true;
+    var wrap = document.createElement('div');
+    wrap.id = 'spAskContact';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-labelledby', 'spAskContactTitle');
+    wrap.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(26,26,26,.72);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';
+    wrap.innerHTML =
+      '<form style="background:#fff;color:#1a1a1a;border-radius:16px;max-width:400px;width:100%;padding:24px 22px;box-shadow:0 10px 40px rgba(0,0,0,.3);position:relative">' +
+        '<button type="button" aria-label="' + T.close + '" data-x style="position:absolute;top:10px;right:12px;background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#888">×</button>' +
+        '<h2 id="spAskContactTitle" style="margin:0 0 6px;font-size:1.15rem;font-weight:800">' + T.title + '</h2>' +
+        '<p style="margin:0 0 14px;font-size:.88rem;color:#555;line-height:1.45">' + T.sub + '</p>' +
+        '<label for="spAskContactInput" style="position:absolute;left:-9999px">' + T.ph + '</label>' +
+        '<input id="spAskContactInput" type="text" inputmode="email" autocomplete="email" placeholder="' + T.ph + '" style="width:100%;box-sizing:border-box;height:46px;border:1px solid #ccc;border-radius:10px;padding:0 14px;font-size:1rem">' +
+        '<div data-err role="alert" style="color:#b42318;font-size:.8rem;min-height:1.1em;margin-top:6px"></div>' +
+        '<button type="submit" style="margin-top:8px;width:100%;min-height:48px;border:0;border-radius:50px;background:#e8ff3c;color:#1a1a1a;font-weight:800;font-size:.95rem;cursor:pointer">' + T.go + '</button>' +
+      '</form>';
+    document.body.appendChild(wrap);
+    var form = wrap.querySelector('form');
+    var input = wrap.querySelector('input');
+    var err = wrap.querySelector('[data-err]');
+    function close() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }
+    wrap.querySelector('[data-x]').onclick = close;
+    wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = (input.value || '').trim();
+      var saved = validEmail(v) ? setContact({ email: v }) : (validPhone(v) ? setContact({ phone: v }) : null);
+      if (!saved) { err.textContent = T.bad; input.focus(); return; }
+      close();
+      try { then(); } catch (x) { console.warn('[SP_UPLOADS] continue after contact failed:', x); }
+    });
+    setTimeout(function () { try { input.focus(); } catch (e) {} }, 30);
+    return true;
+  }
+
+  // ---- hashing + reuse -------------------------------------------------
+  function sha256(file) {
+    try {
+      if (!file || !window.crypto || !crypto.subtle || typeof file.arrayBuffer !== 'function') return Promise.resolve(null);
+      return file.arrayBuffer().then(function (buf) { return crypto.subtle.digest('SHA-256', buf); }).then(function (h) {
+        var b = new Uint8Array(h), s = '';
+        for (var i = 0; i < b.length; i++) s += ('0' + b[i].toString(16)).slice(-2);
+        return s;
+      }).catch(function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
+  }
+  function cacheRead() { try { return JSON.parse(lsGet(CACHE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function cacheGet(hash) {
+    if (!hash) return null;
+    var c = cacheRead()[hash];
+    return (c && c.path && Date.now() - (c.at || 0) < CACHE_TTL_MS) ? c : null;
+  }
+  function cachePut(hash, info) {
+    if (!hash || !info || !info.path) return;
+    var all = cacheRead(), now = Date.now();
+    Object.keys(all).forEach(function (k) { if (!all[k] || now - (all[k].at || 0) > CACHE_TTL_MS) delete all[k]; });
+    all[hash] = { path: info.path, signed_url: info.signed_url || '', mime: info.mime || null, bytes: info.bytes || null, at: now };
+    var keys = Object.keys(all);
+    if (keys.length > 40) keys.sort(function (a, b) { return all[a].at - all[b].at; }).slice(0, keys.length - 40).forEach(function (k) { delete all[k]; });
+    lsSet(CACHE_KEY, JSON.stringify(all));
+  }
+  var inFlight = (typeof WeakMap !== 'undefined') ? new WeakMap() : null;
+
+  /**
+   * Store one file. Resolves { path, signed_url, mime, bytes, sha256, reused }.
+   * Rejects on failure so the caller can fall back to its relay.
+   */
+  function upload(file, opts) {
+    opts = opts || {};
+    if (!file) return Promise.resolve(null);
+    if (inFlight && inFlight.has(file)) return inFlight.get(file);
+    var p = sha256(file).then(function (hash) {
+      var hit = cacheGet(hash);
+      if (hit) return { path: hit.path, signed_url: hit.signed_url, mime: hit.mime || file.type || null, bytes: hit.bytes || file.size, sha256: hash, reused: true };
+      var c = contact() || {};
+      return fetch(UPLOAD_URL_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name || 'design', mime: file.type || 'application/octet-stream', bytes: file.size,
+          browser_session: session(), sha256: hash, email: c.email || null, phone: c.phone || null, name: c.name || null,
+          page: (opts.page || location.pathname || '').slice(0, 200)
+        })
+      }).then(function (r) { return r.ok ? r.json() : r.text().then(function (t) { throw new Error('upload-url ' + r.status + ' ' + String(t).slice(0, 120)); }); })
+        .then(function (d) {
+          if (d && d.reused && d.path) {
+            var info0 = { path: d.path, signed_url: d.signed_url || '', mime: d.mime || file.type || null, bytes: file.size, sha256: hash, reused: true };
+            cachePut(hash, info0);
+            return info0;
+          }
+          if (!d || !d.upload_url) throw new Error('no-signed-url');
+          return fetch(d.upload_url, {
+            method: 'PUT', headers: { 'Content-Type': file.type || 'application/octet-stream', 'x-upsert': 'false' }, body: file
+          }).then(function (put) {
+            if (!put.ok) throw new Error('storage PUT ' + put.status);
+            // Sign after the PUT: the upload URL is minted before the object exists.
+            return fetch(SIGN_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: d.path }) })
+              .then(function (sr) { return sr.ok ? sr.json() : null; }).catch(function () { return null; })
+              .then(function (sj) {
+                var info = { path: d.path, signed_url: (sj && sj.signed_url) || d.signed_url || '', mime: d.mime || file.type || null, bytes: file.size, sha256: hash, reused: false };
+                cachePut(hash, info);
+                return info;
+              });
+          });
+        });
+    });
+    if (inFlight) {
+      inFlight.set(file, p);
+      p.catch(function () { inFlight.delete(file); });
+    }
+    return p;
+  }
+
+  // ---- failures --------------------------------------------------------
+  /**
+   * Tell the OS a request did not reach it. kind: http_error | network_error
+   * | timeout | web3forms_fallback | upload_error. Never throws.
+   */
+  function reportFailure(kind, d) {
+    d = d || {};
+    try {
+      var body = JSON.stringify({
+        attempt_id: d.attempt_id || null, browser_session: session(), kind: kind,
+        status_code: (typeof d.status_code === 'number') ? d.status_code : null,
+        error: d.error ? String(d.error).slice(0, 1500) : null,
+        page_url: location.href.slice(0, 500), form: d.form || null,
+        contact_name: d.contact_name || null, email: d.email || (contact() || {}).email || null, phone: d.phone || (contact() || {}).phone || null,
+        payload: d.payload || null
+      });
+      // sendBeacon and keepalive both stop at 64 KB: shrink the payload first.
+      if (body.length > 60000) {
+        var o = JSON.parse(body), pl = o.payload || {};
+        o.payload = { kind: pl.kind || null, total_qty: pl.total_qty || null, estimated_total: pl.estimated_total || null,
+          notes: pl.notes ? String(pl.notes).slice(0, 1000) : null,
+          cart_items: Array.isArray(pl.cart_items) ? pl.cart_items.slice(0, 5).map(function (it) { return { name: it && it.name, qty: it && it.qty, brand: it && it.brand, style_number: it && it.style_number, placements: it && it.placements }; }) : null,
+          truncated: true };
+        body = JSON.stringify(o);
+        if (body.length > 60000) { o.payload = { truncated: true }; body = JSON.stringify(o); }
+      }
+      // text/plain keeps sendBeacon from needing a CORS preflight it cannot make.
+      var sent = false;
+      if (navigator.sendBeacon) sent = navigator.sendBeacon(FAILURE_API, new Blob([body], { type: 'text/plain' }));
+      if (!sent) fetch(FAILURE_API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: body, keepalive: true }).catch(function () {});
+    } catch (e) {}
+  }
+
+  window.SP_UPLOADS = {
+    session: session, newAttemptId: newAttemptId, sha256: sha256, upload: upload,
+    contact: contact, setContact: setContact, askContactThen: askContactThen, reportFailure: reportFailure
+  };
+})();
