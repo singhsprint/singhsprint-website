@@ -618,13 +618,14 @@
       white-space:nowrap;padding:0 20px 0 0;margin-right:20px;position:relative;color:var(--ink);line-height:1.5}
     .sp-fold .tick__grp span::after{content:"";position:absolute;right:-4px;top:50%;width:5px;height:5px;
       margin-top:-2.5px;border-radius:50%;background:var(--accent-deep)}
-    /* AT REST only the five show. The other twelve are in the DOM (and in the
+    /* AT REST only the six show (Santé Québec joined the five, 2026-11-19).
+       The other twelve are in the DOM (and in the
        crawler's copy) but hidden until the strip is rolling -- otherwise 17
        names wrap into four rows and push the headline 80px down the page. */
-    .sp-fold .tick__grp span:nth-child(n+6){display:none}
-    .sp-fold .tick__grp span:nth-child(5)::after{display:none}
-    .sp-fold .tick.is-rolling .tick__grp span:nth-child(n+6){display:block}
-    .sp-fold .tick.is-rolling .tick__grp span:nth-child(5)::after{display:block}
+    .sp-fold .tick__grp span:nth-child(n+7){display:none}
+    .sp-fold .tick__grp span:nth-child(6)::after{display:none}
+    .sp-fold .tick.is-rolling .tick__grp span:nth-child(n+7){display:block}
+    .sp-fold .tick.is-rolling .tick__grp span:nth-child(6)::after{display:block}
 
     /* ROLLING. One class drives it, set by hover or by the first scroll. */
     .sp-fold .tick.is-rolling{
@@ -640,6 +641,16 @@
       .sp-fold .tick__track{animation:none !important}
       .sp-fold .tick.is-rolling .tick__track{flex-wrap:wrap;width:auto;max-width:100%}
       .sp-fold .tick.is-rolling .tick__grp+.tick__grp{display:none}
+    }
+    @media(min-width:901px) and (max-width:1240px){
+      /* SIX NAMES ON A SMALL LAPTOP (2026-11-19). Five fit one line down to
+         about 1000px; with Santé Québec the six need about 1225px, and at
+         1040px they wrapped to a second row and pushed the headline down
+         28px. Slightly tighter type fits all six from about 1010px up, and
+         below that the row never wraps: the last name runs under the mask,
+         the same thing the phone layout does. */
+      .sp-fold .tick__track,.sp-fold .tick__grp{flex-wrap:nowrap;width:max-content;max-width:none}
+      .sp-fold .tick__grp span{font-size:.97rem;padding:0 14px 0 0;margin-right:14px}
     }
     @media(max-width:900px){
       /* ONE LINE on a phone. This block used to cost four of them: the label
@@ -800,8 +811,8 @@
         <span class="pf-lbl" id="tick-lbl" data-i18n="fold.printingfor">Printing for</span>
         <div class="tick" tabindex="0" role="group" aria-labelledby="tick-lbl">
           <div class="tick__track">
-            <div class="tick__grp"><span>Lamborghini Montréal</span><span>ALDO</span><span>McGill University</span><span>Silk Laundry</span><span>C4 Energy</span><span>Morgan Arboretum</span><span>Concordia Sikh Students</span><span>Artwood Construction</span><span>McGill Boxing Club</span><span>Modavie Nutrition</span><span>Old Soul</span><span>McGill Pizza</span><span>Durante Landscapers</span><span>Montreal Pinball</span><span>CUSEC</span><span>Sigma Chi</span><span>CANAUST</span></div>
-            <div class="tick__grp" aria-hidden="true"><span>Lamborghini Montréal</span><span>ALDO</span><span>McGill University</span><span>Silk Laundry</span><span>C4 Energy</span><span>Morgan Arboretum</span><span>Concordia Sikh Students</span><span>Artwood Construction</span><span>McGill Boxing Club</span><span>Modavie Nutrition</span><span>Old Soul</span><span>McGill Pizza</span><span>Durante Landscapers</span><span>Montreal Pinball</span><span>CUSEC</span><span>Sigma Chi</span><span>CANAUST</span></div>
+            <div class="tick__grp"><span>Lamborghini Montréal</span><span>ALDO</span><span>Santé Québec</span><span>McGill University</span><span>Silk Laundry</span><span>C4 Energy</span><span>Morgan Arboretum</span><span>Concordia Sikh Students</span><span>Artwood Construction</span><span>McGill Boxing Club</span><span>Modavie Nutrition</span><span>Old Soul</span><span>McGill Pizza</span><span>Durante Landscapers</span><span>Montreal Pinball</span><span>CUSEC</span><span>Sigma Chi</span><span>CANAUST</span></div>
+            <div class="tick__grp" aria-hidden="true"><span>Lamborghini Montréal</span><span>ALDO</span><span>Santé Québec</span><span>McGill University</span><span>Silk Laundry</span><span>C4 Energy</span><span>Morgan Arboretum</span><span>Concordia Sikh Students</span><span>Artwood Construction</span><span>McGill Boxing Club</span><span>Modavie Nutrition</span><span>Old Soul</span><span>McGill Pizza</span><span>Durante Landscapers</span><span>Montreal Pinball</span><span>CUSEC</span><span>Sigma Chi</span><span>CANAUST</span></div>
           </div>
         </div>
         <a class="pf-more" href="portfolio" data-i18n="home.trust.seework">See the work &rarr;</a>
@@ -1630,7 +1641,7 @@
     // fact about the shop, not about how many rows happen to be published —
     // deriving it from cs.length would make it drift to whatever the CMS
     // holds and would start understating the moment the table was tidied.
-    var SHOWN_COUNT = 5;
+    var SHOWN_COUNT = 6;
     fetch(CRM + '/api/portfolio/clients', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (j) {

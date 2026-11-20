@@ -67,8 +67,9 @@ const LANG = read('lang.js');
 // Petinos $547/1 — were on the strip as a second row for one commit and were
 // cut as less recognisable. They sit directly below the cut in
 // portfolio_clients, one sort_index change from the page.
+// 2026-11-19: Santé Québec added by the owner, before McGill. Six at rest.
 const SHOWN = [
-  'Lamborghini Montréal', 'ALDO', 'McGill University', 'Silk Laundry', 'C4 Energy',
+  'Lamborghini Montréal', 'ALDO', 'Santé Québec', 'McGill University', 'Silk Laundry', 'C4 Energy',
 ];
 
 /** Inner HTML of one <ul class="..."> by class, or '' if absent. */
@@ -102,7 +103,7 @@ console.log('1. five names, and nothing that reads as a complete list');
     if (i < 0) return [];
     const grp = html.slice(i, html.indexOf('</div>', i));
     return (grp.match(/<span[^>]*>([^<]+)<\/span>/g) || [])
-      .map((x) => x.replace(/<[^>]+>/g, '').trim()).slice(0, 5);
+      .map((x) => x.replace(/<[^>]+>/g, '').trim()).slice(0, SHOWN.length);
   };
   const shown = tickNames(EN);
   const missing = SHOWN.filter((n) => !shown.includes(n));
