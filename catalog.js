@@ -353,12 +353,36 @@
   // S&S sends product descriptions as a single HTML <ul>. Parse into clean
   // text bullets so we can render them in our own style (no foreign HTML
   // injection, no <ul>-inside-modal weirdness, no &amp; / &nbsp; artifacts).
+  //
+  // 2026-11-20: a supplier description is a web page fragment, not a spec
+  // sheet. SanMar's Gildan 18500 carries a "Find Your ATC Comparable Style"
+  // button and the <style> block that dresses it, and stripping the tags left
+  // the stylesheet behind as text: ".atc-btn {", "padding: 10px 20px;", "}" each
+  // became a tech spec. _stripSpecCode drops <style>/<script> WITH their
+  // contents before anything is read, and _isSpecNoise drops any line that is
+  // still CSS or a supplier's own cross-sell link, whichever path found it.
+  function _stripSpecCode(html) {
+    return String(html == null ? '' : html)
+      .replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ')
+      .replace(/<(style|script)\b[^>]*>[\s\S]*$/i, ' ')      // never closed: everything after it is code
+      .replace(/<!--[\s\S]*?-->/g, ' ');
+  }
+  function _isSpecNoise(line) {
+    var t = String(line == null ? '' : line).trim();
+    if (!t) return true;
+    if (/^[{}]+;?$/.test(t)) return true;                                  // a lone brace
+    if (/^[.#@:\w][^{};]*\{[^}]*\}?$/.test(t) && /[.#@:]|^\w+\s*\{/.test(t)) return true;  // ".atc-btn {", "a:hover { ... }"
+    // Lower-case on purpose: CSS properties are, and "Weight: 13.3 oz;" is not.
+    if (/^-{0,2}[a-z][a-z-]*\s*:\s*[^;]{1,120};$/.test(t)) return true;    // "padding: 10px 20px;""
+    if (/^find your\b.*\bcomparable style\b/i.test(t)) return true;       // the supplier's cross-sell link
+    return false;
+  }
   function parseSpecBullets(descHtml) {
     if (!descHtml || typeof descHtml !== 'string') return [];
     const tmp = document.createElement('div');
-    tmp.innerHTML = descHtml;
+    tmp.innerHTML = _stripSpecCode(descHtml);
     const lis = tmp.querySelectorAll('li');
-    return Array.from(lis).map(li => (li.textContent || '').trim()).filter(Boolean);
+    return Array.from(lis).map(li => (li.textContent || '').trim()).filter(t => t && !_isSpecNoise(t));
   }
   // =====================================================================
   // IN-MODAL PRODUCT CUSTOMIZER
@@ -2812,17 +2836,18 @@
   //      no more invisible specs panel.
   function _adhocSpecLines(text) {
     if (!text) return [];
+    text = _stripSpecCode(text);
     var cleaned = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     if (!cleaned) return [];
     // Try newlines first — some suppliers wedge \n between facts.
     if (/\n/.test(text)) {
-      return text.split('\n').map(function(s){ return s.replace(/<[^>]+>/g,' ').trim(); }).filter(Boolean);
+      return text.split('\n').map(function(s){ return s.replace(/<[^>]+>/g,' ').trim(); }).filter(function(s){ return s && !_isSpecNoise(s); });
     }
     // Heuristic: split on common bullet separators. We won't blindly
     // split on every period (would break "5.3 oz"). Look for capital
     // letter starts after a period+space.
     var parts = cleaned.split(/(?<=\.)\s+(?=[A-Z])/);
-    if (parts.length >= 2) return parts.map(function(s){ return s.trim(); }).filter(Boolean);
+    if (parts.length >= 2) return parts.map(function(s){ return s.trim(); }).filter(function(s){ return s && !_isSpecNoise(s); });
     // Last resort: one big paragraph.
     return [cleaned];
   }
