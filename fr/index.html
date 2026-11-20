@@ -642,6 +642,16 @@
       .sp-fold .tick.is-rolling .tick__track{flex-wrap:wrap;width:auto;max-width:100%}
       .sp-fold .tick.is-rolling .tick__grp+.tick__grp{display:none}
     }
+    @media(min-width:901px) and (max-width:1240px){
+      /* SIX NAMES ON A SMALL LAPTOP (2026-11-19). Five fit one line down to
+         about 1000px; with Santé Québec the six need about 1225px, and at
+         1040px they wrapped to a second row and pushed the headline down
+         28px. Slightly tighter type fits all six from about 1010px up, and
+         below that the row never wraps: the last name runs under the mask,
+         the same thing the phone layout does. */
+      .sp-fold .tick__track,.sp-fold .tick__grp{flex-wrap:nowrap;width:max-content;max-width:none}
+      .sp-fold .tick__grp span{font-size:.97rem;padding:0 14px 0 0;margin-right:14px}
+    }
     @media(max-width:900px){
       /* ONE LINE on a phone. This block used to cost four of them: the label
          on its own row, the five names wrapping over two more, then "See the
