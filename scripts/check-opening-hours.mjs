@@ -84,5 +84,24 @@ ok('H7 nothing ASSIGNS a closed state',
 // whole block was deleted is not a passing checker.
 ok('H8 the hero still shows the address', /hero-stamp__detail/.test(idx) && /Sainte/.test(idx))
 
+// 2026-11-24 — owner's hours: Mon-Fri 10-4, Sat-Sun 12-4. The site said
+// "Open 7 days, 10am-4pm" in copy and one 7-day 10:00-16:00 block in the
+// hidden data; product pages said "9 AM to 9 PM, 7 days a week".
+{
+  const all = walk(ROOT).filter((f) => /\.(html|js)$/.test(f) && !/[\\/]p[\\/]/.test(relative(ROOT, f)))
+  const stale = [], weekendWrong = []
+  for (const f of all) {
+    const t = readFileSync(f, 'utf8')
+    if (/Open 7 days, 10am-4pm|Ouvert 7 jours sur 7, (de )?10 h à 16 h/.test(t)) stale.push(relative(ROOT, f))
+    for (const m of t.matchAll(/"dayOfWeek":\s*\[([^\]]*)\],\s*"opens":\s*"(\d\d:\d\d)"/g)) {
+      const days = m[1], opens = m[2]
+      if (/Saturday|Sunday/.test(days) && opens !== '12:00') weekendWrong.push(relative(ROOT, f))
+      if (/Monday/.test(days) && opens !== '10:00') weekendWrong.push(relative(ROOT, f))
+    }
+  }
+  ok('H9 nothing still says open 7 days 10-4', stale.length === 0, stale.join(', '))
+  ok('H10 hidden data: weekdays open at 10, weekends at 12', weekendWrong.length === 0, [...new Set(weekendWrong)].join(', '))
+}
+
 console.log(`\n${pass} passed, ${fails.length} failed`)
 if (fails.length) { fails.forEach(f => console.log('  ✗ ' + f)); process.exit(1) }
