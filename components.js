@@ -679,7 +679,11 @@ function loadNav() {
       '.sp-search-panel.is-on{display:block}',
       '.sp-search-panel .sp-search-empty{padding:14px 12px;color:#999;font-size:.82rem;text-align:center}',
       '.sp-search-panel .sp-search-result{display:flex;gap:12px;align-items:center;padding:8px 10px;border:1px solid transparent;border-radius:8px;text-decoration:none;color:#1a1a1a}',
-      '.sp-search-panel .sp-search-result:hover{background:#fafaf6}',
+      '.sp-search-panel .sp-search-result:hover,.sp-search-panel .sp-search-result.is-active{background:#fafaf6}',
+      '.sp-search-panel .sp-search-result.is-active{border-color:#1a1a1a}',
+      '.sp-search-allbtn.is-active{outline:2px solid #1a1a1a;outline-offset:1px}',
+      '.sp-search-panel .sp-search-price{flex-shrink:0;font-size:.78rem;font-weight:600;color:#1a1a1a;white-space:nowrap}',
+      '.sp-search-panel .sp-search-quote{display:inline-block;margin-top:6px;color:#1a1a1a;font-weight:600;text-decoration:underline}',
       '.sp-search-panel .sp-search-result+.sp-search-result{margin-top:2px}',
       '.sp-search-panel .sp-search-result img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#f3f1ea;flex-shrink:0}',
       '.sp-cart{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #e6e3d8;border-radius:50%;color:#1a1a1a;text-decoration:none;background:#fff;transition:border-color .15s}',
@@ -1354,6 +1358,101 @@ function loadNav() {
       goToQuote(ev);
     }, { passive: false });
   }
+  // ── What the suggestions search ─────────────────────────────────────────
+  // The SAME index the catalogue page searches, read through the SAME word
+  // list (search-words.js). Until 2026-11-23 this box asked the CRM database
+  // instead: results came back in alphabetical brand order (typing "hoodie"
+  // offered Adidas and American Apparel, never the Gildan 18500), one typo
+  // returned nothing, and the list never matched the page you landed on.
+  // The key below is Algolia's public search-only key, the one catalog.html
+  // already ships.
+  var SEARCH_CFG = window.SP_ALGOLIA_CONFIG || {
+    appId: '56LKULJHAL', searchKey: '12723f9b2a3308fab3d748a6fc3189b7', indexName: 'singhsprint_catalog'
+  };
+  // catalog.html loads search-words.js itself; every other page gets it here.
+  if (!window.SPSearchWords && !document.querySelector('script[data-sp-search-words]')) {
+    var swTag = document.createElement('script');
+    swTag.src = '/search-words.js';
+    swTag.defer = true;
+    swTag.setAttribute('data-sp-search-words', '1');
+    document.head.appendChild(swTag);
+  }
+  function spEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+  // S&S Activewear, Blanks.ca and SanMar Canada all 403 direct hotlinks from
+  // external referrers, so every supplier image goes through
+  // /api/image-proxy here, matching catalog.html's imgUrl() rules. Anything
+  // else (local /images, singhsprint.com) is passed through.
+  var SEARCH_IMG_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
+  var SEARCH_PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
+  function searchImgUrl(raw) {
+    if (!raw) return '';
+    if (raw.indexOf('/api/image-proxy') >= 0) return raw;
+    if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
+    // Shopify CDN originals (Jerico) are up to 4000x5000; the dropdown
+    // draws them as small thumbnails. Ask the CDN for that size.
+    if (/^https:\/\/cdn\.shopify\.com\//.test(raw)) {
+      var b = raw.replace(/([?&])width=\d+&?/, '$1').replace(/[?&]$/, '');
+      return b + (b.indexOf('?') >= 0 ? '&' : '?') + 'width=200';
+    }
+    for (var i = 0; i < SEARCH_PROXIED_HOSTS.length; i++) {
+      if (raw.indexOf(SEARCH_PROXIED_HOSTS[i]) >= 0) {
+        return SEARCH_IMG_PROXY + '?url=' + encodeURIComponent(raw);
+      }
+    }
+    return raw;
+  }
+  function algoliaSuggest(text, facetFilters) {
+    return fetch('https://' + SEARCH_CFG.appId + '-dsn.algolia.net/1/indexes/' + SEARCH_CFG.indexName + '/query', {
+      method: 'POST',
+      headers: {
+        'X-Algolia-Application-Id': SEARCH_CFG.appId,
+        'X-Algolia-API-Key':        SEARCH_CFG.searchKey,
+        'Content-Type':             'application/x-www-form-urlencoded'
+      },
+      body: JSON.stringify({
+        query: text, hitsPerPage: 6, facetFilters: facetFilters || [],
+        attributesToRetrieve: ['objectID', 'brand', 'style_number', 'name', 'hero_image_url', 'price_from'],
+        attributesToHighlight: []
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('search ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      return {
+        total: d.nbHits || 0,
+        list: (d.hits || []).map(function (h) {
+          return { product_id: h.objectID, brand: h.brand, style_number: h.style_number,
+                   name: h.name, hero_image_url: h.hero_image_url, price_from: h.price_from };
+        })
+      };
+    });
+  }
+  // What to show for a query. Category, colour and gender words become
+  // filters; if that reading finds nothing, search the words as typed.
+  // If Algolia itself is unreachable, fall back to the CRM endpoint so the
+  // box still answers.
+  function suggestFor(q) {
+    var words = window.SPSearchWords;
+    var it = words ? words.interpret(q) : null;
+    var run = (it && it.understood)
+      ? algoliaSuggest(it.text, words.facetFiltersFor(it)).then(function (res) {
+          return res.total ? res : algoliaSuggest(q, []);
+        })
+      : algoliaSuggest(q, []);
+    return run.catch(function () {
+      return fetch('https://singhsprint-crm.vercel.app/api/catalog?q=' + encodeURIComponent(q) + '&limit=6', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          var list = (d && d.products) ? d.products : (Array.isArray(d) ? d : []);
+          return { total: 0, list: list };
+        });
+    });
+  }
+
   // ----- Inline search dropdown (no full-screen overlay) -----
   // We bind both the desktop search field and the in-drawer mobile one to
   // the same typeahead logic. Each has its own results panel.
@@ -1362,8 +1461,23 @@ function loadNav() {
     var panel = document.getElementById(panelId);
     if (!input || !panel) return;
     var qT = null;
+    var seq = 0;        // only the newest request may paint
+    var active = -1;    // row highlighted with the arrow keys; -1 = none
     function close() { panel.classList.remove('is-on'); }
     function open()  { panel.classList.add('is-on'); }
+    function rows()  { return panel.querySelectorAll('a'); }
+    function setActive(i) {
+      var list = rows();
+      if (!list.length) { active = -1; return; }
+      if (i < -1) i = list.length - 1;
+      if (i >= list.length) i = -1;
+      active = i;
+      for (var k = 0; k < list.length; k++) list[k].classList.toggle('is-active', k === active);
+      if (active >= 0 && list[active].scrollIntoView) list[active].scrollIntoView({ block: 'nearest' });
+    }
+    function goToCatalog(q) {
+      window.location.href = BASE + '/catalog?q=' + encodeURIComponent(q);
+    }
 
     input.addEventListener('focus', function () {
       if (input.value.trim().length >= 2 && panel.innerHTML) open();
@@ -1371,67 +1485,61 @@ function loadNav() {
     input.addEventListener('input', function () {
       var q = input.value.trim();
       clearTimeout(qT);
+      var mine = ++seq;
+      active = -1;
       if (q.length < 2) { panel.innerHTML = ''; close(); return; }
-      // Optimistic: show a skeleton hint so the panel feels responsive
-      // even before the API answers.
-      panel.innerHTML = '<div class="sp-search-empty">' + t('Searching…', 'Recherche…') + '</div>';
+      // Only show "Searching…" on an empty panel. Wiping a full list on every
+      // keystroke made the dropdown flicker between results and a spinner.
+      if (!panel.querySelector('a')) {
+        panel.innerHTML = '<div class="sp-search-empty">' + t('Searching…', 'Recherche…') + '</div>';
+      }
       open();
       qT = setTimeout(function () {
-        fetch('https://singhsprint-crm.vercel.app/api/catalog?q=' + encodeURIComponent(q) + '&limit=8', { cache: 'no-store' })
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (d) {
-            var list = (d && d.products) ? d.products : (Array.isArray(d) ? d : []);
-            if (!list.length) {
-              panel.innerHTML = '<div class="sp-search-empty">' + t('No products match.', 'Aucun produit.') + '</div>';
-              return;
-            }
-            // S&S Activewear, Blanks.ca and SanMar Canada all 403 direct
-            // hotlinks from external referrers, so every supplier image
-            // gets routed through
-            // /api/image-proxy here, matching catalog.html's imgUrl() rules.
-            // Anything else (local /images, singhsprint.com) is passed through.
-            var IMG_PROXY = 'https://singhsprint-crm.vercel.app/api/image-proxy';
-            var PROXIED_HOSTS = ['ssactivewear.com', 'blanks.ca', 'sanmarcanada.com'];
-            function searchImgUrl(raw) {
-              if (!raw) return '';
-              if (raw.indexOf('/api/image-proxy') >= 0) return raw;
-              if (raw.charAt(0) === '/' || raw.indexOf('singhsprint.com') >= 0) return raw;
-              // Shopify CDN originals (Jerico) are up to 4000x5000; the dropdown
-              // draws them as small thumbnails. Ask the CDN for that size.
-              if (/^https:\/\/cdn\.shopify\.com\//.test(raw)) {
-                var b = raw.replace(/([?&])width=\d+&?/, '$1').replace(/[?&]$/, '');
-                return b + (b.indexOf('?') >= 0 ? '&' : '?') + 'width=200';
-              }
-              for (var i = 0; i < PROXIED_HOSTS.length; i++) {
-                if (raw.indexOf(PROXIED_HOSTS[i]) >= 0) {
-                  return IMG_PROXY + '?url=' + encodeURIComponent(raw);
-                }
-              }
-              return raw;
-            }
-            // The "See all results in catalog" CTA is the customer's
-            // primary intent button when they typed a query and want the
-            // full filterable result set. Promote it to the TOP of the
-            // dropdown styled as a yellow accent button — way more
-            // discoverable than a centered link buried under 8 cards.
-            var allBtn = '<a class="sp-search-allbtn" href="' + BASE + '/catalog?q=' + encodeURIComponent(q) + '">'
-              + '<span>' + t('See all results for ', 'Voir tous les résultats pour ') + '"' + q + '"</span>'
-              + '<span class="sp-search-allbtn__hint">↵</span>'
+        suggestFor(q).then(function (res) {
+          // A slower answer to an older keystroke must not overwrite this one.
+          if (mine !== seq) return;
+          var list = res.list || [];
+          var href = BASE + '/catalog?q=' + encodeURIComponent(q);
+          if (!list.length) {
+            panel.innerHTML = '<div class="sp-search-empty">'
+              + t('Nothing matches "', 'Aucun résultat pour « ') + spEsc(q) + t('".', ' ».')
+              + '<br><a class="sp-search-quote" href="' + BASE + '/quote">'
+              + t("Tell us what you need and we'll find it", 'Dites-nous ce que vous cherchez')
+              + '</a></div>';
+            return;
+          }
+          // The "See all results in catalog" CTA is the customer's
+          // primary intent button when they typed a query and want the
+          // full filterable result set. Promote it to the TOP of the
+          // dropdown styled as a yellow accent button — way more
+          // discoverable than a centered link buried under the cards.
+          var count = res.total > list.length ? (res.total + ' ') : '';
+          var allBtn = '<a class="sp-search-allbtn" href="' + href + '">'
+            + '<span>' + t('See all ' + count + 'results for ', 'Voir les ' + count + 'résultats pour ') + '"' + spEsc(q) + '"</span>'
+            + '<span class="sp-search-allbtn__hint">↵</span>'
+            + '</a>';
+          panel.innerHTML = allBtn + list.map(function (p) {
+            var raw = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
+            var img = searchImgUrl(raw);
+            // Straight to the product. This used to link to a second search
+            // for the style number, which made the customer pick it twice.
+            var to = p.product_id
+              ? BASE + '/catalog?product=' + encodeURIComponent(p.product_id)
+              : BASE + '/catalog?q=' + encodeURIComponent(p.style_number || p.name || '');
+            var price = (typeof p.price_from === 'number' && p.price_from > 0)
+              ? '<span class="sp-search-price">' + t('from ', 'dès ') + '$' + p.price_from.toFixed(2) + '</span>' : '';
+            return '<a class="sp-search-result" href="' + to + '">'
+              + (img ? '<img src="' + spEsc(img) + '" alt="" loading="lazy"/>' : '<span style="width:44px;height:44px"></span>')
+              + '<span style="flex:1;min-width:0"><strong>' + spEsc(p.name || p.style_number || '') + '</strong>'
+              + '<br><span style="color:#888;font-size:.76rem">' + spEsc(p.brand || '') + (p.style_number ? ' &middot; ' + spEsc(p.style_number) : '') + '</span></span>'
+              + price
               + '</a>';
-            panel.innerHTML = allBtn + list.slice(0, 8).map(function (p) {
-              var raw = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
-              var img = searchImgUrl(raw);
-              return '<a class="sp-search-result" href="' + BASE + '/catalog?q=' + encodeURIComponent(p.style_number || p.name || '') + '">'
-                + (img ? '<img src="' + img + '" alt="" loading="lazy"/>' : '<span style="width:44px;height:44px"></span>')
-                + '<span style="flex:1;min-width:0"><strong>' + (p.name || p.style_number || '') + '</strong>'
-                + '<br><span style="color:#888;font-size:.76rem">' + (p.brand || '') + (p.style_number ? ' &middot; ' + p.style_number : '') + '</span></span>'
-                + '</a>';
-            }).join('');
-          })
-          .catch(function () {
-            panel.innerHTML = '<div class="sp-search-empty">' + t("Couldn't load — try again.", 'Échec — réessayez.') + '</div>';
-          });
-      }, 180);
+          }).join('');
+        }).catch(function () {
+          if (mine !== seq) return;
+          panel.innerHTML = '<div class="sp-search-empty">' + t("Couldn't load — try again.", 'Échec — réessayez.') + '</div>';
+        });
+      }, 150);
     });
     // Match the submit button to this specific input (desktop button pairs
     // with desktop input, mobile with mobile). Same go-to-catalog behavior
@@ -1441,15 +1549,21 @@ function loadNav() {
       goBtn.addEventListener('click', function (e) {
         e.preventDefault();
         var q = input.value.trim();
-        if (q.length) window.location.href = BASE + '/catalog?q=' + encodeURIComponent(q);
+        if (q.length) goToCatalog(q);
         else input.focus();   // empty input → just focus, let them type
       });
     }
     input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (!panel.classList.contains('is-on') || !rows().length) return;
         e.preventDefault();
+        setActive(active + (e.key === 'ArrowDown' ? 1 : -1));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        var list = rows();
+        if (active >= 0 && list[active]) { window.location.href = list[active].getAttribute('href'); return; }
         var q = input.value.trim();
-        if (q.length) window.location.href = BASE + '/catalog?q=' + encodeURIComponent(q);
+        if (q.length) goToCatalog(q);
       } else if (e.key === 'Escape') {
         close();
         input.blur();

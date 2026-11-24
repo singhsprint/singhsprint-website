@@ -271,12 +271,25 @@
       });
     }
 
+    // Read category / colour / gender words out of the search box and apply
+    // them as filters; search only what is left as text. Without this,
+    // "hoodie" never returned the Gildan 18500 (its name says "Hooded
+    // Sweatshirt") and "black hoodie" returned 3 products. The header
+    // suggestions go through the same reader -- see search-words.js.
+    // Skipped once a category chip is chosen: the chip is the shopper's own
+    // answer to "what kind of garment", so the box is then plain text.
+    var words = window.SPSearchWords;
+    var read  = (words && opts.q && !opts.type && !opts._asTyped) ? words.interpret(opts.q) : null;
+    if (read && !read.understood) read = null;
+    var textOpts = read ? Object.assign({}, opts, { q: read.text }) : opts;
+
     var facetFilters   = buildFacetFilters(opts);
+    if (read) facetFilters = facetFilters.concat(words.facetFiltersFor(read));
     var numericFilters = buildNumericFilters(opts);
 
     // 1. Main query — full filters, returns the actual hits + facet counts
     //    for facets that ARE NOT disjunctive (brand_norm, garment_type).
-    var mainParams = buildParams(opts, facetFilters, numericFilters, ALL_FACETS, opts.page, opts.hitsPerPage);
+    var mainParams = buildParams(textOpts, facetFilters, numericFilters, ALL_FACETS, opts.page, opts.hitsPerPage);
     var requests = [{ indexName: cfg.indexName, params: mainParams }];
 
     // 2. One sidecar query per disjunctive category — same filters with
@@ -284,7 +297,7 @@
     //    requested, zero hits to keep the response tiny.
     DISJUNCTIVE_FACETS.forEach(function (cat) {
       var subset = filtersWithout(facetFilters, cat);
-      var p = buildParams(opts, subset, numericFilters, [cat], 0, 0);
+      var p = buildParams(textOpts, subset, numericFilters, [cat], 0, 0);
       requests.push({ indexName: cfg.indexName, params: p });
     });
 
@@ -302,6 +315,14 @@
     var body = await res.json();
     var results = body.results || [];
     var main = results[0] || {};
+
+    // That reading found nothing: search the words exactly as typed instead
+    // of showing an empty page for a query the old search could answer.
+    if (read && !main.nbHits) {
+      var typed = await search(Object.assign({}, opts, { _asTyped: true }));
+      cache.set(key, typed);
+      return typed;
+    }
 
     // Merge facet counts: main has every facet, but the multi-select ones
     // are filtered. Overwrite each disjunctive category's counts with its
