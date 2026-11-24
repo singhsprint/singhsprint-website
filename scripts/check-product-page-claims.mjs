@@ -299,10 +299,18 @@ console.log('6. one turnaround standard, in the layer visitors actually see');
   const entries = [...LANG.matchAll(/'([a-z0-9._]+)':\s*\{([\s\S]{0,1200}?)\n?\s*\},/g)];
   ok('6a lang.js parses into keys to check', entries.length > 100, `${entries.length} keys`);
 
+  // The quote form's rush toggle asks "do you need these within 2-4 business
+  // days?". That is the RUSH window, not the standard, and the owner
+  // confirmed 2-4 is accurate (2026-11-24). Named explicitly, and only that
+  // figure, so a standard-turnaround key cannot hide behind it.
+  const RUSH_WINDOW_KEYS = new Set(['quote.contact.needby.hint', 'quote.contact.rush']);
+  const RUSH_WINDOW = /^2\s*(?:–|-|à)\s*4\b/;
+
   const offenders = [];
   for (const [, key, body] of entries) {
     if (QUOTE_SPEED_KEYS.has(key)) continue;
-    const found = (body.match(FIGURE) || []).filter((f) => !ALLOWED.test(f.trim()));
+    const found = (body.match(FIGURE) || []).filter((f) => !ALLOWED.test(f.trim())
+      && !(RUSH_WINDOW_KEYS.has(key) && RUSH_WINDOW.test(f.trim())));
     if (found.length) offenders.push(`${key} (${[...new Set(found)].join(', ')})`);
   }
   ok('6b every lead-time figure in lang.js is the 5-10 standard',
