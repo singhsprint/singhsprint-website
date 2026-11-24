@@ -652,3 +652,16 @@
   .sp-shared-banner{padding:9px 14px;gap:9px}
   .sp-shared-banner__s{display:none}
 }
+
+/* Popular blanks: the plain list under the grid (scripts/generate-catalog-popular.mjs).
+   Real links in the page itself, for readers that never run the catalogue script. */
+.cat-popular{max-width:1280px;margin:56px auto 0;padding:32px 24px 8px;border-top:1px solid #ece9df}
+.cat-popular h2{font-size:1.25rem;margin:0 0 6px}
+.cat-popular p{color:#666;font-size:.9rem;margin:0 0 16px}
+.cat-popular ul{list-style:none;margin:0 0 18px;padding:0;columns:3;column-gap:32px}
+.cat-popular li{break-inside:avoid;margin:0 0 7px;font-size:.86rem;line-height:1.4}
+.cat-popular a{color:#1a1a1a;text-decoration:none}
+.cat-popular a:hover{text-decoration:underline}
+.cat-popular .cat-popular__all{font-weight:700;text-decoration:underline}
+@media (max-width:900px){.cat-popular ul{columns:2}}
+@media (max-width:560px){.cat-popular ul{columns:1}}
