@@ -160,22 +160,57 @@
   // Only long, unmistakable words are corrected, and never a word that
   // contains a digit: "18500" must never drift into a category.
   var TYPO_TARGETS = Object.keys(SINGLE).filter(function (w) { return w.length >= 6; });
-  function typoCategory(tok) {
-    if (tok.length < 5 || /\d/.test(tok)) return null;
+  function typoWord(tok) {
+    if (tok.length < 5 || /\d/.test(tok) || BRAND_WORDS[tok]) return null;
     for (var i = 0; i < TYPO_TARGETS.length; i++) {
-      if (oneEditApart(tok, TYPO_TARGETS[i])) return SINGLE[TYPO_TARGETS[i]];
+      if (oneEditApart(tok, TYPO_TARGETS[i])) return TYPO_TARGETS[i];
     }
     return null;
+  }
+  function typoCategory(tok) {
+    var w = typoWord(tok);
+    return w ? SINGLE[w] : null;
+  }
+
+  // ── Brand spelling ("did you mean") ─────────────────────────────────────
+  // The page hands us the catalogue's brand names once (setBrands). A long
+  // word one edit away from a brand word is read as that brand: "gilden" ->
+  // "gildan", "champoin" -> "champion", "colours" -> "colors". A word that
+  // is already a brand, category, colour or gender word is never touched.
+  var BRAND_WORDS = {};
+  var BRAND_LIST = [];
+  function setBrands(names) {
+    BRAND_WORDS = {};
+    (names || []).forEach(function (name) {
+      normalise(String(name).replace(/[\u00ae\u2122\u00a9]/g, '')).split(' ').forEach(function (w) {
+        if (w.length >= 5 && !/\d/.test(w)) BRAND_WORDS[w] = 1;
+      });
+    });
+    BRAND_LIST = Object.keys(BRAND_WORDS);
+  }
+  function brandFix(tok) {
+    if (tok.length < 5 || /\d/.test(tok)) return null;
+    if (BRAND_WORDS[tok] || SINGLE[tok] || COLOR_OF[tok] || GENDER_OF[tok] || NOISE[tok]) return null;
+    var found = null;
+    for (var i = 0; i < BRAND_LIST.length; i++) {
+      if (!oneEditApart(tok, BRAND_LIST[i])) continue;
+      if (found) return null;          // two brands equally close: do not guess
+      found = BRAND_LIST[i];
+    }
+    return found;
   }
 
   /**
    * interpret("black gildan hoodies")
    *   -> { text: 'gildan', types: ['hoodie'], colors: ['black'], genders: [], understood: true }
    * understood:false means the query is returned as typed.
+   * corrected: the query with its spelling fixed ("gildan hoodie" for
+   * "gilden hoddie"), or null when nothing was changed. It is what the
+   * "Did you mean" line shows.
    */
   function interpret(raw) {
     var typed = String(raw == null ? '' : raw).trim();
-    var plain = { text: typed, types: [], colors: [], genders: [], understood: false };
+    var plain = { text: typed, types: [], colors: [], genders: [], understood: false, corrected: null };
     var norm = normalise(typed);
     if (!norm) return plain;
     for (var g = 0; g < BRAND_GUARDS.length; g++) {
@@ -185,6 +220,8 @@
     var toks = norm.split(' ');
     var used = toks.map(function () { return false; });
     var types = null;
+    var fixedAny = false;
+    var shown = toks.slice();           // the query as we would spell it
 
     // 1. Category: longest phrase first. The first one found names the
     //    category; any other category word is dropped from the text
@@ -206,7 +243,11 @@
       for (var t = 0; t < toks.length; t++) {
         if (used[t]) continue;
         var guess = typoCategory(toks[t]);
-        if (guess) { types = guess; used[t] = true; break; }
+        if (guess) {
+          types = guess; used[t] = true; fixedAny = true;
+          shown[t] = typoWord(toks[t]);
+          break;
+        }
       }
     }
 
@@ -225,7 +266,19 @@
       });
     }
 
-    if (!types && !colors.length) return plain;
+    // 3b. Brand spelling, on whatever is still plain text.
+    toks.forEach(function (w, i) {
+      if (used[i]) return;
+      var fix = brandFix(w);
+      if (fix) { toks[i] = fix; shown[i] = fix; fixedAny = true; }
+    });
+    var corrected = fixedAny ? shown.join(' ') : null;
+
+    if (!types && !colors.length) {
+      if (!corrected) return plain;
+      // Only the spelling changed: search the corrected words as text.
+      return { text: toks.join(' '), types: [], colors: [], genders: [], understood: true, corrected: corrected };
+    }
 
     // 4. Gender, only alongside a category ("kids tee", "hoodie femme").
     var genders = [];
@@ -246,7 +299,7 @@
 
     var rest = toks.filter(function (w, i) { return !used[i] && !NOISE[w]; });
     return { text: rest.join(' '), types: types ? types.slice() : [], colors: colors,
-             genders: genders, understood: true };
+             genders: genders, understood: true, corrected: corrected };
   }
 
   /** Algolia facetFilters for an interpretation (AND of OR-groups). */
@@ -262,7 +315,7 @@
     return f;
   }
 
-  var api = { interpret: interpret, facetFiltersFor: facetFiltersFor, normalise: normalise };
+  var api = { interpret: interpret, facetFiltersFor: facetFiltersFor, normalise: normalise, setBrands: setBrands };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.SPSearchWords = api;
 })(typeof window !== 'undefined' ? window : null);

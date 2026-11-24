@@ -682,6 +682,9 @@ function loadNav() {
       '.sp-search-panel .sp-search-result:hover,.sp-search-panel .sp-search-result.is-active{background:#fafaf6}',
       '.sp-search-panel .sp-search-result.is-active{border-color:#1a1a1a}',
       '.sp-search-allbtn.is-active{outline:2px solid #1a1a1a;outline-offset:1px}',
+      '.sp-search-panel .sp-search-dym{display:block;padding:6px 10px 10px;font-size:.84rem;color:#555;text-decoration:none;border-radius:8px}',
+      '.sp-search-panel .sp-search-dym strong{color:#1a1a1a;text-decoration:underline}',
+      '.sp-search-panel .sp-search-dym.is-active{background:#fafaf6}',
       '.sp-search-panel .sp-search-price{flex-shrink:0;font-size:.78rem;font-weight:600;color:#1a1a1a;white-space:nowrap}',
       '.sp-search-panel .sp-search-quote{display:inline-block;margin-top:6px;color:#1a1a1a;font-weight:600;text-decoration:underline}',
       '.sp-search-panel .sp-search-result+.sp-search-result{margin-top:2px}',
@@ -1375,8 +1378,44 @@ function loadNav() {
     swTag.src = '/search-words.js';
     swTag.defer = true;
     swTag.setAttribute('data-sp-search-words', '1');
+    swTag.onload = function () { applySearchBrands(); };
     document.head.appendChild(swTag);
   }
+  // Brand names, for the "Did you mean" line (search-words.js setBrands).
+  // One small request per browser session, made when someone first reaches
+  // for the search box, or straight away on the catalogue page.
+  var searchBrands = null;
+  function applySearchBrands() {
+    if (searchBrands && window.SPSearchWords && window.SPSearchWords.setBrands) {
+      window.SPSearchWords.setBrands(searchBrands);
+    }
+  }
+  var brandsPromise = null;
+  function loadSearchBrands() {
+    if (brandsPromise) return brandsPromise;
+    try {
+      var saved = JSON.parse(sessionStorage.getItem('sp_search_brands_v1') || 'null');
+      if (saved && saved.length) { searchBrands = saved; applySearchBrands(); brandsPromise = Promise.resolve(); return brandsPromise; }
+    } catch (e) {}
+    brandsPromise = fetch('https://' + SEARCH_CFG.appId + '-dsn.algolia.net/1/indexes/' + SEARCH_CFG.indexName + '/query', {
+      method: 'POST',
+      headers: {
+        'X-Algolia-Application-Id': SEARCH_CFG.appId,
+        'X-Algolia-API-Key':        SEARCH_CFG.searchKey,
+        'Content-Type':             'application/x-www-form-urlencoded'
+      },
+      body: JSON.stringify({ query: '', hitsPerPage: 0, facets: ['brand_norm'], maxValuesPerFacet: 1000 })
+    }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      var names = d && d.facets && d.facets.brand_norm ? Object.keys(d.facets.brand_norm) : [];
+      if (!names.length) return;
+      searchBrands = names;
+      applySearchBrands();
+      try { sessionStorage.setItem('sp_search_brands_v1', JSON.stringify(names)); } catch (e) {}
+    }).catch(function () {});
+    return brandsPromise;
+  }
+  window.SPSearchBrandsReady = loadSearchBrands;
+  if (/^\/(fr\/)?catalog/.test(window.location.pathname)) loadSearchBrands();
   function spEsc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -1440,7 +1479,9 @@ function loadNav() {
     var it = words ? words.interpret(q) : null;
     var run = (it && it.understood)
       ? algoliaSuggest(it.text, words.facetFiltersFor(it)).then(function (res) {
-          return res.total ? res : algoliaSuggest(q, []);
+          if (!res.total) return algoliaSuggest(q, []);
+          res.corrected = it.corrected || null;
+          return res;
         })
       : algoliaSuggest(q, []);
     return run.catch(function () {
@@ -1480,6 +1521,7 @@ function loadNav() {
     }
 
     input.addEventListener('focus', function () {
+      loadSearchBrands();
       if (input.value.trim().length >= 2 && panel.innerHTML) open();
     });
     input.addEventListener('input', function () {
@@ -1518,7 +1560,14 @@ function loadNav() {
             + '<span>' + t('See all ' + count + 'results for ', 'Voir les ' + count + 'résultats pour ') + '"' + spEsc(q) + '"</span>'
             + '<span class="sp-search-allbtn__hint">↵</span>'
             + '</a>';
-          panel.innerHTML = allBtn + list.map(function (p) {
+          // Spelling was fixed ("gilden" -> "gildan"): say so, and let them
+          // take the corrected search in one click. The rows below are
+          // already the corrected results.
+          var dym = res.corrected
+            ? '<a class="sp-search-dym" href="' + BASE + '/catalog?q=' + encodeURIComponent(res.corrected) + '">'
+              + t('Did you mean ', 'Vouliez-vous dire ') + '<strong>' + spEsc(res.corrected) + '</strong>' + t('?', ' ?') + '</a>'
+            : '';
+          panel.innerHTML = dym + allBtn + list.map(function (p) {
             var raw = (p.hero_image_url || '').replace(/^http:\/\//, 'https://');
             var img = searchImgUrl(raw);
             // Straight to the product. This used to link to a second search

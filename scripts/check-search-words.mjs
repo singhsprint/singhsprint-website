@@ -81,6 +81,24 @@ for (const q of ['18500', 'g185', 'bc3001', 'gildan 5000', 'bella canvas', 'cham
 ok('as typed keeps the original text', words.interpret('  Gildan 5000 ').text === 'Gildan 5000')
 ok('"royal" inside a product name is not a colour', read('true royal') === 'as typed' || read('royal apparel') === 'as typed')
 
+// ── Did you mean ──────────────────────────────────────────────────────────
+ok('no brand list yet: brand spelling is left alone', words.interpret('gilden').corrected === null)
+words.setBrands(['Gildan', 'Champion', 'Comfort Colors', 'Under Armour', 'Carhartt', 'Bella + Canvas®',
+  'Stormtech', 'Port Authority', 'Sportsman', 'Adidas', 'Nike', 'Hanes', 'Red Kap', 'Q-Tees'])
+const dym = (q) => words.interpret(q).corrected
+ok('gilden -> gildan', dym('gilden') === 'gildan' && words.interpret('gilden').text === 'gildan')
+ok('gilden hoddie -> gildan hoodie', dym('gilden hoddie') === 'gildan hoodie')
+ok('champoin hoodie -> champion hoodie', dym('champoin hoodie') === 'champion hoodie')
+ok('comfort colours -> comfort colors', dym('comfort colours') === 'comfort colors')
+ok('under armor -> under armour', dym('under armor') === 'under armour')
+ok('carhart beanie -> carhartt beanie', dym('carhart beanie') === 'carhartt beanie')
+ok('black gilden tee keeps every word', dym('black gilden tee') === 'black gildan tee')
+ok('hoddie -> hoodie', dym('hoddie') === 'hoodie')
+for (const q of ['gildan', 'gildan hoodie', '18500', 'heavy cotton tee', 'nike', 'niek', 'hoodie', 'black hoodie', 'bc3001']) {
+  ok(`"${q}" is spelled right: no suggestion`, dym(q) === null, `got ${dym(q)}`)
+}
+ok('a style number is never "corrected"', dym('g18500') === null && dym('64000l') === null)
+
 // ── Filters handed to Algolia ─────────────────────────────────────────────
 const ff = words.facetFiltersFor(words.interpret('mens black sweater'))
 ok('category is an OR group', JSON.stringify(ff[0]) === '["category_effective:crewneck","category_effective:sweater"]')
@@ -100,6 +118,11 @@ ok('both fall back to the words as typed', /algoliaSuggest\(q, \[\]\)/.test(head
 ok('a slow old answer cannot overwrite a newer one', /if \(mine !== seq\) return;/.test(header))
 ok('typed text is escaped before it reaches the page', /spEsc\(q\)/.test(header) && /spEsc\(p\.name/.test(header))
 ok('a suggestion opens the product itself', /'\/catalog\?product=' \+ encodeURIComponent\(p\.product_id\)/.test(header))
+const page = readFileSync(ROOT + 'catalog.js', 'utf8')
+ok('header shows "Did you mean"', /sp-search-dym/.test(header) && /spEsc\(res\.corrected\)/.test(header))
+ok('catalogue page says what it searched for', /corrected:\s+\(read && read\.corrected\)/.test(catalog) && /spRenderDidYouMean\(\);/.test(page))
+ok('"search instead" turns the reader off for that query', /_asTyped:\s+!!state\.filters\.q && state\._asTypedQ === state\.filters\.q/.test(page))
+ok('the page never waits long for the brand list', /setTimeout\(r, 400\)/.test(catalog))
 for (const f of ['catalog.html', 'fr/catalog.html']) {
   const h = readFileSync(ROOT + f, 'utf8')
   ok(`${f} loads search-words.js before catalog-algolia.js`,

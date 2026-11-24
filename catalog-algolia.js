@@ -279,6 +279,12 @@
     // Skipped once a category chip is chosen: the chip is the shopper's own
     // answer to "what kind of garment", so the box is then plain text.
     var words = window.SPSearchWords;
+    // Brand names for the spelling fix. Never hold the page for them.
+    if (opts.q && window.SPSearchBrandsReady) {
+      try {
+        await Promise.race([window.SPSearchBrandsReady(), new Promise(function (r) { setTimeout(r, 400); })]);
+      } catch (e) {}
+    }
     var read  = (words && opts.q && !opts.type && !opts._asTyped) ? words.interpret(opts.q) : null;
     if (read && !read.understood) read = null;
     var textOpts = read ? Object.assign({}, opts, { q: read.text }) : opts;
@@ -344,6 +350,8 @@
       page:       main.page,
       facets:     mergedFacets,
       processingTimeMS: main.processingTimeMS,
+      // Set when the spelling was fixed; catalog.js shows "Showing results for".
+      corrected:  (read && read.corrected) || null,
       _rawHits:   rawHits,
     };
     cache.set(key, out);

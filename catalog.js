@@ -3740,6 +3740,9 @@
           csa:            state.filters.csa,
           inStockOnly:    state.filters.inStockOnly,
           q:              state.filters.q,
+          // "Search instead for <what I typed>" turns the word reader off
+          // for that exact query (see spRenderDidYouMean).
+          _asTyped:       !!state.filters.q && state._asTypedQ === state.filters.q,
           // New derived facet filters.
           colorFamilies:  state.filters.colorFamilies,
           genders:        state.filters.genders,
@@ -3761,6 +3764,7 @@
         state.done       = true;
         state._algoliaFacets = r.facets;
         state._algoliaTotal  = r.total;
+        state._corrected     = r.corrected || null;
         render();
       } catch (e) {
         console.error('Algolia search failed; falling back to empty state:', e);
@@ -3972,6 +3976,7 @@
     document.getElementById('resultCount').textContent = (state._algoliaTotal != null
       ? state._algoliaTotal
       : state.products.length).toLocaleString();
+    spRenderDidYouMean();
 
     // Every render supersedes the one before it. The token is read by the
     // chunked tail below, which is the only asynchronous part of drawing.
@@ -5264,6 +5269,41 @@
     c.textContent = label;
     c.onclick = onClick;
     return c;
+  }
+
+  // "Showing results for gildan hoodie. Search instead for gilden hoddie."
+  // Shown under the result count when search-words.js fixed the spelling.
+  function spRenderDidYouMean() {
+    var host = document.getElementById('spDidYouMean');
+    var row = document.querySelector('.cat-meta-row');
+    if (!host && row && row.parentNode) {
+      host = document.createElement('div');
+      host.id = 'spDidYouMean';
+      host.style.cssText = 'display:none;margin:2px 0 12px;font-size:.9rem;color:#555';
+      row.parentNode.insertBefore(host, row.nextSibling);
+    }
+    if (!host) return;
+    var fixed = state._corrected, typed = state.filters.q;
+    if (!fixed || !typed) { host.style.display = 'none'; host.textContent = ''; return; }
+    var fr = /^\/fr(\/|$)/.test(location.pathname);
+    host.textContent = '';
+    host.appendChild(document.createTextNode(fr ? 'Résultats pour ' : 'Showing results for '));
+    var strong = document.createElement('strong');
+    strong.style.color = '#1a1a1a';
+    strong.textContent = fixed;
+    host.appendChild(strong);
+    host.appendChild(document.createTextNode(fr ? '. Chercher plutôt ' : '. Search instead for '));
+    var link = document.createElement('a');
+    link.href = '#';
+    link.style.cssText = 'color:#1a1a1a;text-decoration:underline';
+    link.textContent = typed;
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      state._asTypedQ = state.filters.q;
+      resetAndFetch();
+    });
+    host.appendChild(link);
+    host.style.display = 'block';
   }
 
   function resetAndFetch() {
