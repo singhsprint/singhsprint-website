@@ -81,7 +81,7 @@ console.log('1. the generator states one turnaround, and it is the owner-confirm
 console.log('2. only the methods the shop runs');
 {
   ok('2a the generator offers three methods, not four',
-    /all three of our methods/.test(GEN) && !/all four of our methods/.test(GEN));
+    /our three methods/.test(GEN) && !/four of our methods/.test(GEN));
   ok('2b no screen-printing clause left in the generator template',
     !/bodyP1Screen/.test(GEN) && !/sérigraphie/.test(GEN) && !/screen printing/i.test(GEN.replace(/\/\/[^\n]*/g, '')),
     'the template still composes a screen-printing sentence');
@@ -108,6 +108,28 @@ console.log('3. every generated page agrees, and there are no orphans');
     badMethod.length === 0, `${badMethod.length} pages, e.g. ${badMethod.slice(0, 3).join(', ')}`);
   ok('3d no page lists screen printing in its meta description',
     badMeta.length === 0, `${badMeta.length} pages, e.g. ${badMeta.slice(0, 3).join(', ')}`);
+  // 2026-11-24 (GEO audit). Each of these was on thousands of pages.
+  let carrier = [], filler = [], hours = [], heavy = [], lead250 = [];
+  let indexable = new Set();
+  try { indexable = new Set(JSON.parse(read('p/indexable.json')).slugs); } catch {}
+  for (const slug of EN_SLUGS) {
+    for (const file of [`p/${slug}/index.html`, `fr/p/${slug}/index.html`]) {
+      const html = read(file);
+      if (!html) continue;
+      if (/Canpar|Purolator/.test(html)) carrier.push(file);
+      if (/most-decorated|plus décorés|Who orders this blank|Qui commande ce vêtement/.test(html)) filler.push(file);
+      if (/9 AM to 9 PM|9 h à 21 h/.test(html)) hours.push(file);
+      const oz = (html.match(/product-hero__meta">([\d.]+) oz/) || [])[1];
+      if (oz && Number(oz) > 16) heavy.push(file);
+    }
+    if (indexable.has(slug) && /at 250\+ qty/.test(read(`p/${slug}/index.html`))) lead250.push(slug);
+  }
+  ok('3l no page names a carrier (the shop ships Canada-wide)', carrier.length === 0, `${carrier.length}, e.g. ${carrier.slice(0, 3).join(', ')}`);
+  ok('3m no page carries the pasted filler ("most-decorated", "Who orders this blank?")', filler.length === 0, `${filler.length}, e.g. ${filler.slice(0, 3).join(', ')}`);
+  ok('3n no page states 9 AM to 9 PM hours', hours.length === 0, `${hours.length}, e.g. ${hours.slice(0, 3).join(', ')}`);
+  ok('3o no page prints a fabric weight over 16 oz (23.28 oz was a feed placeholder)', heavy.length === 0, `${heavy.length}, e.g. ${heavy.slice(0, 3).join(', ')}`);
+  ok('3p the pages Google indexes lead with the 5-piece price, not the 250+ one', lead250.length === 0, lead250.join(', '));
+  ok('3q every indexable slug is a page on disk', [...indexable].every((x) => EN_SLUGS.includes(x)), [...indexable].filter((x) => !EN_SLUGS.includes(x)).join(', '));
   ok('3e every EN page has its FR mirror',
     noFr.length === 0, `${noFr.length} missing, e.g. ${noFr.slice(0, 3).join(', ')}`);
 

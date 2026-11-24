@@ -47,6 +47,11 @@ let INDEXABLE = null;
 try {
   INDEXABLE = new Set(JSON.parse(await fs.readFile(path.join(ROOT, 'p', 'indexable.json'), 'utf8')).slugs);
 } catch { /* no list yet: index everything, the old behaviour */ }
+// Hand-written notes for the blanks the shop knows best: p/notes.json,
+// { "<slug>": { "en": "...", "fr": "..." } }. A product's pick_note from the
+// CRM wins when both exist. No note, no section.
+let NOTES = {};
+try { NOTES = JSON.parse(await fs.readFile(path.join(ROOT, 'p', 'notes.json'), 'utf8')); } catch { /* none yet */ }
 const robotsTag = (slug) => (INDEXABLE && !INDEXABLE.has(slug))
   ? '\n  <meta name="robots" content="noindex,follow">' : '';
 
@@ -253,6 +258,15 @@ function floorFor(p) {
   return Number((ones + 0.95).toFixed(2));
 }
 
+// Fabric weight in oz/yd². The feeds carry junk in this field (693 pages said
+// 23.28 oz, on hoodies and shells alike): anything a knit or fleece cannot
+// weigh is treated as not given, and the page says so instead of printing it.
+const MAX_PLAUSIBLE_OZ = 16;
+function fabricOz(p) {
+  const w = Number(p.weight_oz);
+  return (w > 0 && w <= MAX_PLAUSIBLE_OZ) ? w : null;
+}
+
 // Resolve a price for the page: the live engine first, else garment floor.
 function resolvedPrice(p) {
   if (typeof p.price_from === 'number' && p.price_from > 0) return p.price_from;
@@ -289,6 +303,17 @@ const I18N = {
   perUnit:         { en: '/unit',          fr: '/unité' },
   hintEngine:      { en: 'Decorated, 1-side print, at 250+ qty. Smaller orders priced on your quote.',
                      fr: 'Décoré, impression 1 côté, à 250+ unités. Les petites commandes sont chiffrées dans votre soumission.' },
+  // 2026-11-24 — the page leads with the price at the 5-piece minimum, the
+  // one a first-time buyer actually pays, and says where it goes with volume.
+  // It used to lead with the 250+ price under the word "From".
+  atFive:          { en: 'at 5 pieces',    fr: 'pour 5 pièces' },
+  hintTiersA:      { en: 'Decorated with a 1-side print. Drops to',
+                     fr: 'Décoré, impression 1 côté. Descend à' },
+  hintTiersB:      { en: 'at 50 pieces and',  fr: 'à 50 pièces et à' },
+  hintTiersC:      { en: 'at 250 or more.',   fr: 'à 250 et plus.' },
+  metaAtFive:      { en: '/unit at 5 pieces,', fr: '/unité pour 5 pièces,' },
+  metaAt250:       { en: 'at 250+.',           fr: 'à 250+.' },
+  noteH2:          { en: 'Why we pick it',     fr: 'Pourquoi on le choisit' },
   hintFloor:       { en: 'Starting tier for this garment category, decorated 1-side at 250+ qty. We&rsquo;ll send your exact per-unit price with the quote.',
                      fr: 'Palier de départ pour cette catégorie, décoré 1 côté à 250+ unités. Le prix unitaire exact arrive avec votre soumission.' },
   ctaQuote:        { en: 'Get a quote →', fr: 'Demander une soumission →' },
@@ -310,8 +335,11 @@ const I18N = {
                      fr: 'Impression personnalisée sur le' },
   bodyH2Suffix:    { en: 'in Montreal',    fr: 'à Montréal' },
   bodyP1Lead:      { en: 'The',            fr: 'Le' },
-  bodyP1Mid:       { en: 'is one of the most-decorated styles out of our Sainte-Anne-de-Bellevue studio. We decorate it across all three of our methods:',
-                     fr: 'est l\'un des modèles les plus décorés à notre studio de Sainte-Anne-de-Bellevue. Nous le décorons avec nos trois méthodes :' },
+  // 2026-11-24 — this said every one of 4,603 blanks "is one of the
+  // most-decorated styles out of our studio". It is now only what is true of
+  // all of them: we decorate it, with these three methods.
+  bodyP1Mid:       { en: 'is decorated at our Sainte-Anne-de-Bellevue studio with any of our three methods:',
+                     fr: 'est décoré à notre studio de Sainte-Anne-de-Bellevue avec l\'une de nos trois méthodes :' },
   bodyP1Dtg:       { en: 'for soft-hand full-colour prints on cotton,',
                      fr: 'pour des impressions souples en couleurs sur coton,' },
   bodyP1Dtf:       { en: 'for vibrant prints on poly blends and dark fabrics,',
@@ -334,8 +362,8 @@ const I18N = {
   // The separate embroidery figure is gone rather than corrected: at 7-11 it
   // sat INSIDE the 7-14 standard, so it read as embroidery being the fast
   // option, and nobody has given a measured embroidery window.
-  bodyP2:          { en: 'Minimum order is 5 pieces, counted across the whole order, whether it is DTG/DTF or embroidery. Standard turnaround is 5-10 business days from approved artwork, and rush in 3 days is available for 25% extra - ask when you request your quote. Local pickup in Sainte-Anne-de-Bellevue is free; Canada-wide shipping via Canpar or Purolator on request.',
-                     fr: 'Commande minimum de 5 pièces, comptées sur la commande entière, en DTG/DTF comme en broderie. Délai standard : 5 à 10 jours ouvrables à partir de l\'approbation du visuel, et un service accéléré en 3 jours est offert pour 25 % de plus - demandez-le avec votre soumission. Ramassage gratuit à Sainte-Anne-de-Bellevue ; expédition pancanadienne via Canpar ou Purolator sur demande.' },
+  bodyP2:          { en: 'Minimum order is 5 pieces, counted across the whole order, whether it is DTG/DTF or embroidery. Standard turnaround is 5-10 business days from approved artwork, and rush in 3 days is available for 25% extra - ask when you request your quote. Local pickup in Sainte-Anne-de-Bellevue is free, and we ship Canada-wide.',
+                     fr: 'Commande minimum de 5 pièces, comptées sur la commande entière, en DTG/DTF comme en broderie. Délai standard : 5 à 10 jours ouvrables à partir de l\'approbation du visuel, et un service accéléré en 3 jours est offert pour 25 % de plus - demandez-le avec votre soumission. Ramassage gratuit à Sainte-Anne-de-Bellevue, et expédition partout au Canada.' },
 
   specsH2:         { en: 'Specifications', fr: 'Spécifications' },
   specBrand:       { en: 'Brand:',         fr: 'Marque :' },
@@ -348,13 +376,14 @@ const I18N = {
   specSizes:       { en: 'Sizes typically available: XS–4XL depending on colour (2XL+ adds $3/pc per industry standard)',
                      fr: 'Tailles habituellement disponibles : XS à 4XL selon la couleur (2XL et plus : supplément de 3 $/pièce, norme de l\'industrie)' },
 
-  whoH2:           { en: 'Who orders this blank?', fr: 'Qui commande ce vêtement vierge ?' },
-  whoP:            { en: 'Mostly West Island businesses, McGill student organisations, charity-run organisers, and corporate procurement teams running staff-uniform programs. Net-30 terms are available for approved repeat accounts.',
-                     fr: 'Surtout des entreprises de l\'Ouest-de-l\'Île, des organisations étudiantes de McGill, des organisateurs de courses caritatives et des équipes d\'approvisionnement corporatives qui gèrent des programmes d\'uniformes. Modalités Net-30 disponibles pour les comptes récurrents approuvés.' },
+  // 2026-11-24 — "Who orders this blank?" is gone. One paragraph about West
+  // Island businesses and McGill student groups was pasted under all 4,603
+  // products. A product with something real to say gets a note (pick_note
+  // from the CRM's picks list, or p/notes.json); the rest say nothing.
 
   quoteH2:         { en: 'Get your quote', fr: 'Obtenez votre soumission' },
-  quoteP:          { en: 'Pick a decoration method, send us your artwork (or use our free design help) and we\'ll come back with a firm quote, mockup timeline and Net-30 paperwork, usually within the hour during business hours (9 AM to 9 PM, 7 days a week).',
-                     fr: 'Choisissez une méthode de décoration, envoyez votre visuel (ou utilisez notre service de design gratuit) et on revient avec une soumission ferme, un échéancier de maquette et la paperasse Net-30, généralement en moins d\'une heure pendant les heures d\'ouverture (9 h à 21 h, 7 jours sur 7).' },
+  quoteP:          { en: 'Pick a decoration method, send us your artwork (or use our free design help) and we\'ll come back with a firm quote, mockup timeline and Net-30 paperwork, usually within one business hour.',
+                     fr: 'Choisissez une méthode de décoration, envoyez votre visuel (ou utilisez notre service de design gratuit) et on revient avec une soumission ferme, un échéancier de maquette et la paperasse Net-30, généralement en moins d\'une heure ouvrable.' },
 
   // Footer CTA
   ctaSecH2Prefix:  { en: 'Get a quote for', fr: 'Demandez une soumission pour' },
@@ -390,8 +419,17 @@ function buildPage(p, lang = 'en') {
 
   const priceFrom = resolvedPrice(p);
   const usingFloor = !(typeof p.price_from === 'number' && p.price_from > 0);
+  // Engine prices at the 5-piece minimum, 50 and 250 (main() attaches them).
+  // The tiers are shown only when all three exist and step down; otherwise
+  // the page keeps the single "From" price it had.
+  const t5 = p._price5, t50 = p._price50, t250 = p._price250;
+  const hasTiers = !usingFloor && [t5, t50, t250].every(v => typeof v === 'number' && v > 0) && t5 >= t50 && t50 >= t250;
+  const oz = fabricOz(p);
+  const note = (p.pick_note && p.pick_note[lang]) || (NOTES[slug] && NOTES[slug][lang]) || '';
   const title = `${brand} ${style} ${name} — ${t('titleSuffix', lang)}`;
-  const meta  = `${t('metaPrefix', lang)} ${brand} ${style} ${name} ${t('metaCore', lang)} $${priceFrom.toFixed(2)}${t('metaPerUnit', lang)}. ${t('metaTail', lang)}`;
+  const meta  = hasTiers
+    ? `${t('metaPrefix', lang)} ${brand} ${style} ${name} ${t('metaCore', lang)} $${t5.toFixed(2)}${t('metaAtFive', lang)} $${t250.toFixed(2)} ${t('metaAt250', lang)} ${t('metaTail', lang)}`
+    : `${t('metaPrefix', lang)} ${brand} ${style} ${name} ${t('metaCore', lang)} $${priceFrom.toFixed(2)}${t('metaPerUnit', lang)}. ${t('metaTail', lang)}`;
 
   // Variant offers per color — drives "Available in N colours" rich-result variants.
   // shippingDetails + hasMerchantReturnPolicy are required by Google's Merchant
@@ -399,8 +437,10 @@ function buildPage(p, lang = 'en') {
   const colors = (p.colors || []).slice(0, 24);
   const offers = {
     '@type': 'AggregateOffer',
-    'lowPrice': priceFrom.toFixed(2),
-    'highPrice': (priceFrom + 20).toFixed(2),
+    // The real range: 250+ at the bottom, the 5-piece minimum at the top.
+    // highPrice used to be lowPrice + 20, a number nothing produced.
+    'lowPrice': (hasTiers ? t250 : priceFrom).toFixed(2),
+    'highPrice': (hasTiers ? t5 : priceFrom + 20).toFixed(2),
     'priceCurrency': 'CAD',
     'offerCount': colors.length || 1,
     'availability': p.in_stock === false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
@@ -530,9 +570,12 @@ function buildPage(p, lang = 'en') {
     <div>
       <div class="product-hero__brand">${escapeHtml(brand)} · ${t('styleLabel', lang)} ${escapeHtml(style)}</div>
       <h1>${escapeHtml(name)}</h1>
-      <div class="product-hero__meta">${[p.weight_oz ? p.weight_oz + ' ' + t('oz', lang) : '', p.fabric || '', p.gender || '', (p.colors || []).length + ' ' + t('coloursAvail', lang)].filter(Boolean).join(' · ')}</div>
-      <div class="product-hero__price">${t('from', lang)} <strong>$${priceFrom.toFixed(2)}</strong> ${t('perUnit', lang)}</div>
-      <div class="product-hero__hint">${usingFloor ? t('hintFloor', lang) : t('hintEngine', lang)}</div>
+      <div class="product-hero__meta">${[oz ? oz + ' ' + t('oz', lang) : '', p.fabric || '', p.gender || '', (p.colors || []).length + ' ' + t('coloursAvail', lang)].filter(Boolean).join(' · ')}</div>
+      ${hasTiers
+        ? `<div class="product-hero__price"><strong>$${t5.toFixed(2)}</strong> ${t('perUnit', lang)} ${t('atFive', lang)}</div>
+      <div class="product-hero__hint">${t('hintTiersA', lang)} $${t50.toFixed(2)} ${t('hintTiersB', lang)} $${t250.toFixed(2)} ${t('hintTiersC', lang)}</div>`
+        : `<div class="product-hero__price">${t('from', lang)} <strong>$${priceFrom.toFixed(2)}</strong> ${t('perUnit', lang)}</div>
+      <div class="product-hero__hint">${usingFloor ? t('hintFloor', lang) : t('hintEngine', lang)}</div>`}
       <div class="product-hero__ctas">
         <a class="btn btn-primary" href="${lang === 'fr' ? '/fr/quote' : '/quote'}?product=${encodeURIComponent(p.product_id || '')}">${t('ctaQuote', lang)}</a>
         <a class="btn btn-outline" href="${lang === 'fr' ? '/fr/catalog' : '/catalog'}#p=${encodeURIComponent(p.product_id || '')}">${t('ctaInCatalog', lang)}</a>
@@ -545,7 +588,7 @@ function buildPage(p, lang = 'en') {
   </div></div></section>
 
   <section class="factbar"><div class="container"><div class="factbar__grid">
-    <div class="factbar__cell"><strong>${escapeHtml(p.weight_oz ? p.weight_oz + ' ' + t('oz', lang) : t('none', lang))}</strong><span>${t('fbFabricWeight', lang)}</span></div>
+    <div class="factbar__cell"><strong>${escapeHtml(oz ? oz + ' ' + t('oz', lang) : t('none', lang))}</strong><span>${t('fbFabricWeight', lang)}</span></div>
     <div class="factbar__cell"><strong>${escapeHtml(p.fabric || t('none', lang))}</strong><span>${t('fbMaterial', lang)}</span></div>
     <div class="factbar__cell"><strong>${(p.colors || []).length}</strong><span>${t('fbColours', lang)}</span></div>
     <div class="factbar__cell"><strong>${p.in_stock === false ? t('outOfStock', lang) : t('inStock', lang)}</strong><span>${t('fbAvailability', lang)}</span></div>
@@ -555,19 +598,19 @@ function buildPage(p, lang = 'en') {
     <h2>${t('bodyH2Title', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyH2Suffix', lang)}</h2>
     <p>${t('bodyP1Lead', lang)} ${escapeHtml(brand + ' ' + style)} ${t('bodyP1Mid', lang)} <strong>DTG</strong> ${t('bodyP1Dtg', lang)} <strong>DTF</strong> ${t('bodyP1Dtf', lang)} <strong>${lang === 'fr' ? 'broderie' : 'embroidery'}</strong> ${t('bodyP1Emb', lang)}</p>
     <p>${t('bodyP2', lang)}</p>
-
+${note ? `
+    <h2 style="margin-top:36px">${t('noteH2', lang)}</h2>
+    <p>${escapeHtml(note)}</p>
+` : ''}
     <h2 style="margin-top:36px">${t('specsH2', lang)}</h2>
     <ul>
       <li>${t('specBrand', lang)} ${escapeHtml(brand)}</li>
       <li>${t('specStyle', lang)} ${escapeHtml(style)}</li>
       <li>${p.fabric ? t('specFabric', lang) + ' ' + escapeHtml(p.fabric) : t('specFabricNA', lang)}</li>
-      <li>${p.weight_oz ? t('specWeight', lang) + ' ' + p.weight_oz + ' oz/yd²' : t('specWeightNA', lang)}</li>
+      <li>${oz ? t('specWeight', lang) + ' ' + oz + ' oz/yd²' : t('specWeightNA', lang)}</li>
       <li>${t('specColours', lang)} ${(p.colors || []).length}</li>
       <li>${t('specSizes', lang)}</li>
     </ul>
-
-    <h2 style="margin-top:36px">${t('whoH2', lang)}</h2>
-    <p>${t('whoP', lang)}</p>
 
     <h2 style="margin-top:36px">${t('quoteH2', lang)}</h2>
     <p>${t('quoteP', lang)}</p>
@@ -600,6 +643,23 @@ async function main() {
   const data = await res.json();
   const products = (data.products || []).slice();
   console.log(`got ${products.length} products`);
+
+  // Prices at the 5-piece minimum, 50 and 250, from the same engine.
+  const sep = API_URL.includes('?') ? '&' : '?';
+  for (const qty of [5, 50, 250]) {
+    try {
+      const r = await fetch(API_URL + sep + 'qty=' + qty);
+      if (!r.ok) throw new Error('status ' + r.status);
+      const byId = new Map(((await r.json()).products || []).map(x => [x.product_id, x.price_from]));
+      for (const p of products) {
+        const v = byId.get(p.product_id);
+        if (typeof v === 'number' && v > 0) p['_price' + qty] = v;
+      }
+      console.log(`  prices at ${qty}: ${byId.size}`);
+    } catch (e) {
+      console.warn(`  no prices at ${qty} (${e.message}); those pages keep the single From price`);
+    }
+  }
 
   products.sort((a, b) => score(b) - score(a));
   // Filter first (must have a brand + style for a clean URL), then take TOP_N
