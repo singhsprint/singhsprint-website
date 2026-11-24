@@ -686,7 +686,18 @@ function loadNav() {
       '.sp-search-panel .sp-search-dym strong{color:#1a1a1a;text-decoration:underline}',
       '.sp-search-panel .sp-search-dym.is-active{background:#fafaf6}',
       '.sp-search-panel .sp-search-price{flex-shrink:0;font-size:.78rem;font-weight:600;color:#1a1a1a;white-space:nowrap}',
-      '.sp-search-panel .sp-search-quote{display:inline-block;margin-top:6px;color:#1a1a1a;font-weight:600;text-decoration:underline}',
+      '.sp-need{position:relative;display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid #ece9df;border-radius:10px;background:#fafaf6;text-align:left;overflow:hidden}',
+      '.sp-need__h{font-size:.9rem;color:#1a1a1a}',
+      '.sp-need textarea,.sp-need input[type=text]{width:100%;box-sizing:border-box;border:1px solid #d9d5c8;border-radius:8px;padding:9px 10px;font:inherit;font-size:16px;background:#fff;color:#1a1a1a}',
+      '.sp-need textarea{resize:vertical;min-height:58px}',
+      '.sp-need textarea:focus,.sp-need input[type=text]:focus{outline:none;border-color:#1a1a1a}',
+      '.sp-need__row{display:flex;gap:8px}',
+      '.sp-need__row input{flex:1;min-width:0}',
+      '.sp-need button{align-self:flex-start;background:#1a1a1a;color:#fff;border:none;border-radius:8px;padding:9px 18px;font:inherit;font-weight:700;font-size:.86rem;cursor:pointer}',
+      '.sp-need button:disabled{opacity:.6;cursor:default}',
+      '.sp-need__msg{color:#b3261e;font-size:.8rem}',
+      '.sp-need__ok{font-size:.88rem;color:#1a1a1a;line-height:1.5}',
+      '@media (max-width:520px){.sp-need__row{flex-direction:column}}',
       '.sp-search-panel .sp-search-result+.sp-search-result{margin-top:2px}',
       '.sp-search-panel .sp-search-result img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#f3f1ea;flex-shrink:0}',
       '.sp-cart{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #e6e3d8;border-radius:50%;color:#1a1a1a;text-decoration:none;background:#fff;transition:border-color .15s}',
@@ -1524,6 +1535,134 @@ function loadNav() {
     });
   }
 
+  // ── "Tell us what you need" ─────────────────────────────────────────────
+  // Shown where a search dead-ends (header dropdown and the catalogue's
+  // empty state). Three fields, no chat: what they need, a name, an email
+  // or phone. It lands in the OS as a normal website request, with what
+  // they searched for, through the same /api/inbound the quote forms use.
+  var NEED_T = IS_FR ? {
+    h: 'Introuvable? Dites-nous ce qu’il vous faut',
+    ph: 'Ex. 40 kangourous noirs à fermeture éclair avec notre logo, pour le 15 décembre',
+    name: 'Votre nom', contact: 'Courriel ou téléphone', send: 'Envoyer', sending: 'Envoi…',
+    errNeed: 'Dites-nous ce que vous cherchez.',
+    errContact: 'Ajoutez un numéro de téléphone ou un courriel valide.',
+    errSend: 'Ça n’a pas passé. Appelez-nous au (438) 544-3800 ou écrivez à sales@singhsprint.com.',
+    okH: 'Reçu, merci!', okP: 'On regarde ce qu’on peut trouver et on vous revient.'
+  } : {
+    h: 'Can’t find it? Tell us what you need',
+    ph: 'e.g. 40 black zip hoodies with our logo, needed by Dec 15',
+    name: 'Your name', contact: 'Email or phone', send: 'Send', sending: 'Sending…',
+    errNeed: 'Tell us what you’re looking for.',
+    errContact: 'Add a phone number or email we can reach you at.',
+    errSend: 'That didn’t go through. Call us at (438) 544-3800 or email sales@singhsprint.com.',
+    okH: 'Got it, thanks!', okP: 'We’ll see what we can find and get back to you.'
+  };
+  function needFormHtml(q) {
+    return '<form class="sp-need" novalidate data-q="' + spEsc(q || '') + '">'
+      + '<strong class="sp-need__h">' + spEsc(NEED_T.h) + '</strong>'
+      + '<textarea name="need" rows="2" maxlength="1000" placeholder="' + spEsc(NEED_T.ph) + '" aria-label="' + spEsc(NEED_T.h) + '"></textarea>'
+      + '<div class="sp-need__row">'
+      + '<input name="name" type="text" maxlength="120" autocomplete="name" placeholder="' + spEsc(NEED_T.name) + '" aria-label="' + spEsc(NEED_T.name) + '"/>'
+      + '<input name="contact" type="text" maxlength="200" placeholder="' + spEsc(NEED_T.contact) + '" aria-label="' + spEsc(NEED_T.contact) + '"/>'
+      + '</div>'
+      // Honeypot: people never see or fill this; the OS drops anything that does.
+      + '<input name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"/>'
+      + '<div class="sp-need__msg" role="alert" hidden></div>'
+      + '<button type="submit">' + spEsc(NEED_T.send) + '</button>'
+      + '</form>';
+  }
+  function needContact(v) {
+    v = (v || '').trim();
+    if (v.indexOf('@') > -1) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? { email: v } : null;
+    var digits = v.replace(/\D/g, '');
+    return (digits.length >= 10 && digits.length <= 15) ? { phone: v } : null;
+  }
+  function needAttribution() {
+    var out = {};
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid'].forEach(function (k) {
+      var v = null;
+      try { v = sessionStorage.getItem('sp_' + k); } catch (e) {}
+      if (v) out[k] = String(v).slice(0, 200);
+    });
+    return out;
+  }
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || !form.classList || !form.classList.contains('sp-need')) return;
+    e.preventDefault();
+    var msg = form.querySelector('.sp-need__msg');
+    var btn = form.querySelector('button[type="submit"]');
+    function say(text) { msg.textContent = text; msg.hidden = !text; }
+    var need = (form.elements.need.value || '').trim();
+    var name = (form.elements.name.value || '').trim();
+    var contact = needContact(form.elements.contact.value);
+    var searched = form.getAttribute('data-q') || '';
+    if (need.length < 3) { say(NEED_T.errNeed); form.elements.need.focus(); return; }
+    if (!contact) { say(NEED_T.errContact); form.elements.contact.focus(); return; }
+    say('');
+    btn.disabled = true; btn.textContent = NEED_T.sending;
+    var SPU = window.SP_UPLOADS || null;
+    var attemptId = (SPU && SPU.newAttemptId) ? SPU.newAttemptId() : null;
+    try { if (SPU && SPU.setContact) SPU.setContact({ email: contact.email || null, phone: contact.phone || null, name: name }); } catch (e1) {}
+    var payload = {
+      kind: 'quote',
+      contact_name: name || null,
+      email: contact.email || null,
+      phone: contact.phone || null,
+      garment_source: 'we_supply',
+      estimated_total: 0,
+      notes: 'Could not find it in the site search.'
+        + (searched ? ' Searched for: "' + searched + '".' : '')
+        + ' They need: ' + need,
+      cart_items: [], size_breakdown: {}, designs: [],
+      meta: {
+        search_request: true,
+        search_query: searched.slice(0, 200),
+        landing_page: location.pathname,
+        lang: IS_FR ? 'fr' : 'en',
+        attribution: needAttribution()
+      },
+      source_url: location.href,
+      browser_session: (SPU && SPU.session) ? SPU.session() : null,
+      attempt_id: attemptId,
+      website: form.elements.website.value || null
+    };
+    fetch('https://singhsprint-crm.vercel.app/api/inbound', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload), keepalive: true
+    }).then(function (r) {
+      if (!r || !r.ok) throw new Error('inbound ' + (r && r.status));
+      return r.json().catch(function () { return {}; });
+    }).then(function (j) {
+      // spam:true = the OS flagged it. Show the normal success (never tip
+      // off a bot) and keep it out of ad conversions.
+      if (!(j && j.spam === true)) {
+        try {
+          if (window.SP_LEAD) window.SP_LEAD.afterInbound(j, {
+            contentName: 'search request', contentCategory: 'search', form: 'search_request',
+            user: { email: contact.email, phone: contact.phone, name: name }
+          });
+        } catch (e2) {}
+        try { if (window.spTrack) window.spTrack('search_request_submit', { query: searched.slice(0, 80) }); } catch (e3) {}
+      }
+      form.innerHTML = '<div class="sp-need__ok" role="status"><strong>' + spEsc(NEED_T.okH) + '</strong><br>' + spEsc(NEED_T.okP) + '</div>';
+    }).catch(function (err) {
+      try {
+        if (SPU && SPU.reportFailure) {
+          var m = /inbound (\d+)/.exec(String((err && err.message) || ''));
+          SPU.reportFailure(m ? 'http_error' : 'network_error', {
+            attempt_id: attemptId, form: 'search_request', status_code: m ? Number(m[1]) : null,
+            error: String((err && err.message) || err).slice(0, 300),
+            contact_name: name, email: contact.email || null, phone: contact.phone || null, payload: payload
+          });
+        }
+      } catch (e4) {}
+      btn.disabled = false; btn.textContent = NEED_T.send;
+      say(NEED_T.errSend);
+    });
+  });
+  window.SPNeed = { html: needFormHtml };
+
   // ----- Inline search dropdown (no full-screen overlay) -----
   // We bind both the desktop search field and the in-drawer mobile one to
   // the same typeahead logic. Each has its own results panel.
@@ -1575,9 +1714,7 @@ function loadNav() {
           if (!list.length) {
             panel.innerHTML = '<div class="sp-search-empty">'
               + t('Nothing matches "', 'Aucun résultat pour « ') + spEsc(q) + t('".', ' ».')
-              + '<br><a class="sp-search-quote" href="' + BASE + '/quote">'
-              + t("Tell us what you need and we'll find it", 'Dites-nous ce que vous cherchez')
-              + '</a></div>';
+              + '</div>' + needFormHtml(q);
             return;
           }
           // The "See all results in catalog" CTA is the customer's

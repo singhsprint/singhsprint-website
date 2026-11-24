@@ -3985,6 +3985,7 @@
     if (state.products.length === 0) {
       reconcileGrid(grid, [], renderOpts(gen));
       empty.style.display = 'block';
+      spRenderNeedForm(empty);
       return;
     }
     empty.style.display = 'none';
@@ -5269,6 +5270,24 @@
     c.textContent = label;
     c.onclick = onClick;
     return c;
+  }
+
+  // A search that found nothing gets the "Tell us what you need" form
+  // (components.js SPNeed) under the empty message. Only for a search: an
+  // over-filtered browse still just says to remove a filter.
+  function spRenderNeedForm(empty) {
+    var q = (state.filters.q || '').trim();
+    var host = document.getElementById('spNeedHost');
+    if (!q || !window.SPNeed) { if (host) host.remove(); return; }
+    if (host && host.getAttribute('data-q') === q) return;   // keep what they are typing
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'spNeedHost';
+      host.style.cssText = 'max-width:520px;margin:18px auto 0';
+      empty.appendChild(host);
+    }
+    host.setAttribute('data-q', q);
+    host.innerHTML = window.SPNeed.html(q);
   }
 
   // "Showing results for gildan hoodie. Search instead for gilden hoddie."

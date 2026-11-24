@@ -140,6 +140,13 @@ ok('header shows "Did you mean"', /sp-search-dym/.test(header) && /spEsc\(res\.c
 ok('catalogue page says what it searched for', /corrected:\s+\(read && read\.corrected\)/.test(catalog) && /spRenderDidYouMean\(\);/.test(page))
 ok('"search instead" turns the reader off for that query', /_asTyped:\s+!!state\.filters\.q && state\._asTypedQ === state\.filters\.q/.test(page))
 ok('the page never waits long for the brand list', /setTimeout\(r, 400\)/.test(catalog))
+// ── "Tell us what you need" on a dead-end search ──────────────────────────
+ok('header dead end shows the form', /'<\/div>' \+ needFormHtml\(q\)/.test(header))
+ok('catalogue dead end shows the form, only for a search', /spRenderNeedForm\(empty\);/.test(page) && /if \(!q \|\| !window\.SPNeed\)/.test(page))
+ok('it posts to the OS inbound with what they searched', /api\/inbound/.test(header) && /search_request: true/.test(header) && /search_query: searched/.test(header))
+ok('it needs a way to reach them', /if \(!contact\) \{ say\(NEED_T\.errContact\)/.test(header))
+ok('it carries the honeypot and reports failures', /website: form\.elements\.website\.value/.test(header) && /form: 'search_request', status_code/.test(header))
+ok('a flagged-spam send fires no conversion', /if \(!\(j && j\.spam === true\)\)/.test(header))
 for (const f of ['catalog.html', 'fr/catalog.html']) {
   const h = readFileSync(ROOT + f, 'utf8')
   ok(`${f} loads search-words.js before catalog-algolia.js`,
