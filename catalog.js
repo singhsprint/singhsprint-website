@@ -4244,6 +4244,22 @@
       if (badge) badge.style.display = 'none';
       return;
     }
+    // The notice is built here, only when French is active. It used to sit in
+    // catalog.html (hidden), which put a French sentence about machine
+    // translation in the English page's source for every crawler to read.
+    if (!badge) {
+      var heroMeta = document.querySelector('.meta');
+      if (heroMeta && heroMeta.parentNode) {
+        badge = document.createElement('div');
+        badge.id = 'aiTransBadge';
+        badge.style.cssText = 'margin-top:12px;padding:8px 12px;background:#fef9c3;border:1px solid #f7d77a;border-radius:10px;font-size:.78rem;color:#5b4500;max-width:fit-content;line-height:1.4';
+        var strong = document.createElement('strong');
+        strong.textContent = '🌐 Traduction automatique active';
+        badge.appendChild(strong);
+        badge.appendChild(document.createTextNode(' — les noms de produits et couleurs sont traduits automatiquement depuis l\'anglais. Le reste du site est en français professionnel.'));
+        heroMeta.parentNode.insertBefore(badge, heroMeta);
+      }
+    }
     if (badge) badge.style.display = 'block';
     // Translate product names + currently-selected color labels on each card.
     window.AITranslate.translateContainer(grid,

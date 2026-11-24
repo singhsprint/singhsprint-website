@@ -60,8 +60,8 @@ var SP_LANG = (function() {
 
     // ===== FOOTER =====
     'footer.brand': {
-      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open 7 days, 10am-4pm. Call before visiting.",
-      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert 7 jours sur 7, 10 h à 16 h. Appelez avant de passer."
+      en: "Custom apparel printing in Montreal's West Island. DTG, DTF & Embroidery for brands, creators, and businesses. Open Mon-Fri 10am-4pm, Sat-Sun 12-4pm. Call before visiting.",
+      fr: "Impression de vêtements personnalisés dans l'Ouest-de-l'Île de Montréal. DTG, DTF et broderie pour marques, créateurs et entreprises. Ouvert du lundi au vendredi de 10 h à 16 h, samedi et dimanche de 12 h à 16 h. Appelez avant de passer."
     },
     'footer.pages': { en: 'Pages', fr: 'Pages' },
     'footer.home': { en: 'Home', fr: 'Accueil' },
@@ -449,8 +449,8 @@ var SP_LANG = (function() {
     },
     'about.values.delivery.h': { en: 'Local pickup + Canada-wide ship', fr: 'Ramassage local + expédition pancanadienne' },
     'about.values.delivery.p': {
-      en: 'Free pickup at our Sainte-Anne-de-Bellevue studio, courier delivery across the West Island and Montreal, Canpar and Purolator Canada-wide.',
-      fr: 'Ramassage gratuit à notre studio de Sainte-Anne-de-Bellevue, livraison par messagerie dans l\'Ouest-de-l\'Île et à Montréal, Canpar et Purolator partout au Canada.'
+      en: 'Free pickup at our Sainte-Anne-de-Bellevue studio, courier delivery across the West Island and Montreal, and Canada-wide shipping.',
+      fr: 'Ramassage gratuit à notre studio de Sainte-Anne-de-Bellevue, livraison par messagerie dans l\'Ouest-de-l\'Île et à Montréal, et expédition partout au Canada.'
     },
 
     'about.creds.h2': { en: 'Boring details that matter', fr: 'Détails ennuyants qui comptent' },
@@ -486,8 +486,8 @@ var SP_LANG = (function() {
 
     'about.map.h2': { en: 'Visit our studio', fr: 'Visitez notre studio' },
     'about.map.p': {
-      en: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open 7 days, 10am-4pm. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
-      fr: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert 7 jours sur 7, de 10 h à 16 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
+      en: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Montreal\'s West Island. Open Mon-Fri 10am-4pm, Sat-Sun 12-4pm. Call 438-544-3800 before you come by. Production runs all day and we like to set aside time for visitors.',
+      fr: '83 rue Sainte-Anne, Sainte-Anne-de-Bellevue · Ouest-de-l\'Île de Montréal. Ouvert du lundi au vendredi de 10 h à 16 h, samedi et dimanche de 12 h à 16 h. Appelez au 438-544-3800 avant de passer. La production tourne toute la journée et on aime garder du temps pour les visiteurs.'
     },
     'about.cta.h2': { en: 'Ready to get started?', fr: 'Prêt à commencer ?' },
     'about.cta.p': {
@@ -1423,7 +1423,7 @@ var SP_LANG = (function() {
     'quote.sidebar.next.p1': { en: 'We review your request and send a detailed quote — usually within an hour during business hours (9am–6pm).', fr: 'On examine votre demande et on envoie une soumission détaillée — habituellement en moins d\'une heure pendant les heures d\'ouverture (9 h à 18 h).' },
     'quote.sidebar.next.p2': { en: 'You approve a mockup before we print.', fr: 'Vous approuvez une maquette avant l\'impression.' },
     'quote.sidebar.talk.h': { en: 'Prefer to talk?', fr: 'Préférez-vous parler ?' },
-    'quote.sidebar.talk.hours': { en: 'Open 7 days, 10am-4pm. Call before visiting.', fr: 'Ouvert 7 jours sur 7, 10 h à 16 h. Appelez avant de passer.' },
+    'quote.sidebar.talk.hours': { en: 'Open Mon-Fri 10am-4pm, Sat-Sun 12-4pm. Call before visiting.', fr: 'Ouvert du lundi au vendredi de 10 h à 16 h, samedi et dimanche de 12 h à 16 h. Appelez avant de passer.' },
     'quote.freetee.nudge':    { en: 'Add {n} more and the 16th tee is on us.', fr: 'Encore {n} et le 16e t-shirt est offert.' },
     'quote.freetee.included': { en: 'Free tee included \u2014 same design. We\'ll confirm your size.', fr: 'T-shirt gratuit inclus \u2014 m\u00eame design. On confirmera votre taille.' },
     'quote.freetee.cartline': { en: 'Free tee \u2014 same design, on us', fr: 'T-shirt gratuit \u2014 m\u00eame design, offert' },

@@ -35,6 +35,10 @@ const MARKETING = [
   { path: '/',                                          priority: 1.0,  changefreq: 'weekly',  hreflang: true },
   { path: '/quote',                                     priority: 0.95, changefreq: 'weekly',  hreflang: true },
   { path: '/catalog',                                   priority: 0.95, changefreq: 'daily',   hreflang: true },
+  // ADDED 2026-11-24. The A-Z index of every style: one page of plain links
+  // to all ~4,600 product pages. /catalog itself is drawn by JavaScript, so
+  // this is the page a crawler can actually follow into the catalogue.
+  { path: '/catalog/all',                               priority: 0.7,  changefreq: 'weekly',  hreflang: true },
   { path: '/businesses',                                priority: 0.9,  changefreq: 'weekly',  hreflang: true },
   { path: '/about',                                     priority: 0.8,  changefreq: 'monthly', hreflang: true },
   { path: '/why-us',                                    priority: 0.85, changefreq: 'monthly', hreflang: true },

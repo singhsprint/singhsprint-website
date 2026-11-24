@@ -1926,7 +1926,7 @@ function loadFooter() {
     + '    <div class="footer-grid" style="grid-template-columns:1.6fr 1fr 1fr 1fr 1fr">'
     + '      <div class="footer-brand">'
     + '        <div class="logo"><span>SINGHS</span><span>PRINT</span></div>'
-    + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open 7 days, 10am-4pm. Call before visiting.</p>'
+    + '        <p style="margin-top:12px" data-i18n="footer.brand">Custom apparel printing in Montreal\'s West Island. DTG, DTF &amp; Embroidery for brands, businesses, and creators. Open Mon-Fri 10am-4pm, Sat-Sun 12-4pm. Call before visiting.</p>'
     + '      </div>'
     + '      <div class="footer-col"><h4 data-i18n="footer.pages">Pages</h4><a href="/" data-i18n="footer.home">Home</a><a href="/quote" data-i18n="footer.getquote">Get a Quote</a><a href="/portfolio" data-i18n="footer.portfolio">Portfolio</a><a href="/inkwear">Inkwear</a><a href="/youth-initiative" data-i18n="footer.youth">Youth Initiative</a><a href="/about" data-i18n="footer.about">About</a><a href="/why-us" data-i18n="footer.whyus">Why us</a></div>'
     + '      <div class="footer-col" data-mobile-hide><h4>For Businesses</h4><a href="/businesses">Volume pricing</a><a href="/businesses/rfp">Start an RFP</a><a href="/industries/construction-workwear">Construction</a><a href="/industries/restaurant-hospitality-uniforms">Restaurant &amp; hospitality</a><a href="/industries/corporate-tech-swag">Corporate &amp; tech</a><a href="/industries/charity-events-fundraisers">Charity &amp; events</a><a href="/industries/schools-sports-teams">Schools &amp; sports</a></div>'
@@ -2071,12 +2071,7 @@ function loadSchema() {
           "addressCountry": "CA"
         },
         "geo": { "@type": "GeoCoordinates", "latitude": "45.4042", "longitude": "-73.9485" },
-        "openingHoursSpecification": [{
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-          "opens":"10:00",
-          "closes":"16:00"
-        }],
+        "openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"16:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday","Sunday"],"opens":"12:00","closes":"16:00"}],
         "identifier": [
           { "@type": "PropertyValue", "propertyID": "NEQ", "value": "1181573313" },
           { "@type": "PropertyValue", "propertyID": "GST", "value": "71581 7169 RT0001" },
@@ -2162,7 +2157,7 @@ function loadSchema() {
           {
             "@type": "Question",
             "name": "Do you ship across Canada?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Local pickup or delivery in the Montreal/Laval/West Island area is free at our standard volumes; we ship Canada-wide via Canpar and Purolator." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Local pickup or delivery in the Montreal/Laval/West Island area is free at our standard volumes; we ship Canada-wide." }
           },
           {
             "@type": "Question",

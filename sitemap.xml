@@ -5,7 +5,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/"/>
@@ -15,7 +15,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/quote</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/quote"/>
@@ -25,7 +25,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/catalog</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/catalog"/>
@@ -34,8 +34,18 @@
   </url>
 
   <url>
+    <loc>https://www.singhsprint.com/catalog/all</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/catalog/all"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/catalog/all"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/catalog/all"/>
+  </url>
+
+  <url>
     <loc>https://www.singhsprint.com/businesses</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/businesses"/>
@@ -45,7 +55,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/about</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/about"/>
@@ -55,7 +65,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/why-us</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/why-us"/>
@@ -65,7 +75,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/youth-initiative</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/youth-initiative"/>
@@ -75,7 +85,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/industries/construction-workwear</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/construction-workwear"/>
@@ -85,7 +95,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/industries/restaurant-hospitality-uniforms</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/restaurant-hospitality-uniforms"/>
@@ -95,7 +105,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/industries/corporate-tech-swag</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/corporate-tech-swag"/>
@@ -105,7 +115,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/industries/charity-events-fundraisers</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/charity-events-fundraisers"/>
@@ -115,7 +125,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/industries/schools-sports-teams</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/schools-sports-teams"/>
@@ -125,7 +135,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/custom-t-shirts-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/custom-t-shirts-montreal"/>
@@ -135,7 +145,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/custom-hoodies-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/custom-hoodies-montreal"/>
@@ -145,7 +155,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/custom-hats-caps-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/custom-hats-caps-montreal"/>
@@ -155,7 +165,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/dtg-printing-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/dtg-printing-montreal"/>
@@ -165,7 +175,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/dtf-printing-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/dtf-printing-montreal"/>
@@ -175,7 +185,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/embroidery-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/embroidery-montreal"/>
@@ -185,7 +195,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/jerseys</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/jerseys"/>
@@ -195,7 +205,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/portfolio</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/portfolio"/>
@@ -205,7 +215,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/inkwear</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/inkwear"/>
@@ -215,7 +225,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/shop</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/shop"/>
@@ -225,7 +235,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/shop/policies</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/shop/policies"/>
@@ -235,7 +245,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/businesses/rfp</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/businesses/rfp"/>
@@ -245,7 +255,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides"/>
@@ -255,7 +265,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/procurement-checklist</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/procurement-checklist"/>
@@ -265,7 +275,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/cafe-restaurant-merch</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/cafe-restaurant-merch"/>
@@ -275,7 +285,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/brand-colour-matching</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/brand-colour-matching"/>
@@ -285,7 +295,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/branded-winter-outerwear</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/branded-winter-outerwear"/>
@@ -295,7 +305,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/bulk-order-size-run</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/bulk-order-size-run"/>
@@ -305,7 +315,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/custom-embroidered-caps-ordering-guide</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/custom-embroidered-caps-ordering-guide"/>
@@ -315,7 +325,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/decoration-method-durability</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/decoration-method-durability"/>
@@ -325,7 +335,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/fabric-cotton-polyester-blends</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/fabric-cotton-polyester-blends"/>
@@ -335,7 +345,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/logo-file-requirements</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/logo-file-requirements"/>
@@ -345,7 +355,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/logo-placement-print-sizes</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/logo-placement-print-sizes"/>
@@ -355,7 +365,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/minimum-order-price-breaks</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/minimum-order-price-breaks"/>
@@ -365,7 +375,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/team-jersey-ordering</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/team-jersey-ordering"/>
@@ -375,7 +385,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/guides/wash-care-printed-embroidered-apparel</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/wash-care-printed-embroidered-apparel"/>
@@ -385,7 +395,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/gifts</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/gifts"/>
@@ -395,7 +405,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/"/>
@@ -405,7 +415,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/quote</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/quote"/>
@@ -415,7 +425,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/catalog</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/catalog"/>
@@ -424,8 +434,18 @@
   </url>
 
   <url>
+    <loc>https://www.singhsprint.com/fr/catalog/all</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/catalog/all"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/catalog/all"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/catalog/all"/>
+  </url>
+
+  <url>
     <loc>https://www.singhsprint.com/fr/businesses</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/businesses"/>
@@ -435,7 +455,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/about</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/about"/>
@@ -445,7 +465,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/why-us</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/why-us"/>
@@ -455,7 +475,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/youth-initiative</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/youth-initiative"/>
@@ -465,7 +485,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/industries/construction-workwear</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/construction-workwear"/>
@@ -475,7 +495,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/industries/restaurant-hospitality-uniforms</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/restaurant-hospitality-uniforms"/>
@@ -485,7 +505,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/industries/corporate-tech-swag</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/corporate-tech-swag"/>
@@ -495,7 +515,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/industries/charity-events-fundraisers</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/charity-events-fundraisers"/>
@@ -505,7 +525,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/industries/schools-sports-teams</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/industries/schools-sports-teams"/>
@@ -515,7 +535,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/custom-t-shirts-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/custom-t-shirts-montreal"/>
@@ -525,7 +545,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/custom-hoodies-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/custom-hoodies-montreal"/>
@@ -535,7 +555,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/custom-hats-caps-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/custom-hats-caps-montreal"/>
@@ -545,7 +565,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/dtg-printing-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/dtg-printing-montreal"/>
@@ -555,7 +575,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/dtf-printing-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/dtf-printing-montreal"/>
@@ -565,7 +585,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/embroidery-montreal</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/embroidery-montreal"/>
@@ -575,7 +595,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/jerseys</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/jerseys"/>
@@ -585,7 +605,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/portfolio</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/portfolio"/>
@@ -595,7 +615,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/inkwear</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/inkwear"/>
@@ -605,7 +625,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/shop</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/shop"/>
@@ -615,7 +635,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/shop/policies</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/shop/policies"/>
@@ -625,7 +645,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/businesses/rfp</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/businesses/rfp"/>
@@ -635,7 +655,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides"/>
@@ -645,7 +665,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/procurement-checklist</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/procurement-checklist"/>
@@ -655,7 +675,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/cafe-restaurant-merch</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/cafe-restaurant-merch"/>
@@ -665,7 +685,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/brand-colour-matching</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/brand-colour-matching"/>
@@ -675,7 +695,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/branded-winter-outerwear</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/branded-winter-outerwear"/>
@@ -685,7 +705,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/bulk-order-size-run</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/bulk-order-size-run"/>
@@ -695,7 +715,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/custom-embroidered-caps-ordering-guide</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/custom-embroidered-caps-ordering-guide"/>
@@ -705,7 +725,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/decoration-method-durability</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/decoration-method-durability"/>
@@ -715,7 +735,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/fabric-cotton-polyester-blends</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/fabric-cotton-polyester-blends"/>
@@ -725,7 +745,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/logo-file-requirements</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/logo-file-requirements"/>
@@ -735,7 +755,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/logo-placement-print-sizes</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/logo-placement-print-sizes"/>
@@ -745,7 +765,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/minimum-order-price-breaks</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/minimum-order-price-breaks"/>
@@ -755,7 +775,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/team-jersey-ordering</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/team-jersey-ordering"/>
@@ -765,7 +785,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/guides/wash-care-printed-embroidered-apparel</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/guides/wash-care-printed-embroidered-apparel"/>
@@ -775,7 +795,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/gifts</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/gifts"/>
@@ -785,7 +805,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/ajm-international-0530m</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/ajm-international-0530m"/>
@@ -795,7 +815,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/allpro-41800l</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/allpro-41800l"/>
@@ -805,7 +825,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/american-apparel-1301</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/american-apparel-1301"/>
@@ -815,7 +835,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/american-apparel-rf497</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/american-apparel-rf497"/>
@@ -825,7 +845,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/atc-everyday-collection-atc1000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/atc-everyday-collection-atc1000"/>
@@ -835,7 +855,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/atc-everyday-collection-c100</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/atc-everyday-collection-c100"/>
@@ -845,7 +865,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/atc-s3526</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/atc-s3526"/>
@@ -855,7 +875,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/athletic-knit-b1710</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/athletic-knit-b1710"/>
@@ -865,7 +885,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/athletic-knit-h550b</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/athletic-knit-h550b"/>
@@ -875,7 +895,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/athletic-knit-h6100</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/athletic-knit-h6100"/>
@@ -885,7 +905,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/augusta-161</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/augusta-161"/>
@@ -895,7 +915,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/augusta-257</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/augusta-257"/>
@@ -905,7 +925,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/augusta-710</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/augusta-710"/>
@@ -914,38 +934,28 @@
   </url>
 
   <url>
-    <loc>https://www.singhsprint.com/p/bella-canvas-3001</loc>
-    <lastmod>2026-10-30</lastmod>
+    <loc>https://www.singhsprint.com/p/bella-canvas-bc3001</loc>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-3001"/>
-    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-3001"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-3001"/>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-bc3001"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-bc3001"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-bc3001"/>
   </url>
 
   <url>
-    <loc>https://www.singhsprint.com/p/bella-canvas-3719</loc>
-    <lastmod>2026-10-30</lastmod>
+    <loc>https://www.singhsprint.com/p/bella-canvas-bc3719</loc>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-3719"/>
-    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-3719"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-3719"/>
-  </url>
-
-  <url>
-    <loc>https://www.singhsprint.com/p/bella-canvas-4711</loc>
-    <lastmod>2026-10-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-4711"/>
-    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-4711"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-4711"/>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-bc3719"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-bc3719"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-bc3719"/>
   </url>
 
   <url>
     <loc>https://www.singhsprint.com/p/coal-harbour-s365</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/coal-harbour-s365"/>
@@ -955,7 +965,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/comfort-colors-1566</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/comfort-colors-1566"/>
@@ -965,7 +975,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/comfort-colors-1717</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/comfort-colors-1717"/>
@@ -975,7 +985,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/comfort-colors-6014</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/comfort-colors-6014"/>
@@ -985,7 +995,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/core365-88181</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/core365-88181"/>
@@ -995,7 +1005,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/core365-ce10</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/core365-ce10"/>
@@ -1005,7 +1015,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/core365-ce112</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/core365-ce112"/>
@@ -1015,7 +1025,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/csw-24-7-s05670</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/csw-24-7-s05670"/>
@@ -1025,7 +1035,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/devon-jones-dg150</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/devon-jones-dg150"/>
@@ -1035,7 +1045,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/flexfit-6277</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/flexfit-6277"/>
@@ -1045,7 +1055,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/gildan-18500</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/gildan-18500"/>
@@ -1055,7 +1065,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/gildan-64000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/gildan-64000"/>
@@ -1065,7 +1075,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/gildan-sf000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/gildan-sf000"/>
@@ -1075,7 +1085,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/holloway-222818</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/holloway-222818"/>
@@ -1085,7 +1095,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/independent-trading-co-ss1000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/independent-trading-co-ss1000"/>
@@ -1095,7 +1105,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/independent-trading-co-ss3000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/independent-trading-co-ss3000"/>
@@ -1105,7 +1115,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/independent-trading-co-ss4500</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/independent-trading-co-ss4500"/>
@@ -1115,7 +1125,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/m-o-3542</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/m-o-3542"/>
@@ -1125,7 +1135,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/new-era-ne400</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/new-era-ne400"/>
@@ -1135,7 +1145,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/next-level-3600</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/next-level-3600"/>
@@ -1145,7 +1155,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/next-level-3600sw</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/next-level-3600sw"/>
@@ -1155,7 +1165,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/next-level-3604</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/next-level-3604"/>
@@ -1165,7 +1175,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/pacific-headwear-641k</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/pacific-headwear-641k"/>
@@ -1175,7 +1185,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/q-tees-q4250</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/q-tees-q4250"/>
@@ -1185,7 +1195,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/q-tees-q600</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/q-tees-q600"/>
@@ -1195,7 +1205,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/q-tees-qtb</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/q-tees-qtb"/>
@@ -1205,7 +1215,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/rabbit-skins-3321</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/rabbit-skins-3321"/>
@@ -1215,7 +1225,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/rabbit-skins-4400</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/rabbit-skins-4400"/>
@@ -1225,7 +1235,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/rabbit-skins-4424</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/rabbit-skins-4424"/>
@@ -1235,7 +1245,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/richardson-112</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/richardson-112"/>
@@ -1245,7 +1255,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/sportsman-sp12</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/sportsman-sp12"/>
@@ -1255,7 +1265,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/team-365-tt11wl</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/team-365-tt11wl"/>
@@ -1265,7 +1275,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/team-365-tt51</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/team-365-tt51"/>
@@ -1275,7 +1285,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/valucap-8869</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/valucap-8869"/>
@@ -1285,7 +1295,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/valucap-vc300a</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/valucap-vc300a"/>
@@ -1295,7 +1305,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/valucap-vc400</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/valucap-vc400"/>
@@ -1305,7 +1315,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/yp-classics-6245cm</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/yp-classics-6245cm"/>
@@ -1315,7 +1325,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/yp-classics-6606</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/yp-classics-6606"/>
@@ -1325,7 +1335,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/p/yupoong-6606</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/yupoong-6606"/>
@@ -1335,7 +1345,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/ajm-international-0530m</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/ajm-international-0530m"/>
@@ -1345,7 +1355,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/allpro-41800l</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/allpro-41800l"/>
@@ -1355,7 +1365,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/american-apparel-1301</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/american-apparel-1301"/>
@@ -1365,7 +1375,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/american-apparel-rf497</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/american-apparel-rf497"/>
@@ -1375,7 +1385,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/atc-everyday-collection-atc1000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/atc-everyday-collection-atc1000"/>
@@ -1385,7 +1395,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/atc-everyday-collection-c100</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/atc-everyday-collection-c100"/>
@@ -1395,7 +1405,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/atc-s3526</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/atc-s3526"/>
@@ -1405,7 +1415,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/athletic-knit-b1710</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/athletic-knit-b1710"/>
@@ -1415,7 +1425,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/athletic-knit-h550b</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/athletic-knit-h550b"/>
@@ -1425,7 +1435,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/athletic-knit-h6100</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/athletic-knit-h6100"/>
@@ -1435,7 +1445,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/augusta-161</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/augusta-161"/>
@@ -1445,7 +1455,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/augusta-257</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/augusta-257"/>
@@ -1455,7 +1465,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/augusta-710</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/augusta-710"/>
@@ -1464,38 +1474,28 @@
   </url>
 
   <url>
-    <loc>https://www.singhsprint.com/fr/p/bella-canvas-3001</loc>
-    <lastmod>2026-10-30</lastmod>
+    <loc>https://www.singhsprint.com/fr/p/bella-canvas-bc3001</loc>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-3001"/>
-    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-3001"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-3001"/>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-bc3001"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-bc3001"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-bc3001"/>
   </url>
 
   <url>
-    <loc>https://www.singhsprint.com/fr/p/bella-canvas-3719</loc>
-    <lastmod>2026-10-30</lastmod>
+    <loc>https://www.singhsprint.com/fr/p/bella-canvas-bc3719</loc>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-3719"/>
-    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-3719"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-3719"/>
-  </url>
-
-  <url>
-    <loc>https://www.singhsprint.com/fr/p/bella-canvas-4711</loc>
-    <lastmod>2026-10-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-4711"/>
-    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-4711"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-4711"/>
+    <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/bella-canvas-bc3719"/>
+    <xhtml:link rel="alternate" hreflang="fr-CA" href="https://www.singhsprint.com/fr/p/bella-canvas-bc3719"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.singhsprint.com/p/bella-canvas-bc3719"/>
   </url>
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/coal-harbour-s365</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/coal-harbour-s365"/>
@@ -1505,7 +1505,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/comfort-colors-1566</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/comfort-colors-1566"/>
@@ -1515,7 +1515,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/comfort-colors-1717</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/comfort-colors-1717"/>
@@ -1525,7 +1525,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/comfort-colors-6014</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/comfort-colors-6014"/>
@@ -1535,7 +1535,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/core365-88181</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/core365-88181"/>
@@ -1545,7 +1545,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/core365-ce10</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/core365-ce10"/>
@@ -1555,7 +1555,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/core365-ce112</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/core365-ce112"/>
@@ -1565,7 +1565,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/csw-24-7-s05670</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/csw-24-7-s05670"/>
@@ -1575,7 +1575,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/devon-jones-dg150</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/devon-jones-dg150"/>
@@ -1585,7 +1585,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/flexfit-6277</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/flexfit-6277"/>
@@ -1595,7 +1595,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/gildan-18500</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/gildan-18500"/>
@@ -1605,7 +1605,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/gildan-64000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/gildan-64000"/>
@@ -1615,7 +1615,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/gildan-sf000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/gildan-sf000"/>
@@ -1625,7 +1625,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/holloway-222818</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/holloway-222818"/>
@@ -1635,7 +1635,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/independent-trading-co-ss1000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/independent-trading-co-ss1000"/>
@@ -1645,7 +1645,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/independent-trading-co-ss3000</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/independent-trading-co-ss3000"/>
@@ -1655,7 +1655,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/independent-trading-co-ss4500</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/independent-trading-co-ss4500"/>
@@ -1665,7 +1665,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/m-o-3542</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/m-o-3542"/>
@@ -1675,7 +1675,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/new-era-ne400</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/new-era-ne400"/>
@@ -1685,7 +1685,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/next-level-3600</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/next-level-3600"/>
@@ -1695,7 +1695,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/next-level-3600sw</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/next-level-3600sw"/>
@@ -1705,7 +1705,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/next-level-3604</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/next-level-3604"/>
@@ -1715,7 +1715,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/pacific-headwear-641k</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/pacific-headwear-641k"/>
@@ -1725,7 +1725,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/q-tees-q4250</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/q-tees-q4250"/>
@@ -1735,7 +1735,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/q-tees-q600</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/q-tees-q600"/>
@@ -1745,7 +1745,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/q-tees-qtb</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/q-tees-qtb"/>
@@ -1755,7 +1755,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/rabbit-skins-3321</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/rabbit-skins-3321"/>
@@ -1765,7 +1765,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/rabbit-skins-4400</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/rabbit-skins-4400"/>
@@ -1775,7 +1775,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/rabbit-skins-4424</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/rabbit-skins-4424"/>
@@ -1785,7 +1785,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/richardson-112</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/richardson-112"/>
@@ -1795,7 +1795,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/sportsman-sp12</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/sportsman-sp12"/>
@@ -1805,7 +1805,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/team-365-tt11wl</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/team-365-tt11wl"/>
@@ -1815,7 +1815,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/team-365-tt51</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/team-365-tt51"/>
@@ -1825,7 +1825,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/valucap-8869</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/valucap-8869"/>
@@ -1835,7 +1835,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/valucap-vc300a</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/valucap-vc300a"/>
@@ -1845,7 +1845,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/valucap-vc400</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/valucap-vc400"/>
@@ -1855,7 +1855,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/yp-classics-6245cm</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/yp-classics-6245cm"/>
@@ -1865,7 +1865,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/yp-classics-6606</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/yp-classics-6606"/>
@@ -1875,7 +1875,7 @@
 
   <url>
     <loc>https://www.singhsprint.com/fr/p/yupoong-6606</loc>
-    <lastmod>2026-10-30</lastmod>
+    <lastmod>2026-11-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en-CA" href="https://www.singhsprint.com/p/yupoong-6606"/>
