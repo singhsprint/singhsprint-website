@@ -1,0 +1,35 @@
+# After a push to main, tell Bing and the other IndexNow engines which
+# indexed pages changed. See scripts/indexnow-submit.mjs.
+name: IndexNow
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # The engines fetch the page as soon as they are told about it, so wait
+      # for Vercel to finish putting this commit live first.
+      - name: Wait for the deploy
+        run: sleep 180
+      - name: Submit changed pages
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            git diff --name-only "$BEFORE" "$AFTER" | node scripts/indexnow-submit.mjs --stdin
+          else
+            echo "No previous commit to compare against; nothing submitted."
+          fi
