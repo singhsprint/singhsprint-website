@@ -271,12 +271,38 @@
       });
     }
 
+    // Read category / colour / gender words out of the search box and apply
+    // them as filters; search only what is left as text. Without this,
+    // "hoodie" never returned the Gildan 18500 (its name says "Hooded
+    // Sweatshirt") and "black hoodie" returned 3 products. The header
+    // suggestions go through the same reader -- see search-words.js.
+    // Skipped once a category chip is chosen: the chip is the shopper's own
+    // answer to "what kind of garment", so the box is then plain text.
+    var words = window.SPSearchWords;
+    // Brand names for the spelling fix. Never hold the page for them.
+    if (opts.q && window.SPSearchBrandsReady) {
+      try {
+        await Promise.race([window.SPSearchBrandsReady(), new Promise(function (r) { setTimeout(r, 400); })]);
+      } catch (e) {}
+    }
+    var read = null;
+    if (words && opts.q && !opts.type && !opts._asTyped && !opts._textOnly) {
+      read = (words.interpretChecked && window.SPSearchCountExact)
+        ? await words.interpretChecked(opts.q, window.SPSearchCountExact)
+        : words.interpret(opts.q);
+    }
+    if (read && !read.understood) read = null;
+    var textOpts = read ? Object.assign({}, opts, { q: read.text }) : opts;
+    // Last resort (see below): the brand/detail words alone, no word filters.
+    if (opts._textOnly) textOpts = Object.assign({}, opts, { q: opts._textOnly });
+
     var facetFilters   = buildFacetFilters(opts);
+    if (read) facetFilters = facetFilters.concat(words.facetFiltersFor(read));
     var numericFilters = buildNumericFilters(opts);
 
     // 1. Main query — full filters, returns the actual hits + facet counts
     //    for facets that ARE NOT disjunctive (brand_norm, garment_type).
-    var mainParams = buildParams(opts, facetFilters, numericFilters, ALL_FACETS, opts.page, opts.hitsPerPage);
+    var mainParams = buildParams(textOpts, facetFilters, numericFilters, ALL_FACETS, opts.page, opts.hitsPerPage);
     var requests = [{ indexName: cfg.indexName, params: mainParams }];
 
     // 2. One sidecar query per disjunctive category — same filters with
@@ -284,7 +310,7 @@
     //    requested, zero hits to keep the response tiny.
     DISJUNCTIVE_FACETS.forEach(function (cat) {
       var subset = filtersWithout(facetFilters, cat);
-      var p = buildParams(opts, subset, numericFilters, [cat], 0, 0);
+      var p = buildParams(textOpts, subset, numericFilters, [cat], 0, 0);
       requests.push({ indexName: cfg.indexName, params: p });
     });
 
@@ -302,6 +328,19 @@
     var body = await res.json();
     var results = body.results || [];
     var main = results[0] || {};
+
+    // That reading found nothing: search the words exactly as typed instead
+    // of showing an empty page for a query the old search could answer.
+    // Still nothing: keep the brand/detail words and drop the word filters
+    // ("carhartt beanie" with no Carhartt beanie shows Carhartt).
+    if (read && !main.nbHits) {
+      var typed = await search(Object.assign({}, opts, { _asTyped: true }));
+      if (!typed.total && read.text) {
+        typed = await search(Object.assign({}, opts, { _textOnly: read.text }));
+      }
+      cache.set(key, typed);
+      return typed;
+    }
 
     // Merge facet counts: main has every facet, but the multi-select ones
     // are filtered. Overwrite each disjunctive category's counts with its
@@ -323,6 +362,8 @@
       page:       main.page,
       facets:     mergedFacets,
       processingTimeMS: main.processingTimeMS,
+      // Set when the spelling was fixed; catalog.js shows "Showing results for".
+      corrected:  (read && read.corrected) || null,
       _rawHits:   rawHits,
     };
     cache.set(key, out);
