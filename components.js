@@ -1470,20 +1470,50 @@ function loadNav() {
       };
     });
   }
+  // How many products carry each word exactly as typed (whole word, no typo
+  // tolerance). One request for all of them. Used to decide whether a word
+  // is a misspelled brand or a real catalogue word -- see interpretChecked.
+  function countExactWords(list) {
+    return fetch('https://' + SEARCH_CFG.appId + '-dsn.algolia.net/1/indexes/*/queries', {
+      method: 'POST',
+      headers: {
+        'X-Algolia-Application-Id': SEARCH_CFG.appId,
+        'X-Algolia-API-Key':        SEARCH_CFG.searchKey,
+        'Content-Type':             'application/x-www-form-urlencoded'
+      },
+      body: JSON.stringify({ requests: list.map(function (w) {
+        return { indexName: SEARCH_CFG.indexName, query: w, hitsPerPage: 0,
+                 typoTolerance: false, queryType: 'prefixNone', attributesToRetrieve: [] };
+      }) })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('count ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      return (d.results || []).map(function (x) { return x.nbHits || 0; });
+    });
+  }
+  window.SPSearchCountExact = countExactWords;
   // What to show for a query. Category, colour and gender words become
-  // filters; if that reading finds nothing, search the words as typed.
+  // filters. If that reading finds nothing, search the words as typed; if
+  // that finds nothing either, drop the filters and keep the brand/detail
+  // words ("carhartt beanie" with no Carhartt beanie shows Carhartt).
   // If Algolia itself is unreachable, fall back to the CRM endpoint so the
   // box still answers.
   function suggestFor(q) {
     var words = window.SPSearchWords;
-    var it = words ? words.interpret(q) : null;
-    var run = (it && it.understood)
-      ? algoliaSuggest(it.text, words.facetFiltersFor(it)).then(function (res) {
-          if (!res.total) return algoliaSuggest(q, []);
-          res.corrected = it.corrected || null;
-          return res;
-        })
-      : algoliaSuggest(q, []);
+    var reading = words
+      ? (words.interpretChecked ? words.interpretChecked(q, countExactWords) : Promise.resolve(words.interpret(q)))
+      : Promise.resolve(null);
+    var run = reading.then(function (it) {
+      if (!it || !it.understood) return algoliaSuggest(q, []);
+      return algoliaSuggest(it.text, words.facetFiltersFor(it)).then(function (res) {
+        if (res.total) { res.corrected = it.corrected || null; return res; }
+        return algoliaSuggest(q, []).then(function (typed) {
+          if (typed.total || !it.text) return typed;
+          return algoliaSuggest(it.text, []);
+        });
+      });
+    });
     return run.catch(function () {
       return fetch('https://singhsprint-crm.vercel.app/api/catalog?q=' + encodeURIComponent(q) + '&limit=6', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })

@@ -193,6 +193,8 @@
     if (BRAND_WORDS[tok] || SINGLE[tok] || COLOR_OF[tok] || GENDER_OF[tok] || NOISE[tok]) return null;
     var found = null;
     for (var i = 0; i < BRAND_LIST.length; i++) {
+      // Still typing it ("gilda" on the way to "gildan"): not a mistake.
+      if (BRAND_LIST[i].indexOf(tok) === 0) return null;
       if (!oneEditApart(tok, BRAND_LIST[i])) continue;
       if (found) return null;          // two brands equally close: do not guess
       found = BRAND_LIST[i];
@@ -208,7 +210,9 @@
    * "gilden hoddie"), or null when nothing was changed. It is what the
    * "Did you mean" line shows.
    */
-  function interpret(raw) {
+  function interpret(raw, keep) {
+    // keep: words proven to exist in the catalogue as typed; never respelled.
+    keep = keep || {};
     var typed = String(raw == null ? '' : raw).trim();
     var plain = { text: typed, types: [], colors: [], genders: [], understood: false, corrected: null };
     var norm = normalise(typed);
@@ -244,8 +248,12 @@
         if (used[t]) continue;
         var guess = typoCategory(toks[t]);
         if (guess) {
-          types = guess; used[t] = true; fixedAny = true;
+          types = guess; used[t] = true;
           shown[t] = typoWord(toks[t]);
+          // "hoodi" is someone still typing, not a spelling mistake: read
+          // it as a hoodie but do not announce a correction.
+          if (shown[t].indexOf(toks[t]) !== 0) fixedAny = true;
+          else shown[t] = toks[t];
           break;
         }
       }
@@ -267,17 +275,19 @@
     }
 
     // 3b. Brand spelling, on whatever is still plain text.
+    var respelled = [];
     toks.forEach(function (w, i) {
-      if (used[i]) return;
+      if (used[i] || keep[w]) return;
       var fix = brandFix(w);
-      if (fix) { toks[i] = fix; shown[i] = fix; fixedAny = true; }
+      if (fix) { toks[i] = fix; shown[i] = fix; fixedAny = true; respelled.push(w); }
     });
     var corrected = fixedAny ? shown.join(' ') : null;
 
     if (!types && !colors.length) {
       if (!corrected) return plain;
       // Only the spelling changed: search the corrected words as text.
-      return { text: toks.join(' '), types: [], colors: [], genders: [], understood: true, corrected: corrected };
+      return { text: toks.join(' '), types: [], colors: [], genders: [], understood: true,
+               corrected: corrected, respelled: respelled };
     }
 
     // 4. Gender, only alongside a category ("kids tee", "hoodie femme").
@@ -299,7 +309,29 @@
 
     var rest = toks.filter(function (w, i) { return !used[i] && !NOISE[w]; });
     return { text: rest.join(' '), types: types ? types.slice() : [], colors: colors,
-             genders: genders, understood: true, corrected: corrected };
+             genders: genders, understood: true, corrected: corrected, respelled: respelled };
+  }
+
+  /**
+   * interpret(), but a brand respelling is only kept when the word as typed
+   * is NOT in the catalogue. "heather" is one letter from the brand word
+   * "leather" and is also a real word on hundreds of products; "gilden" is
+   * on none. countExact(words) -> Promise<number[]> is supplied by the page
+   * (exact, whole-word hit counts). If the lookup fails, nothing is respelled.
+   */
+  function interpretChecked(raw, countExact) {
+    var first = interpret(raw);
+    if (!first.respelled || !first.respelled.length || !countExact) return Promise.resolve(first);
+    var asked = first.respelled;
+    return Promise.resolve(countExact(asked)).then(function (counts) {
+      var keep = {};
+      asked.forEach(function (w, i) { if (!counts || counts[i] !== 0) keep[w] = 1; });
+      return Object.keys(keep).length ? interpret(raw, keep) : first;
+    }, function () {
+      var keepAll = {};
+      asked.forEach(function (w) { keepAll[w] = 1; });
+      return interpret(raw, keepAll);
+    });
   }
 
   /** Algolia facetFilters for an interpretation (AND of OR-groups). */
@@ -315,7 +347,7 @@
     return f;
   }
 
-  var api = { interpret: interpret, facetFiltersFor: facetFiltersFor, normalise: normalise, setBrands: setBrands };
+  var api = { interpret: interpret, interpretChecked: interpretChecked, facetFiltersFor: facetFiltersFor, normalise: normalise, setBrands: setBrands };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.SPSearchWords = api;
 })(typeof window !== 'undefined' ? window : null);

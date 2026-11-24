@@ -285,9 +285,16 @@
         await Promise.race([window.SPSearchBrandsReady(), new Promise(function (r) { setTimeout(r, 400); })]);
       } catch (e) {}
     }
-    var read  = (words && opts.q && !opts.type && !opts._asTyped) ? words.interpret(opts.q) : null;
+    var read = null;
+    if (words && opts.q && !opts.type && !opts._asTyped && !opts._textOnly) {
+      read = (words.interpretChecked && window.SPSearchCountExact)
+        ? await words.interpretChecked(opts.q, window.SPSearchCountExact)
+        : words.interpret(opts.q);
+    }
     if (read && !read.understood) read = null;
     var textOpts = read ? Object.assign({}, opts, { q: read.text }) : opts;
+    // Last resort (see below): the brand/detail words alone, no word filters.
+    if (opts._textOnly) textOpts = Object.assign({}, opts, { q: opts._textOnly });
 
     var facetFilters   = buildFacetFilters(opts);
     if (read) facetFilters = facetFilters.concat(words.facetFiltersFor(read));
@@ -324,8 +331,13 @@
 
     // That reading found nothing: search the words exactly as typed instead
     // of showing an empty page for a query the old search could answer.
+    // Still nothing: keep the brand/detail words and drop the word filters
+    // ("carhartt beanie" with no Carhartt beanie shows Carhartt).
     if (read && !main.nbHits) {
       var typed = await search(Object.assign({}, opts, { _asTyped: true }));
+      if (!typed.total && read.text) {
+        typed = await search(Object.assign({}, opts, { _textOnly: read.text }));
+      }
       cache.set(key, typed);
       return typed;
     }
