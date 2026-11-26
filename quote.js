@@ -6311,16 +6311,21 @@
     // places or the cart total would silently miss every cached row and fall
     // back to "Price loading…". Adding the neck tag made that a real risk, so
     // it's one function now.
-    function spPriceCacheKey(productId, qty, sides, method, placementsKey, tq, neckTag) {
+    // `colorId` (2026-11-26): colourways of one blank do not all cost the same,
+    // and the checkout prices the colour on the row. The cart row asked without
+    // it, so the engine assumed a colour of its own: a black Adidas A556 showed
+    // $43.95 in the cart and charged $44.95 at checkout. Rows with no colour
+    // yet keep the old key and the engine's assumed colour.
+    function spPriceCacheKey(productId, qty, sides, method, placementsKey, tq, neckTag, colorId) {
       return productId + '_' + qty + '_' + sides + '_' + method + '_' + (placementsKey || '') +
-             (tq ? '_t' + tq : '') + (neckTag ? '_nt' : '');
+             (tq ? '_t' + tq : '') + (neckTag ? '_nt' : '') + (colorId ? '_c' + colorId : '');
     }
 
     // `neckTag` (2026-07-31): inside-neck DTG tag, a flat per-piece add-on
     // that applies whether the garment is printed or embroidered. It is NOT a
     // placement — it must not go through embroidery_placements, or it would
     // pick up placement multipliers and a print side it doesn't have.
-    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride, tierQty, neckTag) {
+    function liveUnitPrice(productId, qty, sides, placements, cb, methodOverride, tierQty, neckTag, colorId) {
       // Backwards-compat: older callers pass (productId, qty, sides, cb)
       // with no placements arg. Detect and shift.
       if (typeof placements === 'function') { cb = placements; placements = []; }
@@ -6344,7 +6349,7 @@
       var placementsArr = Array.isArray(placements) ? placements.slice() : [];
       var placementsKey = placementsArr.join(',');
       var tq = spItemTierQty(Number(qty) || 0, Number(tierQty) || 0);
-      var key = spPriceCacheKey(productId, qty, sides, method, placementsKey, tq, neckTag);
+      var key = spPriceCacheKey(productId, qty, sides, method, placementsKey, tq, neckTag, colorId);
       if (_priceCache[key]) { cb(_priceCache[key]); return; }
       // localStorage read-through (6h TTL): the qty ladder + tier cards
       // fire several of these per pick — returning visitors and repeat
@@ -6368,6 +6373,7 @@
       }
       if (tq) url += '&tier_qty=' + tq;
       if (neckTag) url += '&neck_tag=1';
+      if (colorId) url += '&color_id=' + encodeURIComponent(colorId);
       fetch(url)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
@@ -6741,7 +6747,7 @@
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        }, spEngineMethod(it, _lp.print_tier_qty), _lp.tier_qty, !!it.neck_tag);
+        }, spEngineMethod(it, _lp.print_tier_qty), _lp.tier_qty, !!it.neck_tag, it.color_id || '');
         spPaintEmbOffer(idx, it, items);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
@@ -7351,7 +7357,7 @@
         var copy = (items || []).slice(); copy[idx] = v;
         var lp = spLinePricing(v, spBulkContext(copy));
         liveUnitPrice(v.product_id, lp.qty, v.sides || 1, v.placements || [], cb,
-          spEngineMethod(v, lp.print_tier_qty) || 'dtf', lp.tier_qty, !!v.neck_tag);
+          spEngineMethod(v, lp.print_tier_qty) || 'dtf', lp.tier_qty, !!v.neck_tag, v.color_id || '');
       }
       var A = variant('embroidery'), B = variant('dtg');
       price(A, function (a) { price(B, function (b) {
@@ -7526,7 +7532,7 @@
           return;
         }
         var _clp  = spLinePricing(it, _cartCtx);
-        var p     = _priceCache[spPriceCacheKey(it.product_id, _clp.qty, sides, method, pk, _clp.tier_qty, !!it.neck_tag)];
+        var p     = _priceCache[spPriceCacheKey(it.product_id, _clp.qty, sides, method, pk, _clp.tier_qty, !!it.neck_tag, it.color_id || '')];
         if (typeof p === 'number') {
           cartUnitSum  += p;
           cartLineTotal += p * qty;
@@ -7617,7 +7623,7 @@
           var _plp = spLinePricing(it, _cartCtx);
           var _m  = spEngineMethod(it, _plp.print_tier_qty) || currentDecorationMethod();
           if (typeof _priceCache[spPriceCacheKey(it.product_id, _plp.qty, _s, _m, _pk,
-                _plp.tier_qty, !!it.neck_tag)] !== 'number') pendingLines++;
+                _plp.tier_qty, !!it.neck_tag, it.color_id || '')] !== 'number') pendingLines++;
         });
         document.getElementById('livePriceUnit').textContent = items.length + ' items';
         if (suf) suf.style.display = 'none';
