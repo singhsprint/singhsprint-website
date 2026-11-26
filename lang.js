@@ -1080,6 +1080,7 @@ var SP_LANG = (function() {
     'cat.card.oneside': { en: '1-side print', fr: 'Impression 1 côté' },
     'cat.detail.oneloc.emb': { en: '1 embroidered location', fr: '1 emplacement brod\u00e9' },
     'cat.detail.locs.emb': { en: ' embroidered locations', fr: ' emplacements brod\u00e9s' },
+    'cat.detail.mix.word': { en: '{e} embroidered + {p} printed', fr: '{e} brod\u00e9 + {p} imprim\u00e9' },
     'cat.card.from': { en: 'From', fr: 'À partir de' },
     'cat.card.perunit': { en: '/unit', fr: '/unité' },
     'cat.card.pereach': { en: '/each', fr: '/chacun' },

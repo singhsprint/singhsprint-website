@@ -416,6 +416,20 @@
     .dmcz__chip-price--free{color:#888;font-weight:600}
     .dmcz__chip[aria-pressed="true"] .dmcz__chip-price--free{color:#b9b9b9}
     .dmcz__chip-desc{font-size:.62rem;color:#999;line-height:1.15}
+    /* 2026-11 — embroider one spot: the offer line under the Front options,
+       and the tag on the stitched chip. Same box as a chip so it reads as part
+       of the same control. */
+    .dmcz__chip[aria-pressed="true"] .dmcz__chip-emb{color:#e8ff3c;background:rgba(232,255,60,.18);padding:1px 7px;border-radius:50px;font-size:.66rem}
+    .dmcz__offer-slot:empty{display:none}
+    .dmcz__offer{display:flex;align-items:flex-start;gap:9px;width:100%;box-sizing:border-box;margin-top:7px;padding:7px 11px;border:1.5px solid #e0ddd2;border-radius:10px;background:#fafaf7;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .12s,background .12s}
+    .dmcz__offer:hover{border-color:#bbb}
+    .dmcz__offer.is-on{border-color:#1a1a1a;background:#fff}
+    .dmcz__offer-box{flex:none;width:16px;height:16px;border-radius:5px;border:1.5px solid #1a1a1a;background:#fff;color:#e8ff3c;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+    .dmcz__offer.is-on .dmcz__offer-box{background:#1a1a1a}
+    .dmcz__offer-body{flex:1;min-width:0;display:block}
+    .dmcz__offer-title{display:block;font-size:.78rem;font-weight:600;color:#1a1a1a;line-height:1.2}
+    .dmcz__offer-price{margin-left:4px;font-weight:700;color:#2f6f3e}
+    .dmcz__offer-sub{display:block;font-size:.62rem;color:#999;line-height:1.25;margin-top:2px}
     .dmcz__uploads{display:flex;flex-direction:column;gap:10px}
     .dmcz__preview{margin:16px 0 4px}
     .dmcz__preview-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
