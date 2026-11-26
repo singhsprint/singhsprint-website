@@ -122,7 +122,12 @@
       String((it && it.color_id) || ''),
       m, pl,
       spCartDesignKey(it),
-      (it && it.neck_tag) ? 'nt' : ''
+      (it && it.neck_tag) ? 'nt' : '',
+      // A mixed line is also WHICH spot is stitched: left chest stitched with
+      // a printed back is not the same garment as the reverse.
+      (m === 'mixed' && it.placement_methods && typeof it.placement_methods === 'object')
+        ? Object.keys(it.placement_methods).sort().map(function (k) { return k + ':' + it.placement_methods[k]; }).join(',')
+        : ''
     ].join('|');
   }
   // The RUN this modal's line would join: pieces of the same product on the
@@ -605,6 +610,91 @@
     return (m && m.method) || 'dtf';
   }
 
+  // ── Embroider one spot (2026-11) ─────────────────────────────────────
+  // With DTG chosen and a chest logo picked, one line under the Front options
+  // offers to stitch that logo and print the rest. _dmczState.embSpot holds
+  // the spot while it is ticked. The cart row this adds is the quote page's
+  // own shape: decoration_type 'mixed' + placement_methods (or plain
+  // 'embroidery' when the logo is the only decoration), with emb_offer set so
+  // the row shows the same line ticked.
+  function dmczOfferSpot() {
+    var pl = dmczPricingPlacements(_dmczState.placements);
+    return ['left-chest', 'center-chest'].filter(function (p) { return pl.indexOf(p) >= 0; })[0] || '';
+  }
+  function dmczOfferFits() {
+    return _dmczState.method === 'DTG' && !dmczEmbroideryOnly(_detailProduct) && !!dmczOfferSpot();
+  }
+  // The spot that is stitched right now, or ''.
+  function dmczEmbSpot() {
+    var spot = dmczOfferFits() ? dmczOfferSpot() : '';
+    return (spot && _dmczState.embSpot === spot) ? spot : '';
+  }
+  // What the window prices as with `spot` stitched ('' = nothing stitched):
+  // the engine method, and for a real mix the placement_methods map.
+  function dmczVariant(spot) {
+    var pl = dmczPricingPlacements(_dmczState.placements);
+    var base = dmczMethodApi(_dmczState.method);
+    if (!spot || pl.indexOf(spot) < 0) return { method: base, map: null, param: '' };
+    if (pl.length === 1) return { method: 'embroidery', map: null, param: '' };
+    var map = {};
+    pl.forEach(function (p) { map[p] = (p === spot) ? 'embroidery' : 'dtg'; });
+    return { method: base, map: map, param: Object.keys(map).sort().map(function (k) { return k + ':' + map[k]; }).join(',') };
+  }
+  function dmczMixParamOf(map) {
+    return Object.keys(map || {}).sort().map(function (k) { return k + ':' + map[k]; }).join(',');
+  }
+  // The presses a cart row runs on, for pooling: both for a mixed row.
+  function dmczRowPresses(it) {
+    var m = String((it && (it.decoration_type || it.decoration_method)) || 'dtf').toLowerCase();
+    if (m === 'mixed') {
+      var e = 0, p = 0, pm = (it && it.placement_methods) || {};
+      (Array.isArray(it.placements) ? it.placements : []).forEach(function (pl) {
+        if (pl === 'neck-tag') return;
+        if (pm[pl] === 'embroidery' && !EMB_DISALLOWED[pl]) e++; else p++;
+      });
+      return { embroidery: e > 0, dtf: p > 0 };
+    }
+    return m === 'embroidery' ? { embroidery: true, dtf: false } : { embroidery: false, dtf: true };
+  }
+  function dmczToggleEmbOffer() {
+    var spot = dmczOfferFits() ? dmczOfferSpot() : '';
+    if (!spot) return;
+    _dmczState.embSpot = (_dmczState.embSpot === spot) ? '' : spot;
+    renderDmczPlacements();
+    refreshDmczPrice();
+  }
+  // Fills the slot under the group holding the logo spot. Unticked, the line
+  // only shows once the engine has priced both ways and stitching costs more.
+  function dmczPaintOffer() {
+    var slot = document.getElementById('dmczOfferSlot');
+    if (!slot) return;
+    var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var spot = dmczOfferFits() ? dmczOfferSpot() : '';
+    var on = !!(spot && dmczEmbSpot() === spot);
+    var o = _dmczState.offer || {};
+    var delta = (o.spot === spot && typeof o.delta === 'number') ? o.delta : null;
+    if (!spot || (!on && !(delta > 0))) { slot.innerHTML = ''; return; }
+    var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var label = function (p) { return (DMCZ_placementPresets[p] || { label: p }).label; };
+    var others = dmczPricingPlacements(_dmczState.placements).filter(function (p) { return p !== spot; }).map(label);
+    var price = delta > 0 ? '+$' + (delta % 1 === 0 ? delta.toFixed(0) : delta.toFixed(2)) + (t('quote.cart.emb.perpc') || '/pc') : '';
+    var sub = t('quote.cart.emb.sub') || 'Stitched in thread instead of printed.';
+    if (others.length === 1) {
+      sub += ' ' + (t('quote.cart.emb.stays1') || 'The {p} stays printed.').replace('{p}', others[0]);
+    } else if (others.length > 1) {
+      var last = others.pop();
+      sub += ' ' + (t('quote.cart.emb.staysn') || '{p} stay printed.')
+        .replace('{p}', others.join(', ') + ' ' + (t('quote.cart.emb.and') || 'and') + ' ' + last);
+    }
+    slot.innerHTML = '<button type="button" class="dmcz__offer' + (on ? ' is-on' : '') + '" role="checkbox" aria-checked="' + (on ? 'true' : 'false') + '">' +
+      '<span class="dmcz__offer-box" aria-hidden="true">' + (on ? '\u2713' : '') + '</span>' +
+      '<span class="dmcz__offer-body"><span class="dmcz__offer-title">' +
+        esc((t('quote.cart.emb.title') || 'Embroider the {p} logo').replace('{p}', label(spot))) +
+        (price ? ' <span class="dmcz__offer-price">' + esc(price) + '</span>' : '') +
+      '</span><span class="dmcz__offer-sub">' + esc(sub) + '</span></span></button>';
+    slot.firstChild.addEventListener('click', dmczToggleEmbOffer);
+  }
+
   // Live customizer state — reset every time the modal opens.
   // boxes: { placementId:{x,y,w} } (% of stage), removeBg: white-knockout blend,
   // activePreview: which placement the inline canvas is currently showing.
@@ -871,6 +961,7 @@
   function dmczSelectMethod(id) {
     if (id !== 'Embroidery' && dmczEmbroideryOnly(_detailProduct)) id = 'Embroidery';
     _dmczState.method = id;
+    _dmczState.embSpot = '';
     try { if (window.spShowTurnaround) window.spShowTurnaround(id); } catch (e) {}
     // Embroidery: drop disallowed placements from the current selection.
     if (id === 'Embroidery') {
@@ -1068,6 +1159,9 @@
     if (!host) return;
     var gt = (_detailProduct && _detailProduct.garment_type) || 'tshirt';
     var emb = (_dmczState.method === 'Embroidery');
+    var tE = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t : function(){ return ''; };
+    var offerSpotNow = dmczOfferFits() ? dmczOfferSpot() : '';
+    var embSpotNow = dmczEmbSpot();
     var groups = dmczPlacementGroupsFor(gt);
     var html = groups.map(function(g){
       var ids = g.ids.filter(function(pid){ return !(emb && EMB_DISALLOWED[pid]); });
@@ -1077,7 +1171,10 @@
         var desc = (emb && EMB_PLACEMENT_DESC[pid]) || pre.desc || '';
         var on = _dmczState.placements.indexOf(pid) >= 0;
         var hint = dmczChipHint(pid, on);
-        var hintHtml = hint
+        var stitchedSpot = on && pid === embSpotNow;
+        var hintHtml = stitchedSpot
+          ? '<span class="dmcz__chip-price dmcz__chip-emb">' + (tE('quote.cart.emb.tag') || 'embroidered') + '</span>'
+          : hint
           ? '<span class="dmcz__chip-price' +
               (hint === 'included' ? ' dmcz__chip-price--free' : '') +
               (hint.charAt(0) === '\u2212' ? ' dmcz__chip-price--down' : '') +
@@ -1089,9 +1186,12 @@
                '</button>';
       }).join('');
       return '<div class="dmcz__group"><div class="dmcz__group-label">' + g.label + '</div>' +
-             '<div class="dmcz__chips">' + chips + '</div></div>';
+             '<div class="dmcz__chips">' + chips + '</div>' +
+             ((offerSpotNow && ids.indexOf(offerSpotNow) >= 0) ? '<div class="dmcz__offer-slot" id="dmczOfferSlot"></div>' : '') +
+             '</div>';
     }).join('');
     host.innerHTML = html;
+    dmczPaintOffer();
     // "Where to print" reads wrong on a stitched job.
     var head = document.querySelector('.dmcz__sub[data-i18n="cat.detail.whereprint"]');
     if (head) head.textContent = emb ? 'Where to stitch' : 'Where to print';
@@ -1729,7 +1829,7 @@
 
   // One fetch per (product, method, sides, break) — not per keystroke. Typing
   // 1, 2, 3, 4 all resolve to the same break and reuse the first answer.
-  function dmczRenderBreakHint(p, qty, method, embPlac, sides) {
+  function dmczRenderBreakHint(p, qty, method, embPlac, sides, mixParam) {
     // Lives INSIDE #detailModalPrice, under the "/unit · 1-side print" line.
     // As a sibling it became a flex item in the modal header and sat beside
     // the price, crowding the SHARE button.
@@ -1749,7 +1849,7 @@
     // would hand a Black break-price to a customer who has switched to the
     // clearance colourway, which is the same substitution bug one layer up.
     var breakColorId = ((_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {}).color_id;
-    var key = [p.product_id, breakColorId || '', method, embPlac, sides, next].join('|');
+    var key = [p.product_id, breakColorId || '', mixParam ? 'mix~' + mixParam : method, embPlac, sides, next].join('|');
     var show = function (unit) {
       if (!unit) { host.textContent = ''; return; }
       // One idea, not two. "Same price to 99 · $11.95 each at 100+" was
@@ -1764,8 +1864,9 @@
     host.textContent = '';
     fetch('https://singhsprint-crm.vercel.app/api/pricing?product_id=' + encodeURIComponent(p.product_id) +
           (breakColorId ? '&color_id=' + encodeURIComponent(breakColorId) : '') +
-          '&qty=' + next + '&decoration_method=' + encodeURIComponent(method) +
+          '&qty=' + next + '&decoration_method=' + encodeURIComponent(mixParam ? 'dtg' : method) +
           (embPlac ? '&embroidery_placements=' + encodeURIComponent(embPlac) : '') +
+          (mixParam ? '&placement_methods=' + encodeURIComponent(mixParam) : '') +
           // `sides` — NOT `print_sides`. /api/pricing reads `sides`
           // (route.ts:63); an unknown param silently defaults to 1, so this
           // break hint quoted the ONE-SIDE price for a multi-location job:
@@ -2201,15 +2302,43 @@
     var placements = dmczPricingPlacements(_dmczState.placements);
     var addonParams = dmczAddonParams(_dmczState.placements);
     var sides = placements.length || 1;
-    var method = dmczMethodApi(_dmczState.method);
     // Price the RUN, not the line, once the run clears five — the same rule
     // the quote page and checkout apply (five of one item and one design
     // across colours). Two white caps here with three black ones already in
     // the cart are a five-piece embroidery run, not a two-piece refusal.
-    var run = { inCart: 0, run: ownQty };
-    try { run = spCartRunQty(SinghsCart.read().items, p.product_id, method, placements.slice().sort().join(','), ownQty); } catch (_) {}
-    var qty = run.run >= 5 ? run.run : ownQty;
-    _dmczRunNote = (qty > ownQty) ? { inCart: run.inCart, run: run.run } : null;
+    //
+    // 2026-11: the window can be priced two ways when the logo offer applies,
+    // with that spot stitched and with it printed. variantOf() works out the
+    // method, the mix and the run for either, so the price shown and the
+    // offer's "+$X/pc" come from the same code.
+    var embSpot = dmczEmbSpot();
+    var variantOf = function (spot) {
+      var v = dmczVariant(spot);
+      var plKey = placements.slice().sort().join(',');
+      var run = { inCart: 0, run: ownQty };
+      try {
+        if (v.param) {
+          // The run a mixed line joins is the same garment mixed the same way.
+          var inCartMix = 0;
+          SinghsCart.read().items.forEach(function (it) {
+            if (!it || it.is_byo || String(it.product_id || '') !== String(p.product_id || '')) return;
+            if (String(it.decoration_type || '').toLowerCase() !== 'mixed') return;
+            var ipl = Array.isArray(it.placements) ? it.placements.filter(function (x) { return x !== 'neck-tag'; }).slice().sort().join(',') : '';
+            if (ipl !== plKey || dmczMixParamOf(it.placement_methods) !== v.param) return;
+            inCartMix += Number(it.qty) || 0;
+          });
+          run = { inCart: inCartMix, run: inCartMix + ownQty };
+        } else {
+          run = spCartRunQty(SinghsCart.read().items, p.product_id, v.method, plKey, ownQty);
+        }
+      } catch (_) {}
+      v.qty = run.run >= 5 ? run.run : ownQty;
+      v.runNote = (v.qty > ownQty) ? { inCart: run.inCart, run: run.run } : null;
+      return v;
+    };
+    var cur = variantOf(embSpot);
+    var method = cur.method, mixParam = cur.param, qty = cur.qty;
+    _dmczRunNote = cur.runNote;
     // Send placements for EVERY method, not just embroidery (2026-06-11).
     // Despite its name, embroidery_placements is /api/pricing's generic
     // placements channel: for dtf/dtg it drives the per-placement matrix
@@ -2263,13 +2392,12 @@
     // embroidered cap run share no setup or press time, so they do not earn a
     // combined break. dtg and dtf share a press and pool together, matching
     // what the engine does when it collapses dtg -> dtf.
-    var tierQty = (function () {
+    //
+    // A mixed line is on both presses, so it pools on both: tier_qty is the
+    // stitched pool and print_tier_qty the printed one. Cart rows count on
+    // every press they run on.
+    var poolFor = function (v, press) {
       try {
-        var poolKey = function (m) {
-          var v = String(m || 'dtf').toLowerCase();
-          return v === 'dtg' ? 'dtf' : v;
-        };
-        var mine = poolKey(method);
         var sum = SinghsCart.read().items.reduce(function (acc, it) {
           // Customer-supplied garments never pool (2026-09-08). They carry a
           // decoration_type so their own decoration prices correctly, which is
@@ -2279,21 +2407,24 @@
           // bigger blank purchase, and we buy nothing on a BYO line.
           // quote.js/spCartPoolQty makes the same exclusion for the cart total.
           if (it.is_byo) return acc;
-          // Lines in THIS line's run are already inside `qty` (spCartRunQty
-          // above); counting them again would pool a five-piece run as ten.
-          if (_dmczRunNote && String(it.product_id || '') === String(p.product_id || '')
-              && poolKey(it.decoration_type || it.decoration_method) === mine) return acc;
+          var on = dmczRowPresses(it);
+          // Lines in THIS line's run are already inside the run count above;
+          // counting them again would pool a five-piece run as ten.
+          if (v.runNote && String(it.product_id || '') === String(p.product_id || '') && on[press]) return acc;
           var q = Number(it.qty) || 0;
           if (q < 5) return acc;
-          return poolKey(it.decoration_type || it.decoration_method) === mine ? acc + q : acc;
+          return on[press] ? acc + q : acc;
         }, 0);
         // Include the line being viewed, then only send it if it actually
         // raises the tier — the engine ignores tier_qty <= qty anyway.
-        var q = Number(qty) || 0;
+        var q = Number(v.qty) || 0;
         var pooled = sum + (q >= 5 ? q : 0);
         return (q >= 5 && pooled > q) ? pooled : null;
       } catch (e) { return null; }
-    })();
+    };
+    var pressOf = function (v) {
+      return v.param ? 'embroidery' : (String(v.method).toLowerCase() === 'embroidery' ? 'embroidery' : 'dtf');
+    };
 
     // Units already in the cart from THIS product's supplier.
     //
@@ -2331,15 +2462,50 @@
     // color_id; only the pricing path did not.
     var priceColorId = ((_detailProduct && _detailProduct.colors || [])[_detailColorIdx] || {}).color_id;
 
-    var url = 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
+    var urlFor = function (v) {
+      var tierQty = poolFor(v, pressOf(v));
+      var printTierQty = v.param ? poolFor(v, 'dtf') : null;
+      return 'https://singhsprint-crm.vercel.app/api/pricing?product_id=' +
               encodeURIComponent(p.product_id) +
               (priceColorId ? '&color_id=' + encodeURIComponent(priceColorId) : '') +
-              '&qty=' + encodeURIComponent(qty) +
+              '&qty=' + encodeURIComponent(v.qty) +
               '&sides=' + encodeURIComponent(sides) +
-              '&decoration_method=' + encodeURIComponent(method) +
+              '&decoration_method=' + encodeURIComponent(v.param ? 'dtg' : v.method) +
               '&embroidery_placements=' + encodeURIComponent(embPlac) + addonParams +
+              (v.param ? '&placement_methods=' + encodeURIComponent(v.param) : '') +
+              (printTierQty ? '&print_tier_qty=' + encodeURIComponent(printTierQty) : '') +
               (tierQty ? '&tier_qty=' + encodeURIComponent(tierQty) : '') +
               (supplierUnits > 0 ? '&supplier_units=' + encodeURIComponent(supplierUnits) : '');
+    };
+    var url = urlFor(cur);
+
+    // The offer's figure: this window priced the other way, minus this way.
+    var offerSpot = dmczOfferFits() ? dmczOfferSpot() : '';
+    var curUnit = null, altUnit = null, curDone = false, altDone = !offerSpot;
+    var settleOffer = function () {
+      if (seq !== _dmczState.priceSeq) return;
+      if (!_detailProduct || _detailProduct.product_id !== pidForGuard) return;
+      if (!offerSpot) { _dmczState.offer = null; dmczPaintOffer(); return; }
+      if (!curDone || !altDone) return;
+      var delta = null;
+      if (curUnit != null && altUnit != null) {
+        delta = Math.round(((embSpot ? curUnit : altUnit) - (embSpot ? altUnit : curUnit)) * 100) / 100;
+      }
+      _dmczState.offer = { spot: offerSpot, delta: delta };
+      dmczPaintOffer();
+    };
+    if (offerSpot) {
+      var alt = variantOf(embSpot ? '' : offerSpot);
+      fetch(urlFor(alt), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          altUnit = (d && typeof d.unit_price === 'number' && (!alt.param || d.mixed)) ? d.unit_price : null;
+          altDone = true; settleOffer();
+        })
+        .catch(function () { altDone = true; settleOffer(); });
+    } else {
+      settleOffer();
+    }
 
     fetch(url, { cache: 'no-store' })
       .then(function(r){
@@ -2353,10 +2519,13 @@
         // Race / product-switch guard.
         if (seq !== _dmczState.priceSeq) return;
         if (!_detailProduct || _detailProduct.product_id !== pidForGuard) return;
-        if (!res.ok) { refuse(res.body); return; }
+        if (!res.ok) { curDone = true; settleOffer(); refuse(res.body); return; }
         var d = res.body;
         var unit = d && typeof d.unit_price === 'number' ? d.unit_price : null;
-        if (unit === null || isNaN(unit)) { refuse(d); return; }
+        // A mix the engine did not price as a mix is not this garment's price.
+        if (mixParam && !(d && d.mixed)) unit = null;
+        if (unit === null || isNaN(unit)) { curDone = true; settleOffer(); refuse(d); return; }
+        curUnit = unit; curDone = true; settleOffer();
         // A price came back, so nothing is blocked at this qty.
         if (_dmczEmbMinQty != null && (d.qty == null || d.qty >= _dmczEmbMinQty)) {
           // leave the known minimum in place; renderDmczMethods re-evaluates
@@ -2373,8 +2542,10 @@
         }
         // "print" on a stitched cap is the wrong word in the one place the
         // customer reads the number. Say what is being made.
-        var _emb = (_dmczState.method === 'Embroidery');
-        var sideWord = sides === 1
+        var _emb = (String(method).toLowerCase() === 'embroidery');
+        var sideWord = mixParam
+          ? (t('cat.detail.mix.word') || '{e} embroidered + {p} printed').replace('{e}', 1).replace('{p}', sides - 1)
+          : sides === 1
           ? (_emb ? (t('cat.detail.oneloc.emb') || '1 embroidered location') : (t('cat.card.oneside') || '1-side print'))
           : sides + (_emb ? (t('cat.detail.locs.emb') || ' embroidered locations') : (t('cat.detail.sideprint') || '-side print'));
         dmczSetAddBlocked(false);
@@ -2385,7 +2556,7 @@
         priceEl.innerHTML = dmczPriceMarkup(unit, t('cat.card.perunit') || '/unit', sideWord);
         // Say what the number is doing, so an unchanged price still reads as
         // a live control rather than a broken one.
-        try { dmczRenderBreakHint(p, qty, method, embPlac, sides); } catch (_) {}
+        try { dmczRenderBreakHint(p, qty, method, embPlac, sides, mixParam); } catch (_) {}
         // The line above replaced #detailModalPrice's innerHTML, which took
         // the promise node with it. Repaint it from the answer already held —
         // this re-renders a stored server string and asks nothing new.
@@ -3191,7 +3362,12 @@
       if (!placements.length) {
         placements = [dmczDefaultPlacementFor(p.garment_type || 'tshirt')];
       }
-      const decoration_type = dmczMethodApi(st.method || 'DTG');   // 'dtf' | 'embroidery'
+      // The logo offer ticked: a real mix goes in as the cart's 'mixed' row
+      // with the map of which spot is which; a lone stitched logo is simply
+      // an embroidered line. emb_offer lets the cart row show the line ticked.
+      const embVariant = dmczVariant(dmczEmbSpot());
+      const mixedLine = !!embVariant.param;
+      const decoration_type = mixedLine ? 'mixed' : (dmczEmbSpot() ? embVariant.method : dmczMethodApi(st.method || 'DTG'));   // 'dtf' | 'embroidery' | 'mixed'
       const uploads = st.uploads || {};
       // Per-placement upload map for ALL uploaded artwork.
       const placement_designs = {};
@@ -3317,6 +3493,8 @@
           placements:        placements,
           sides:             placements.length,
           decoration_type:   decoration_type,
+          placement_methods: mixedLine ? embVariant.map : undefined,
+          emb_offer:         dmczEmbSpot() || undefined,
           // Add-on, not a placement — it never enters `placements`, so it
           // can't pick up a print side or an embroidery multiplier. The quote
           // page reads this back and passes neck_tag=1 to /api/pricing.
@@ -3413,6 +3591,11 @@
       // omitted on bare whole-card adds.
       placements:        placements || undefined,
       decoration_type:   payload.decoration_type || undefined,
+      // This list is a whitelist: a field not named here never reaches the
+      // cart. Without these two a mixed line would arrive as 'mixed' with no
+      // map and the quote page would price the stitched logo as ink.
+      placement_methods: (payload.decoration_type === 'mixed' && payload.placement_methods) || undefined,
+      emb_offer:         payload.emb_offer || undefined,
       design_path:       payload.design_path || undefined,
       design_url:        payload.design_url || undefined,
       placement_designs: payload.placement_designs || undefined,
