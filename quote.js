@@ -3437,7 +3437,13 @@
             qty:               parseInt(it.qty, 10) || 0,
             sizes:             (it.sizes && typeof it.sizes === 'object') ? it.sizes : {},
             placements:        Array.isArray(it.placements) ? it.placements : [],
-            decoration_method: (it.decoration_type || '').toLowerCase() || 'dtf',
+            // A mixed row goes up as its print method plus the per-placement
+            // map; the server prices and stores it as 'embroidery + dtg'. A
+            // "mixed" row whose spots all agree is just that one method.
+            decoration_method: spMixKind(it) === 'mixed' ? 'dtg'
+              : (spMixKind(it) === 'embroidery' ? 'embroidery'
+              : (spMixKind(it) ? 'dtg' : ((it.decoration_type || '').toLowerCase() || 'dtf'))),
+            placement_methods: spMixKind(it) === 'mixed' ? spMixMethods(it) : undefined,
             brand:             it.brand || null,
             style_number:      it.style_number || null,
             name:              it.name || null,
@@ -3534,7 +3540,17 @@
     function spBuildQuoteCartItems() {
       try {
         if (typeof SinghsCart !== 'undefined' && SinghsCart.count() > 0) {
-          return SinghsCart.read().items;
+          // A mixed row is sent in the words the CRM stores: its
+          // decoration_type becomes 'embroidery + dtg' and placement_methods
+          // carries every spot. 'mixed' is this page's own word.
+          return SinghsCart.read().items.map(function (it) {
+            var k = spMixKind(it);
+            if (!k) return it;
+            var out = {}; Object.keys(it).forEach(function (key) { out[key] = it[key]; });
+            out.decoration_type = k === 'mixed' ? 'embroidery + dtg' : (k === 'embroidery' ? 'embroidery' : 'dtg');
+            if (k === 'mixed') out.placement_methods = spMixMethods(it); else delete out.placement_methods;
+            return out;
+          });
         }
       } catch (e) { /* storage unreadable — fall through and derive */ }
 
@@ -5300,18 +5316,38 @@
         if (it && it.decoration_type) perItemMethod = it.decoration_type;
       } catch (e) { /* ignore */ }
       var effectiveMethod = perItemMethod || String((typeof state !== 'undefined' && state.service) || '');
+      // 2026-11 — one spot stitched, the rest printed. On a row that can take
+      // it (spMixRowOK), a stitched spot says so on its pill and tapping a
+      // pill offers Printed / Embroidered for that spot alone. Every other
+      // row renders exactly as before.
+      var mixOK = spMixRowOK(it);
+      var isMixRow = mixOK && String(perItemMethod).toLowerCase() === 'mixed';
       var chipsHtml = picked.map(function(p) {
         // 2026-05-24 — append the per-piece surcharge to the selected
         // chip so customers see it without having to re-open the
         // picker. Skipped for $0 placements + for embroidery.
-        var surcharge = placementSurchargeFor(p, effectiveMethod);
+        var stitched = mixOK && p !== 'neck-tag' && spPlMethod(it, p) === 'embroidery';
+        var surcharge = stitched ? 0 : placementSurchargeFor(p, isMixRow ? 'dtg' : effectiveMethod);
         var surchargeBadge = surcharge > 0
           ? ' <small class="ci-chip__surcharge">+$' + surcharge + '</small>'
           : '';
-        return '<span class="ci-chip">' + escapeAttr(_placementLabel(p)) + surchargeBadge +
+        var inner = escapeAttr(_placementLabel(p)) + surchargeBadge +
+          (stitched ? ' <small class="ci-chip__surcharge">' + escapeAttr(spMixT('quote.cart.emb.tag', 'embroidered')) + '</small>' : '');
+        var pop = '';
+        if (mixOK && p !== 'neck-tag') {
+          var popOpen = !!(_spMixPop && _spMixPop.idx === idx && _spMixPop.p === p);
+          inner = '<button type="button" class="ci-chip__pick" aria-haspopup="true" aria-expanded="' + (popOpen ? 'true' : 'false') +
+            '" onclick="cartMixPop(' + idx + ',\'' + p + '\')">' + inner + '</button>';
+          if (popOpen) pop = spMixPopHtml(idx, it, p);
+        }
+        return '<span class="ci-chip' + (mixOK ? ' ci-chip--pick' : '') + '">' + inner +
                '<button type="button" class="ci-chip__remove" aria-label="Remove ' + escapeAttr(_placementLabel(p)) +
-               '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button></span>';
+               '" onclick="cartRemovePlacement(' + idx + ',\'' + p + '\')">×</button>' + pop + '</span>';
       }).join('');
+      // Filled in by spPaintEmbOffer once both prices are known, so the line
+      // never shows without its real per-piece figure.
+      var offerSlot = (mixOK && spEmbOfferState(it))
+        ? '<div class="ci-offer-slot" id="ci-offer-' + idx + '"></div>' : '';
       var addLabel = picked.length === 0 ? '+ Pick a placement' : '+ Add placement';
       // Only offered while the picker is CLOSED. cartTogglePicker toggles, so
       // with the picker open by default this button would read "+ Add
@@ -5324,6 +5360,7 @@
       return '<div class="ci-placements">' +
              '  <span class="ci-placements__label">Placements</span>' +
              chipsHtml + addBtn +
+             offerSlot +
              picker +
              '</div>';
     }
@@ -5562,8 +5599,18 @@
         ? allOpts.filter(function (o) { return o.value === 'embroidery'; })
         : allOpts;
 
+      // A row with one spot stitched and the rest printed is both methods at
+      // once, so both chips read as chosen. Picking either makes it that
+      // method throughout.
+      var mixKind = '';
+      if (current === 'mixed') {
+        try { mixKind = spMixKind(SinghsCart.read().items[idx]); } catch (e) {}
+        if (!mixKind) mixKind = 'dtf';
+      }
       var chips = opts.map(function(o) {
-        var active = (current === o.value);
+        var active = (current === o.value)
+          || (current === 'mixed' && ((o.value === 'dtg' && mixKind !== 'embroidery')
+                                   || (o.value === 'embroidery' && mixKind !== 'dtf')));
         return '<button type="button" class="ci-method-chip' + (active?' is-active':'') + '"' +
                ' onclick="onCartItemChange(' + idx + ', {decoration_type: \'' + o.value + '\'}); spShowTurnaround(\'' + o.value + '\')"' +
                (embroideryOnly ? ' disabled aria-disabled="true"' : '') +
@@ -5588,7 +5635,8 @@
       // rep before it goes out, and blocking mid-funnel loses the lead.
       var EMB_MIN = SP_EMB_MIN();
       var qtyNum  = Number(qty) || 0;
-      var embShort = (current === 'embroidery' && qtyNum > 0 && qtyNum < EMB_MIN);
+      // A mixed row has stitching on it, so the same minimum applies.
+      var embShort = ((current === 'embroidery' || (current === 'mixed' && mixKind !== 'dtf')) && qtyNum > 0 && qtyNum < EMB_MIN);
 
       var hint;
       if (embShort) {
@@ -6048,9 +6096,59 @@
     }
     // dtg and dtf are one press and one pool; embroidery is its own. Same
     // collapse the engine does in pricingMethod()/poolingKey().
+    // ── Mixed lines (2026-11) ─────────────────────────────────────────────
+    // One garment, some placements stitched and some printed. The row's
+    // decoration_type is 'mixed' and placement_methods says which is which.
+    // This is the storefront's half of lib/pricing/mixed in the CRM: the
+    // engine prices the stitched placements on the embroidery ladder and adds
+    // each printed one at its print step, so a mixed row is a real embroidery
+    // run AND a real print run.
+    var SP_NO_STITCH = { 'oversized': 1, 'back-full': 1 };
+    // Every placement on the row and its method. A placement nobody labelled
+    // prints; one that cannot be hooped prints whatever was asked.
+    function spMixMethods(it) {
+      var out = {}, pm = (it && it.placement_methods) || {};
+      (Array.isArray(it && it.placements) ? it.placements : []).forEach(function (p) {
+        if (p === 'neck-tag') return;
+        out[p] = (pm[p] === 'embroidery' && !SP_NO_STITCH[p]) ? 'embroidery' : 'dtg';
+      });
+      return out;
+    }
+    // "back-across:dtg,left-chest:embroidery" — sorted, so it is stable as a
+    // key and is exactly what /api/pricing takes as placement_methods.
+    function spMixParam(it) {
+      var m = spMixMethods(it);
+      return Object.keys(m).sort().map(function (k) { return k + ':' + m[k]; }).join(',');
+    }
+    // '' for an ordinary row. For a mixed row, what it comes to once the
+    // choices are read: 'mixed', or a single method when they all agree.
+    function spMixKind(it) {
+      if (String((it && it.decoration_type) || '').toLowerCase() !== 'mixed') return '';
+      var m = spMixMethods(it), e = 0, p = 0;
+      Object.keys(m).forEach(function (k) { if (m[k] === 'embroidery') e++; else p++; });
+      return (e && p) ? 'mixed' : (e ? 'embroidery' : 'dtf');
+    }
+    // The method token a row is priced and cached under: 'embroidery', 'dtf',
+    // '' (nothing picked: the caller falls back to the page's method), or for
+    // a mixed row 'mix~<placement_methods>~<print pool>'. liveUnitPrice turns
+    // that last one into the placement_methods request.
+    function spEngineMethod(it, printTier) {
+      var k = spMixKind(it);
+      if (k === 'mixed') return 'mix~' + spMixParam(it) + (printTier ? '~' + printTier : '');
+      if (k) return k;
+      var raw = String((it && it.decoration_type) || '').toLowerCase();
+      return raw === 'embroidery' ? 'embroidery' : (raw ? 'dtf' : '');
+    }
     function spBulkMethodKey(it) {
+      var k = spMixKind(it);
+      if (k === 'mixed') return 'mixed(' + spMixParam(it) + ')';
+      if (k) return k;
       return String((it && it.decoration_type) || '').toLowerCase() === 'embroidery'
         ? 'embroidery' : 'dtf';
+    }
+    // The presses a row runs on: one, or both for a mixed row.
+    function spBulkPresses(it) {
+      return spMixKind(it) === 'mixed' ? ['embroidery', 'dtf'] : [spBulkMethodKey(it)];
     }
     function spBulkGroupKey(it) {
       var pl = Array.isArray(it && it.placements)
@@ -6083,12 +6181,12 @@
         if (it && it.is_byo) return;
         var k = spBulkGroupKey(it);
         groups[k] = (groups[k] || 0) + spLineQty(it);
-        methodOf[k] = spBulkMethodKey(it);
+        methodOf[k] = spBulkPresses(it);
       });
       Object.keys(groups).forEach(function (k) {
         if (groups[k] < 5) return;
-        var m = methodOf[k];
-        pools[m] = (pools[m] || 0) + groups[k];
+        // A mixed run counts toward the embroidery pool and the print pool.
+        methodOf[k].forEach(function (m) { pools[m] = (pools[m] || 0) + groups[k]; });
       });
       return { groups: groups, pools: pools };
     }
@@ -6103,8 +6201,12 @@
       if (!ctx || (it && it.is_byo)) return { qty: own, tier_qty: 0, group_qty: own };
       var g = ctx.groups[spBulkGroupKey(it)] || 0;
       var pq = g >= 5 ? g : own;
-      var pool = ctx.pools[spBulkMethodKey(it)] || 0;
-      return { qty: pq, tier_qty: spItemTierQty(pq, pool), group_qty: g };
+      var presses = spBulkPresses(it);
+      var out = { qty: pq, tier_qty: spItemTierQty(pq, ctx.pools[presses[0]] || 0), group_qty: g };
+      // Mixed rows only: the print pool its printed placements resolve at.
+      // tier_qty above is then the embroidery pool.
+      if (presses.length > 1) out.print_tier_qty = spItemTierQty(pq, ctx.pools[presses[1]] || 0);
+      return out;
     }
     function spItemTierQty(q, pool) {
       return (q >= 5 && pool > q) ? pool : 0;
@@ -6121,7 +6223,8 @@
       Object.keys(ctx.groups).forEach(function (k) {
         if (ctx.groups[k] < 5) return;
         var m = k.split('|')[1];
-        groupsByPress[m] = (groupsByPress[m] || 0) + 1;
+        var on = m.indexOf('mixed(') === 0 ? ['embroidery', 'dtf'] : [m];
+        on.forEach(function (x) { groupsByPress[x] = (groupsByPress[x] || 0) + 1; });
       });
       return Object.keys(ctx.pools).filter(function (m) { return (groupsByPress[m] || 0) >= 2; })
         .map(function (m) { return { press: m, pool: ctx.pools[m], groups: groupsByPress[m] }; });
@@ -6232,9 +6335,14 @@
       // share the same base ladder; not-sure defaults to dtf so the
       // customer sees a number while we recommend at quote-reply).
       var method;
+      // A mixed row arrives as 'mix~<placement_methods>~<print pool>' (see
+      // spEngineMethod). The whole token is the cache key, so two rows mixed
+      // differently never share a price.
+      var mixTok = null;
       if (methodOverride) {
         var raw = String(methodOverride).toLowerCase();
-        method = raw === 'embroidery' ? 'embroidery' : 'dtf';
+        if (raw.indexOf('mix~') === 0) { mixTok = raw.split('~'); method = raw; }
+        else method = raw === 'embroidery' ? 'embroidery' : 'dtf';
       } else {
         method = currentDecorationMethod();
       }
@@ -6257,8 +6365,12 @@
       var url = PRICING_API_FOR_QUOTE +
         '?product_id=' + encodeURIComponent(productId) +
         '&qty=' + qty + '&sides=' + sides +
-        '&decoration_method=' + method;
+        '&decoration_method=' + (mixTok ? 'dtg' : method);
       if (placementsKey) url += '&embroidery_placements=' + encodeURIComponent(placementsKey);
+      if (mixTok) {
+        url += '&placement_methods=' + encodeURIComponent(mixTok[1] || '');
+        if (mixTok[2]) url += '&print_tier_qty=' + mixTok[2];
+      }
       if (tq) url += '&tier_qty=' + tq;
       if (neckTag) url += '&neck_tag=1';
       if (colorId) url += '&color_id=' + encodeURIComponent(colorId);
@@ -6266,6 +6378,9 @@
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(d){
           var p = d && typeof d.unit_price === 'number' ? d.unit_price : null;
+          // A mixed request the server did not price as mixed is not a price
+          // for this row: showing it would quote print money for stitching.
+          if (mixTok && !(d && d.mixed)) p = null;
           if (p != null) {
             _priceCache[key] = p;
             try { localStorage.setItem('spPrice_' + key, JSON.stringify({ p: p, ts: Date.now() })); } catch (e) {}
@@ -6584,6 +6699,8 @@
           + '</span><span style="font-weight:700;color:#e8ff3c">$0.00</span></div>'
         : '');
 
+      spMixProbe(items);
+      spMixPopFix();
       // Inject per-row swatches + fetch live unit prices.
       items.forEach(function(it, idx) {
         // Jersey lines carry their own engine-computed price and a fixed
@@ -6630,7 +6747,8 @@
             el.textContent = (typeof SP_LANG !== 'undefined' && SP_LANG.t('quote.cart.item.priceloading')) || 'Price loading…';
           }
           updateCartTotal();
-        }, it.decoration_type, _lp.tier_qty, !!it.neck_tag, it.color_id || '');
+        }, spEngineMethod(it, _lp.print_tier_qty), _lp.tier_qty, !!it.neck_tag, it.color_id || '');
+        spPaintEmbOffer(idx, it, items);
 
         // Live per-item pricing table — qty tiers × sides × decoration method.
         // Hits /api/pricing/live-matrix which returns engine-derived prices
@@ -7052,7 +7170,212 @@
       if (btn) btn.textContent = collapsed ? btn.dataset.collapsedLabel : btn.dataset.expandedLabel;
     }
 
+    // ── Embroider one spot (2026-11) ──────────────────────────────────────
+    // A printed row with a small logo spot gets ONE offer line under its
+    // pills: "Embroider the Left Chest logo +$4/pc". Ticking it stitches that
+    // spot and leaves the rest printed. A row that came in embroidered shows
+    // no offer; its pills say "embroidered" and tapping one switches that
+    // spot. None of it renders until /api/pricing has answered a mixed
+    // request as mixed (spMixProbe), so a server that does not price mixes
+    // never has one sold against it.
+    var _spMixOK = null, _spMixProbing = false, _spMixPop = null, _spOfferSeq = {};
+    try { if (sessionStorage.getItem('spMixOK_v1') === '1') _spMixOK = true; } catch (e) {}
+    function spMixT(key, fb) {
+      var t = (typeof SP_LANG !== 'undefined' && SP_LANG.t) ? SP_LANG.t(key) : '';
+      return t || fb;
+    }
+    // Rows the mix applies to: a garment we supply, that is not
+    // embroidery-only, and that has a chest to put a logo on.
+    function spMixRowFits(it) {
+      if (!it || it.is_byo || it.is_jersey || !it.product_id) return false;
+      if (it.garment_type && EMBROIDERY_ONLY_GARMENTS[it.garment_type]) return false;
+      try {
+        return placementGroupsFor(it.garment_type).some(function (g) { return g.ids.indexOf('left-chest') >= 0; });
+      } catch (e) { return false; }
+    }
+    function spMixRowOK(it) { return _spMixOK === true && spMixRowFits(it); }
+    function spMixProbe(items) {
+      if (_spMixOK !== null || _spMixProbing) return;
+      var it = (items || []).filter(spMixRowFits)[0];
+      if (!it) return;
+      _spMixProbing = true;
+      fetch(PRICING_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id) +
+            '&qty=25&sides=2&decoration_method=dtg' +
+            '&embroidery_placements=' + encodeURIComponent('left-chest,back-across') +
+            '&placement_methods=' + encodeURIComponent('back-across:dtg,left-chest:embroidery'))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          _spMixProbing = false;
+          if (d && d.mixed) {
+            _spMixOK = true;
+            try { sessionStorage.setItem('spMixOK_v1', '1'); } catch (e) {}
+            renderCartList();
+          } else {
+            _spMixOK = false;
+          }
+        }).catch(function () { _spMixProbing = false; _spMixOK = false; });
+    }
+    // How one spot on a row is decorated right now.
+    function spPlMethod(it, p) {
+      var t = String((it && it.decoration_type) || '').toLowerCase();
+      if (t === 'mixed') return spMixMethods(it)[p] === 'embroidery' ? 'embroidery' : 'dtg';
+      return t === 'embroidery' ? 'embroidery' : 'dtg';
+    }
+    // The row after one spot is set to a method. Spots that all agree are
+    // just that method; only a real mix is stored as 'mixed'.
+    function spMixPatch(it, spot, method) {
+      var m = {};
+      (Array.isArray(it && it.placements) ? it.placements : []).forEach(function (p) {
+        if (p !== 'neck-tag') m[p] = spPlMethod(it, p);
+      });
+      if (spot in m) m[spot] = (method === 'embroidery' && !SP_NO_STITCH[spot]) ? 'embroidery' : 'dtg';
+      var e = 0, pr = 0;
+      Object.keys(m).forEach(function (k) { if (m[k] === 'embroidery') e++; else pr++; });
+      if (e && pr) return { decoration_type: 'mixed', placement_methods: m };
+      return { decoration_type: e ? 'embroidery' : 'dtg', placement_methods: null };
+    }
+    function spMixApply(idx, spot, method, viaOffer) {
+      var it = SinghsCart.read().items[idx];
+      if (!it || !spMixRowOK(it)) return;
+      var patch = spMixPatch(it, spot, method);
+      var after = {}; Object.keys(it).forEach(function (k) { after[k] = it[k]; });
+      after.decoration_type = patch.decoration_type; after.placement_methods = patch.placement_methods;
+      var offerSpot = viaOffer ? (method === 'embroidery' ? spot : null) : (it.emb_offer || null);
+      if (offerSpot && spPlMethod(after, offerSpot) !== 'embroidery') offerSpot = null;
+      // Stitching the last printed spot from a pill makes this an embroidered
+      // row like any other: no ticked line left inviting them to undo it.
+      if (!viaOffer && patch.decoration_type === 'embroidery') offerSpot = null;
+      patch.emb_offer = offerSpot;
+      SinghsCart.update(idx, patch);
+      if (window.spTrack) window.spTrack('cart_item_placement_method', { idx: idx, placement: spot, method: method, via: viaOffer ? 'offer' : 'pill' });
+      spRecalcShippingIfStale();
+    }
+    // The pill's Printed / Embroidered choice.
+    function cartMixPop(idx, p) {
+      _spMixPop = (_spMixPop && _spMixPop.idx === idx && _spMixPop.p === p) ? null : { idx: idx, p: p };
+      renderCartList();
+    }
+    function cartSetPlacementMethod(idx, p, method) {
+      _spMixPop = null;
+      var it = SinghsCart.read().items[idx];
+      if (!it || spPlMethod(it, p) === method) { renderCartList(); return; }
+      spMixApply(idx, p, method, false);
+    }
+    function spMixPopHtml(idx, it, p) {
+      var cur = spPlMethod(it, p), no = !!SP_NO_STITCH[p];
+      function btn(val, label, on, off) {
+        return '<button type="button" class="ci-method-chip' + (on ? ' is-active' : '') + '"' +
+          (off ? ' disabled aria-disabled="true"' : '') +
+          ' onclick="cartSetPlacementMethod(' + idx + ',\'' + p + '\',\'' + val + '\')">' + escapeAttr(label) + '</button>';
+      }
+      return '<span class="ci-pop" role="group" aria-label="' + escapeAttr(_placementLabel(p)) + '">' +
+        '<span class="ci-section-label ci-pop__label">' + escapeAttr(_placementLabel(p)) + '</span>' +
+        '<span class="ci-pop__opts">' +
+          btn('dtg', spMixT('quote.cart.emb.printed', 'Printed'), cur !== 'embroidery', false) +
+          (no ? '' : btn('embroidery', spMixT('quote.cart.emb.embroidered', 'Embroidered'), cur === 'embroidery', false)) +
+        '</span>' +
+        (no ? '<span class="ci-pop__note">' + escapeAttr(spMixT('quote.cart.emb.toobig', 'Too big to embroider')) + '</span>' : '') +
+        '</span>';
+    }
+    // Keep the open choice inside its cart row on a narrow screen.
+    function spMixPopFix() {
+      var pop = document.querySelector('.ci-pop'); if (!pop) return;
+      var row = pop.closest('.cart-item') || document.body;
+      var over = pop.getBoundingClientRect().right - (row.getBoundingClientRect().right - 8);
+      if (over > 0) pop.style.left = (-over) + 'px';
+    }
+    document.addEventListener('click', function (e) {
+      if (!_spMixPop) return;
+      var t = e.target;
+      if (t && t.closest && (t.closest('.ci-pop') || t.closest('.ci-chip__pick'))) return;
+      _spMixPop = null; renderCartList();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (_spMixPop && e.key === 'Escape') { _spMixPop = null; renderCartList(); }
+    });
+    // The offer line. '' = no line, 'off' = offered, 'on' = ticked.
+    function spEmbOfferSpot(it) {
+      var pl = Array.isArray(it && it.placements) ? it.placements : [];
+      return ['left-chest', 'center-chest'].filter(function (p) { return pl.indexOf(p) >= 0; })[0] || '';
+    }
+    function spEmbOfferState(it) {
+      if (!spMixRowOK(it)) return '';
+      var spot = spEmbOfferSpot(it); if (!spot) return '';
+      if (spPlMethod(it, spot) === 'embroidery') {
+        // Ticked only while it is still what the offer made it: this spot
+        // stitched beside printed ones, or the row's one and only spot. A row
+        // that is embroidered throughout shows no line to untick.
+        var decorated = (it.placements || []).filter(function (p) { return p !== 'neck-tag'; }).length;
+        var mixedNow = String(it.decoration_type || '').toLowerCase() === 'mixed';
+        return (it.emb_offer === spot && (mixedNow || decorated === 1)) ? 'on' : '';
+      }
+      var t = String(it.decoration_type || '').toLowerCase();
+      if (t !== 'dtg' && t !== 'mixed') return '';
+      if (spLineQty(it) < SP_EMB_MIN()) return '';
+      return 'off';
+    }
+    function cartToggleEmbOffer(idx, spot) {
+      var it = SinghsCart.read().items[idx]; if (!it) return;
+      spMixApply(idx, spot, spPlMethod(it, spot) === 'embroidery' ? 'dtg' : 'embroidery', true);
+    }
+    function spEmbOfferHtml(idx, spot, on, delta, stitchedRow) {
+      var others = (stitchedRow.placements || []).filter(function (p) {
+        return p !== 'neck-tag' && p !== spot && spPlMethod(stitchedRow, p) !== 'embroidery';
+      }).map(_placementLabel);
+      var price = delta > 0
+        ? '+$' + (delta % 1 === 0 ? delta.toFixed(0) : delta.toFixed(2)) + spMixT('quote.cart.emb.perpc', '/pc') : '';
+      var sub = spMixT('quote.cart.emb.sub', 'Stitched in thread instead of printed.');
+      if (others.length === 1) {
+        sub += ' ' + spMixT('quote.cart.emb.stays1', 'The {p} stays printed.').replace('{p}', others[0]);
+      } else if (others.length > 1) {
+        var last = others.pop();
+        sub += ' ' + spMixT('quote.cart.emb.staysn', '{p} stay printed.')
+          .replace('{p}', others.join(', ') + ' ' + spMixT('quote.cart.emb.and', 'and') + ' ' + last);
+      }
+      return '<button type="button" class="ci-offer' + (on ? ' is-on' : '') + '" role="checkbox" aria-checked="' + (on ? 'true' : 'false') +
+        '" onclick="cartToggleEmbOffer(' + idx + ',\'' + spot + '\')">' +
+        '<span class="ci-offer__box" aria-hidden="true">' + (on ? '\u2713' : '') + '</span>' +
+        '<span class="ci-offer__body"><span class="ci-offer__title">' +
+          escapeAttr(spMixT('quote.cart.emb.title', 'Embroider the {p} logo').replace('{p}', _placementLabel(spot))) +
+          (price ? ' <span class="ci-offer__price">' + escapeAttr(price) + '</span>' : '') +
+        '</span><span class="ci-offer__sub">' + escapeAttr(sub) + '</span></span></button>';
+    }
+    // Price the row both ways (that spot stitched, that spot printed) at the
+    // qty and pool each would really land in, and show the difference.
+    function spPaintEmbOffer(idx, it, items) {
+      if (!document.getElementById('ci-offer-' + idx)) return;
+      var st = spEmbOfferState(it); if (!st) return;
+      var spot = spEmbOfferSpot(it);
+      var seq = _spOfferSeq[idx] = (_spOfferSeq[idx] || 0) + 1;
+      function variant(method) {
+        var v = {}; Object.keys(it).forEach(function (k) { v[k] = it[k]; });
+        var pch = spMixPatch(it, spot, method);
+        v.decoration_type = pch.decoration_type; v.placement_methods = pch.placement_methods;
+        return v;
+      }
+      function price(v, cb) {
+        var copy = (items || []).slice(); copy[idx] = v;
+        var lp = spLinePricing(v, spBulkContext(copy));
+        liveUnitPrice(v.product_id, lp.qty, v.sides || 1, v.placements || [], cb,
+          spEngineMethod(v, lp.print_tier_qty) || 'dtf', lp.tier_qty, !!v.neck_tag, v.color_id || '');
+      }
+      var A = variant('embroidery'), B = variant('dtg');
+      price(A, function (a) { price(B, function (b) {
+        if (_spOfferSeq[idx] !== seq) return;
+        var el = document.getElementById('ci-offer-' + idx); if (!el) return;
+        var delta = (a != null && b != null) ? Math.round((a - b) * 100) / 100 : null;
+        if (st === 'off' && !(delta > 0)) return;
+        el.innerHTML = spEmbOfferHtml(idx, spot, st === 'on', delta, A);
+      }); });
+    }
     function onCartItemChange(idx, patch) {
+      // Picking a method on the row's own chips makes every spot that method:
+      // a per-spot choice from before does not outlive it.
+      if (patch && typeof patch.decoration_type !== 'undefined' && !('placement_methods' in patch)) {
+        var _np = {}; Object.keys(patch).forEach(function (k) { _np[k] = patch[k]; });
+        _np.placement_methods = null; _np.emb_offer = null;
+        patch = _np;
+      }
       SinghsCart.update(idx, patch);
       // Cart qty / sides / placements changed → the shipping estimate is
       // now stale (different box weight, different order subtotal, so the
@@ -7193,8 +7516,8 @@
         }
         var sides = it.sides || 1;
         var pk    = (it.placements || []).join(',');
-        var rawM  = (it.decoration_type || '').toLowerCase();
-        var method = rawM === 'embroidery' ? 'embroidery' : (rawM ? 'dtf' : currentDecorationMethod());
+        // Same token liveUnitPrice cached under, mixed rows included.
+        var method = spEngineMethod(it, spLinePricing(it, _cartCtx).print_tier_qty) || currentDecorationMethod();
         // Same combined-tier suffix liveUnitPrice used when it cached this
         // row's price — pooled lines live under the _t<pool> key.
         // BYO lines are priced decoration-only and cache their unit price on
@@ -7297,9 +7620,8 @@
           if (it.is_byo)    { if (typeof it.byo_unit_price    !== 'number') pendingLines++; return; }
           var _s  = it.sides || 1;
           var _pk = (it.placements || []).join(',');
-          var _rm = (it.decoration_type || '').toLowerCase();
-          var _m  = _rm === 'embroidery' ? 'embroidery' : (_rm ? 'dtf' : currentDecorationMethod());
           var _plp = spLinePricing(it, _cartCtx);
+          var _m  = spEngineMethod(it, _plp.print_tier_qty) || currentDecorationMethod();
           if (typeof _priceCache[spPriceCacheKey(it.product_id, _plp.qty, _s, _m, _pk,
                 _plp.tier_qty, !!it.neck_tag, it.color_id || '')] !== 'number') pendingLines++;
         });
