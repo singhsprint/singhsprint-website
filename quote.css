@@ -322,6 +322,26 @@
        coexists with the chip's existing yellow text. */
     .ci-chip__surcharge{font-weight:700;font-size:.7rem;color:#e8ff3c;background:rgba(232,255,60,.18);padding:1px 6px;border-radius:50px;line-height:1}
     .ci-picker__surcharge{font-weight:600;color:#a16207;font-size:.7rem;margin-left:2px}
+    /* 2026-11 — embroider one spot. The pill becomes tappable (same look),
+       its Printed / Embroidered choice opens under it, and a printed row
+       with a logo spot gets one offer line under the pills. */
+    .ci-chip--pick{position:relative}
+    .ci-chip__pick{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;color:inherit;font:inherit;line-height:inherit;padding:0;margin:0;cursor:pointer}
+    .ci-pop{position:absolute;z-index:30;top:calc(100% + 8px);left:0;display:block;background:#fff;border:1.5px solid #1a1a1a;border-radius:14px;padding:12px;box-shadow:0 10px 28px rgba(0,0,0,.14);min-width:230px;white-space:nowrap;cursor:default}
+    .ci-pop__label{display:block;margin:0 0 8px 2px}
+    .ci-pop__opts{display:flex;gap:8px}
+    .ci-pop__note{display:block;margin:8px 2px 0;font-size:.7rem;font-weight:500;color:#a16207}
+    .ci-offer-slot{flex-basis:100%;width:100%}
+    .ci-offer-slot:empty{display:none}
+    .ci-offer{display:flex;align-items:flex-start;gap:10px;width:100%;box-sizing:border-box;margin:4px 0 0;padding:10px 12px;border:1.5px solid #e8e6df;border-radius:12px;background:#fafaf7;cursor:pointer;text-align:left;font-family:inherit;transition:border-color .12s}
+    .ci-offer:hover{border-color:#bbb}
+    .ci-offer.is-on{border-color:#1a1a1a;background:#fff}
+    .ci-offer__box{flex:none;width:18px;height:18px;border-radius:5px;border:1.5px solid #1a1a1a;background:#fff;color:#e8ff3c;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:1px}
+    .ci-offer.is-on .ci-offer__box{background:#1a1a1a}
+    .ci-offer__body{flex:1;min-width:0;display:block}
+    .ci-offer__title{display:block;font-size:.84rem;font-weight:600;color:#1a1a1a}
+    .ci-offer__price{font-weight:700;color:#9a6200;margin-left:4px}
+    .ci-offer__sub{display:block;font-size:.74rem;color:#777;margin-top:2px}
     .ci-picker__opt.is-selected .ci-picker__surcharge{color:#e8ff3c}
     .ci-picker{display:none;flex-basis:100%;margin-top:10px;padding:14px;border:1.5px solid #e8e6df;border-radius:12px;background:#fafaf6}
     .ci-picker.open{display:block}

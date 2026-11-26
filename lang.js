@@ -1227,6 +1227,18 @@ var SP_LANG = (function() {
     'quote.cart.item.sides': { en: 'Sides', fr: 'Côtés' },
     'quote.cart.item.remove': { en: 'Remove', fr: 'Retirer' },
     'quote.cart.item.priceloading': { en: 'Price loading…', fr: 'Chargement du prix…' },
+    // Embroider one spot (2026-11): the offer line, the pill tag and the
+    // Printed / Embroidered choice on a cart row.
+    'quote.cart.emb.title': { en: 'Embroider the {p} logo', fr: 'Broder le logo ({p})' },
+    'quote.cart.emb.perpc': { en: '/pc', fr: '/pc' },
+    'quote.cart.emb.sub': { en: 'Stitched in thread instead of printed.', fr: 'Brodé au fil plutôt qu’imprimé.' },
+    'quote.cart.emb.stays1': { en: 'The {p} stays printed.', fr: '{p} reste imprimé.' },
+    'quote.cart.emb.staysn': { en: '{p} stay printed.', fr: '{p} restent imprimés.' },
+    'quote.cart.emb.and': { en: 'and', fr: 'et' },
+    'quote.cart.emb.tag': { en: 'embroidered', fr: 'brodé' },
+    'quote.cart.emb.printed': { en: 'Printed', fr: 'Imprimé' },
+    'quote.cart.emb.embroidered': { en: 'Embroidered', fr: 'Brodé' },
+    'quote.cart.emb.toobig': { en: 'Too big to embroider', fr: 'Trop grand pour la broderie' },
     'quote.cart.combo': { en: 'Volume pricing unlocked: {n} pieces combined across your order — every item gets the {n}-piece rate.', fr: 'Prix de volume débloqué : {n} pièces combinées dans votre commande — chaque article obtient le tarif de {n} pièces.' },
     // Per-press variants, used only when the cart mixes printing and
     // embroidery — the two never pool, so "every item" would be a lie there.
