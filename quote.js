@@ -5336,7 +5336,7 @@
         var pop = '';
         if (mixOK && p !== 'neck-tag') {
           var popOpen = !!(_spMixPop && _spMixPop.idx === idx && _spMixPop.p === p);
-          inner = '<button type="button" class="ci-chip__pick" aria-haspopup="true" aria-expanded="' + (popOpen ? 'true' : 'false') +
+          inner = '<button type="button" class="ci-chip__pick" data-mix="' + idx + '|' + p + '" aria-haspopup="true" aria-expanded="' + (popOpen ? 'true' : 'false') +
             '" onclick="cartMixPop(' + idx + ',\'' + p + '\')">' + inner + '</button>';
           if (popOpen) pop = spMixPopHtml(idx, it, p);
         }
@@ -6713,13 +6713,21 @@
         if (it.is_byo)    { spPaintByoRowPrice(idx, it); return; }
         // Fetch the product's full colour list once so the customer can
         // switch colours per cart row without going back to the catalog.
-        fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
-          .then(function(r){ return r.ok ? r.json() : null; })
-          .then(function(d) {
-            if (!d || !d.products || !d.products.length) return;
-            var p = d.products[0];
-            paintCartItemSwatches(idx, p.colors || [], it.color_id);
-          });
+        // 2026-11-26: the list is kept once fetched. Every change to a row
+        // re-renders the cart, and refetching meant the swatches vanished and
+        // came back each time, so the row shrank and grew under the cursor.
+        if (_spRowColors[it.product_id]) {
+          paintCartItemSwatches(idx, _spRowColors[it.product_id], it.color_id);
+        } else {
+          fetch(CATALOG_API_FOR_QUOTE + '?product_id=' + encodeURIComponent(it.product_id))
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d) {
+              if (!d || !d.products || !d.products.length) return;
+              var p = d.products[0];
+              _spRowColors[it.product_id] = p.colors || [];
+              paintCartItemSwatches(idx, p.colors || [], it.color_id);
+            });
+        }
 
         // 2026-05-24 — pass it.decoration_type as the methodOverride
         // (6th arg) so the cache key matches updateCartTotal's lookup.
@@ -7015,6 +7023,7 @@
     // Render the colour swatch picker for a cart row. Dedupes waist-size-
     // suffixed colours (e.g. Black_32 / Black_34 → Black). Clicking a swatch
     // updates the cart item's color_id + color_name and refreshes the row.
+    var _spRowColors = {};
     function paintCartItemSwatches(idx, colors, selectedColorId) {
       var host = document.getElementById('ci-swatches-' + idx);
       if (!host) return;
@@ -7251,14 +7260,32 @@
       spRecalcShippingIfStale();
     }
     // The pill's Printed / Embroidered choice.
+    // Opened and closed in place. It used to re-render the whole cart to do
+    // it, which rebuilt every row (photo, colour swatches, prices) and made
+    // the page flash and shift by a swatch row on each tap.
+    function spMixPopClose() {
+      _spMixPop = null;
+      var pops = document.querySelectorAll('.ci-pop');
+      for (var i = 0; i < pops.length; i++) pops[i].parentNode.removeChild(pops[i]);
+      var btns = document.querySelectorAll('.ci-chip__pick[aria-expanded="true"]');
+      for (var j = 0; j < btns.length; j++) btns[j].setAttribute('aria-expanded', 'false');
+    }
     function cartMixPop(idx, p) {
-      _spMixPop = (_spMixPop && _spMixPop.idx === idx && _spMixPop.p === p) ? null : { idx: idx, p: p };
-      renderCartList();
+      var same = !!(_spMixPop && _spMixPop.idx === idx && _spMixPop.p === p);
+      spMixPopClose();
+      if (same) return;
+      var it = SinghsCart.read().items[idx];
+      var btn = document.querySelector('.ci-chip__pick[data-mix="' + idx + '|' + p + '"]');
+      if (!it || !btn || !spMixRowOK(it)) return;
+      _spMixPop = { idx: idx, p: p };
+      btn.setAttribute('aria-expanded', 'true');
+      btn.parentNode.insertAdjacentHTML('beforeend', spMixPopHtml(idx, it, p));
+      spMixPopFix();
     }
     function cartSetPlacementMethod(idx, p, method) {
-      _spMixPop = null;
+      spMixPopClose();
       var it = SinghsCart.read().items[idx];
-      if (!it || spPlMethod(it, p) === method) { renderCartList(); return; }
+      if (!it || spPlMethod(it, p) === method) return;
       spMixApply(idx, p, method, false);
     }
     function spMixPopHtml(idx, it, p) {
@@ -7288,10 +7315,10 @@
       if (!_spMixPop) return;
       var t = e.target;
       if (t && t.closest && (t.closest('.ci-pop') || t.closest('.ci-chip__pick'))) return;
-      _spMixPop = null; renderCartList();
+      spMixPopClose();
     });
     document.addEventListener('keydown', function (e) {
-      if (_spMixPop && e.key === 'Escape') { _spMixPop = null; renderCartList(); }
+      if (_spMixPop && e.key === 'Escape') spMixPopClose();
     });
     // The offer line. '' = no line, 'off' = offered, 'on' = ticked.
     function spEmbOfferSpot(it) {
